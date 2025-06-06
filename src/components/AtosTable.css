@@ -119,3 +119,21 @@
 .atos-table-row:hover {
   background: #e3f2fd !important;
 }
+
+.custom-file-button {
+  padding: 10px 24px;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 8px #1976d21a;
+  transition: background 0.2s;
+}
+
+.custom-file-button:hover {
+  background: #1565c0;
+}
