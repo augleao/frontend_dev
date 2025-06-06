@@ -1,3 +1,4 @@
+// UploadForm.jsx
 import React, { useState } from 'react';
 import axios from 'axios';
 import AtosTable from './components/AtosTable';
@@ -43,7 +44,7 @@ function UploadForm() {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+    <div className="upload-form-container">
       <form onSubmit={handleSubmit}>
         <label htmlFor="fileInput" className="custom-file-button" style={{ marginRight: 12, marginBottom: 0 }}>
           {file ? file.name : 'Escolher Arquivo PDF'}
