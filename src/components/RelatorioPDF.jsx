@@ -58,8 +58,13 @@ export function gerarRelatorioPDF({ dataRelatorio, atos, valorInicialCaixa, depo
     observacoes: 100,
   };
 
+  // Cabeçalho destacado
   doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
   let x = marginLeft;
+  doc.setFillColor(40, 40, 40); // cinza escuro
+  doc.setTextColor(255, 255, 255); // branco
+
   const headers = [
     { label: 'Qtde.', width: colWidths.qtde },
     { label: 'Código', width: colWidths.codigo },
@@ -74,13 +79,24 @@ export function gerarRelatorioPDF({ dataRelatorio, atos, valorInicialCaixa, depo
     { label: 'Obs.', width: colWidths.observacoes },
   ];
 
+  // Fundo do cabeçalho
+  const headerHeight = lineHeight + 4;
+  doc.rect(x, y - headerHeight + 2, headers.reduce((acc, h) => acc + h.width, 0), headerHeight, 'F');
+
   headers.forEach(h => {
-    doc.text(h.label, x, y);
+    doc.text(h.label, x + 2, y);
     x += h.width;
   });
 
-  y += lineHeight;
+  // Linha preta fina abaixo do cabeçalho
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
+  doc.line(marginLeft, y + 2, marginLeft + headers.reduce((acc, h) => acc + h.width, 0), y + 2);
+
+  y += lineHeight + 4;
   doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(0, 0, 0); // volta para preto
 
   const checkPageBreak = (yPos) => {
     if (yPos > pageHeight - marginTop) {
@@ -100,8 +116,7 @@ export function gerarRelatorioPDF({ dataRelatorio, atos, valorInicialCaixa, depo
       ato.pagamentoPix.valor +
       ato.pagamentoCRC.valor +
       ato.depositoPrevio.valor;
-    
-    // Usa o valor total com ISS se disponível, senão usa o valor original
+
     const valorTotalAto = ato.valorTotalComISS ?? ato.valorTotal;
     const valorFaltante = valorTotalAto - somaPagamentos;
 
@@ -144,6 +159,11 @@ export function gerarRelatorioPDF({ dataRelatorio, atos, valorInicialCaixa, depo
 
       x += headers[i].width;
     });
+
+    // Linha preta fina abaixo de cada linha de dados
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.2);
+    doc.line(marginLeft, y + lineHeight * 2 - 2, marginLeft + headers.reduce((acc, h) => acc + h.width, 0), y + lineHeight * 2 - 2);
 
     y += lineHeight * 2;
   });
