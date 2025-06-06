@@ -51,11 +51,11 @@
 }
 
 /* Cores das linhas de conciliação */
-.success-row {
+table tr.success-row {
   background-color: #e8f5e9 !important;
 }
 
-.error-row {
+table tr.error-row {
   background-color: #ffebee !important;
 }
 
