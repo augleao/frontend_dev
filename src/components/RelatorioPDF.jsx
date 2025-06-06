@@ -134,7 +134,7 @@ export function gerarRelatorioPDF({ dataRelatorio, atos, valorInicialCaixa, depo
       formatarQtdeValor(ato.pagamentoCartao),
       formatarQtdeValor(ato.pagamentoPix),
       formatarQtdeValor(ato.pagamentoCRC),
-      formatarQtdeValor(ato.pagamentoPrevio),
+      formatarQtdeValor(ato.depositoPrevio),
       ato.observacoes || '',
     ];
 
