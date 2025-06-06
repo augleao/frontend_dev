@@ -91,7 +91,7 @@ export function gerarRelatorioPDF({ dataRelatorio, atos, valorInicialCaixa, depo
   // Linha preta fina abaixo do cabeçalho
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.5);
-  doc.line(marginLeft, y + 2, marginLeft + headers.reduce((acc, h) => acc + h.width, 0), y + 2);
+  doc.line(marginLeft, y + 4, marginLeft + headers.reduce((acc, h) => acc + h.width, 0), y + 4);
 
   y += lineHeight + 4;
   doc.setFont('helvetica', 'normal');
@@ -134,7 +134,7 @@ export function gerarRelatorioPDF({ dataRelatorio, atos, valorInicialCaixa, depo
       formatarQtdeValor(ato.pagamentoCartao),
       formatarQtdeValor(ato.pagamentoPix),
       formatarQtdeValor(ato.pagamentoCRC),
-      formatarQtdeValor(ato.depositoPrevio),
+      formatarQtdeValor(ato.pagamentoPrevio),
       ato.observacoes || '',
     ];
 
@@ -160,10 +160,16 @@ export function gerarRelatorioPDF({ dataRelatorio, atos, valorInicialCaixa, depo
       x += headers[i].width;
     });
 
-    // Linha preta fina abaixo de cada linha de dados
+    // Linha preta fina abaixo de cada linha de dados (ajustada para não sobrepor o texto)
+    const linhaY = y + lineHeight * 2 - 4; // ajuste fino, pode testar -2, -4, -6
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.2);
-    doc.line(marginLeft, y + lineHeight * 2 - 2, marginLeft + headers.reduce((acc, h) => acc + h.width, 0), y + lineHeight * 2 - 2);
+    doc.line(
+      marginLeft,
+      linhaY,
+      marginLeft + headers.reduce((acc, h) => acc + h.width, 0),
+      linhaY
+    );
 
     y += lineHeight * 2;
   });
