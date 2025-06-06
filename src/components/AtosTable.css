@@ -50,11 +50,12 @@
   background: #e3f2fd !important;
 }
 
-.atos-table .success-row {
+/* Cores das linhas de conciliação */
+.success-row {
   background-color: #e8f5e9 !important;
 }
 
-.atos-table .error-row {
+.error-row {
   background-color: #ffebee !important;
 }
 
@@ -112,14 +113,7 @@
   margin-right: 12px;
 }
 
-.atos-table-row {
-  transition: background 0.2s;
-}
-
-.atos-table-row:hover {
-  background: #e3f2fd !important;
-}
-
+/* Botão customizado para upload */
 .custom-file-button {
   padding: 10px 24px;
   background: #1976d2;
@@ -132,19 +126,23 @@
   margin-bottom: 18px;
   box-shadow: 0 2px 8px #1976d21a;
   transition: background 0.2s;
+  display: inline-block;
+  text-decoration: none;
 }
 
 .custom-file-button:hover {
   background: #1565c0;
 }
 
-/* AtosTable.css */
+.custom-file-button:disabled {
+  background: #9e9e9e;
+  cursor: not-allowed;
+}
 
+/* Container do formulário de upload */
 .upload-form-container {
   padding: 0;
   margin: 0;
   width: 100%;
   height: 100%;
 }
-
-/* ... (seu CSS existente) ... */
