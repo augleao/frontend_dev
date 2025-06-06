@@ -51,12 +51,26 @@
 }
 
 /* Cores das linhas de conciliação */
-table tr.success-row {
-  background-color: #e8f5e9 !important;
+/* Força máxima para as cores das linhas */
+.atos-table tbody tr.success-row,
+.atos-table tbody tr.success-row td {
+  background-color: #8ff498 !important;
 }
 
-table tr.error-row {
-  background-color: #ffebee !important;
+.atos-table tbody tr.error-row,
+.atos-table tbody tr.error-row td {
+  background-color: #f1acac !important;
+}
+
+/* Remove hover quando tem classe de cor */
+.atos-table tbody tr.success-row:hover,
+.atos-table tbody tr.success-row:hover td {
+  background-color: #8ff498 !important;
+}
+
+.atos-table tbody tr.error-row:hover,
+.atos-table tbody tr.error-row:hover td {
+  background-color: #f1acac !important;
 }
 
 .atos-table input,
