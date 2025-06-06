@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import AtosTable from './components/AtosTable';
-import './AtosTable.css';
+import './components/AtosTable.css';
 
 function UploadForm() {
   const [file, setFile] = useState(null);
