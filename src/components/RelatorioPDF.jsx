@@ -161,7 +161,7 @@ export function gerarRelatorioPDF({ dataRelatorio, atos, valorInicialCaixa, depo
     });
 
     // Linha preta fina abaixo de cada linha de dados (ajustada para não sobrepor o texto)
-    const linhaY = y + lineHeight * 2 - 4; // ajuste fino, pode testar -2, -4, -6
+    const linhaY = y + lineHeight * 2 - 8; // ajuste fino, pode testar -2, -4, -6
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.2);
     doc.line(
