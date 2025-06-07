@@ -5,31 +5,30 @@
 
 .tooltip .tooltiptext {
   visibility: hidden;
-  width: 300px; /* Ajuste a largura conforme necessário */
-  background-color: #4CAF50; /* Verde */
+  width: 400px; /* Ajuste a largura conforme necessário */
+  background-color: #4CAF50;
   color: #fff;
   text-align: left;
   border-radius: 6px;
   padding: 10px;
   position: absolute;
   z-index: 1;
-  top: 100%; /* Abaixo do ícone */
-  left: 120%; /* A direita do ícone */
-  margin-left: 0; /* Remove a margem */
+  top: 30px;      /* 10px abaixo do ícone */
+  left: 30px;     /* 10px à direita do ícone */
   opacity: 0;
   transition: opacity 0.3s;
+  box-shadow: 0 2px 8px #0002;
+  font-size: 12px; /* Adicionado para diminuir a fonte */
 }
 
 .tooltip .tooltiptext::after {
   content: "";
   position: absolute;
-  top: -5px; /* Ajusta a posição da seta */
-  left: -5px; /* Ajusta a posição da seta */
-  margin-left: 0;
+  top: 8px;      /* Alinha a seta verticalmente com o ícone */
+  left: -10px;   /* Seta encostada na borda esquerda do tooltip */
   border-width: 5px;
   border-style: solid;
-  border-color: transparent #4CAF50 transparent transparent; /* Seta verde */
-  transform: rotate(90deg); /* Roda a seta */
+  border-color: transparent #4CAF50 transparent transparent;
 }
 
 .tooltip:hover .tooltiptext {
@@ -42,12 +41,12 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background-color: #4CAF50; /* Verde */
+  background-color: #4CAF50;
   color: #fff;
   text-align: center;
   line-height: 20px;
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
-  margin-left: 5px;
+  margin-left: 8px;
 }
