@@ -259,7 +259,7 @@ export default function AtosTable({ texto }) {
     const totalValorAtos = parseFloat(atosComISS.reduce((acc, ato) => acc + ato.valorTotalComISS, 0).toFixed(2));
 
     if (Math.abs(totalValorPago - totalValorAtos) < 0.01) {
-      alert('Conciliação OK! Total dos valores pagos bate com o valor total dos atos selados.');
+      //alert('Conciliação OK! Total dos valores pagos bate com o valor total dos atos selados.');
       gerarRelatorioPDF({
         dataRelatorio,
         atos: atosComISS,
@@ -367,7 +367,7 @@ export default function AtosTable({ texto }) {
       </div>
 
       <button className="atos-table-btn" onClick={conferirCaixa}>
-        CONCILIAÇÃO
+        Gerar PFF
       </button>
 
       <div className="atos-table-container">
