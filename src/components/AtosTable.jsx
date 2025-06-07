@@ -89,46 +89,103 @@ function extrairDadosAntigo(texto) {
 
 // Função de extração para o novo layout (corrigida)
 function extrairDadosNovo(texto) {
-  const textoLimpo = texto.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ');
-  const regex = /(\d)(\d{4})R\$ ?([\d.,]+)R\$ ?([\d.,]+)R\$ ?([\d.,]+)R\$ ?([\d.,]+)(\d+) - (.*?)(?=\d{5}R\$|\d{1}\d{4}R\$|$)/g;
-
+  const linhas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  
   const atos = [];
-  let match;
   let id = 0;
-  while ((match = regex.exec(textoLimpo)) !== null) {
-    const descricao = match[8].trim().toUpperCase();
-    if (
-      !descricao.includes('TOTAL') &&
-      !descricao.includes('ASSINATURA') &&
-      !descricao.includes('EMITIDO EM') &&
-      !descricao.includes('QTDE. SELOS') &&
-      !descricao.includes('APURAÇÃO') &&
-      !descricao.includes('FIC, O VALOR')
-    ) {
-      atos.push({
-        id: id++,
-        quantidade: parseInt(match[1]),
-        codigo: match[2],
-        emolumento: parseFloat(match[3].replace('.', '').replace(',', '.')),
-        recompe: parseFloat(match[4].replace('.', '').replace(',', '.')),
-        tfj: parseFloat(match[5].replace('.', '').replace(',', '.')),
-        valorTotal: parseFloat(match[6].replace('.', '').replace(',', '.')),
-        descricao: match[8].trim(),
-        pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
-        pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
-        pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
-        pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
-        depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
-        observacoes: '',
-      });
+  
+  // Procura pelo início da seção de atos (após o cabeçalho)
+  let inicioAtos = -1;
+  for (let i = 0; i < linhas.length; i++) {
+    if (linhas[i].includes('QTDE.') && linhas[i].includes('DESCRIÇÃO')) {
+      inicioAtos = i + 1;
+      break;
     }
   }
-
+  
+  if (inicioAtos === -1) return { dataRelatorio: null, atos: [] };
+  
+  // Processa as linhas de atos
+  for (let i = inicioAtos; i < linhas.length; i++) {
+    const linha = linhas[i];
+    
+    // Para quando chegar nos totais
+    if (linha.includes('QTDE. SELOS') || linha.includes('TOTAL') || linha.includes('ASSINATURA')) {
+      break;
+    }
+    
+    // Verifica se a linha é uma quantidade (número isolado)
+    if (/^\d+$/.test(linha)) {
+      const quantidade = parseInt(linha);
+      
+      // Próxima linha deve ser o código
+      if (i + 1 < linhas.length && /^\d{4}$/.test(linhas[i + 1])) {
+        const codigo = linhas[i + 1];
+        
+        // Próximas linhas são os valores (R$ X,XX)
+        let emolumento = 0, recompe = 0, tfj = 0, total = 0;
+        let j = i + 2;
+        
+        // Extrai os 4 valores monetários
+        const valores = [];
+        while (j < linhas.length && linhas[j].startsWith('R$')) {
+          const valor = parseFloat(linhas[j].replace('R$', '').replace('.', '').replace(',', '.').trim());
+          valores.push(valor);
+          j++;
+        }
+        
+        if (valores.length >= 4) {
+          [emolumento, recompe, tfj, total] = valores;
+        }
+        
+        // Próxima linha deve ser a descrição
+        let descricao = '';
+        if (j < linhas.length) {
+          descricao = linhas[j];
+          
+          // Se a próxima linha não é um número (quantidade), faz parte da descrição
+          while (j + 1 < linhas.length && 
+                 !/^\d+$/.test(linhas[j + 1]) && 
+                 !linhas[j + 1].includes('QTDE. SELOS') &&
+                 !linhas[j + 1].includes('TOTAL') &&
+                 !linhas[j + 1].includes('ASSINATURA')) {
+            j++;
+            descricao += ' ' + linhas[j];
+          }
+        }
+        
+        // Adiciona o ato se tiver dados válidos
+        if (codigo && descricao && total > 0) {
+          atos.push({
+            id: id++,
+            quantidade,
+            codigo,
+            emolumento,
+            recompe,
+            tfj,
+            valorTotal: total,
+            descricao: descricao.trim(),
+            pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
+            pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
+            pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
+            pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
+            depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
+            observacoes: '',
+          });
+        }
+        
+        // Pula para depois da descrição
+        i = j;
+      }
+    }
+  }
+  
   // Encontrar a data do relatório
   let dataRelatorio = null;
   const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
   if (matchData) dataRelatorio = matchData[1];
-
+  
+  console.log('Atos extraídos:', atos);
   return { dataRelatorio, atos };
 }
 
