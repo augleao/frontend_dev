@@ -89,52 +89,46 @@ function extrairDadosAntigo(texto) {
 
 // Função de extração para o novo layout (corrigida)
 function extrairDadosNovo(texto) {
-  // Junta tudo em uma linha só para facilitar a regex
   const textoLimpo = texto.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ');
-  console.log('Texto limpo:', textoLimpo);
-
-  // Regex ajustada para o padrão real: 17804R$ 47,18R$ 3,55R$ 10,25R$ 60,988 - Certidões...
   const regex = /(\d)(\d{4})R\$ ?([\d.,]+)R\$ ?([\d.,]+)R\$ ?([\d.,]+)R\$ ?([\d.,]+)(\d+) - (.*?)(?=\d{5}R\$|\d{1}\d{4}R\$|$)/g;
 
   const atos = [];
   let match;
   let id = 0;
   while ((match = regex.exec(textoLimpo)) !== null) {
-  const descricao = match[8].trim().toUpperCase();
-  // Filtra linhas que não são atos válidos
-  if (
-    !descricao.includes('TOTAL') &&
-    !descricao.includes('ASSINATURA') &&
-    !descricao.includes('EMITIDO EM') &&
-    !descricao.includes('QTDE. SELOS') &&
-    !descricao.includes('APURAÇÃO') &&
-    !descricao.includes('FIC, O VALOR') // Adicione outras palavras-chave se necessário
-  ) {
-    atos.push({
-      id: id++,
-      quantidade: parseInt(match[1]),
-      codigo: match[2],
-      emolumento: parseFloat(match[3].replace('.', '').replace(',', '.')),
-      recompe: parseFloat(match[4].replace('.', '').replace(',', '.')),
-      tfj: parseFloat(match[5].replace('.', '').replace(',', '.')),
-      valorTotal: parseFloat(match[6].replace('.', '').replace(',', '.')),
-      descricao: match[8].trim(),
-      pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
-      pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
-      pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
-      pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
-      depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
-      observacoes: '',
-    });
+    const descricao = match[8].trim().toUpperCase();
+    if (
+      !descricao.includes('TOTAL') &&
+      !descricao.includes('ASSINATURA') &&
+      !descricao.includes('EMITIDO EM') &&
+      !descricao.includes('QTDE. SELOS') &&
+      !descricao.includes('APURAÇÃO') &&
+      !descricao.includes('FIC, O VALOR')
+    ) {
+      atos.push({
+        id: id++,
+        quantidade: parseInt(match[1]),
+        codigo: match[2],
+        emolumento: parseFloat(match[3].replace('.', '').replace(',', '.')),
+        recompe: parseFloat(match[4].replace('.', '').replace(',', '.')),
+        tfj: parseFloat(match[5].replace('.', '').replace(',', '.')),
+        valorTotal: parseFloat(match[6].replace('.', '').replace(',', '.')),
+        descricao: match[8].trim(),
+        pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
+        depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
+        observacoes: '',
+      });
+    }
   }
-}
 
   // Encontrar a data do relatório
   let dataRelatorio = null;
   const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
   if (matchData) dataRelatorio = matchData[1];
 
-  console.log('Atos extraídos:', atos);
   return { dataRelatorio, atos };
 }
 
