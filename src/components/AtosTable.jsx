@@ -99,6 +99,7 @@ function extrairDadosNovo(texto) {
   for (let i = 0; i < linhas.length; i++) {
     if (linhas[i].includes('QTDE.') && linhas[i].includes('DESCRIÇÃO')) {
       inicioAtos = i + 1;
+      console.log('Cabeçalho encontrado na linha:', i); // Adicione este log
       break;
     }
   }
