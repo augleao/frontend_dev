@@ -94,7 +94,7 @@ function extrairDadosNovo(texto) {
   console.log('Texto limpo:', textoLimpo);
 
   // Regex ajustada para o padrão real: 17804R$ 47,18R$ 3,55R$ 10,25R$ 60,988 - Certidões...
-  const regex = /(\d)(\d{4})R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)(\d+) - ([^]+?)(?=\d{5}R\$|$)/g;
+  const regex = /(\d)(\d{4})R\$ ?([\d.,]+)R\$ ?([\d.,]+)R\$ ?([\d.,]+)R\$ ?([\d.,]+)(\d+) - (.*?)(?=\d{5}R\$|\d{1}\d{4}R\$|$)/g;
 
   const atos = [];
   let match;
