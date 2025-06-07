@@ -367,7 +367,7 @@ export default function AtosTable({ texto }) {
       </div>
 
       <button className="atos-table-btn" onClick={conferirCaixa}>
-        Gerar PFF
+        Gerar Relatório
       </button>
 
       <div className="atos-table-container">
