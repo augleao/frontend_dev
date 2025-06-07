@@ -13,9 +13,9 @@
   padding: 10px;
   position: absolute;
   z-index: 1;
-  bottom: 125%;
-  left: 50%;
-  margin-left: -150px; /* Metade da largura */
+  top: 100%; /* Abaixo do ícone */
+  left: 120%; /* A direita do ícone */
+  margin-left: 0; /* Remove a margem */
   opacity: 0;
   transition: opacity 0.3s;
 }
@@ -23,12 +23,13 @@
 .tooltip .tooltiptext::after {
   content: "";
   position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
+  top: -5px; /* Ajusta a posição da seta */
+  left: -5px; /* Ajusta a posição da seta */
+  margin-left: 0;
   border-width: 5px;
   border-style: solid;
-  border-color: #4CAF50 transparent transparent transparent;
+  border-color: transparent #4CAF50 transparent transparent; /* Seta verde */
+  transform: rotate(90deg); /* Roda a seta */
 }
 
 .tooltip:hover .tooltiptext {
