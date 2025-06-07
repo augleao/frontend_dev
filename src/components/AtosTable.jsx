@@ -100,7 +100,16 @@ function extrairDadosNovo(texto) {
   let match;
   let id = 0;
   while ((match = regex.exec(textoLimpo)) !== null) {
-    console.log('Match encontrado:', match);
+  const descricao = match[8].trim().toUpperCase();
+  // Filtra linhas que não são atos válidos
+  if (
+    !descricao.includes('TOTAL') &&
+    !descricao.includes('ASSINATURA') &&
+    !descricao.includes('EMITIDO EM') &&
+    !descricao.includes('QTDE. SELOS') &&
+    !descricao.includes('APURAÇÃO') &&
+    !descricao.includes('FIC, O VALOR') // Adicione outras palavras-chave se necessário
+  ) {
     atos.push({
       id: id++,
       quantidade: parseInt(match[1]),
@@ -109,7 +118,7 @@ function extrairDadosNovo(texto) {
       recompe: parseFloat(match[4].replace('.', '').replace(',', '.')),
       tfj: parseFloat(match[5].replace('.', '').replace(',', '.')),
       valorTotal: parseFloat(match[6].replace('.', '').replace(',', '.')),
-      descricao: match[8].trim(), // Note que agora é match[8] porque temos o match[7] para o número
+      descricao: match[8].trim(),
       pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
       pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
       pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
@@ -118,6 +127,7 @@ function extrairDadosNovo(texto) {
       observacoes: '',
     });
   }
+}
 
   // Encontrar a data do relatório
   let dataRelatorio = null;
