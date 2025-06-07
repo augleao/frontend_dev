@@ -36,7 +36,7 @@ function App() {
   return (
     <div>
       <h1>
-        Controle de Caixa
+        Controle de Caixa diário pra Cartosoft
         <Tooltip text={tooltipText}>
           <span className="info-icon">i</span>
         </Tooltip>
