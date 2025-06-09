@@ -199,7 +199,7 @@ export default function Signup() {
             required
           >
             <option value="">Selecione seu cargo</option>
-            <option value="Tabelião">Tabelião</option>
+            <option value="Registrador">Registrador</option>
             <option value="Escrevente">Escrevente</option>
             <option value="Substituto">Substituto</option>
             <option value="Auxiliar">Auxiliar</option>
