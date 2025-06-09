@@ -1,4 +1,3 @@
-// UploadForm.jsx
 import React, { useState } from 'react';
 import axios from 'axios';
 import AtosTable from './components/AtosTable';
@@ -29,17 +28,30 @@ function UploadForm() {
     const formData = new FormData();
     formData.append('file', file);
 
+    // Pegue o token do localStorage (ou do seu contexto de autenticação, se preferir)
+    const token = localStorage.getItem('token');
+
     try {
-      //const response = await axios.post('https://backend-goby.onrender.com/api/upload', formData, {
-      const response = await axios.post('https://backend-dev-ypsu.onrender.com/api/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await axios.post(
+        'https://backend-dev-ypsu.onrender.com/api/upload',
+        formData,
+        {
+          headers: {
+            // NÃO defina 'Content-Type' manualmente, o axios faz isso para FormData!
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
 
       setMessage(response.data.message);
       setTextoExtraido(response.data.texto);
       setUploading(false);
     } catch (error) {
-      alert('Erro ao enviar o arquivo.');
+      if (error.response && error.response.status === 401) {
+        setMessage('Você precisa estar logado para enviar arquivos.');
+      } else {
+        setMessage('Erro ao enviar o arquivo.');
+      }
       setUploading(false);
     }
   };
