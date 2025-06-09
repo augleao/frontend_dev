@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { apiURL } from './config';
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -43,7 +44,7 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/signup`, {
+      const response = await fetch(`${apiURL}/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
