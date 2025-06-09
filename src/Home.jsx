@@ -20,7 +20,7 @@ function Home() {
         color: '#333',
         textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
       }}>
-        Controle de Caixa Diário
+        FERRAMENTAS EXTRAJUDICIAIS
       </h1>
       <p style={{
         fontSize: '1.4rem',
@@ -29,7 +29,7 @@ function Home() {
         lineHeight: '1.6',
         marginBottom: '40px'
       }}>
-        Sistema desenvolvido para auxiliar os <strong>Cartórios de Registro Civil das Pessoas Naturais</strong> no controle diário de caixa. Simplifique a conciliação financeira e otimize a rotina dos seus colaboradores.
+        Conjunto de ferramentas para auxiliar os <strong> Oficiais do Registro Civil das Pessoas Naturais</strong> na administração da serventia. Simplifique as tarefas e otimize a rotina dos seus colaboradores.
       </p>
       <div style={{
         display: 'flex',
