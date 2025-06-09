@@ -30,6 +30,8 @@ function App() {
       <b>OBS1.:</b> O sistema não salva os dados, simplesmente gera um relatório PDF da conciliação.
       <br />
       <b>OBS2.:</b> O sistema comporta pagamento de um ato por mais de uma forma de pagamento, para isto corrija manualmente o valor do ato sugerido pelo sistema e adicione o restante na outra forma de pagamento.
+      <br />
+      <b>OBS3.:</b> Pode haver pequenas diferenças nos centavos decorrentes dos cálculos necessarios para fixar a alíquota do ISS.
     </>
   );
 
