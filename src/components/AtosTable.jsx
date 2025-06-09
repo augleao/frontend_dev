@@ -290,7 +290,18 @@ const salvarRelatorio = async () => {
       };
     });
 
-    const payloa
+const payload = {
+  data_hora: dataRelatorio,
+  serventia: 'Nome da Serventia', // ajuste conforme necessário
+  cargo: 'Cargo do Usuário',      // ajuste conforme necessário
+  responsavel: responsavel,
+  iss_percentual: moedaParaNumero(ISS),
+  valor_inicial_caixa: valorInicialCaixa,
+  depositos_caixa: depositosCaixa,
+  saidas_caixa: saidasCaixa,
+  valor_final_caixa: valorFinalCaixa,
+  atos: atosDetalhados
+};
 
   const conferirCaixa = () => {
     let totalValorPago = 0;
