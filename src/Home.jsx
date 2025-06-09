@@ -20,7 +20,7 @@ function Home() {
         color: '#333',
         textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
       }}>
-        FERRAMENTAS EXTRAJUDICIAIS
+        Ferramentas Extrajudiciais
       </h1>
       <p style={{
         fontSize: '1.4rem',
