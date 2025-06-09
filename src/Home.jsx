@@ -1,34 +1,12 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './AuthContext';
-import NavBar from './NavBar';
-import Home from './Home';
-import Login from './Login';
-import Signup from './Signup';
-import Conciliacao from './Conciliacao';
-import PrivateRoute from './PrivateRoute';
 
-function App() {
+function Home() {
   return (
-    <AuthProvider>
-      <Router>
-        <NavBar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route
-            path="/conciliacao"
-            element={
-              <PrivateRoute>
-                <Conciliacao />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <div>
+      <h1>Página Inicial</h1>
+      <p>Bem-vindo ao sistema!</p>
+    </div>
   );
 }
 
-export default App;
+export default Home;
