@@ -36,33 +36,7 @@ function Home() {
         gap: '20px',
         marginBottom: '30px'
       }}>
-        <a href="/login" style={{
-          padding: '12px 30px',
-          fontSize: '1.1rem',
-          fontWeight: 500,
-          color: '#fff',
-          background: '#007bff',
-          borderRadius: '8px',
-          textDecoration: 'none',
-          transition: 'background 0.3s ease',
-          ':hover': { background: '#0056b3' }
-        }}>
-          Login
-        </a>
-        <a href="/signup" style={{
-          padding: '12px 30px',
-          fontSize: '1.1rem',
-          fontWeight: 500,
-          color: '#555',
-          background: '#fff',
-          border: '1px solid #ccc',
-          borderRadius: '8px',
-          textDecoration: 'none',
-          transition: 'background 0.3s ease',
-          ':hover': { background: '#f0f0f0' }
-        }}>
-          Cadastre-se
-        </a>
+
       </div>
       <img
         src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Notary_public_seal.svg/512px-Notary_public_seal.svg.png"
