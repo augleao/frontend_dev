@@ -33,6 +33,14 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+         path="/meus-relatorios"
+         element={
+           <PrivateRoute>
+             <MeusRelatorios />
+           </PrivateRoute>
+         }
+      />
       </Routes>
     </AuthProvider>
   );
