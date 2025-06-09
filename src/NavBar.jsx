@@ -2,16 +2,46 @@ import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 
-export default function NavBar() {
+function NavBar() {
   const { user, logout } = useContext(AuthContext);
 
+  const buttonStyle = {
+    fontSize: '1.2rem',
+    padding: '12px 24px',
+    background: '#4CAF50',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    textDecoration: 'none',
+    marginLeft: '10px',
+  };
+
   return (
-    <nav style={{ padding: '8px 24px', display: 'flex', justifyContent: 'flex-end' }}>
+    <nav style={{ 
+      padding: '10px 20px', 
+      display: 'flex', 
+      justifyContent: 'flex-end', 
+      alignItems: 'center',
+      backgroundColor: '#f0f0f0',
+      borderBottom: '1px solid #ddd'
+    }}>
       {user ? (
-        <button onClick={logout}>Logout</button>
+        <button style={buttonStyle} onClick={logout}>
+          Logout
+        </button>
       ) : (
-        <Link to="/login">Login</Link>
+        <>
+          <Link to="/login" style={buttonStyle}>
+            Login
+          </Link>
+          <Link to="/signup" style={buttonStyle}>
+            Cadastro
+          </Link>
+        </>
       )}
     </nav>
   );
 }
+
+export default NavBar;
