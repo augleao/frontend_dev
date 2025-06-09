@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import config from '../config';
 
 function MeusRelatorios() {
+  console.log("Componente MeusRelatorios foi renderizado!");
   const [relatorios, setRelatorios] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -66,7 +67,16 @@ function MeusRelatorios() {
                 <td style={{ padding: '10px', border: '1px solid #ddd' }}>{relatorio.serventia}</td>
                 <td style={{ padding: '10px', border: '1px solid #ddd' }}>{relatorio.cargo}</td>
                 <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                  {JSON.parse(relatorio.dados_relatorio).atos?.length || 0} atos
+                  {(() => {
+  try {
+    const dados = typeof relatorio.dados_relatorio === 'string'
+      ? JSON.parse(relatorio.dados_relatorio)
+      : relatorio.dados_relatorio;
+    return (dados.atos?.length || 0) + ' atos';
+  } catch {
+    return '-';
+  }
+})()}
                 </td>
               </tr>
             ))}
