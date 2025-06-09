@@ -3,11 +3,7 @@ import { gerarRelatorioPDF } from './RelatorioPDF';
 import './AtosTable.css';
 import config from '../config';
 
-const [responsavel, setResponsavel] = useState('');
-const [ISS, setISS] = useState('');
 
-const [salvando, setSalvando] = useState(false);
-const [mensagemSalvar, setMensagemSalvar] = useState('');
 
 // Função para detectar o layout do PDF
 function detectarLayoutPDF(texto) {
