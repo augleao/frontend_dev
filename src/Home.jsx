@@ -1,29 +1,34 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './AuthContext';
+import NavBar from './NavBar';
+import Home from './Home';
+import Login from './Login';
+import Signup from './Signup';
+import Conciliacao from './Conciliacao';
+import PrivateRoute from './PrivateRoute';
 
-function Home() {
-  const navigate = useNavigate();
-
+function App() {
   return (
-    <div style={{ textAlign: 'center', marginTop: '80px' }}>
-      <h1>Bem-vindo ao Controle de Caixa</h1>
-      <p>Escolha uma funcionalidade:</p>
-      <button
-        style={{
-          fontSize: '1.2rem',
-          padding: '16px 32px',
-          background: '#4CAF50',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: 'pointer'
-        }}
-        onClick={() => navigate('/conciliacao')}
-      >
-        CONCILIAÇÃO DO CAIXA
-      </button>
-    </div>
+    <AuthProvider>
+      <Router>
+        <NavBar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/conciliacao"
+            element={
+              <PrivateRoute>
+                <Conciliacao />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
-export default Home;
+export default App;

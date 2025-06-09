@@ -7,6 +7,7 @@ import Login from './Login';
 import Signup from './Signup';
 import Conciliacao from './Conciliacao';
 import PrivateRoute from './PrivateRoute';
+import Home2 from './Home2'; // Importe o componente Home2
 
 function App() {
   return (
@@ -22,6 +23,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Conciliacao />
+              </PrivateRoute>
+            }
+          />
+          <Route // Adicione a rota para Home2
+            path="/home2"
+            element={
+              <PrivateRoute>
+                <Home2 />
               </PrivateRoute>
             }
           />
