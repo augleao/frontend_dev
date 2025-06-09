@@ -5,21 +5,14 @@ import config from '../config';
 
 // Função para detectar o layout do PDF
 function detectarLayoutPDF(texto) {
-  // Novo layout: campos colados, linha começa com 1 dígito + 4 dígitos + "R$"
-  if (/^\d{5}R\$/.test(texto.replace(/\n/g, ''))) {
-    return 'novo';
-  }
-  // Alternativamente, se encontrar linhas com padrão 1 dígito + 4 dígitos + R$
-  if (texto.split('\n').some(l => /^\d{5}R\$/.test(l))) {
-    return 'novo';
-  }
+  if (/^\d{5}R\$/.test(texto.replace(/\n/g, ''))) return 'novo';
+  if (texto.split('\n').some(l => /^\d{5}R\$/.test(l))) return 'novo';
   return 'antigo';
 }
 
-// Função de extração para o layout antigo (já existente)
+// Função de extração para o layout antigo
 function extrairDadosAntigo(texto) {
   const linhas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-
   let dataRelatorio = null;
   for (const linha of linhas) {
     const matchData = linha.match(/Emissão:\s*(\d{2}\/\d{2}\/\d{4})/);
@@ -28,45 +21,36 @@ function extrairDadosAntigo(texto) {
       break;
     }
   }
-
   const atos = [];
   const regexInicioAto = /^(\d+)\s*-\s*(.+)$/;
   const regexCodigo = /^\d{4,}$/;
   const regexValor = /^R\$\s?([\d\.,]+)/;
-
   for (let i = 0; i < linhas.length; i++) {
     const linha = linhas[i];
     const matchInicio = linha.match(regexInicioAto);
     if (matchInicio) {
       const quantidade = parseInt(linhas[i - 1]) || 0;
       let descricao = matchInicio[2];
-
       let codigo = '';
       let valores = [];
       let j = i + 1;
-
       while (j < linhas.length && !regexCodigo.test(linhas[j])) {
         descricao += ' ' + linhas[j];
         j++;
       }
-
       if (j < linhas.length) {
         codigo = linhas[j];
         for (let k = j + 1; k < linhas.length; k++) {
           if (linhas[k].match(regexInicioAto)) break;
           const matchValor = linhas[k].match(regexValor);
-          if (matchValor) {
-            valores.push(matchValor[1]);
-          }
+          if (matchValor) valores.push(matchValor[1]);
         }
       }
-
       let valorTotal = 0;
       if (valores.length > 0) {
         const ultimoValor = valores[valores.length - 1];
         valorTotal = parseFloat(ultimoValor.replace(/\./g, '').replace(',', '.')) || 0;
       }
-
       atos.push({
         id: i,
         quantidade,
@@ -80,28 +64,20 @@ function extrairDadosAntigo(texto) {
         depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
         observacoes: '',
       });
-
       i = j;
     }
   }
-
   return { dataRelatorio, atos };
 }
 
-// Função de extração para o novo layout (corrigida)
+// Função de extração para o novo layout
 function extrairDadosNovo(texto) {
-  // Junta tudo em uma linha só para facilitar a regex
   const textoLimpo = texto.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ');
-  console.log('Texto limpo:', textoLimpo);
-
-  // Regex ajustada para o padrão real: 17804R$ 47,18R$ 3,55R$ 10,25R$ 60,988 - Certidões...
   const regex = /(\d)(\d{4})R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)(\d+) - ([^]+?)(?=\d{5}R\$|$)/g;
-
   const atos = [];
   let match;
   let id = 0;
   while ((match = regex.exec(textoLimpo)) !== null) {
-    console.log('Match encontrado:', match);
     atos.push({
       id: id++,
       quantidade: parseInt(match[1]),
@@ -110,7 +86,7 @@ function extrairDadosNovo(texto) {
       recompe: parseFloat(match[4].replace('.', '').replace(',', '.')),
       tfj: parseFloat(match[5].replace('.', '').replace(',', '.')),
       valorTotal: parseFloat(match[6].replace('.', '').replace(',', '.')),
-      descricao: match[8].trim(), // Note que agora é match[8] porque temos o match[7] para o número
+      descricao: match[8].trim(),
       pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
       pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
       pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
@@ -119,22 +95,16 @@ function extrairDadosNovo(texto) {
       observacoes: '',
     });
   }
-
-  // Encontrar a data do relatório
   let dataRelatorio = null;
   const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
   if (matchData) dataRelatorio = matchData[1];
-
-  console.log('Atos extraídos:', atos);
   return { dataRelatorio, atos };
 }
 
-// Função principal de extração, que escolhe a função correta
+// Função principal de extração
 function extrairDadosDoTexto(texto) {
   const tipo = detectarLayoutPDF(texto);
-  if (tipo === 'novo') {
-    return extrairDadosNovo(texto);
-  }
+  if (tipo === 'novo') return extrairDadosNovo(texto);
   return extrairDadosAntigo(texto);
 }
 
@@ -145,7 +115,6 @@ function formatarMoeda(valor) {
 
 function moedaParaNumero(valorStr) {
   if (!valorStr) return 0;
-  // Remove tudo que não for número, vírgula ou ponto
   const num = valorStr.replace(/[^\d,.-]/g, '').replace(',', '.');
   return parseFloat(num) || 0;
 }
@@ -159,15 +128,11 @@ function calcularValorTotalComISS(valorTotal, percentualISS) {
 export default function AtosTable({ texto }) {
   const [atos, setAtos] = useState([]);
   const [dataRelatorio, setDataRelatorio] = useState(null);
-
-  // Campos adicionais do caixa (armazenados como números para facilitar cálculos)
   const [responsavel, setResponsavel] = useState('');
   const [ISS, setISS] = useState('');
   const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
   const [depositosCaixa, setDepositosCaixa] = useState(0);
   const [saidasCaixa, setSaidasCaixa] = useState(0);
-
-  // Estados para salvar relatório
   const [salvando, setSalvando] = useState(false);
   const [mensagemSalvar, setMensagemSalvar] = useState('');
 
@@ -179,13 +144,11 @@ export default function AtosTable({ texto }) {
     }
   }, [texto]);
 
-  // Recalcula os valores totais com ISS sempre que o ISS ou os atos mudarem
   const atosComISS = atos.map(ato => ({
     ...ato,
     valorTotalComISS: calcularValorTotalComISS(ato.valorTotal, moedaParaNumero(ISS))
   }));
 
-  // Calcula o valor final do caixa usando useMemo para otimizar
   const valorFinalCaixa = useMemo(() => {
     const totalDinheiro = atosComISS.reduce((acc, ato) => acc + ato.pagamentoDinheiro.valor, 0);
     return valorInicialCaixa + totalDinheiro - saidasCaixa - depositosCaixa;
@@ -195,23 +158,18 @@ export default function AtosTable({ texto }) {
     setAtos(prevAtos =>
       prevAtos.map(ato => {
         if (ato.id === id) {
-          // Calcula o valor unitário SEM arredondar
           const valorUnitario = ato.quantidade > 0 ? calcularValorTotalComISS(ato.valorTotal, moedaParaNumero(ISS)) / ato.quantidade : 0;
-
           if (campo === 'observacoes') {
             return { ...ato, observacoes: valor };
           }
-
           if (subcampo === 'quantidade') {
             const quantidadeNum = parseInt(valor) || 0;
-            // Só arredonda o valor final após a multiplicação
             const valorAtual = ato[campo].valorManual ? ato[campo].valor : parseFloat((quantidadeNum * valorUnitario).toFixed(2));
             return {
               ...ato,
               [campo]: { quantidade: quantidadeNum, valor: valorAtual, valorManual: false },
             };
           }
-
           if (subcampo === 'valor') {
             const valorNum = moedaParaNumero(valor);
             return {
@@ -225,29 +183,11 @@ export default function AtosTable({ texto }) {
     );
   };
 
-  // Handlers para os campos do caixa
-  const handleResponsavelChange = (e) => {
-    setResponsavel(e.target.value);
-  };
-
-  const handleISSChange = (e) => {
-    setISS(e.target.value);
-  };
-
-  const handleValorInicialChange = (e) => {
-    const valor = moedaParaNumero(e.target.value);
-    setValorInicialCaixa(valor);
-  };
-
-  const handleDepositosChange = (e) => {
-    const valor = moedaParaNumero(e.target.value);
-    setDepositosCaixa(valor);
-  };
-
-  const handleSaidasChange = (e) => {
-    const valor = moedaParaNumero(e.target.value);
-    setSaidasCaixa(valor);
-  };
+  const handleResponsavelChange = (e) => setResponsavel(e.target.value);
+  const handleISSChange = (e) => setISS(e.target.value);
+  const handleValorInicialChange = (e) => setValorInicialCaixa(moedaParaNumero(e.target.value));
+  const handleDepositosChange = (e) => setDepositosCaixa(moedaParaNumero(e.target.value));
+  const handleSaidasChange = (e) => setSaidasCaixa(moedaParaNumero(e.target.value));
 
   // Função para salvar relatório no backend
   const salvarRelatorio = async () => {
@@ -255,8 +195,6 @@ export default function AtosTable({ texto }) {
     setMensagemSalvar('');
     try {
       const token = localStorage.getItem('token');
-      
-      // Prepara o array de atos com todos os campos detalhados
       const atosDetalhados = atosComISS.map(ato => {
         const somaPagamentos = parseFloat((
           ato.pagamentoDinheiro.valor +
@@ -265,9 +203,7 @@ export default function AtosTable({ texto }) {
           ato.pagamentoCRC.valor +
           ato.depositoPrevio.valor
         ).toFixed(2));
-        
         const valorFaltante = parseFloat((ato.valorTotalComISS - somaPagamentos).toFixed(2));
-        
         return {
           quantidade: ato.quantidade,
           codigo: ato.codigo,
@@ -287,7 +223,6 @@ export default function AtosTable({ texto }) {
           observacoes: ato.observacoes || ''
         };
       });
-
       const payload = {
         data_hora: dataRelatorio,
         serventia: 'Nome da Serventia', // ajuste conforme necessário
@@ -300,7 +235,6 @@ export default function AtosTable({ texto }) {
         valor_final_caixa: valorFinalCaixa,
         atos: atosDetalhados
       };
-
       const response = await fetch(`${config.apiURL}/salvar-relatorio`, {
         method: 'POST',
         headers: {
@@ -309,9 +243,7 @@ export default function AtosTable({ texto }) {
         },
         body: JSON.stringify({ dadosRelatorio: payload })
       });
-
       const data = await response.json();
-
       if (response.ok) {
         setMensagemSalvar('Relatório salvo com sucesso!');
       } else {
@@ -324,9 +256,9 @@ export default function AtosTable({ texto }) {
     }
   };
 
-  const conferirCaixa = () => {
+  // Agora async!
+  const conferirCaixa = async () => {
     let totalValorPago = 0;
-
     atosComISS.forEach(ato => {
       totalValorPago += ato.pagamentoDinheiro.valor +
         ato.pagamentoCartao.valor +
@@ -335,9 +267,7 @@ export default function AtosTable({ texto }) {
         ato.depositoPrevio.valor;
     });
     totalValorPago = parseFloat(totalValorPago.toFixed(2));
-
     const totalValorAtos = parseFloat(atosComISS.reduce((acc, ato) => acc + ato.valorTotalComISS, 0).toFixed(2));
-
     if (Math.abs(totalValorPago - totalValorAtos) < 0.01) {
       gerarRelatorioPDF({
         dataRelatorio,
@@ -348,7 +278,7 @@ export default function AtosTable({ texto }) {
         responsavel,
         ISS: moedaParaNumero(ISS),
       });
-      await salvarRelatorio(); // <-- Salva no banco após gerar o PDF
+      await salvarRelatorio();
     } else {
       alert(
         `Conciliação divergente!\nTotal valor pago: ${formatarMoeda(totalValorPago)}\nTotal valor atos: ${formatarMoeda(totalValorAtos)}`
@@ -450,7 +380,6 @@ export default function AtosTable({ texto }) {
         <button className="atos-table-btn" onClick={conferirCaixa}>
           Gerar Relatório
         </button>
-        
       </div>
 
       {mensagemSalvar && (
