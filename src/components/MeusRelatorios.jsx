@@ -32,6 +32,28 @@ function MeusRelatorios() {
     }
   };
 
+  // Função para excluir relatório
+  const excluirRelatorio = async (id) => {
+    if (!window.confirm('Tem certeza que deseja excluir este relatório?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${config.apiURL}/excluir-relatorio/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        setRelatorios(relatorios.filter(r => r.id !== id));
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Erro ao excluir relatório.');
+      }
+    } catch (error) {
+      alert('Erro de conexão ao excluir relatório.');
+    }
+  };
+
   if (loading) {
     return <div>Carregando relatórios...</div>;
   }
@@ -53,7 +75,34 @@ function MeusRelatorios() {
           dados = {};
         }
         return (
-          <div key={relatorio.id} style={{ border: '1px solid #ccc', borderRadius: 8, marginBottom: 24, padding: 16 }}>
+          <div
+            key={relatorio.id}
+            style={{
+              border: '1px solid #ccc',
+              borderRadius: 8,
+              marginBottom: 24,
+              padding: 16,
+              position: 'relative'
+            }}
+          >
+            <button
+              onClick={() => excluirRelatorio(relatorio.id)}
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                background: '#d32f2f',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 4,
+                padding: '4px 10px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+              title="Excluir relatório"
+            >
+              Excluir
+            </button>
             <div><strong>ID:</strong> {relatorio.id}</div>
             <div><strong>Data de Geração:</strong> {new Date(relatorio.data_geracao).toLocaleString('pt-BR')}</div>
             <div><strong>Serventia:</strong> {dados.serventia || relatorio.serventia}</div>
