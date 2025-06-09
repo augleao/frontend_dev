@@ -18,7 +18,7 @@ function Home() {
           borderRadius: '8px',
           cursor: 'pointer'
         }}
-        onClick={() => navigate('/components/conciliacao')}
+        onClick={() => navigate('/components/Conciliacao')}
       >
         CONCILIAÇÃO DO CAIXA
       </button>
