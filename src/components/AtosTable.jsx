@@ -251,45 +251,46 @@ export default function AtosTable({ texto }) {
   };
 
   // Função para salvar relatório no backend
-  const salvarRelatorio = async () => {
-    setSalvando(true);
-    setMensagemSalvar('');
-    try {
-      const token = localStorage.getItem('token');
-      const dadosRelatorio = {
-        dataRelatorio,
-        atos: atosComISS,
-        responsavel,
-        ISS: moedaParaNumero(ISS),
-        valorInicialCaixa,
-        depositosCaixa,
-        saidasCaixa,
-        valorFinalCaixa,
-        textoOriginal: texto
+
+const salvarRelatorio = async () => {
+  setSalvando(true);
+  setMensagemSalvar('');
+  try {
+    const token = localStorage.getItem('token');
+    
+    // Prepara o array de atos com todos os campos detalhados
+    const atosDetalhados = atosComISS.map(ato => {
+      const somaPagamentos = parseFloat((
+        ato.pagamentoDinheiro.valor +
+        ato.pagamentoCartao.valor +
+        ato.pagamentoPix.valor +
+        ato.pagamentoCRC.valor +
+        ato.depositoPrevio.valor
+      ).toFixed(2));
+      
+      const valorFaltante = parseFloat((ato.valorTotalComISS - somaPagamentos).toFixed(2));
+      
+      return {
+        quantidade: ato.quantidade,
+        codigo: ato.codigo,
+        descricao: ato.descricao,
+        valor_total: ato.valorTotalComISS,
+        valor_faltante: valorFaltante,
+        dinheiro_qtd: ato.pagamentoDinheiro.quantidade,
+        dinheiro_valor: ato.pagamentoDinheiro.valor,
+        cartao_qtd: ato.pagamentoCartao.quantidade,
+        cartao_valor: ato.pagamentoCartao.valor,
+        pix_qtd: ato.pagamentoPix.quantidade,
+        pix_valor: ato.pagamentoPix.valor,
+        crc_qtd: ato.pagamentoCRC.quantidade,
+        crc_valor: ato.pagamentoCRC.valor,
+        deposito_previo_qtd: ato.depositoPrevio.quantidade,
+        deposito_previo_valor: ato.depositoPrevio.valor,
+        observacoes: ato.observacoes || ''
       };
+    });
 
-      const response = await fetch(`${config.apiURL}/salvar-relatorio`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ dadosRelatorio })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMensagemSalvar('Relatório salvo com sucesso!');
-      } else {
-        setMensagemSalvar(data.message || 'Erro ao salvar relatório.');
-      }
-    } catch (error) {
-      setMensagemSalvar('Erro de conexão ao salvar relatório.');
-    } finally {
-      setSalvando(false);
-    }
-  };
+    const payloa
 
   const conferirCaixa = () => {
     let totalValorPago = 0;
