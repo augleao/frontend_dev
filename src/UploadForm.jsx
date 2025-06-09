@@ -30,7 +30,8 @@ function UploadForm() {
     formData.append('file', file);
 
     try {
-      const response = await axios.post('https://backend-goby.onrender.com/api/upload', formData, {
+      //const response = await axios.post('https://backend-goby.onrender.com/api/upload', formData, {
+      const response = await axios.post('https://backend-dev-ypsu.onrender.com', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
