@@ -2,32 +2,28 @@ import React, { useState, useEffect } from 'react';
 import config from '../config';
 
 function MeusRelatorios() {
-  console.log("Componente MeusRelatorios foi renderizado!");
   const [relatorios, setRelatorios] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     carregarRelatorios();
+    // eslint-disable-next-line
   }, []);
 
   const carregarRelatorios = async () => {
     try {
       const token = localStorage.getItem('token');
-      
       const response = await fetch(`${config.apiURL}/meus-relatorios`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
       const data = await response.json();
-      
       if (response.ok) {
         setRelatorios(data.relatorios);
       } else {
         alert(data.message || 'Erro ao carregar relatórios.');
       }
-      
     } catch (error) {
       console.error('Erro ao carregar relatórios:', error);
       alert('Erro de conexão.');
@@ -40,49 +36,78 @@ function MeusRelatorios() {
     return <div>Carregando relatórios...</div>;
   }
 
+  if (relatorios.length === 0) {
+    return <div style={{ padding: '20px' }}><h2>Meus Relatórios</h2><p>Nenhum relatório encontrado.</p></div>;
+  }
+
   return (
     <div style={{ padding: '20px' }}>
       <h2>Meus Relatórios</h2>
-      
-      {relatorios.length === 0 ? (
-        <p>Nenhum relatório encontrado.</p>
-      ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f0f0f0' }}>
-              <th style={{ padding: '10px', border: '1px solid #ddd' }}>ID</th>
-              <th style={{ padding: '10px', border: '1px solid #ddd' }}>Data/Hora</th>
-              <th style={{ padding: '10px', border: '1px solid #ddd' }}>Serventia</th>
-              <th style={{ padding: '10px', border: '1px solid #ddd' }}>Cargo</th>
-              <th style={{ padding: '10px', border: '1px solid #ddd' }}>Atos</th>
-            </tr>
-          </thead>
-          <tbody>
-            {relatorios.map(relatorio => (
-              <tr key={relatorio.id}>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{relatorio.id}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                  {new Date(relatorio.data_geracao).toLocaleString('pt-BR')}
-                </td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{relatorio.serventia}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{relatorio.cargo}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                  {(() => {
-  try {
-    const dados = typeof relatorio.dados_relatorio === 'string'
-      ? JSON.parse(relatorio.dados_relatorio)
-      : relatorio.dados_relatorio;
-    return (dados.atos?.length || 0) + ' atos';
-  } catch {
-    return '-';
-  }
-})()}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      {relatorios.map(relatorio => {
+        let dados;
+        try {
+          dados = typeof relatorio.dados_relatorio === 'string'
+            ? JSON.parse(relatorio.dados_relatorio)
+            : relatorio.dados_relatorio;
+        } catch {
+          dados = {};
+        }
+        return (
+          <div key={relatorio.id} style={{ border: '1px solid #ccc', borderRadius: 8, marginBottom: 24, padding: 16 }}>
+            <div><strong>ID:</strong> {relatorio.id}</div>
+            <div><strong>Data de Geração:</strong> {new Date(relatorio.data_geracao).toLocaleString('pt-BR')}</div>
+            <div><strong>Serventia:</strong> {dados.serventia || relatorio.serventia}</div>
+            <div><strong>Cargo:</strong> {dados.cargo || relatorio.cargo}</div>
+            <div><strong>Responsável:</strong> {dados.responsavel}</div>
+            <div><strong>ISS (%):</strong> {dados.iss_percentual}</div>
+            <div><strong>Valor Inicial do Caixa:</strong> R$ {Number(dados.valor_inicial_caixa).toFixed(2)}</div>
+            <div><strong>Depósitos do Caixa:</strong> R$ {Number(dados.depositos_caixa).toFixed(2)}</div>
+            <div><strong>Saídas do Caixa:</strong> R$ {Number(dados.saidas_caixa).toFixed(2)}</div>
+            <div><strong>Valor Final do Caixa:</strong> R$ {Number(dados.valor_final_caixa).toFixed(2)}</div>
+            <div style={{ marginTop: 12 }}>
+              <strong>Atos:</strong>
+              {dados.atos && dados.atos.length > 0 ? (
+                <table style={{ width: '100%', marginTop: 8, borderCollapse: 'collapse', fontSize: 14 }}>
+                  <thead>
+                    <tr style={{ background: '#f0f0f0' }}>
+                      <th>Qtde</th>
+                      <th>Código</th>
+                      <th>Descrição</th>
+                      <th>Valor Total</th>
+                      <th>Valor Faltante</th>
+                      <th>Dinheiro</th>
+                      <th>Cartão</th>
+                      <th>Pix</th>
+                      <th>CRC</th>
+                      <th>Depósito Prévio</th>
+                      <th>Observações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dados.atos.map((ato, idx) => (
+                      <tr key={idx}>
+                        <td>{ato.quantidade}</td>
+                        <td>{ato.codigo}</td>
+                        <td>{ato.descricao}</td>
+                        <td>R$ {Number(ato.valor_total).toFixed(2)}</td>
+                        <td>R$ {Number(ato.valor_faltante).toFixed(2)}</td>
+                        <td>{ato.dinheiro_qtd} / R$ {Number(ato.dinheiro_valor).toFixed(2)}</td>
+                        <td>{ato.cartao_qtd} / R$ {Number(ato.cartao_valor).toFixed(2)}</td>
+                        <td>{ato.pix_qtd} / R$ {Number(ato.pix_valor).toFixed(2)}</td>
+                        <td>{ato.crc_qtd} / R$ {Number(ato.crc_valor).toFixed(2)}</td>
+                        <td>{ato.deposito_previo_qtd} / R$ {Number(ato.deposito_previo_valor).toFixed(2)}</td>
+                        <td>{ato.observacoes}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div>Nenhum ato registrado.</div>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
