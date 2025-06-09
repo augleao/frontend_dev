@@ -162,8 +162,8 @@ function calcularValorTotalComISS(valorTotal, percentualISS) {
 }
 
 export default function AtosTable({ texto }) {
-  const [dataRelatorio, setDataRelatorio] = useState(null);
   const [atos, setAtos] = useState([]);
+  const [dataRelatorio, setDataRelatorio] = useState(null);
 
   // Campos adicionais do caixa (armazenados como números para facilitar cálculos)
   const [responsavel, setResponsavel] = useState('');

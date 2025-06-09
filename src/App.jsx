@@ -8,6 +8,7 @@ import Signup from './Signup';
 import Conciliacao from './Conciliacao';
 import PrivateRoute from './PrivateRoute';
 import Home2 from './Home2';
+import MeusRelatorios from './components/MeusRelatorios';
 
 function App() {
   return (
