@@ -348,6 +348,7 @@ export default function AtosTable({ texto }) {
         responsavel,
         ISS: moedaParaNumero(ISS),
       });
+      await salvarRelatorio(); // <-- Salva no banco após gerar o PDF
     } else {
       alert(
         `Conciliação divergente!\nTotal valor pago: ${formatarMoeda(totalValorPago)}\nTotal valor atos: ${formatarMoeda(totalValorAtos)}`
@@ -449,14 +450,7 @@ export default function AtosTable({ texto }) {
         <button className="atos-table-btn" onClick={conferirCaixa}>
           Gerar Relatório
         </button>
-        <button
-          className="atos-table-btn"
-          style={{ background: '#2196F3' }}
-          onClick={salvarRelatorio}
-          disabled={salvando}
-        >
-          {salvando ? 'Salvando...' : 'Salvar Relatório'}
-        </button>
+        
       </div>
 
       {mensagemSalvar && (
