@@ -3,8 +3,6 @@ import { gerarRelatorioPDF } from './RelatorioPDF';
 import './AtosTable.css';
 import config from '../config';
 
-
-
 // Função para detectar o layout do PDF
 function detectarLayoutPDF(texto) {
   // Novo layout: campos colados, linha começa com 1 dígito + 4 dígitos + "R$"
@@ -130,6 +128,7 @@ function extrairDadosNovo(texto) {
   console.log('Atos extraídos:', atos);
   return { dataRelatorio, atos };
 }
+
 // Função principal de extração, que escolhe a função correta
 function extrairDadosDoTexto(texto) {
   const tipo = detectarLayoutPDF(texto);
@@ -226,7 +225,7 @@ export default function AtosTable({ texto }) {
     );
   };
 
-  // Handlers para os campos do caixa (corrigidos)
+  // Handlers para os campos do caixa
   const handleResponsavelChange = (e) => {
     setResponsavel(e.target.value);
   };
@@ -251,57 +250,79 @@ export default function AtosTable({ texto }) {
   };
 
   // Função para salvar relatório no backend
+  const salvarRelatorio = async () => {
+    setSalvando(true);
+    setMensagemSalvar('');
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Prepara o array de atos com todos os campos detalhados
+      const atosDetalhados = atosComISS.map(ato => {
+        const somaPagamentos = parseFloat((
+          ato.pagamentoDinheiro.valor +
+          ato.pagamentoCartao.valor +
+          ato.pagamentoPix.valor +
+          ato.pagamentoCRC.valor +
+          ato.depositoPrevio.valor
+        ).toFixed(2));
+        
+        const valorFaltante = parseFloat((ato.valorTotalComISS - somaPagamentos).toFixed(2));
+        
+        return {
+          quantidade: ato.quantidade,
+          codigo: ato.codigo,
+          descricao: ato.descricao,
+          valor_total: ato.valorTotalComISS,
+          valor_faltante: valorFaltante,
+          dinheiro_qtd: ato.pagamentoDinheiro.quantidade,
+          dinheiro_valor: ato.pagamentoDinheiro.valor,
+          cartao_qtd: ato.pagamentoCartao.quantidade,
+          cartao_valor: ato.pagamentoCartao.valor,
+          pix_qtd: ato.pagamentoPix.quantidade,
+          pix_valor: ato.pagamentoPix.valor,
+          crc_qtd: ato.pagamentoCRC.quantidade,
+          crc_valor: ato.pagamentoCRC.valor,
+          deposito_previo_qtd: ato.depositoPrevio.quantidade,
+          deposito_previo_valor: ato.depositoPrevio.valor,
+          observacoes: ato.observacoes || ''
+        };
+      });
 
-const salvarRelatorio = async () => {
-  setSalvando(true);
-  setMensagemSalvar('');
-  try {
-    const token = localStorage.getItem('token');
-    
-    // Prepara o array de atos com todos os campos detalhados
-    const atosDetalhados = atosComISS.map(ato => {
-      const somaPagamentos = parseFloat((
-        ato.pagamentoDinheiro.valor +
-        ato.pagamentoCartao.valor +
-        ato.pagamentoPix.valor +
-        ato.pagamentoCRC.valor +
-        ato.depositoPrevio.valor
-      ).toFixed(2));
-      
-      const valorFaltante = parseFloat((ato.valorTotalComISS - somaPagamentos).toFixed(2));
-      
-      return {
-        quantidade: ato.quantidade,
-        codigo: ato.codigo,
-        descricao: ato.descricao,
-        valor_total: ato.valorTotalComISS,
-        valor_faltante: valorFaltante,
-        dinheiro_qtd: ato.pagamentoDinheiro.quantidade,
-        dinheiro_valor: ato.pagamentoDinheiro.valor,
-        cartao_qtd: ato.pagamentoCartao.quantidade,
-        cartao_valor: ato.pagamentoCartao.valor,
-        pix_qtd: ato.pagamentoPix.quantidade,
-        pix_valor: ato.pagamentoPix.valor,
-        crc_qtd: ato.pagamentoCRC.quantidade,
-        crc_valor: ato.pagamentoCRC.valor,
-        deposito_previo_qtd: ato.depositoPrevio.quantidade,
-        deposito_previo_valor: ato.depositoPrevio.valor,
-        observacoes: ato.observacoes || ''
+      const payload = {
+        data_hora: dataRelatorio,
+        serventia: 'Nome da Serventia', // ajuste conforme necessário
+        cargo: 'Cargo do Usuário',      // ajuste conforme necessário
+        responsavel: responsavel,
+        iss_percentual: moedaParaNumero(ISS),
+        valor_inicial_caixa: valorInicialCaixa,
+        depositos_caixa: depositosCaixa,
+        saidas_caixa: saidasCaixa,
+        valor_final_caixa: valorFinalCaixa,
+        atos: atosDetalhados
       };
-    });
 
-const payload = {
-  data_hora: dataRelatorio,
-  serventia: 'Nome da Serventia', // ajuste conforme necessário
-  cargo: 'Cargo do Usuário',      // ajuste conforme necessário
-  responsavel: responsavel,
-  iss_percentual: moedaParaNumero(ISS),
-  valor_inicial_caixa: valorInicialCaixa,
-  depositos_caixa: depositosCaixa,
-  saidas_caixa: saidasCaixa,
-  valor_final_caixa: valorFinalCaixa,
-  atos: atosDetalhados
-};
+      const response = await fetch(`${config.apiURL}/salvar-relatorio`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMensagemSalvar('Relatório salvo com sucesso!');
+      } else {
+        setMensagemSalvar(data.message || 'Erro ao salvar relatório.');
+      }
+    } catch (error) {
+      setMensagemSalvar('Erro de conexão ao salvar relatório.');
+    } finally {
+      setSalvando(false);
+    }
+  };
 
   const conferirCaixa = () => {
     let totalValorPago = 0;
@@ -318,7 +339,6 @@ const payload = {
     const totalValorAtos = parseFloat(atosComISS.reduce((acc, ato) => acc + ato.valorTotalComISS, 0).toFixed(2));
 
     if (Math.abs(totalValorPago - totalValorAtos) < 0.01) {
-      //alert('Conciliação OK! Total dos valores pagos bate com o valor total dos atos selados.');
       gerarRelatorioPDF({
         dataRelatorio,
         atos: atosComISS,
