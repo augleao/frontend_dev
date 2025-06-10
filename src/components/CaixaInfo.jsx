@@ -35,6 +35,15 @@ export default function CaixaInfo({
         <label>Valor Final do Caixa: </label>
         <input type="text" readOnly value={formatarMoeda(valorFinalCaixa)} />
       </div>
+      <div>
+  <label>OBS: </label>
+  <input
+    type="text"
+    value={observacoesGerais}
+    onChange={e => setObservacoesGerais(e.target.value)}
+    placeholder="Observações gerais do relatório"
+  />
+</div>
     </div>
   );
 }

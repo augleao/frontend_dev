@@ -16,6 +16,7 @@ export default function AtosTable({ texto }) {
   const [saidasCaixa, setSaidasCaixa] = useState(0);
   const [salvando, setSalvando] = useState(false);
   const [mensagemSalvar, setMensagemSalvar] = useState('');
+  const [observacoesGerais, setObservacoesGerais] = useState('');
 
   useEffect(() => {
     if (texto) {
@@ -109,6 +110,7 @@ export default function AtosTable({ texto }) {
         depositos_caixa: depositosCaixa,
         saidas_caixa: saidasCaixa,
         valor_final_caixa: valorFinalCaixa,
+        observacoes_gerais: observacoesGerais, // <-- aqui!
         atos: atosDetalhados
       };
       const response = await fetch(`${config.apiURL}/salvar-relatorio`, {
