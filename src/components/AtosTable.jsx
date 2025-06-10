@@ -154,6 +154,7 @@ export default function AtosTable({ texto }) {
         saidasCaixa,
         responsavel,
         ISS: moedaParaNumero(ISS),
+        observacoesGerais, // <-- Adicione esta linha!
       });
       await salvarRelatorio();
     } else {
