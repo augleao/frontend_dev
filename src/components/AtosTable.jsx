@@ -102,8 +102,8 @@ export default function AtosTable({ texto }) {
       });
       const payload = {
         data_hora: dataRelatorio,
-        serventia: 'Nome da Serventia',
-        cargo: 'Cargo do Usuário',
+serventia: usuario.serventia, // valor real do usuário logado
+  cargo: usuario.cargo,         // valor real do usuário logado
         responsavel: responsavel,
         iss_percentual: moedaParaNumero(ISS),
         valor_inicial_caixa: valorInicialCaixa,
