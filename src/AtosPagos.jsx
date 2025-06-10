@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 
-// Exemplo de opções de código tributário e formas de pagamento
+// Exemplo de códigos tributários e formas de pagamento
 const codigosTributarios = [
   { codigo: '101', descricao: 'Registro de Nascimento' },
   { codigo: '102', descricao: 'Registro de Casamento' },
   { codigo: '103', descricao: 'Registro de Óbito' },
-  // ...adicione outros códigos conforme necessário
+  // ...adicione outros conforme necessário
 ];
 
 const formasPagamento = [
@@ -16,7 +16,7 @@ const formasPagamento = [
   'Cheque',
 ];
 
-const AtosPagos = () => {
+function AtosPagos() {
   const [codigo, setCodigo] = useState('');
   const [quantidade, setQuantidade] = useState(1);
   const [pagamentos, setPagamentos] = useState([]);
@@ -55,102 +55,104 @@ const AtosPagos = () => {
   };
 
   return (
-    <div className="p-4">
-      {/* Parte superior: Formulário de adição */}
-      <div className="mb-6 border-b pb-4">
-        <h2 className="text-lg font-bold mb-2">Adicionar Ato Pago</h2>
-        <div className="flex flex-wrap gap-4 items-end">
-          <div>
-            <label>Código Tributário:</label>
-            <select
-              className="border rounded p-1 ml-2"
-              value={codigo}
-              onChange={e => setCodigo(e.target.value)}
-            >
-              <option value="">Selecione</option>
-              {codigosTributarios.map(opt => (
-                <option key={opt.codigo} value={opt.codigo}>
-                  {opt.codigo} - {opt.descricao}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label>Quantidade:</label>
-            <input
-              type="number"
-              min={1}
-              className="border rounded p-1 ml-2 w-16"
-              value={quantidade}
-              onChange={e => setQuantidade(Number(e.target.value))}
-            />
-          </div>
-          <div>
-            <label>Forma de Pagamento:</label>
-            <select
-              className="border rounded p-1 ml-2"
-              value={pagamentoAtual}
-              onChange={e => setPagamentoAtual(e.target.value)}
-            >
-              <option value="">Selecione</option>
-              {formasPagamento.map(fp => (
-                <option key={fp} value={fp}>{fp}</option>
-              ))}
-            </select>
-            <button
-              type="button"
-              className="ml-2 px-2 py-1 bg-blue-600 text-white rounded"
-              onClick={adicionarPagamento}
-              disabled={!pagamentoAtual}
-            >
-              Adicionar
-            </button>
-          </div>
-          <div>
-            {pagamentos.length > 0 && (
-              <div className="flex gap-2">
-                {pagamentos.map((fp, idx) => (
-                  <span key={idx} className="bg-gray-200 px-2 py-1 rounded">{fp}</span>
-                ))}
-              </div>
-            )}
-          </div>
+    <div style={{ maxWidth: 800, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 32 }}>
+      <h2 style={{ textAlign: 'center', marginBottom: 24 }}>Adicionar Ato Pago</h2>
+      {/* Formulário de adição */}
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 32, alignItems: 'flex-end', justifyContent: 'center' }}>
+        <div>
+          <label>Código Tributário:</label>
+          <select
+            className="atos-table-input"
+            value={codigo}
+            onChange={e => setCodigo(e.target.value)}
+            style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc' }}
+          >
+            <option value="">Selecione</option>
+            {codigosTributarios.map(opt => (
+              <option key={opt.codigo} value={opt.codigo}>
+                {opt.codigo} - {opt.descricao}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>Quantidade:</label>
+          <input
+            type="number"
+            min={1}
+            className="atos-table-input"
+            value={quantidade}
+            onChange={e => setQuantidade(Number(e.target.value))}
+            style={{ marginLeft: 8, width: 60, padding: 6, borderRadius: 6, border: '1px solid #ccc' }}
+          />
+        </div>
+        <div>
+          <label>Forma de Pagamento:</label>
+          <select
+            className="atos-table-input"
+            value={pagamentoAtual}
+            onChange={e => setPagamentoAtual(e.target.value)}
+            style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc' }}
+          >
+            <option value="">Selecione</option>
+            {formasPagamento.map(fp => (
+              <option key={fp} value={fp}>{fp}</option>
+            ))}
+          </select>
           <button
             type="button"
-            className="ml-4 px-4 py-2 bg-green-600 text-white rounded"
-            onClick={adicionarAto}
-            disabled={!codigo || quantidade < 1 || pagamentos.length === 0}
+            className="atos-table-btn"
+            style={{ marginLeft: 8, padding: '6px 12px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}
+            onClick={adicionarPagamento}
+            disabled={!pagamentoAtual}
           >
-            Adicionar Ato
+            Adicionar
           </button>
         </div>
+        <div>
+          {pagamentos.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              {pagamentos.map((fp, idx) => (
+                <span key={idx} style={{ background: '#e3e3e3', padding: '4px 10px', borderRadius: 6 }}>{fp}</span>
+              ))}
+            </div>
+          )}
+        </div>
+        <button
+          type="button"
+          className="atos-table-btn"
+          style={{ padding: '10px 24px', background: '#388e3c', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 'bold', marginLeft: 16 }}
+          onClick={adicionarAto}
+          disabled={!codigo || quantidade < 1 || pagamentos.length === 0}
+        >
+          Adicionar Ato
+        </button>
       </div>
 
-      {/* Parte inferior: Tabela de atos adicionados */}
-      <div>
-        <h2 className="text-lg font-bold mb-2">Atos Pagos do Dia</h2>
-        <table className="min-w-full border">
+      {/* Tabela de atos adicionados */}
+      <h3 style={{ marginBottom: 12 }}>Atos Pagos do Dia</h3>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa' }}>
           <thead>
-            <tr className="bg-gray-100">
-              <th className="border px-2 py-1">Hora</th>
-              <th className="border px-2 py-1">Código Tributário</th>
-              <th className="border px-2 py-1">Quantidade</th>
-              <th className="border px-2 py-1">Formas de Pagamento</th>
-              <th className="border px-2 py-1">Ações</th>
+            <tr style={{ background: '#f5f5f5' }}>
+              <th style={{ border: '1px solid #ddd', padding: 8 }}>Hora</th>
+              <th style={{ border: '1px solid #ddd', padding: 8 }}>Código Tributário</th>
+              <th style={{ border: '1px solid #ddd', padding: 8 }}>Quantidade</th>
+              <th style={{ border: '1px solid #ddd', padding: 8 }}>Formas de Pagamento</th>
+              <th style={{ border: '1px solid #ddd', padding: 8 }}>Ações</th>
             </tr>
           </thead>
           <tbody>
             {atos.map((ato, idx) => (
               <tr key={idx}>
-                <td className="border px-2 py-1">{ato.hora}</td>
-                <td className="border px-2 py-1">{ato.codigo}</td>
-                <td className="border px-2 py-1">{ato.quantidade}</td>
-                <td className="border px-2 py-1">
-                  {ato.pagamentos.join(', ')}
-                </td>
-                <td className="border px-2 py-1">
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.hora}</td>
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.quantidade}</td>
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.pagamentos.join(', ')}</td>
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>
                   <button
-                    className="bg-red-600 text-white px-2 py-1 rounded"
+                    className="atos-table-btn"
+                    style={{ background: '#d32f2f', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}
                     onClick={() => removerAto(idx)}
                   >
                     Excluir
@@ -160,7 +162,7 @@ const AtosPagos = () => {
             ))}
             {atos.length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center py-2">Nenhum ato adicionado hoje.</td>
+                <td colSpan={5} style={{ textAlign: 'center', padding: 16, color: '#888' }}>Nenhum ato adicionado hoje.</td>
               </tr>
             )}
           </tbody>
@@ -168,6 +170,6 @@ const AtosPagos = () => {
       </div>
     </div>
   );
-};
+}
 
 export default AtosPagos;
