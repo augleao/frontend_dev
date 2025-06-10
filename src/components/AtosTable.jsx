@@ -6,7 +6,10 @@ import MensagemStatus from './MensagemStatus';
 import config from '../config';
 import { extrairDadosDoTexto, calcularValorTotalComISS, moedaParaNumero, formatarMoeda } from './utilsAtos';
 
-export default function AtosTable({ texto, usuario }) {
+export default function AtosTable({ texto, usuario: usuarioProp }) {
+  // Busca o usuário do localStorage caso não venha como prop
+  const usuario = usuarioProp || JSON.parse(localStorage.getItem('usuario') || '{}');
+
   const [atos, setAtos] = useState([]);
   const [dataRelatorio, setDataRelatorio] = useState(null);
   const [responsavel, setResponsavel] = useState('');
@@ -68,12 +71,21 @@ export default function AtosTable({ texto, usuario }) {
   };
 
   const salvarRelatorio = async () => {
-    console.log('Tentando salvar relatório...'); // 1. Adicione aqui
+    console.log('Tentando salvar relatório...');
     setSalvando(true);
     setMensagemSalvar('');
     try {
+      // Verificação defensiva do usuário
+      if (!usuario || !usuario.serventia || !usuario.cargo) {
+        console.error('Usuário não definido ou incompleto:', usuario);
+        setMensagemSalvar('Usuário não encontrado. Faça login novamente.');
+        setSalvando(false);
+        return;
+      }
+
       const token = localStorage.getItem('token');
-      console.log('Token:', token); // ADICIONE AQUI - Logo após pegar o token
+      console.log('Token:', token);
+
       const atosDetalhados = atosComISS.map(ato => {
         const somaPagamentos = parseFloat((
           ato.pagamentoDinheiro.valor +
@@ -102,22 +114,24 @@ export default function AtosTable({ texto, usuario }) {
           observacoes: ato.observacoes || ''
         };
       });
+
       const payload = {
         data_hora: dataRelatorio,
-        serventia: usuario.serventia, // valor real do usuário logado
-        cargo: usuario.cargo,         // valor real do usuário logado
+        serventia: usuario.serventia,
+        cargo: usuario.cargo,
         responsavel: responsavel,
         iss_percentual: moedaParaNumero(ISS),
         valor_inicial_caixa: valorInicialCaixa,
         depositos_caixa: depositosCaixa,
         saidas_caixa: saidasCaixa,
         valor_final_caixa: valorFinalCaixa,
-        observacoes_gerais: observacoesGerais, // <-- aqui!
+        observacoes_gerais: observacoesGerais,
         atos: atosDetalhados
       };
-      console.log('Payload:', payload); // ADICIONE AQUI - Logo após montar o payload
-      console.log('URL da requisição:', `${config.apiURL}/salvar-relatorio`); // ADICIONE AQUI - Para ver a URL
-      console.log('Token:', token); // 3. Adicione aqui
+
+      console.log('Payload:', payload);
+      console.log('URL da requisição:', `${config.apiURL}/salvar-relatorio`);
+
       const response = await fetch(`${config.apiURL}/salvar-relatorio`, {
         method: 'POST',
         headers: {
@@ -126,9 +140,11 @@ export default function AtosTable({ texto, usuario }) {
         },
         body: JSON.stringify({ dadosRelatorio: payload })
       });
+
       console.log('Resposta salvar-relatorio:', response);
       const data = await response.json();
       console.log('Dados da resposta:', data);
+
       if (response.ok) {
         setMensagemSalvar('Relatório salvo com sucesso!');
       } else {
@@ -143,7 +159,7 @@ export default function AtosTable({ texto, usuario }) {
   };
 
   const conferirCaixa = async () => {
-    console.log('conferirCaixa chamado'); // 4. Adicione aqui
+    console.log('conferirCaixa chamado');
     let totalValorPago = 0;
     atosComISS.forEach(ato => {
       totalValorPago += ato.pagamentoDinheiro.valor +
@@ -163,9 +179,9 @@ export default function AtosTable({ texto, usuario }) {
         saidasCaixa,
         responsavel,
         ISS: moedaParaNumero(ISS),
-        observacoesGerais, // <-- Adicione esta linha!
+        observacoesGerais,
       });
-      console.log('salvarRelatorio foi chamado'); // 5. Adicione aqui
+      console.log('salvarRelatorio foi chamado');
       await salvarRelatorio();
     } else {
       alert(
@@ -195,7 +211,7 @@ export default function AtosTable({ texto, usuario }) {
       />
 
       <div style={{ marginTop: 20, display: 'flex', gap: 10 }}>
-        <button className="atos-table-btn" onClick={() => { console.log('Botão clicado!'); conferirCaixa(); }}> {/* 6. Adicione aqui */}
+        <button className="atos-table-btn" onClick={() => { console.log('Botão clicado!'); conferirCaixa(); }}>
           Gerar Relatório
         </button>
       </div>
