@@ -29,7 +29,7 @@ function ImportarAtos() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://seu-backend.onrender.com'}/api/importar-atos`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/importar-atos`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData,
@@ -69,7 +69,7 @@ function ImportarAtos() {
     setMsg('');
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://seu-backend.onrender.com'}/api/salvar-atos`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/salvar-atos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
