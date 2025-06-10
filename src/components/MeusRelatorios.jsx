@@ -13,7 +13,7 @@ function MeusRelatorios() {
   const carregarRelatorios = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${config.apiURL}/meus-relatorios`, {
+      const response = await fetch(`${config.apiURL}/api/meus-relatorios`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -37,7 +37,7 @@ function MeusRelatorios() {
     if (!window.confirm('Tem certeza que deseja excluir este relatório?')) return;
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${config.apiURL}/excluir-relatorio/${id}`, {
+      const response = await fetch(`${config.apiURL}/api/excluir-relatorio/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
