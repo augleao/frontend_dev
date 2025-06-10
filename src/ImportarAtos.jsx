@@ -1,41 +1,37 @@
 import React, { useState } from 'react';
 
 function ImportarAtos() {
-  const [tabela07, setTabela07] = useState(null);
-  const [tabela08, setTabela08] = useState(null);
+  const [urlTabela07, setUrlTabela07] = useState('');
+  const [urlTabela08, setUrlTabela08] = useState('');
   const [atos, setAtos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
   const [editIndex, setEditIndex] = useState(null);
   const [editAto, setEditAto] = useState({});
 
-  // Handler para upload dos arquivos
-  const handleFileChange = (e, tabela) => {
-    if (tabela === '07') setTabela07(e.target.files[0]);
-    if (tabela === '08') setTabela08(e.target.files[0]);
-  };
-
-  // Envia os arquivos para o backend e recebe os atos extraídos
-  const handleUpload = async () => {
-    if (!tabela07 || !tabela08) {
-      setMsg('Envie os dois arquivos PDF.');
+  // Envia os links para o backend e recebe os atos extraídos
+  const handleImportar = async () => {
+    if (!urlTabela07 || !urlTabela08) {
+      setMsg('Preencha os dois links das tabelas.');
       return;
     }
     setLoading(true);
     setMsg('');
-    const formData = new FormData();
-    formData.append('tabela07', tabela07);
-    formData.append('tabela08', tabela08);
-
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/importar-atos`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          urlTabela07,
+          urlTabela08
+        }),
       });
       const data = await res.json();
-      console.log('Resposta do backend:', data); // <--- Adicione esta linha
+      console.log('Resposta do backend:', data);
       if (res.ok) {
         setAtos(data.atos);
         setMsg('Atos extraídos! Confira e edite se necessário.');
@@ -43,7 +39,7 @@ function ImportarAtos() {
         setMsg(data.message || 'Erro ao extrair atos.');
       }
     } catch (err) {
-      setMsg('Erro ao enviar arquivos.');
+      setMsg('Erro ao enviar links.');
     }
     setLoading(false);
   };
@@ -97,18 +93,30 @@ function ImportarAtos() {
       <h2>Importar Atos das Tabelas 07 e 08 (TJMG)</h2>
       <div style={{ marginBottom: 24 }}>
         <label>
-          Tabela 07 (PDF):{' '}
-          <input type="file" accept="application/pdf" onChange={e => handleFileChange(e, '07')} />
+          Link da Tabela 07 (PDF):{' '}
+          <input
+            type="text"
+            value={urlTabela07}
+            onChange={e => setUrlTabela07(e.target.value)}
+            placeholder="Cole aqui o link da Tabela 07"
+            style={{ width: 400, marginBottom: 8 }}
+          />
         </label>
         <br />
         <label>
-          Tabela 08 (PDF):{' '}
-          <input type="file" accept="application/pdf" onChange={e => handleFileChange(e, '08')} />
+          Link da Tabela 08 (PDF):{' '}
+          <input
+            type="text"
+            value={urlTabela08}
+            onChange={e => setUrlTabela08(e.target.value)}
+            placeholder="Cole aqui o link da Tabela 08"
+            style={{ width: 400, marginBottom: 8 }}
+          />
         </label>
         <br />
         <button
-          onClick={handleUpload}
-          disabled={loading || !tabela07 || !tabela08}
+          onClick={handleImportar}
+          disabled={loading || !urlTabela07 || !urlTabela08}
           style={{ marginTop: 16, padding: '10px 24px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 'bold' }}
         >
           {loading ? 'Processando...' : 'Extrair Atos'}
