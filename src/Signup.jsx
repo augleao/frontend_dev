@@ -5,6 +5,7 @@ import config from './config';
 export default function Signup() {
   const [formData, setFormData] = useState({
     email: '',
+    nome: '',
     password: '',
     confirmPassword: '',
     serventia: '',
@@ -26,7 +27,7 @@ export default function Signup() {
     setError('');
 
     // Validações
-    if (!formData.email || !formData.password || !formData.serventia || !formData.cargo) {
+    if (!formData.email || !formData.nome || !formData.password || !formData.serventia || !formData.cargo) {
       setError('Todos os campos são obrigatórios.');
       return;
     }
@@ -51,6 +52,7 @@ export default function Signup() {
         },
         body: JSON.stringify({
           email: formData.email,
+          nome: formData.nome,
           password: formData.password,
           serventia: formData.serventia,
           cargo: formData.cargo
@@ -118,6 +120,26 @@ export default function Signup() {
             required
           />
         </div>
+
+<div style={{ marginBottom: '15px' }}>
+  <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+    Nome:
+  </label>
+  <input
+    type="text"
+    value={formData.nome}
+    onChange={(e) => setNome(e.target.value)}
+    placeholder="Digite seu nome"
+    style={{
+      width: '100%',
+      padding: '10px',
+      border: '1px solid #ccc',
+      borderRadius: '4px',
+      fontSize: '16px'
+    }}
+    required
+  />
+</div>
 
         <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
