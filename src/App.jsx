@@ -9,6 +9,8 @@ import Conciliacao from './Conciliacao';
 import PrivateRoute from './PrivateRoute';
 import Home2 from './Home2';
 import MeusRelatorios from './components/MeusRelatorios';
+import AdminDashboard from './AdminDashboard';
+import AdminRoute from './AdminRoute';
 
 function App() {
   return (
@@ -41,7 +43,15 @@ function App() {
              <MeusRelatorios />
            </PrivateRoute>
          }
-      />
+        />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
       </Routes>
     </AuthProvider>
   );
