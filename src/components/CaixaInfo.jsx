@@ -37,15 +37,14 @@ export default function CaixaInfo({
         <input type="text" readOnly value={formatarMoeda(valorFinalCaixa)} />
       </div>
       <div>
-  <label>OBS: </label>
-  <input
-    type="text"
-    value={observacoesGerais}
-    onChange={e => setObservacoesGerais(e.target.value)}
-    placeholder="Observações gerais do relatório"
-    style={{ width: '450px', height: '100px' }} // Ajuste o valor conforme necessário
-  />
-</div>
+        <label style={{ verticalAlign: 'top' }}>OBS: </label>
+        <textarea
+          value={observacoesGerais}
+          onChange={e => setObservacoesGerais(e.target.value)}
+          placeholder="Observações gerais do relatório"
+          style={{ width: '450px', height: '100px', resize: 'vertical' }}
+        />
+      </div>
     </div>
   );
 }

@@ -57,10 +57,10 @@ export function gerarRelatorioPDF({
 
   let y = marginTop + lineHeight * (headerInfo.length + 4);
 
-  // Observações gerais (OBS)
+  // Adiciona as observações gerais (OBS) se houver
   if (observacoesGerais && observacoesGerais.trim() !== '') {
     doc.setFont('helvetica', 'bold');
-    doc.text('Observações:', marginLeft, y);
+    doc.text('OBS:', marginLeft, y);
     doc.setFont('helvetica', 'normal');
     y += lineHeight;
     const obsLinhas = doc.splitTextToSize(observacoesGerais, pageWidth - marginLeft * 2);
