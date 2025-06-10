@@ -34,6 +34,7 @@ export function gerarRelatorioPDF(relatorio) {
     responsavel,
     ISS,
     iss_percentual,
+    observacoesGerais,
   } = relatorio;
 
   // Garante compatibilidade entre camelCase e snake_case
