@@ -6,7 +6,7 @@ import MensagemStatus from './MensagemStatus';
 import config from '../config';
 import { extrairDadosDoTexto, calcularValorTotalComISS, moedaParaNumero, formatarMoeda } from './utilsAtos';
 
-export default function AtosTable({ texto }) {
+export default function AtosTable({ texto, usuario }) {
   const [atos, setAtos] = useState([]);
   const [dataRelatorio, setDataRelatorio] = useState(null);
   const [responsavel, setResponsavel] = useState('');
@@ -102,8 +102,8 @@ export default function AtosTable({ texto }) {
       });
       const payload = {
         data_hora: dataRelatorio,
-serventia: usuario.serventia, // valor real do usuário logado
-  cargo: usuario.cargo,         // valor real do usuário logado
+        serventia: usuario.serventia, // valor real do usuário logado
+        cargo: usuario.cargo,         // valor real do usuário logado
         responsavel: responsavel,
         iss_percentual: moedaParaNumero(ISS),
         valor_inicial_caixa: valorInicialCaixa,
