@@ -12,41 +12,16 @@ export function formatarDataParaNomeArquivo(dataStr) {
   return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
 }
 
-// Função utilitária para garantir que o campo OBS seja passado corretamente
-function extrairObservacoesGerais(dados) {
-  // Tenta camelCase, depois snake_case, depois vazio
-  return dados.observacoesGerais || dados.observacoes_gerais || '';
-}
-
-export function gerarRelatorioPDF(relatorio) {
-  // Se o parâmetro for um objeto com todos os campos, use normalmente.
-  // Se for um objeto "dados" vindo do banco, converta os campos.
-  const {
-    dataRelatorio,
-    data_hora,
-    atos,
-    valorInicialCaixa,
-    valor_inicial_caixa,
-    depositosCaixa,
-    depositos_caixa,
-    saidasCaixa,
-    saidas_caixa,
-    responsavel,
-    ISS,
-    iss_percentual,
-    observacoesGerais,
-  } = relatorio;
-
-  // Garante compatibilidade entre camelCase e snake_case
-  const _dataRelatorio = dataRelatorio || data_hora || '';
-  const _atos = atos || relatorio.atos || [];
-  const _valorInicialCaixa = valorInicialCaixa ?? valor_inicial_caixa ?? 0;
-  const _depositosCaixa = depositosCaixa ?? depositos_caixa ?? 0;
-  const _saidasCaixa = saidasCaixa ?? saidas_caixa ?? 0;
-  const _responsavel = responsavel || relatorio.responsavel || '';
-  const _ISS = ISS ?? iss_percentual ?? 0;
-  const _observacoesGerais = extrairObservacoesGerais(relatorio);
-
+export function gerarRelatorioPDF({
+  dataRelatorio,
+  atos,
+  valorInicialCaixa,
+  depositosCaixa,
+  saidasCaixa,
+  responsavel,
+  ISS,
+  observacoesGerais
+}) {
   const doc = new jsPDF({
     orientation: 'landscape',
     unit: 'pt',
@@ -61,20 +36,20 @@ export function gerarRelatorioPDF(relatorio) {
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Relatório de Conciliação - ${_dataRelatorio || ''}`, marginLeft, marginTop);
+  doc.text(`Relatório de Conciliação - ${dataRelatorio || ''}`, marginLeft, marginTop);
 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
 
   // Responsável e ISS no relatório
-  doc.text(`Responsável: ${_responsavel || 'Não informado'}`, marginLeft, marginTop + lineHeight);
-  doc.text(`ISS aplicado: ${_ISS ? _ISS + '%' : '0%'}`, marginLeft, marginTop + lineHeight * 2);
+  doc.text(`Responsável: ${responsavel || 'Não informado'}`, marginLeft, marginTop + lineHeight);
+  doc.text(`ISS aplicado: ${ISS ? ISS + '%' : '0%'}`, marginLeft, marginTop + lineHeight * 2);
 
   const headerInfo = [
-    `Valor Inicial do Caixa: ${formatarMoeda(_valorInicialCaixa)}`,
-    `Depósitos do Caixa: ${formatarMoeda(_depositosCaixa)}`,
-    `Saídas do Caixa: ${formatarMoeda(_saidasCaixa)}`,
-    `Valor Final do Caixa: ${formatarMoeda(_valorInicialCaixa + _atos.reduce((acc, ato) => acc + (ato.pagamentoDinheiro?.valor ?? ato.dinheiro_valor ?? 0), 0) - _saidasCaixa - _depositosCaixa)}`,
+    `Valor Inicial do Caixa: ${formatarMoeda(valorInicialCaixa)}`,
+    `Depósitos do Caixa: ${formatarMoeda(depositosCaixa)}`,
+    `Saídas do Caixa: ${formatarMoeda(saidasCaixa)}`,
+    `Valor Final do Caixa: ${formatarMoeda(valorInicialCaixa + atos.reduce((acc, ato) => acc + (ato.pagamentoDinheiro?.valor ?? ato.dinheiro_valor ?? 0), 0) - saidasCaixa - depositosCaixa)}`,
   ];
   headerInfo.forEach((text, i) => {
     doc.text(text, marginLeft, marginTop + lineHeight * (i + 3));
@@ -83,12 +58,12 @@ export function gerarRelatorioPDF(relatorio) {
   let y = marginTop + lineHeight * (headerInfo.length + 4);
 
   // Adiciona as observações gerais (OBS) se houver
-  if (_observacoesGerais && _observacoesGerais.trim() !== '') {
+  if (observacoesGerais && observacoesGerais.trim() !== '') {
     doc.setFont('helvetica', 'bold');
     doc.text('OBS:', marginLeft, y);
     doc.setFont('helvetica', 'normal');
     y += lineHeight;
-    const obsLinhas = doc.splitTextToSize(_observacoesGerais, pageWidth - marginLeft * 2);
+    const obsLinhas = doc.splitTextToSize(observacoesGerais, pageWidth - marginLeft * 2);
     doc.text(obsLinhas, marginLeft, y);
     y += obsLinhas.length * lineHeight;
     y += lineHeight; // espaço extra antes da tabela
@@ -152,7 +127,7 @@ export function gerarRelatorioPDF(relatorio) {
     return yPos;
   };
 
-  _atos.forEach(ato => {
+  atos.forEach(ato => {
     x = marginLeft;
     y = checkPageBreak(y);
 
@@ -225,6 +200,6 @@ export function gerarRelatorioPDF(relatorio) {
     y += lineHeight * 2;
   });
 
-  const dataFormatada = formatarDataParaNomeArquivo(_dataRelatorio);
+  const dataFormatada = formatarDataParaNomeArquivo(dataRelatorio);
   doc.save(`${dataFormatada}_relatorio_conciliacao.pdf`);
 }
