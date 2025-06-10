@@ -25,7 +25,7 @@ function Home() {
     
       <button
       style={buttonStyle}
-      onClick={() => navigate('/dashboard/atos-pagos')}
+      onClick={() => navigate('/atos-pagos')}
     >
       ADICIONAR ATOS
     </button>
