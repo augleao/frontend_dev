@@ -165,7 +165,7 @@ export default function Signup() {
           <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
             Serventia:
           </label>
-          <input
+          <select
             type="text"
             name="serventia"
             value={formData.serventia}
@@ -179,7 +179,11 @@ export default function Signup() {
               fontSize: '16px'
             }}
             required
-          />
+          >
+            <option value="">Selecione seu cartorio</option>
+            <option value="RCPN de Campanha">Campanha</option>
+            <option value="RCPN de Lavras">Lavras</option>
+          </select>  
         </div>
 
         <div style={{ marginBottom: '20px' }}>
