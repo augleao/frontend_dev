@@ -43,7 +43,7 @@ export default function CaixaInfo({
     value={observacoesGerais}
     onChange={e => setObservacoesGerais(e.target.value)}
     placeholder="Observações gerais do relatório"
-    style={{ width: '300px' }} // Ajuste o valor conforme necessário
+    style={{ width: '450px', height: '100px' }} // Ajuste o valor conforme necessário
   />
 </div>
     </div>
