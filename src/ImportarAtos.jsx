@@ -35,6 +35,7 @@ function ImportarAtos() {
         body: formData,
       });
       const data = await res.json();
+      console.log('Resposta do backend:', data); // <--- Adicione esta linha
       if (res.ok) {
         setAtos(data.atos);
         setMsg('Atos extraídos! Confira e edite se necessário.');
