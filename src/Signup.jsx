@@ -121,25 +121,26 @@ export default function Signup() {
           />
         </div>
 
-<div style={{ marginBottom: '15px' }}>
-  <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-    Nome:
-  </label>
-  <input
-    type="text"
-    value={formData.nome}
-    onChange={(e) => setNome(e.target.value)}
-    placeholder="Digite seu nome"
-    style={{
-      width: '100%',
-      padding: '10px',
-      border: '1px solid #ccc',
-      borderRadius: '4px',
-      fontSize: '16px'
-    }}
-    required
-  />
-</div>
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+            Nome:
+          </label>
+          <input
+            type="text"
+            name="nome"
+            value={formData.nome}
+            onChange={handleChange}
+            placeholder="Digite seu nome"
+            style={{
+              width: '100%',
+              padding: '10px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              fontSize: '16px'
+            }}
+            required
+          />
+        </div>
 
         <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
