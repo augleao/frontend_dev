@@ -50,17 +50,20 @@ function AtosPagos() {
 
   const adicionarAto = () => {
     const algumPagamento = Object.values(pagamentos).some(p => p.valor > 0);
+    console.log('Tentando adicionar ato:', { codigo, quantidade, pagamentos, algumPagamento });
     if (codigo && quantidade > 0 && algumPagamento) {
-      setAtos([
-        ...atos,
-        {
-          data: dataHoje,
-          hora: new Date().toLocaleTimeString(),
-          codigo,
-          quantidade,
-          pagamentos: { ...pagamentos },
-        },
-      ]);
+      const novoAto = {
+        data: dataHoje,
+        hora: new Date().toLocaleTimeString(),
+        codigo,
+        quantidade,
+        pagamentos: { ...pagamentos },
+      };
+      setAtos(prev => {
+        const atualizados = [...prev, novoAto];
+        console.log('Atos atualizados:', atualizados);
+        return atualizados;
+      });
       setCodigo('');
       setQuantidade(1);
       setPagamentos(
@@ -74,7 +77,11 @@ function AtosPagos() {
 
   const removerAto = (index) => {
     setAtos(atos.filter((_, i) => i !== index));
+    console.log('Ato removido. Atos restantes:', atos.filter((_, i) => i !== index));
   };
+
+  // Loga sempre que a tabela for renderizada
+  console.log('Renderizando tabela de atos:', atos);
 
   return (
     <div style={{ maxWidth: 800, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 32 }}>
