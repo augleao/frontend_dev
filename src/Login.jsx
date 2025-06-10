@@ -28,7 +28,13 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        // Salva o usuário e o token no localStorage
+        localStorage.setItem('usuario', JSON.stringify(data.user));
+        localStorage.setItem('token', data.token);
+
+        // Mantém o contexto de autenticação
         login(data.user, data.token);
+
         navigate('/home2'); // Redireciona para /home2 após o login
       } else {
         setError(data.message || 'Erro ao fazer login.');
