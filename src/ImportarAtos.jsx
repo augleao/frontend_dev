@@ -54,7 +54,8 @@ function ImportarAtos() {
   };
 
   const handleEditChange = (e) => {
-    setEditAto({ ...editAto, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setEditAto({ ...editAto, [name]: value });
   };
 
   const handleEditSave = () => {
@@ -146,9 +147,15 @@ function ImportarAtos() {
                     </td>
                     <td style={{ border: '1px solid #ddd', padding: 8 }}>
                       {editIndex === idx ? (
-                        <input name="valor_final" value={editAto.valor_final} onChange={handleEditChange} type="number" step="0.01" />
+                        <input
+                          name="valor_final"
+                          value={editAto.valor_final}
+                          onChange={handleEditChange}
+                          type="number"
+                          step="0.01"
+                        />
                       ) : (
-                        `R$ ${parseFloat(ato.valor_final).toFixed(2)}`
+                        `R$ ${Number(ato.valor_final).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                       )}
                     </td>
                     <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.origem}</td>
