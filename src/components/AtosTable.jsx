@@ -73,6 +73,7 @@ export default function AtosTable({ texto, usuario }) {
     setMensagemSalvar('');
     try {
       const token = localStorage.getItem('token');
+      console.log('Token:', token); // ADICIONE AQUI - Logo após pegar o token
       const atosDetalhados = atosComISS.map(ato => {
         const somaPagamentos = parseFloat((
           ato.pagamentoDinheiro.valor +
@@ -114,7 +115,8 @@ export default function AtosTable({ texto, usuario }) {
         observacoes_gerais: observacoesGerais, // <-- aqui!
         atos: atosDetalhados
       };
-      console.log('Payload:', payload); // 2. Adicione aqui
+      console.log('Payload:', payload); // ADICIONE AQUI - Logo após montar o payload
+      console.log('URL da requisição:', `${config.apiURL}/salvar-relatorio`); // ADICIONE AQUI - Para ver a URL
       console.log('Token:', token); // 3. Adicione aqui
       const response = await fetch(`${config.apiURL}/salvar-relatorio`, {
         method: 'POST',
@@ -134,6 +136,7 @@ export default function AtosTable({ texto, usuario }) {
       }
     } catch (error) {
       setMensagemSalvar('Erro de conexão ao salvar relatório.');
+      console.error('Erro no salvarRelatorio:', error);
     } finally {
       setSalvando(false);
     }
