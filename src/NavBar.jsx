@@ -1,9 +1,10 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 
 function NavBar() {
   const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const buttonStyle = {
     fontSize: '1.2rem',
@@ -26,6 +27,11 @@ function NavBar() {
       backgroundColor: '#f0f0f0',
       borderBottom: '1px solid #ddd'
     }}>
+      {user && user.cargo === 'Registrador' && (
+        <Link to="/admin" style={{ ...buttonStyle, background: '#1976d2' }}>
+          Contas
+        </Link>
+      )}
       {user ? (
         <button style={buttonStyle} onClick={logout}>
           Logout
