@@ -68,6 +68,7 @@ export default function AtosTable({ texto, usuario }) {
   };
 
   const salvarRelatorio = async () => {
+    console.log('Tentando salvar relatório...'); // 1. Adicione aqui
     setSalvando(true);
     setMensagemSalvar('');
     try {
@@ -113,6 +114,8 @@ export default function AtosTable({ texto, usuario }) {
         observacoes_gerais: observacoesGerais, // <-- aqui!
         atos: atosDetalhados
       };
+      console.log('Payload:', payload); // 2. Adicione aqui
+      console.log('Token:', token); // 3. Adicione aqui
       const response = await fetch(`${config.apiURL}/salvar-relatorio`, {
         method: 'POST',
         headers: {
@@ -137,6 +140,7 @@ export default function AtosTable({ texto, usuario }) {
   };
 
   const conferirCaixa = async () => {
+    console.log('conferirCaixa chamado'); // 4. Adicione aqui
     let totalValorPago = 0;
     atosComISS.forEach(ato => {
       totalValorPago += ato.pagamentoDinheiro.valor +
@@ -158,6 +162,7 @@ export default function AtosTable({ texto, usuario }) {
         ISS: moedaParaNumero(ISS),
         observacoesGerais, // <-- Adicione esta linha!
       });
+      console.log('salvarRelatorio foi chamado'); // 5. Adicione aqui
       await salvarRelatorio();
     } else {
       alert(
@@ -187,7 +192,7 @@ export default function AtosTable({ texto, usuario }) {
       />
 
       <div style={{ marginTop: 20, display: 'flex', gap: 10 }}>
-        <button className="atos-table-btn" onClick={conferirCaixa}>
+        <button className="atos-table-btn" onClick={() => { console.log('Botão clicado!'); conferirCaixa(); }}> {/* 6. Adicione aqui */}
           Gerar Relatório
         </button>
       </div>
