@@ -113,6 +113,7 @@ function MeusRelatorios() {
             <div><strong>Depósitos do Caixa:</strong> R$ {Number(dados.depositos_caixa).toFixed(2)}</div>
             <div><strong>Saídas do Caixa:</strong> R$ {Number(dados.saidas_caixa).toFixed(2)}</div>
             <div><strong>Valor Final do Caixa:</strong> R$ {Number(dados.valor_final_caixa).toFixed(2)}</div>
+            <div><strong>Observações:</strong> {dados.observacoes_gerais}</div>
             <div style={{ marginTop: 12 }}>
               <strong>Atos:</strong>
               {dados.atos && dados.atos.length > 0 ? (

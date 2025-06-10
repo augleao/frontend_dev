@@ -12,16 +12,40 @@ export function formatarDataParaNomeArquivo(dataStr) {
   return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
 }
 
-export function gerarRelatorioPDF({
-  dataRelatorio,
-  atos,
-  valorInicialCaixa,
-  depositosCaixa,
-  saidasCaixa,
-  responsavel,
-  ISS,
-  observacoesGerais
-}) {
+// Função utilitária para garantir que o campo OBS seja passado corretamente
+function extrairObservacoesGerais(dados) {
+  // Tenta camelCase, depois snake_case, depois vazio
+  return dados.observacoesGerais || dados.observacoes_gerais || '';
+}
+
+export function gerarRelatorioPDF(relatorio) {
+  // Se o parâmetro for um objeto com todos os campos, use normalmente.
+  // Se for um objeto "dados" vindo do banco, converta os campos.
+  const {
+    dataRelatorio,
+    data_hora,
+    atos,
+    valorInicialCaixa,
+    valor_inicial_caixa,
+    depositosCaixa,
+    depositos_caixa,
+    saidasCaixa,
+    saidas_caixa,
+    responsavel,
+    ISS,
+    iss_percentual,
+  } = relatorio;
+
+  // Garante compatibilidade entre camelCase e snake_case
+  const _dataRelatorio = dataRelatorio || data_hora || '';
+  const _atos = atos || relatorio.atos || [];
+  const _valorInicialCaixa = valorInicialCaixa ?? valor_inicial_caixa ?? 0;
+  const _depositosCaixa = depositosCaixa ?? depositos_caixa ?? 0;
+  const _saidasCaixa = saidasCaixa ?? saidas_caixa ?? 0;
+  const _responsavel = responsavel || relatorio.responsavel || '';
+  const _ISS = ISS ?? iss_percentual ?? 0;
+  const _observacoesGerais = extrairObservacoesGerais(relatorio);
+
   const doc = new jsPDF({
     orientation: 'landscape',
     unit: 'pt',
@@ -36,20 +60,20 @@ export function gerarRelatorioPDF({
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Relatório de Conciliação - ${dataRelatorio || ''}`, marginLeft, marginTop);
+  doc.text(`Relatório de Conciliação - ${_dataRelatorio || ''}`, marginLeft, marginTop);
 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
 
   // Responsável e ISS no relatório
-  doc.text(`Responsável: ${responsavel || 'Não informado'}`, marginLeft, marginTop + lineHeight);
-  doc.text(`ISS aplicado: ${ISS ? ISS + '%' : '0%'}`, marginLeft, marginTop + lineHeight * 2);
+  doc.text(`Responsável: ${_responsavel || 'Não informado'}`, marginLeft, marginTop + lineHeight);
+  doc.text(`ISS aplicado: ${_ISS ? _ISS + '%' : '0%'}`, marginLeft, marginTop + lineHeight * 2);
 
   const headerInfo = [
-    `Valor Inicial do Caixa: ${formatarMoeda(valorInicialCaixa)}`,
-    `Depósitos do Caixa: ${formatarMoeda(depositosCaixa)}`,
-    `Saídas do Caixa: ${formatarMoeda(saidasCaixa)}`,
-    `Valor Final do Caixa: ${formatarMoeda(valorInicialCaixa + atos.reduce((acc, ato) => acc + ato.pagamentoDinheiro.valor, 0) - saidasCaixa - depositosCaixa)}`,
+    `Valor Inicial do Caixa: ${formatarMoeda(_valorInicialCaixa)}`,
+    `Depósitos do Caixa: ${formatarMoeda(_depositosCaixa)}`,
+    `Saídas do Caixa: ${formatarMoeda(_saidasCaixa)}`,
+    `Valor Final do Caixa: ${formatarMoeda(_valorInicialCaixa + _atos.reduce((acc, ato) => acc + (ato.pagamentoDinheiro?.valor ?? ato.dinheiro_valor ?? 0), 0) - _saidasCaixa - _depositosCaixa)}`,
   ];
   headerInfo.forEach((text, i) => {
     doc.text(text, marginLeft, marginTop + lineHeight * (i + 3));
@@ -58,12 +82,12 @@ export function gerarRelatorioPDF({
   let y = marginTop + lineHeight * (headerInfo.length + 4);
 
   // Adiciona as observações gerais (OBS) se houver
-  if (observacoesGerais && observacoesGerais.trim() !== '') {
+  if (_observacoesGerais && _observacoesGerais.trim() !== '') {
     doc.setFont('helvetica', 'bold');
     doc.text('OBS:', marginLeft, y);
     doc.setFont('helvetica', 'normal');
     y += lineHeight;
-    const obsLinhas = doc.splitTextToSize(observacoesGerais, pageWidth - marginLeft * 2);
+    const obsLinhas = doc.splitTextToSize(_observacoesGerais, pageWidth - marginLeft * 2);
     doc.text(obsLinhas, marginLeft, y);
     y += obsLinhas.length * lineHeight;
     y += lineHeight; // espaço extra antes da tabela
@@ -127,35 +151,40 @@ export function gerarRelatorioPDF({
     return yPos;
   };
 
-  atos.forEach(ato => {
+  _atos.forEach(ato => {
     x = marginLeft;
     y = checkPageBreak(y);
 
-    const somaPagamentos =
-      ato.pagamentoDinheiro.valor +
-      ato.pagamentoCartao.valor +
-      ato.pagamentoPix.valor +
-      ato.pagamentoCRC.valor +
-      ato.depositoPrevio.valor;
+    // Compatibilidade para os campos de pagamento
+    const dinheiro = ato.pagamentoDinheiro?.valor ?? ato.dinheiro_valor ?? 0;
+    const cartao = ato.pagamentoCartao?.valor ?? ato.cartao_valor ?? 0;
+    const pix = ato.pagamentoPix?.valor ?? ato.pix_valor ?? 0;
+    const crc = ato.pagamentoCRC?.valor ?? ato.crc_valor ?? 0;
+    const depositoPrevio = ato.depositoPrevio?.valor ?? ato.deposito_previo_valor ?? 0;
 
-    const valorTotalAto = ato.valorTotalComISS ?? ato.valorTotal;
+    const somaPagamentos = dinheiro + cartao + pix + crc + depositoPrevio;
+
+    const valorTotalAto = ato.valorTotalComISS ?? ato.valor_total ?? ato.valorTotal ?? 0;
     const valorFaltante = valorTotalAto - somaPagamentos;
 
-    const formatarQtdeValor = (pagamento) => {
-      return `Qtde: ${pagamento.quantidade}\nVal: ${formatarMoeda(pagamento.valor)}`;
+    const formatarQtdeValor = (pagamento, qtd, val) => {
+      if (pagamento && typeof pagamento === 'object') {
+        return `Qtde: ${pagamento.quantidade}\nVal: ${formatarMoeda(pagamento.valor)}`;
+      }
+      return `Qtde: ${qtd ?? 0}\nVal: ${formatarMoeda(val ?? 0)}`;
     };
 
     const rowData = [
-      ato.quantidade.toString(),
+      ato.quantidade?.toString() ?? ato.qtde?.toString() ?? '',
       ato.codigo,
       ato.descricao,
       formatarMoeda(valorTotalAto),
       formatarMoeda(valorFaltante),
-      formatarQtdeValor(ato.pagamentoDinheiro),
-      formatarQtdeValor(ato.pagamentoCartao),
-      formatarQtdeValor(ato.pagamentoPix),
-      formatarQtdeValor(ato.pagamentoCRC),
-      formatarQtdeValor(ato.depositoPrevio),
+      formatarQtdeValor(ato.pagamentoDinheiro, ato.dinheiro_qtd, dinheiro),
+      formatarQtdeValor(ato.pagamentoCartao, ato.cartao_qtd, cartao),
+      formatarQtdeValor(ato.pagamentoPix, ato.pix_qtd, pix),
+      formatarQtdeValor(ato.pagamentoCRC, ato.crc_qtd, crc),
+      formatarQtdeValor(ato.depositoPrevio, ato.deposito_previo_qtd, depositoPrevio),
       ato.observacoes || '',
     ];
 
@@ -182,7 +211,7 @@ export function gerarRelatorioPDF({
     });
 
     // Linha preta fina abaixo de cada linha de dados (ajustada para não sobrepor o texto)
-    const linhaY = y + lineHeight * 2 - 12; // ajuste fino, pode testar -2, -4, -6
+    const linhaY = y + lineHeight * 2 - 12;
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.2);
     doc.line(
@@ -195,6 +224,6 @@ export function gerarRelatorioPDF({
     y += lineHeight * 2;
   });
 
-  const dataFormatada = formatarDataParaNomeArquivo(dataRelatorio);
+  const dataFormatada = formatarDataParaNomeArquivo(_dataRelatorio);
   doc.save(`${dataFormatada}_relatorio_conciliacao.pdf`);
 }
