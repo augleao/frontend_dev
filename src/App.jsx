@@ -11,6 +11,7 @@ import Home2 from './Home2';
 import MeusRelatorios from './components/MeusRelatorios';
 import AdminDashboard from './AdminDashboard';
 import AdminRoute from './AdminRoute';
+import AtosPagos from './AtosPagos'; // ajuste o caminho se necessário
 
 function App() {
   return (
@@ -44,6 +45,14 @@ function App() {
            </PrivateRoute>
          }
         />
+        <Route
+  path="/atos-pagos"
+  element={
+    <PrivateRoute>
+      <AtosPagos />
+    </PrivateRoute>
+  }
+/>
         <Route
           path="/admin"
           element={

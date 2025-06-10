@@ -22,7 +22,13 @@ function Home() {
     <div style={{ textAlign: 'center', marginTop: '80px' }}>
       <h1>Bem-vindo ao Sistema Auxiliar do RCPN</h1>
       <p>Escolha uma funcionalidade:</p>
-      
+    
+      <button
+      style={buttonStyle}
+      onClick={() => navigate('/dashboard/atos-pagos')}
+    >
+      ADICIONAR ATOS
+    </button>
       <button
         style={buttonStyle}
         onClick={() => navigate('/conciliacao')}
