@@ -13,7 +13,7 @@ import AdminDashboard from './AdminDashboard';
 import AdminRoute from './AdminRoute';
 import AtosPagos from './AtosPagos'; // ajuste o caminho se necessário
 import ImportarAtos from './ImportarAtos'; // ajuste o caminho se necessário
-import AdminRoute from './AdminRoute';
+
 
 function App() {
   return (
