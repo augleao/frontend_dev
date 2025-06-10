@@ -12,7 +12,16 @@ export function formatarDataParaNomeArquivo(dataStr) {
   return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
 }
 
-export function gerarRelatorioPDF({ dataRelatorio, atos, valorInicialCaixa, depositosCaixa, saidasCaixa, responsavel, ISS }) {
+export function gerarRelatorioPDF({
+  dataRelatorio,
+  atos,
+  valorInicialCaixa,
+  depositosCaixa,
+  saidasCaixa,
+  responsavel,
+  ISS,
+  observacoesGerais
+}) {
   const doc = new jsPDF({
     orientation: 'landscape',
     unit: 'pt',
@@ -47,6 +56,18 @@ export function gerarRelatorioPDF({ dataRelatorio, atos, valorInicialCaixa, depo
   });
 
   let y = marginTop + lineHeight * (headerInfo.length + 4);
+
+  // Observações gerais (OBS)
+  if (observacoesGerais && observacoesGerais.trim() !== '') {
+    doc.setFont('helvetica', 'bold');
+    doc.text('Observações:', marginLeft, y);
+    doc.setFont('helvetica', 'normal');
+    y += lineHeight;
+    const obsLinhas = doc.splitTextToSize(observacoesGerais, pageWidth - marginLeft * 2);
+    doc.text(obsLinhas, marginLeft, y);
+    y += obsLinhas.length * lineHeight;
+    y += lineHeight; // espaço extra antes da tabela
+  }
 
   const colWidths = {
     qtde: 25,
