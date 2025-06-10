@@ -121,7 +121,9 @@ export default function AtosTable({ texto, usuario }) {
         },
         body: JSON.stringify({ dadosRelatorio: payload })
       });
+      console.log('Resposta salvar-relatorio:', response);
       const data = await response.json();
+      console.log('Dados da resposta:', data);
       if (response.ok) {
         setMensagemSalvar('Relatório salvo com sucesso!');
       } else {
