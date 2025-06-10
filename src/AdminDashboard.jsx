@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import config from './config';
+import { Link } from 'react-router-dom';
 
 export default function AdminDashboard() {
   const [usuarios, setUsuarios] = useState([]);
@@ -66,7 +67,23 @@ export default function AdminDashboard() {
 
   return (
     <div style={{ maxWidth: 800, margin: '40px auto', padding: 20, border: '1px solid #ddd', borderRadius: 8 }}>
-      <h2>Administração de Usuários</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h2 style={{ margin: 0 }}>Administração de Usuários</h2>
+        <Link
+          to="/admin/importar-atos"
+          style={{
+            padding: '10px 20px',
+            background: '#1976d2',
+            color: '#fff',
+            borderRadius: 8,
+            textDecoration: 'none',
+            fontWeight: 'bold',
+            fontSize: 16
+          }}
+        >
+          Importar Atos (Tabelas 07/08)
+        </Link>
+      </div>
       {msg && <div style={{ color: msg.includes('Erro') ? 'red' : 'green', marginBottom: 10 }}>{msg}</div>}
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>

@@ -12,6 +12,8 @@ import MeusRelatorios from './components/MeusRelatorios';
 import AdminDashboard from './AdminDashboard';
 import AdminRoute from './AdminRoute';
 import AtosPagos from './AtosPagos'; // ajuste o caminho se necessário
+import ImportarAtos from './ImportarAtos'; // ajuste o caminho se necessário
+import AdminRoute from './AdminRoute';
 
 function App() {
   return (
@@ -61,6 +63,14 @@ function App() {
             </AdminRoute>
           }
         />
+        <Route
+  path="/admin/importar-atos"
+  element={
+    <AdminRoute>
+      <ImportarAtos />
+    </AdminRoute>
+  }
+/>
       </Routes>
     </AuthProvider>
   );
