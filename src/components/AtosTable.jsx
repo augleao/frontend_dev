@@ -179,6 +179,8 @@ export default function AtosTable({ texto }) {
         saidasCaixa={saidasCaixa}
         setSaidasCaixa={setSaidasCaixa}
         valorFinalCaixa={valorFinalCaixa}
+        observacoesGerais={observacoesGerais}
+        setObservacoesGerais={setObservacoesGerais}
       />
 
       <div style={{ marginTop: 20, display: 'flex', gap: 10 }}>

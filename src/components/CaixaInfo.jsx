@@ -7,6 +7,7 @@ export default function CaixaInfo({
   valorInicialCaixa, setValorInicialCaixa,
   depositosCaixa, setDepositosCaixa,
   saidasCaixa, setSaidasCaixa,
+  observacoesGerais, setObservacoesGerais,
   valorFinalCaixa
 }) {
   return (
