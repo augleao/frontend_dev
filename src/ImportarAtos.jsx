@@ -9,6 +9,41 @@ function ImportarAtos() {
   const [editIndex, setEditIndex] = useState(null);
   const [editAto, setEditAto] = useState({});
 
+  // Estilo padrão dos botões
+  const buttonStyle = {
+    padding: '10px 24px',
+    background: '#1976d2',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginRight: 8,
+    transition: 'background 0.2s'
+  };
+
+  const buttonDisabledStyle = {
+    ...buttonStyle,
+    background: '#ccc',
+    cursor: 'not-allowed'
+  };
+
+  const buttonEditStyle = {
+    ...buttonStyle,
+    background: '#2196f3'
+  };
+
+  const buttonSaveStyle = {
+    ...buttonStyle,
+    background: '#388e3c'
+  };
+
+  const buttonCancelStyle = {
+    ...buttonStyle,
+    background: '#d32f2f'
+  };
+
   // Handler para upload dos arquivos
   const handleFileChange = (e, tabela) => {
     if (tabela === '07') setTabela07(e.target.files[0]);
@@ -35,7 +70,6 @@ function ImportarAtos() {
         body: formData,
       });
       const data = await res.json();
-      console.log('Resposta do backend:', data);
       if (res.ok) {
         setAtos(data.atos);
         setMsg('Atos extraídos! Confira e edite se necessário.');
@@ -83,7 +117,6 @@ function ImportarAtos() {
       if (res.ok) {
         setMsg('Atos salvos com sucesso!');
         setAtos([]);
-        // Limpa os arquivos selecionados
         setTabela07(null);
         setTabela08(null);
       } else {
@@ -128,17 +161,7 @@ function ImportarAtos() {
         <button
           onClick={handleUpload}
           disabled={loading || !tabela07 || !tabela08}
-          style={{ 
-            marginTop: 16, 
-            padding: '12px 24px', 
-            background: loading || !tabela07 || !tabela08 ? '#ccc' : '#1976d2', 
-            color: '#fff', 
-            border: 'none', 
-            borderRadius: 8, 
-            cursor: loading || !tabela07 || !tabela08 ? 'not-allowed' : 'pointer', 
-            fontWeight: 'bold',
-            fontSize: 16
-          }}
+          style={loading || !tabela07 || !tabela08 ? buttonDisabledStyle : buttonStyle}
         >
           {loading ? 'Processando...' : 'Extrair Atos'}
         </button>
@@ -218,13 +241,13 @@ function ImportarAtos() {
                         <>
                           <button 
                             onClick={handleEditSave} 
-                            style={{ marginRight: 8, padding: '4px 8px', background: '#4caf50', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                            style={buttonSaveStyle}
                           >
                             Salvar
                           </button>
                           <button 
                             onClick={() => setEditIndex(null)}
-                            style={{ padding: '4px 8px', background: '#f44336', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                            style={buttonCancelStyle}
                           >
                             Cancelar
                           </button>
@@ -232,7 +255,7 @@ function ImportarAtos() {
                       ) : (
                         <button 
                           onClick={() => handleEdit(idx)}
-                          style={{ padding: '4px 8px', background: '#2196f3', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                          style={buttonEditStyle}
                         >
                           Editar
                         </button>
@@ -247,16 +270,7 @@ function ImportarAtos() {
             <button
               onClick={handleSalvar}
               disabled={loading}
-              style={{ 
-                padding: '12px 32px', 
-                background: loading ? '#ccc' : '#388e3c', 
-                color: '#fff', 
-                border: 'none', 
-                borderRadius: 8, 
-                cursor: loading ? 'not-allowed' : 'pointer', 
-                fontWeight: 'bold', 
-                fontSize: 18 
-              }}
+              style={loading ? buttonDisabledStyle : buttonSaveStyle}
             >
               {loading ? 'Salvando...' : 'Salvar no Sistema'}
             </button>
