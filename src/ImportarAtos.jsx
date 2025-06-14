@@ -134,11 +134,11 @@ function ImportarAtos() {
       <div style={{ marginBottom: 24 }}>
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold' }}>
-            Tabela 07 (PDF):
+            Tabela 07 (TXT):
           </label>
           <input 
             type="file" 
-            accept="application/pdf" 
+            accept=".txt" 
             onChange={e => handleFileChange(e, '07')}
             style={{ padding: 8, border: '1px solid #ddd', borderRadius: 4, width: '100%', maxWidth: 400 }}
           />
@@ -147,11 +147,11 @@ function ImportarAtos() {
         
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold' }}>
-            Tabela 08 (PDF):
+            Tabela 08 (TXT):
           </label>
           <input 
             type="file" 
-            accept="application/pdf" 
+            accept=".txt" 
             onChange={e => handleFileChange(e, '08')}
             style={{ padding: 8, border: '1px solid #ddd', borderRadius: 4, width: '100%', maxWidth: 400 }}
           />
