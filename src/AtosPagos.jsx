@@ -155,36 +155,7 @@ const handlePagamentoValorChange = (key, valor) => {
   }));
 };
 
-//Função para atualizar quantidade e recalcular valores automáticos apenas para os que não foram editados manualmente:
 
-const handlePagamentoQuantidadeChange = (key, qtd) => {
-  qtd = parseInt(qtd);
-  if (isNaN(qtd) || qtd < 0) qtd = 0;
-
-  setPagamentos((prev) => {
-    const novo = { ...prev };
-    novo[key].quantidade = qtd;
-
-    const valorUnitario = selectedAto?.valor_final ?? 0;
-
-    if (!novo[key].manual) {
-      novo[key].valor = valorUnitario * qtd;
-    }
-
-    return novo;
-  });
-};
-
-// Atualiza valor manualmente e marca como manual
-const handlePagamentoValorChange = (key, valor) => {
-  valor = parseFloat(valor);
-  if (isNaN(valor) || valor < 0) valor = 0;
-
-  setPagamentos((prev) => ({
-    ...prev,
-    [key]: { ...prev[key], valor: valor, manual: true },
-  }));
-};
 
 //Ao mudar a quantidade total, recalcula os valores automáticos para os não manuais:
 const handleQuantidadeChange = (qtd) => {
