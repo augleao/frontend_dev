@@ -35,12 +35,12 @@ function AtosPagos() {
   const [suggestions, setSuggestions] = useState([]);
   const [selectedAto, setSelectedAto] = useState(null);
   const [quantidade, setQuantidade] = useState(1);
-  const [pagamentos, setPagamentos] = useState(
-    formasPagamento.reduce((acc, fp) => {
-      acc[fp.key] = { quantidade: 0, valor: 0 };
-      return acc;
-    }, {})
-  );
+const [pagamentos, setPagamentos] = useState(
+  formasPagamento.reduce((acc, fp) => {
+    acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
+    return acc;
+  }, {})
+);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
@@ -122,34 +122,57 @@ function AtosPagos() {
     }
   }, [selectedAto]);
 
-  // Atualiza o valor de cada forma de pagamento automaticamente ao mudar a quantidade de pagamento
-  const handlePagamentoQuantidadeChange = (key, qtd) => {
-    qtd = parseInt(qtd);
-    if (isNaN(qtd) || qtd < 0) qtd = 0;
-    setPagamentos((prev) => {
-      const novo = { ...prev };
-      novo[key].quantidade = qtd;
-      const valorUnitario = selectedAto?.valor_final ?? 0;
+ 
+  // Atualiza quantidade e recalcula valores automáticos (exceto os manuais)
+const handlePagamentoQuantidadeChange = (key, qtd) => {
+  qtd = parseInt(qtd);
+  if (isNaN(qtd) || qtd < 0) qtd = 0;
+
+  setPagamentos((prev) => {
+    const novo = { ...prev };
+    novo[key].quantidade = qtd;
+
+    const valorUnitario = selectedAto?.valor_final ?? 0;
+
+    // Se não foi editado manualmente, atualiza o valor automaticamente
+    if (!novo[key].manual) {
       novo[key].valor = valorUnitario * qtd;
-      return novo;
-    });
-  };
+    }
 
-  // Quantidade total do ato selecionado
-  const handleQuantidadeChange = (qtd) => {
-    qtd = parseInt(qtd);
-    if (isNaN(qtd) || qtd < 1) qtd = 1;
-    setQuantidade(qtd);
+    return novo;
+  });
+};
 
-    setPagamentos((prev) => {
-      const novo = { ...prev };
-      const valorUnitario = selectedAto?.valor_final ?? 0;
-      formasPagamento.forEach((fp) => {
+// Atualiza valor manualmente e marca como manual
+const handlePagamentoValorChange = (key, valor) => {
+  valor = parseFloat(valor);
+  if (isNaN(valor) || valor < 0) valor = 0;
+
+  setPagamentos((prev) => ({
+    ...prev,
+    [key]: { ...prev[key], valor: valor, manual: true },
+  }));
+};
+
+// Ao mudar a quantidade total do ato, recalcula os valores automáticos para os não manuais
+const handleQuantidadeChange = (qtd) => {
+  qtd = parseInt(qtd);
+  if (isNaN(qtd) || qtd < 1) qtd = 1;
+  setQuantidade(qtd);
+
+  setPagamentos((prev) => {
+    const novo = { ...prev };
+    const valorUnitario = selectedAto?.valor_final ?? 0;
+
+    formasPagamento.forEach((fp) => {
+      if (!novo[fp.key].manual) {
         novo[fp.key].valor = valorUnitario * novo[fp.key].quantidade;
-      });
-      return novo;
+      }
     });
-  };
+
+    return novo;
+  });
+};
 
   const adicionarAto = async () => {
     if (!selectedAto) {
