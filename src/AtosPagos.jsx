@@ -129,7 +129,7 @@ function AtosPagos() {
       codigo: selectedAto.codigo,
       descricao: selectedAto.descricao,
       quantidade,
-      valor_unitario: selectedAto.valor_total,
+      valor_unitario: selectedAto.valor_final,
       pagamentos: { ...pagamentos },
     };
     setAtos((prev) => [...prev, novoAto]);
@@ -152,7 +152,7 @@ function AtosPagos() {
   };
 
   // Calcula valor total do(s) ato(s) selecionado(s)
-  const valorTotalAtos = selectedAto ? (selectedAto.valor_total ?? 0) * quantidade : 0;
+  const valorTotalAtos = selectedAto ? (selectedAto.valor_final ?? 0) * quantidade : 0;
 
   return (
     <div style={{ maxWidth: 800, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 32 }}>
