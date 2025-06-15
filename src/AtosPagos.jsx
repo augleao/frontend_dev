@@ -232,8 +232,8 @@ function AtosPagos() {
   };
 
   return (
-    <div style={{ maxWidth: 100%, margin: '10px auto', padding: '32px', background: '#fff', boxShadow: '0 2px 8px #0001', borderRadius: 12 }}>
-      <h2 style={{ textAlign: 'center', marginBottom: 8 }}>
+<div style={{ maxWidth: '100%', margin: '10px auto', padding: '32px', background: '#fff', boxShadow: '0 2px 8px #0001', borderRadius: 12 }}>
+        <h2 style={{ textAlign: 'center', marginBottom: 8 }}>
         Atos Pagos
       </h2>
 
