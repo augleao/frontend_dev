@@ -149,6 +149,7 @@ useEffect(() => {
           type="text"
           value={searchTerm}
           onChange={(e) => {
+            console.log('Digitado:', e.target.value);
             setSearchTerm(e.target.value);
             setSelectedAto(null);
           }}
@@ -174,19 +175,24 @@ useEffect(() => {
               zIndex: 10,
             }}
           >
-            {suggestions.map((ato) => (
-              <li
-                key={ato.id}
-                onClick={() => {
-                  setSelectedAto(ato);
-                  setSearchTerm(`${ato.codigo} - ${ato.descricao}`);
-                  setSuggestions([]);
-                }}
-                style={{ padding: 8, cursor: 'pointer', borderBottom: '1px solid #eee' }}
-              >
-                {ato.codigo} - {ato.descricao}
-              </li>
-            ))}
+            {
+  suggestions.map((ato) => {
+    console.log('Renderizando sugestão:', ato);
+    return (
+      <li
+        key={ato.id}
+        onClick={() => {
+          setSelectedAto(ato);
+          setSearchTerm(`${ato.codigo} - ${ato.descricao}`);
+          setSuggestions([]);
+        }}
+        style={{ padding: 8, cursor: 'pointer', borderBottom: '1px solid #eee' }}
+      >
+        {ato.codigo} - {ato.descricao}
+      </li>
+    );
+  })
+}
           </ul>
         )}
       </div>
