@@ -434,9 +434,14 @@ const handleQuantidadeChange = (qtd) => {
         <button
           style={{ padding: '10px 24px', background: '#388e3c', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 'bold' }}
           onClick={adicionarAto}
-          disabled={!selectedAto || quantidade < 1 || !Object.values(pagamentos).some((p) => p.valor > 0)}
-        >
-          Adicionar Ato
+         disabled={
+    !selectedAto ||
+    quantidade < 1 ||
+    !Object.values(pagamentos).some((p) => p.valor > 0) ||
+    !valoresIguais(somaPagamentos, valorTotal)
+  }
+>
+  Adicionar Ato
         </button>
       </div>
 
