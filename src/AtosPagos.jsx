@@ -1,11 +1,4 @@
-import React, { useState } from 'react';
-
-// Exemplos de códigos tributários e formas de pagamento
-const codigosTributarios = [
-  { codigo: '101', descricao: 'Registro de Nascimento' },
-  { codigo: '102', descricao: 'Registro de Casamento' },
-  { codigo: '103', descricao: 'Registro de Óbito' },
-];
+import React, { useState, useEffect, useRef } from 'react';
 
 const formasPagamento = [
   { key: 'dinheiro', label: 'Dinheiro' },
@@ -15,13 +8,14 @@ const formasPagamento = [
   { key: 'cheque', label: 'Cheque' },
 ];
 
-// Função para formatar a data no padrão brasileiro
 function formatarData(data) {
   return data.toLocaleDateString('pt-BR');
 }
 
 function AtosPagos() {
-  const [codigo, setCodigo] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [selectedAto, setSelectedAto] = useState(null);
   const [quantidade, setQuantidade] = useState(1);
   const [pagamentos, setPagamentos] = useState(
     formasPagamento.reduce((acc, fp) => {
@@ -30,16 +24,51 @@ function AtosPagos() {
     }, {})
   );
   const [atos, setAtos] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
-  // Data do dia (fixa ao carregar a página)
   const dataHoje = formatarData(new Date());
-
-  // Recupera o nome do usuário do localStorage
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
   const nomeUsuario = usuario?.nome || 'Usuário não identificado';
 
+  const debounceTimeout = useRef(null);
+
+  // Busca atos no backend conforme o usuário digita (debounce)
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setSuggestions([]);
+      return;
+    }
+
+    setLoadingSuggestions(true);
+
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+
+    debounceTimeout.current = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos?search=${encodeURIComponent(searchTerm)}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const data = await res.json();
+        if (res.ok) {
+          setSuggestions(data.atos || []);
+        } else {
+          setSuggestions([]);
+        }
+      } catch {
+        setSuggestions([]);
+      }
+      setLoadingSuggestions(false);
+    }, 300);
+
+    return () => clearTimeout(debounceTimeout.current);
+  }, [searchTerm]);
+
   const handlePagamentoChange = (key, field, value) => {
-    setPagamentos(prev => ({
+    setPagamentos((prev) => ({
       ...prev,
       [key]: {
         ...prev[key],
@@ -49,39 +78,42 @@ function AtosPagos() {
   };
 
   const adicionarAto = () => {
-    const algumPagamento = Object.values(pagamentos).some(p => p.valor > 0);
-    console.log('Tentando adicionar ato:', { codigo, quantidade, pagamentos, algumPagamento });
-    if (codigo && quantidade > 0 && algumPagamento) {
-      const novoAto = {
-        data: dataHoje,
-        hora: new Date().toLocaleTimeString(),
-        codigo,
-        quantidade,
-        pagamentos: { ...pagamentos },
-      };
-      setAtos(prev => {
-        const atualizados = [...prev, novoAto];
-        console.log('Atos atualizados:', atualizados);
-        return atualizados;
-      });
-      setCodigo('');
-      setQuantidade(1);
-      setPagamentos(
-        formasPagamento.reduce((acc, fp) => {
-          acc[fp.key] = { quantidade: 0, valor: 0 };
-          return acc;
-        }, {})
-      );
+    if (!selectedAto) {
+      alert('Selecione um ato válido.');
+      return;
     }
+    const algumPagamento = Object.values(pagamentos).some((p) => p.valor > 0);
+    if (quantidade < 1 || !algumPagamento) {
+      alert('Informe quantidade válida e pelo menos um valor de pagamento.');
+      return;
+    }
+
+    const novoAto = {
+      data: dataHoje,
+      hora: new Date().toLocaleTimeString(),
+      codigo: selectedAto.codigo,
+      descricao: selectedAto.descricao,
+      quantidade,
+      pagamentos: { ...pagamentos },
+    };
+    setAtos((prev) => [...prev, novoAto]);
+
+    // Resetar campos
+    setSelectedAto(null);
+    setSearchTerm('');
+    setQuantidade(1);
+    setPagamentos(
+      formasPagamento.reduce((acc, fp) => {
+        acc[fp.key] = { quantidade: 0, valor: 0 };
+        return acc;
+      }, {})
+    );
+    setSuggestions([]);
   };
 
   const removerAto = (index) => {
     setAtos(atos.filter((_, i) => i !== index));
-    console.log('Ato removido. Atos restantes:', atos.filter((_, i) => i !== index));
   };
-
-  // Loga sempre que a tabela for renderizada
-  console.log('Renderizando tabela de atos:', atos);
 
   return (
     <div style={{ maxWidth: 800, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 32 }}>
@@ -102,34 +134,69 @@ function AtosPagos() {
             border: '1px solid #1976d2',
             background: '#f5faff',
             color: '#1976d2',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
           }}
         />
       </div>
-      {/* Formulário de adição */}
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 32, alignItems: 'flex-end', justifyContent: 'center' }}>
-        <div>
-          <label>Código Tributário:</label>
-          <select
-            value={codigo}
-            onChange={e => setCodigo(e.target.value)}
-            style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc' }}
+
+      {/* Busca e seleção do ato */}
+      <div style={{ marginBottom: 16, position: 'relative', maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }}>
+        <label>Buscar ato por código ou descrição:</label>
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setSelectedAto(null);
+          }}
+          placeholder="Digite código ou descrição"
+          style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ccc' }}
+        />
+        {loadingSuggestions && <div style={{ position: 'absolute', top: '100%', left: 0, background: '#fff', border: '1px solid #ccc', width: '100%', zIndex: 10, padding: 8 }}>Carregando...</div>}
+        {!loadingSuggestions && suggestions.length > 0 && (
+          <ul
+            style={{
+              listStyle: 'none',
+              margin: 0,
+              padding: 0,
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              maxHeight: 200,
+              overflowY: 'auto',
+              background: '#fff',
+              border: '1px solid #ccc',
+              borderTop: 'none',
+              zIndex: 10,
+            }}
           >
-            <option value="">Selecione</option>
-            {codigosTributarios.map(opt => (
-              <option key={opt.codigo} value={opt.codigo}>
-                {opt.codigo} - {opt.descricao}
-              </option>
+            {suggestions.map((ato) => (
+              <li
+                key={ato.id}
+                onClick={() => {
+                  setSelectedAto(ato);
+                  setSearchTerm(`${ato.codigo} - ${ato.descricao}`);
+                  setSuggestions([]);
+                }}
+                style={{ padding: 8, cursor: 'pointer', borderBottom: '1px solid #eee' }}
+              >
+                {ato.codigo} - {ato.descricao}
+              </li>
             ))}
-          </select>
-        </div>
+          </ul>
+        )}
+      </div>
+
+      {/* Quantidade e formas de pagamento */}
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 32, alignItems: 'flex-end', justifyContent: 'center' }}>
         <div>
           <label>Quantidade:</label>
           <input
             type="number"
             min={1}
             value={quantidade}
-            onChange={e => setQuantidade(Number(e.target.value))}
+            onChange={(e) => setQuantidade(Number(e.target.value))}
             style={{ marginLeft: 8, width: 60, padding: 6, borderRadius: 6, border: '1px solid #ccc' }}
           />
         </div>
@@ -138,7 +205,7 @@ function AtosPagos() {
       <div style={{ marginBottom: 24 }}>
         <h4 style={{ marginBottom: 8 }}>Formas de Pagamento</h4>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
-          {formasPagamento.map(fp => (
+          {formasPagamento.map((fp) => (
             <div key={fp.key} style={{ background: '#f5f5f5', borderRadius: 8, padding: 12, minWidth: 180 }}>
               <strong>{fp.label}</strong>
               <div style={{ marginTop: 8 }}>
@@ -147,7 +214,7 @@ function AtosPagos() {
                   type="number"
                   min={0}
                   value={pagamentos[fp.key].quantidade}
-                  onChange={e => handlePagamentoChange(fp.key, 'quantidade', e.target.value)}
+                  onChange={(e) => handlePagamentoChange(fp.key, 'quantidade', e.target.value)}
                   style={{ width: 50, marginLeft: 4, marginRight: 8, borderRadius: 4, border: '1px solid #ccc', padding: 4 }}
                 />
                 <label style={{ fontSize: 13 }}>Valor:</label>
@@ -156,7 +223,7 @@ function AtosPagos() {
                   min={0}
                   step="0.01"
                   value={pagamentos[fp.key].valor}
-                  onChange={e => handlePagamentoChange(fp.key, 'valor', e.target.value)}
+                  onChange={(e) => handlePagamentoChange(fp.key, 'valor', e.target.value)}
                   style={{ width: 80, marginLeft: 4, borderRadius: 4, border: '1px solid #ccc', padding: 4 }}
                 />
               </div>
@@ -169,7 +236,7 @@ function AtosPagos() {
         <button
           style={{ padding: '10px 24px', background: '#388e3c', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 'bold' }}
           onClick={adicionarAto}
-          disabled={!codigo || quantidade < 1 || !Object.values(pagamentos).some(p => p.valor > 0)}
+          disabled={!selectedAto || quantidade < 1 || !Object.values(pagamentos).some((p) => p.valor > 0)}
         >
           Adicionar Ato
         </button>
@@ -184,6 +251,7 @@ function AtosPagos() {
               <th style={{ border: '1px solid #ddd', padding: 8 }}>Data</th>
               <th style={{ border: '1px solid #ddd', padding: 8 }}>Hora</th>
               <th style={{ border: '1px solid #ddd', padding: 8 }}>Código Tributário</th>
+              <th style={{ border: '1px solid #ddd', padding: 8 }}>Descrição</th>
               <th style={{ border: '1px solid #ddd', padding: 8 }}>Quantidade</th>
               <th style={{ border: '1px solid #ddd', padding: 8 }}>Pagamentos</th>
               <th style={{ border: '1px solid #ddd', padding: 8 }}>Ações</th>
@@ -195,19 +263,27 @@ function AtosPagos() {
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.data}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.hora}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.descricao}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.quantidade}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>
                   {formasPagamento
-                    .filter(fp => ato.pagamentos[fp.key].valor > 0)
-                    .map(fp =>
-                      `${fp.label}: Qtd ${ato.pagamentos[fp.key].quantidade}, Valor R$ ${ato.pagamentos[fp.key].valor.toFixed(2)}`
+                    .filter((fp) => ato.pagamentos[fp.key].valor > 0)
+                    .map(
+                      (fp) =>
+                        `${fp.label}: Qtd ${ato.pagamentos[fp.key].quantidade}, Valor R$ ${ato.pagamentos[fp.key].valor.toFixed(2)}`
                     )
-                    .join(' | ')
-                  }
+                    .join(' | ')}
                 </td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>
                   <button
-                    style={{ background: '#d32f2f', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}
+                    style={{
+                      background: '#d32f2f',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 6,
+                      padding: '6px 12px',
+                      cursor: 'pointer',
+                    }}
                     onClick={() => removerAto(idx)}
                   >
                     Excluir
@@ -217,7 +293,9 @@ function AtosPagos() {
             ))}
             {atos.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: 16, color: '#888' }}>Nenhum ato adicionado hoje.</td>
+                <td colSpan={7} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
+                  Nenhum ato adicionado hoje.
+                </td>
               </tr>
             )}
           </tbody>
