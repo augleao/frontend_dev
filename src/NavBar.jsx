@@ -18,24 +18,42 @@ function NavBar() {
     marginLeft: '10px',
   };
 
+  // Função para o botão Voltar
+  const handleVoltar = () => {
+    window.history.back();
+  };
+
+  // Função para logout com redirecionamento para home.html
+  const handleLogout = () => {
+    logout(); // chama a função logout do contexto
+    navigate('/home.html'); // redireciona para home.html
+  };
+
   return (
-    <nav style={{ 
-      padding: '10px 20px', 
-      display: 'flex', 
-      justifyContent: 'flex-end', 
-      alignItems: 'center',
-      backgroundColor: '#f0f0f0',
-      borderBottom: '1px solid #ddd'
-    }}>
+    <nav
+      style={{
+        padding: '10px 20px',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        backgroundColor: '#f0f0f0',
+        borderBottom: '1px solid #ddd',
+      }}
+    >
       {user && user.cargo === 'Registrador' && (
         <Link to="/admin" style={{ ...buttonStyle, background: '#1976d2' }}>
           Contas
         </Link>
       )}
       {user ? (
-        <button style={buttonStyle} onClick={logout}>
-          Logout
-        </button>
+        <>
+          <button style={buttonStyle} onClick={handleVoltar}>
+            Voltar
+          </button>
+          <button style={buttonStyle} onClick={handleLogout}>
+            Logout
+          </button>
+        </>
       ) : (
         <>
           <Link to="/login" style={buttonStyle}>
