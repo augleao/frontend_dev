@@ -17,6 +17,14 @@ function formatarValor(valor) {
   return !isNaN(num) ? num.toFixed(2) : '0.00';
 }
 
+function formatarDataBR(dataISO) {
+  const data = new Date(dataISO);
+  const dia = String(data.getDate()).padStart(2, '0');
+  const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês começa do zero
+  const ano = data.getFullYear();
+  return `${dia}/${mes}/${ano}`;
+}
+
 function AtosPagos() {
   const [dataSelecionada, setDataSelecionada] = useState(() => {
     const hoje = new Date();
@@ -413,6 +421,7 @@ function AtosPagos() {
             )}
             {atos.map((ato, idx) => (
               <tr key={idx}>
+                <td>{formatarDataBR(ato.data)}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.data}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.hora}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
