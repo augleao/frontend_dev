@@ -48,7 +48,8 @@ function App() {
          }
         />
         <Route
-  path="/atos-pagos"
+   path="/atos-pagos"
+ //path="/AtosPagos"
   element={
     <PrivateRoute>
       <AtosPagos />
