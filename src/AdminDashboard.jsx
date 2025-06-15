@@ -81,7 +81,7 @@ export default function AdminDashboard() {
             fontSize: 16
           }}
         >
-          Importar Atos (Tabelas 07/08)
+          Editar Atos (Tabelas 07/08)
         </Link>
       </div>
       {msg && <div style={{ color: msg.includes('Erro') ? 'red' : 'green', marginBottom: 10 }}>{msg}</div>}
