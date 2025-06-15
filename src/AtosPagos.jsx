@@ -1,14 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 
-// Valor total calculado (valor unitário × quantidade)
-const valorTotal = selectedAto ? (selectedAto.valor_final ?? 0) * quantidade : 0;
 
-// Soma dos valores dos pagamentos
-const somaPagamentos = Object.values(pagamentos).reduce((acc, p) => acc + (parseFloat(p.valor) || 0), 0);
-
-// Função para comparar valores com tolerância
-const valoresIguais = (a, b, tolerancia = 0.01) => Math.abs(a - b) < tolerancia;
 const formasPagamento = [
   { key: 'dinheiro', label: 'Dinheiro' },
   { key: 'debito', label: 'Cartão de Débito' },
@@ -44,7 +37,7 @@ function AtosPagos() {
   const [suggestions, setSuggestions] = useState([]);
   const [selectedAto, setSelectedAto] = useState(null);
   const [quantidade, setQuantidade] = useState(1);
-const [pagamentos, setPagamentos] = useState(
+  const [pagamentos, setPagamentos] = useState(
   formasPagamento.reduce((acc, fp) => {
     acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
     return acc;
@@ -56,6 +49,15 @@ const [pagamentos, setPagamentos] = useState(
   const nomeUsuario = usuario?.nome || 'Usuário não identificado';
 
   const debounceTimeout = useRef(null);
+
+  // Valor total calculado (valor unitário × quantidade)
+const valorTotal = selectedAto ? (selectedAto.valor_final ?? 0) * quantidade : 0;
+
+// Soma dos valores dos pagamentos
+const somaPagamentos = Object.values(pagamentos).reduce((acc, p) => acc + (parseFloat(p.valor) || 0), 0);
+
+// Função para comparar valores com tolerância
+const valoresIguais = (a, b, tolerancia = 0.01) => Math.abs(a - b) < tolerancia;
 
   // Buscar atos pagos para a data selecionada
   useEffect(() => {
