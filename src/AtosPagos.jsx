@@ -12,6 +12,12 @@ function formatarData(data) {
   return data.toLocaleDateString('pt-BR');
 }
 
+// Função utilitária para formatar valores monetários com segurança
+function formatarValor(valor) {
+  const num = parseFloat(valor);
+  return !isNaN(num) ? num.toFixed(2) : '0.00';
+}
+
 function AtosPagos() {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -236,7 +242,7 @@ function AtosPagos() {
                 }}
                 style={{ padding: 8, cursor: 'pointer', borderBottom: '1px solid #eee' }}
               >
-                {ato.codigo} - {ato.descricao} - R$ {ato.valor_final?.toFixed(2) ?? '0.00'}
+                {ato.codigo} - {ato.descricao} - R$ {formatarValor(ato.valor_final)}
               </li>
             ))}
           </ul>
@@ -258,7 +264,7 @@ function AtosPagos() {
 
       {/* Valor total do(s) ato(s) */}
       <div style={{ marginBottom: 24, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto', fontWeight: 'bold' }}>
-        Valor do(s) ato(s): R$ {valorTotalAtos.toFixed(2)}
+        Valor do(s) ato(s): R$ {formatarValor(valorTotalAtos)}
       </div>
 
       {/* Formas de pagamento */}
@@ -327,16 +333,16 @@ function AtosPagos() {
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.descricao}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.quantidade}</td>
-                <td style={{ border: '1px solid #ddd', padding: 8 }}>R$ {ato.valor_unitario.toFixed(2)}</td>
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>R$ {formatarValor(ato.valor_unitario)}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>
                   {formasPagamento
                     .filter((fp) => {
                       const val = ato.pagamentos[fp.key]?.valor;
-                      return val !== undefined && val !== null && Number(val) > 0;
+                      return val !== undefined && val !== null && !isNaN(parseFloat(val)) && parseFloat(val) > 0;
                     })
                     .map((fp) => {
                       const val = ato.pagamentos[fp.key]?.valor;
-                      const valorNum = Number(val);
+                      const valorNum = parseFloat(val);
                       const valorFormatado = !isNaN(valorNum) ? valorNum.toFixed(2) : '0.00';
                       return `${fp.label}: Qtd ${ato.pagamentos[fp.key]?.quantidade ?? 0}, Valor R$ ${valorFormatado}`;
                     })
