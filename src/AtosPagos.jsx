@@ -33,39 +33,42 @@ function AtosPagos() {
   const debounceTimeout = useRef(null);
 
   // Busca atos no backend conforme o usuário digita (debounce)
-  useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setSuggestions([]);
-      return;
-    }
+useEffect(() => {
+  if (searchTerm.trim() === '') {
+    setSuggestions([]);
+    return;
+  }
 
-    setLoadingSuggestions(true);
+  setLoadingSuggestions(true);
 
-    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+  if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
 
-    debounceTimeout.current = setTimeout(async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos?search=${encodeURIComponent(searchTerm)}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const data = await res.json();
-        if (res.ok) {
-          setSuggestions(data.atos || []);
-        } else {
-          setSuggestions([]);
+  debounceTimeout.current = setTimeout(async () => {
+    console.log('Buscando atos para:', searchTerm);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos?search=${encodeURIComponent(searchTerm)}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-      } catch {
+      );
+      const data = await res.json();
+      console.log('Resposta da API:', data);
+      if (res.ok) {
+        setSuggestions(data.atos || []);
+      } else {
         setSuggestions([]);
       }
-      setLoadingSuggestions(false);
-    }, 300);
+    } catch (e) {
+      console.error('Erro ao buscar atos:', e);
+      setSuggestions([]);
+    }
+    setLoadingSuggestions(false);
+  }, 300);
 
-    return () => clearTimeout(debounceTimeout.current);
-  }, [searchTerm]);
+  return () => clearTimeout(debounceTimeout.current);
+}, [searchTerm]);
 
   const handlePagamentoChange = (key, field, value) => {
     setPagamentos((prev) => ({
