@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+
+// Valor total calculado (valor unitário × quantidade)
+const valorTotal = selectedAto ? (selectedAto.valor_final ?? 0) * quantidade : 0;
+
+// Soma dos valores dos pagamentos
+const somaPagamentos = Object.values(pagamentos).reduce((acc, p) => acc + (parseFloat(p.valor) || 0), 0);
+
+// Função para comparar valores com tolerância
+const valoresIguais = (a, b, tolerancia = 0.01) => Math.abs(a - b) < tolerancia;
 const formasPagamento = [
   { key: 'dinheiro', label: 'Dinheiro' },
   { key: 'debito', label: 'Cartão de Débito' },
@@ -377,6 +386,15 @@ const handleQuantidadeChange = (qtd) => {
           disabled={!selectedAto}
           style={{ width: 80, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc' }}
         />
+        <div>
+    <label>Valor Total:</label>
+    <input
+      type="text"
+      value={`R$ ${valorTotal.toFixed(2)}`}
+      readOnly
+      style={{ width: 120, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc', backgroundColor: '#eee', textAlign: 'right' }}
+    />
+  </div>
       </div>
 
       {/* Formas de pagamento */}
