@@ -239,7 +239,15 @@ function ImportarAtos() {
                     <td style={{ border: '1px solid #ddd', padding: 12, textAlign: 'center' }}>
                       {editIndex === idx ? (
                         <>
-                          <button onClick={handleEditSave} style={buttonSaveStyle}>Salvar</button>
+                          <button onClick={handleEditSave} style={{
+            padding: '10px 20px',
+            background: '#1976d2',
+            color: '#fff',
+            borderRadius: 8,
+            textDecoration: 'none',
+            fontWeight: 'bold',
+            fontSize: 16
+          }}>Salvar</button>
                           <button onClick={() => setEditIndex(null)} style={buttonCancelStyle}>Cancelar</button>
                         </>
                       ) : (
