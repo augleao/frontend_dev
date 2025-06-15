@@ -106,8 +106,6 @@ function AtosPagos() {
       const novo = { ...prev };
       const valorUnitario = selectedAto?.valor_total ?? 0;
       formasPagamento.forEach((fp) => {
-        // Ajusta valor para refletir a nova quantidade total do ato
-        // Mantém a quantidade de pagamento, mas recalcula valor total
         novo[fp.key].valor = valorUnitario * novo[fp.key].quantidade;
       });
       return novo;
@@ -152,6 +150,9 @@ function AtosPagos() {
   const removerAto = (index) => {
     setAtos(atos.filter((_, i) => i !== index));
   };
+
+  // Calcula valor total do(s) ato(s) selecionado(s)
+  const valorTotalAtos = selectedAto ? (selectedAto.valor_total ?? 0) * quantidade : 0;
 
   return (
     <div style={{ maxWidth: 800, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 32 }}>
@@ -243,7 +244,7 @@ function AtosPagos() {
       </div>
 
       {/* Quantidade total do ato */}
-      <div style={{ marginBottom: 24, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }}>
+      <div style={{ marginBottom: 8, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }}>
         <label>Quantidade total do ato selecionado:</label>
         <input
           type="number"
@@ -253,6 +254,11 @@ function AtosPagos() {
           disabled={!selectedAto}
           style={{ width: 80, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc' }}
         />
+      </div>
+
+      {/* Valor total do(s) ato(s) */}
+      <div style={{ marginBottom: 24, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto', fontWeight: 'bold' }}>
+        Valor do(s) ato(s): R$ {valorTotalAtos.toFixed(2)}
       </div>
 
       {/* Formas de pagamento */}
