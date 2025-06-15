@@ -243,7 +243,15 @@ function ImportarAtos() {
                           <button onClick={() => setEditIndex(null)} style={buttonCancelStyle}>Cancelar</button>
                         </>
                       ) : (
-                        <button onClick={() => handleEdit(idx)} style={buttonEditStyle}>Editar</button>
+                        <button onClick={() => handleEdit(idx)} style={{
+            padding: '10px 20px',
+            background: '#1976d2',
+            color: '#fff',
+            borderRadius: 8,
+            textDecoration: 'none',
+            fontWeight: 'bold',
+            fontSize: 16
+          }}>Editar</button>
                       )}
                     </td>
                   </tr>
