@@ -32,6 +32,9 @@ function AtosPagos() {
 
   const debounceTimeout = useRef(null);
 
+  // Log do estado suggestions para debug
+  console.log('Sugestões atuais:', suggestions);
+
   // Busca atos no backend conforme o usuário digita (debounce)
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -44,6 +47,7 @@ function AtosPagos() {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
 
     debounceTimeout.current = setTimeout(async () => {
+      console.log('Buscando atos para:', searchTerm);
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
@@ -53,6 +57,7 @@ function AtosPagos() {
           }
         );
         const data = await res.json();
+        console.log('Resposta da API:', data);
         if (res.ok) {
           setSuggestions(data.atos || []);
         } else {
@@ -147,6 +152,7 @@ function AtosPagos() {
           type="text"
           value={searchTerm}
           onChange={(e) => {
+            console.log('Digitado:', e.target.value);
             setSearchTerm(e.target.value);
             setSelectedAto(null);
           }}
@@ -188,19 +194,22 @@ function AtosPagos() {
               boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
             }}
           >
-            {suggestions.map((ato) => (
-              <li
-                key={ato.id}
-                onClick={() => {
-                  setSelectedAto(ato);
-                  setSearchTerm(`${ato.codigo} - ${ato.descricao}`);
-                  setSuggestions([]);
-                }}
-                style={{ padding: 8, cursor: 'pointer', borderBottom: '1px solid #eee' }}
-              >
-                {ato.codigo} - {ato.descricao}
-              </li>
-            ))}
+            {suggestions.map((ato) => {
+              console.log('Renderizando sugestão:', ato);
+              return (
+                <li
+                  key={ato.id}
+                  onClick={() => {
+                    setSelectedAto(ato);
+                    setSearchTerm(`${ato.codigo} - ${ato.descricao}`);
+                    setSuggestions([]);
+                  }}
+                  style={{ padding: 8, cursor: 'pointer', borderBottom: '1px solid #eee' }}
+                >
+                  {ato.codigo} - {ato.descricao}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
