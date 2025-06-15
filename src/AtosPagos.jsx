@@ -129,7 +129,7 @@ function AtosPagos() {
       codigo: selectedAto.codigo,
       descricao: selectedAto.descricao,
       quantidade,
-      valor_unitario: selectedAto.valor_final,
+      valor_unitario: selectedAto.valor_final ?? 0,
       pagamentos: { ...pagamentos },
     };
     setAtos((prev) => [...prev, novoAto]);
@@ -236,7 +236,7 @@ function AtosPagos() {
                 }}
                 style={{ padding: 8, cursor: 'pointer', borderBottom: '1px solid #eee' }}
               >
-                {ato.codigo} - {ato.descricao} - R$ {ato.valor_total?.toFixed(2) ?? '0.00'}
+                {ato.codigo} - {ato.descricao} - R$ {ato.valor_final?.toFixed(2) ?? '0.00'}
               </li>
             ))}
           </ul>
