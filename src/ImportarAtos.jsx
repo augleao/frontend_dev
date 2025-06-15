@@ -1,15 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function ImportarAtos() {
-  const [tabela07, setTabela07] = useState(null);
-  const [tabela08, setTabela08] = useState(null);
   const [atos, setAtos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
   const [editIndex, setEditIndex] = useState(null);
   const [editAto, setEditAto] = useState({});
 
-  // Estilo padrão dos botões
+  // Estilos dos botões (mantidos do seu código)
   const buttonStyle = {
     padding: '10px 24px',
     background: '#1976d2',
@@ -22,65 +20,34 @@ function ImportarAtos() {
     marginRight: 8,
     transition: 'background 0.2s'
   };
+  const buttonDisabledStyle = { ...buttonStyle, background: '#ccc', cursor: 'not-allowed' };
+  const buttonEditStyle = { ...buttonStyle, background: '#2196f3' };
+  const buttonSaveStyle = { ...buttonStyle, background: '#388e3c' };
+  const buttonCancelStyle = { ...buttonStyle, background: '#d32f2f' };
 
-  const buttonDisabledStyle = {
-    ...buttonStyle,
-    background: '#ccc',
-    cursor: 'not-allowed'
-  };
-
-  const buttonEditStyle = {
-    ...buttonStyle,
-    background: '#2196f3'
-  };
-
-  const buttonSaveStyle = {
-    ...buttonStyle,
-    background: '#388e3c'
-  };
-
-  const buttonCancelStyle = {
-    ...buttonStyle,
-    background: '#d32f2f'
-  };
-
-  // Handler para upload dos arquivos
-  const handleFileChange = (e, tabela) => {
-    if (tabela === '07') setTabela07(e.target.files[0]);
-    if (tabela === '08') setTabela08(e.target.files[0]);
-  };
-
-  // Envia os arquivos para o backend e recebe os atos extraídos
-  const handleUpload = async () => {
-    if (!tabela07 || !tabela08) {
-      setMsg('Envie os dois arquivos PDF.');
-      return;
-    }
-    setLoading(true);
-    setMsg('');
-    const formData = new FormData();
-    formData.append('tabela07', tabela07);
-    formData.append('tabela08', tabela08);
-
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/importar-atos`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData,
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setAtos(data.atos);
-        setMsg('Atos extraídos! Confira e edite se necessário.');
-      } else {
-        setMsg(data.message || 'Erro ao extrair atos.');
+  // Busca os atos do backend ao montar o componente
+  useEffect(() => {
+    const fetchAtos = async () => {
+      setLoading(true);
+      setMsg('');
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setAtos(data.atos);
+        } else {
+          setMsg(data.message || 'Erro ao carregar atos.');
+        }
+      } catch (err) {
+        setMsg('Erro ao carregar atos.');
       }
-    } catch (err) {
-      setMsg('Erro ao enviar arquivos.');
-    }
-    setLoading(false);
-  };
+      setLoading(false);
+    };
+    fetchAtos();
+  }, []);
 
   // Editar ato
   const handleEdit = (idx) => {
@@ -99,78 +66,41 @@ function ImportarAtos() {
     setEditAto({});
   };
 
-  // Salvar no sistema
+  // Salvar alterações no backend (um por um)
   const handleSalvar = async () => {
     setLoading(true);
     setMsg('');
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/salvar-atos`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ atos }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setMsg('Atos salvos com sucesso!');
-        setAtos([]);
-        setTabela07(null);
-        setTabela08(null);
-      } else {
-        setMsg(data.message || 'Erro ao salvar atos.');
+      for (const ato of atos) {
+        const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos/${ato.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(ato),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.message || 'Erro ao salvar ato.');
+        }
       }
+      setMsg('Atos salvos com sucesso!');
     } catch (err) {
-      setMsg('Erro ao salvar atos.');
+      setMsg(err.message || 'Erro ao salvar atos.');
     }
     setLoading(false);
   };
 
   return (
     <div style={{ maxWidth: 900, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 32 }}>
-      <h2>Importar Atos das Tabelas 07 e 08 (TJMG)</h2>
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold' }}>
-            Tabela 07 (TXT):
-          </label>
-          <input 
-            type="file" 
-            accept=".txt" 
-            onChange={e => handleFileChange(e, '07')}
-            style={{ padding: 8, border: '1px solid #ddd', borderRadius: 4, width: '100%', maxWidth: 400 }}
-          />
-          {tabela07 && <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>Arquivo selecionado: {tabela07.name}</div>}
-        </div>
-        
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold' }}>
-            Tabela 08 (TXT):
-          </label>
-          <input 
-            type="file" 
-            accept=".txt" 
-            onChange={e => handleFileChange(e, '08')}
-            style={{ padding: 8, border: '1px solid #ddd', borderRadius: 4, width: '100%', maxWidth: 400 }}
-          />
-          {tabela08 && <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>Arquivo selecionado: {tabela08.name}</div>}
-        </div>
-        
-        <button
-          onClick={handleUpload}
-          disabled={loading || !tabela07 || !tabela08}
-          style={loading || !tabela07 || !tabela08 ? buttonDisabledStyle : buttonStyle}
-        >
-          {loading ? 'Processando...' : 'Extrair Atos'}
-        </button>
-      </div>
-      
+      <h2>Editar Atos das Tabelas 07 e 08 (TJMG)</h2>
+
       {msg && (
-        <div style={{ 
-          marginBottom: 16, 
-          padding: 12, 
+        <div style={{
+          marginBottom: 16,
+          padding: 12,
           borderRadius: 4,
           background: msg.includes('sucesso') ? '#e8f5e8' : '#ffeaea',
           color: msg.includes('sucesso') ? '#2e7d32' : '#d32f2f',
@@ -179,10 +109,13 @@ function ImportarAtos() {
           {msg}
         </div>
       )}
-      
+
+      {loading && <p>Carregando...</p>}
+
+      {!loading && atos.length === 0 && <p>Nenhum ato encontrado.</p>}
+
       {atos.length > 0 && (
         <>
-          <h3 style={{ marginBottom: 16 }}>Atos extraídos ({atos.length} encontrados)</h3>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa' }}>
               <thead>
@@ -196,12 +129,12 @@ function ImportarAtos() {
               </thead>
               <tbody>
                 {atos.map((ato, idx) => (
-                  <tr key={idx} style={{ background: idx % 2 === 0 ? '#fff' : '#f9f9f9' }}>
+                  <tr key={ato.id} style={{ background: idx % 2 === 0 ? '#fff' : '#f9f9f9' }}>
                     <td style={{ border: '1px solid #ddd', padding: 12 }}>
                       {editIndex === idx ? (
-                        <input 
-                          name="codigo" 
-                          value={editAto.codigo} 
+                        <input
+                          name="codigo"
+                          value={editAto.codigo}
                           onChange={handleEditChange}
                           style={{ width: '100%', padding: 4, border: '1px solid #ccc', borderRadius: 4 }}
                         />
@@ -211,10 +144,10 @@ function ImportarAtos() {
                     </td>
                     <td style={{ border: '1px solid #ddd', padding: 12 }}>
                       {editIndex === idx ? (
-                        <textarea 
-                          name="descricao" 
-                          value={editAto.descricao} 
-                          onChange={handleEditChange} 
+                        <textarea
+                          name="descricao"
+                          value={editAto.descricao}
+                          onChange={handleEditChange}
                           style={{ width: '100%', minWidth: 300, padding: 4, border: '1px solid #ccc', borderRadius: 4, minHeight: 60 }}
                         />
                       ) : (
@@ -239,26 +172,11 @@ function ImportarAtos() {
                     <td style={{ border: '1px solid #ddd', padding: 12, textAlign: 'center' }}>
                       {editIndex === idx ? (
                         <>
-                          <button 
-                            onClick={handleEditSave} 
-                            style={buttonSaveStyle}
-                          >
-                            Salvar
-                          </button>
-                          <button 
-                            onClick={() => setEditIndex(null)}
-                            style={buttonCancelStyle}
-                          >
-                            Cancelar
-                          </button>
+                          <button onClick={handleEditSave} style={buttonSaveStyle}>Salvar</button>
+                          <button onClick={() => setEditIndex(null)} style={buttonCancelStyle}>Cancelar</button>
                         </>
                       ) : (
-                        <button 
-                          onClick={() => handleEdit(idx)}
-                          style={buttonEditStyle}
-                        >
-                          Editar
-                        </button>
+                        <button onClick={() => handleEdit(idx)} style={buttonEditStyle}>Editar</button>
                       )}
                     </td>
                   </tr>
@@ -267,12 +185,8 @@ function ImportarAtos() {
             </table>
           </div>
           <div style={{ textAlign: 'center', marginTop: 24 }}>
-            <button
-              onClick={handleSalvar}
-              disabled={loading}
-              style={loading ? buttonDisabledStyle : buttonSaveStyle}
-            >
-              {loading ? 'Salvando...' : 'Salvar no Sistema'}
+            <button onClick={handleSalvar} disabled={loading} style={loading ? buttonDisabledStyle : buttonSaveStyle}>
+              {loading ? 'Salvando...' : 'Salvar todas alterações'}
             </button>
           </div>
         </>
