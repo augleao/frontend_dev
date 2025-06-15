@@ -158,27 +158,25 @@ useEffect(() => {
         />
         {loadingSuggestions && <div style={{ position: 'absolute', top: '100%', left: 0, background: '#fff', border: '1px solid #ccc', width: '100%', zIndex: 10, padding: 8 }}>Carregando...</div>}
         {!loadingSuggestions && suggestions.length > 0 && (
-          <ul
-            style={{
-              listStyle: 'none',
-              margin: 0,
-              padding: 0,
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              right: 0,
-              maxHeight: 200,
-              overflowY: 'auto',
-              background: '#fff',
-              border: '1px solid #ccc',
-              borderTop: 'none',
-              zIndex: 10,
-            }}
-          >
-            {
-  suggestions.map((ato) => {
-    console.log('Renderizando sugestão:', ato);
-    return (
+  <ul
+    style={{
+      listStyle: 'none',
+      margin: 0,
+      padding: 0,
+      position: 'absolute',
+      top: '100%',
+      left: 0,
+      right: 0,
+      maxHeight: 200,
+      overflowY: 'auto',
+      background: '#fff',
+      border: '1px solid #ccc',
+      borderTop: 'none',
+      zIndex: 9999, // aumentar z-index
+      boxShadow: '0 4px 6px rgba(0,0,0,0.1)', // sombra para destacar
+    }}
+  >
+    {suggestions.map((ato) => (
       <li
         key={ato.id}
         onClick={() => {
@@ -190,11 +188,9 @@ useEffect(() => {
       >
         {ato.codigo} - {ato.descricao}
       </li>
-    );
-  })
-}
-          </ul>
-        )}
+    ))}
+  </ul>
+)}
       </div>
 
       {/* Quantidade e formas de pagamento */}
