@@ -6,8 +6,9 @@ function ImportarAtos() {
   const [msg, setMsg] = useState('');
   const [editIndex, setEditIndex] = useState(null);
   const [editAto, setEditAto] = useState({});
+  const [novoAto, setNovoAto] = useState({ codigo: '', descricao: '' });
 
-  // Estilos dos botões (mantidos do seu código)
+  // Estilos dos botões
   const buttonStyle = {
     padding: '10px 24px',
     background: '#1976d2',
@@ -93,6 +94,41 @@ function ImportarAtos() {
     setLoading(false);
   };
 
+  // Manipular a mudança nos campos do novo ato
+  const handleNovoAtoChange = (e) => {
+    const { name, value } = e.target;
+    setNovoAto({ ...novoAto, [name]: value });
+  };
+
+  // Enviar o novo ato para o backend
+  const handleNovoAtoSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMsg('');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(novoAto),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAtos([...atos, data.ato]);
+        setNovoAto({ codigo: '', descricao: '' });
+        setMsg('Ato cadastrado com sucesso!');
+      } else {
+        setMsg(data.message || 'Erro ao cadastrar ato.');
+      }
+    } catch (err) {
+      setMsg('Erro ao cadastrar ato.');
+    }
+    setLoading(false);
+  };
+
   return (
     <div style={{ maxWidth: 900, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 32 }}>
       <h2>Editar Atos das Tabelas 07 e 08 (TJMG)</h2>
@@ -113,6 +149,35 @@ function ImportarAtos() {
       {loading && <p>Carregando...</p>}
 
       {!loading && atos.length === 0 && <p>Nenhum ato encontrado.</p>}
+
+      {/* Formulário para inserir um novo ato */}
+      <h3 style={{ marginBottom: 16 }}>Inserir Novo Ato</h3>
+      <form onSubmit={handleNovoAtoSubmit} style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold' }}>Código:</label>
+          <input
+            type="text"
+            name="codigo"
+            value={novoAto.codigo}
+            onChange={handleNovoAtoChange}
+            style={{ width: '100%', padding: 8, border: '1px solid #ddd', borderRadius: 4 }}
+            required
+          />
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold' }}>Descrição:</label>
+          <textarea
+            name="descricao"
+            value={novoAto.descricao}
+            onChange={handleNovoAtoChange}
+            style={{ width: '100%', padding: 8, border: '1px solid #ddd', borderRadius: 4 }}
+            required
+          />
+        </div>
+        <button type="submit" disabled={loading} style={loading ? buttonDisabledStyle : buttonStyle}>
+          {loading ? 'Cadastrando...' : 'Cadastrar Ato'}
+        </button>
+      </form>
 
       {atos.length > 0 && (
         <>
@@ -158,17 +223,19 @@ function ImportarAtos() {
                       {editIndex === idx ? (
                         <input
                           name="valor_final"
-                          value={editAto.valor_final}
+                          value={editAto.valor_final || ''}
                           onChange={handleEditChange}
                           type="number"
                           step="0.01"
                           style={{ width: '100%', padding: 4, border: '1px solid #ccc', borderRadius: 4 }}
                         />
                       ) : (
-                        `R$ ${Number(ato.valor_final).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        ato.valor_final !== null && ato.valor_final !== undefined
+                          ? `R$ ${Number(ato.valor_final).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : ''
                       )}
                     </td>
-                    <td style={{ border: '1px solid #ddd', padding: 12 }}>{ato.origem}</td>
+                    <td style={{ border: '1px solid #ddd', padding: 12 }}>{ato.origem || ''}</td>
                     <td style={{ border: '1px solid #ddd', padding: 12, textAlign: 'center' }}>
                       {editIndex === idx ? (
                         <>
