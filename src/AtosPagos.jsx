@@ -32,9 +32,6 @@ function AtosPagos() {
 
   const debounceTimeout = useRef(null);
 
-  // Log do estado suggestions para debug
-  console.log('Sugestões atuais:', suggestions);
-
   // Busca atos no backend conforme o usuário digita (debounce)
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -47,7 +44,6 @@ function AtosPagos() {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
 
     debounceTimeout.current = setTimeout(async () => {
-      console.log('Buscando atos para:', searchTerm);
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
@@ -57,7 +53,6 @@ function AtosPagos() {
           }
         );
         const data = await res.json();
-        console.log('Resposta da API:', data);
         if (res.ok) {
           setSuggestions(data.atos || []);
         } else {
@@ -73,14 +68,50 @@ function AtosPagos() {
     return () => clearTimeout(debounceTimeout.current);
   }, [searchTerm]);
 
-  const handlePagamentoChange = (key, field, value) => {
-    setPagamentos((prev) => ({
-      ...prev,
-      [key]: {
-        ...prev[key],
-        [field]: field === 'quantidade' ? parseInt(value) || 0 : parseFloat(value) || 0,
-      },
-    }));
+  // Quando seleciona um ato, reseta pagamentos e quantidade
+  useEffect(() => {
+    if (selectedAto) {
+      setQuantidade(1);
+      setPagamentos(
+        formasPagamento.reduce((acc, fp) => {
+          acc[fp.key] = { quantidade: 0, valor: 0 };
+          return acc;
+        }, {})
+      );
+    }
+  }, [selectedAto]);
+
+  // Atualiza o valor de cada forma de pagamento automaticamente ao mudar a quantidade de pagamento
+  const handlePagamentoQuantidadeChange = (key, qtd) => {
+    qtd = parseInt(qtd);
+    if (isNaN(qtd) || qtd < 0) qtd = 0;
+    setPagamentos((prev) => {
+      const novo = { ...prev };
+      novo[key].quantidade = qtd;
+      // Calcula valor = qtd * valor unitário do ato
+      const valorUnitario = selectedAto?.valor_total ?? 0;
+      novo[key].valor = valorUnitario * qtd;
+      return novo;
+    });
+  };
+
+  // Quantidade total do ato selecionado
+  const handleQuantidadeChange = (qtd) => {
+    qtd = parseInt(qtd);
+    if (isNaN(qtd) || qtd < 1) qtd = 1;
+    setQuantidade(qtd);
+
+    // Atualiza os valores dos pagamentos multiplicando pelo novo qtd total
+    setPagamentos((prev) => {
+      const novo = { ...prev };
+      const valorUnitario = selectedAto?.valor_total ?? 0;
+      formasPagamento.forEach((fp) => {
+        // Ajusta valor para refletir a nova quantidade total do ato
+        // Mantém a quantidade de pagamento, mas recalcula valor total
+        novo[fp.key].valor = valorUnitario * novo[fp.key].quantidade;
+      });
+      return novo;
+    });
   };
 
   const adicionarAto = () => {
@@ -100,6 +131,7 @@ function AtosPagos() {
       codigo: selectedAto.codigo,
       descricao: selectedAto.descricao,
       quantidade,
+      valor_unitario: selectedAto.valor_total,
       pagamentos: { ...pagamentos },
     };
     setAtos((prev) => [...prev, novoAto]);
@@ -152,7 +184,6 @@ function AtosPagos() {
           type="text"
           value={searchTerm}
           onChange={(e) => {
-            console.log('Digitado:', e.target.value);
             setSearchTerm(e.target.value);
             setSelectedAto(null);
           }}
@@ -194,40 +225,37 @@ function AtosPagos() {
               boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
             }}
           >
-            {suggestions.map((ato) => {
-              console.log('Renderizando sugestão:', ato);
-              return (
-                <li
-                  key={ato.id}
-                  onClick={() => {
-                    setSelectedAto(ato);
-                    setSearchTerm(`${ato.codigo} - ${ato.descricao}`);
-                    setSuggestions([]);
-                  }}
-                  style={{ padding: 8, cursor: 'pointer', borderBottom: '1px solid #eee' }}
-                >
-                  {ato.codigo} - {ato.descricao}
-                </li>
-              );
-            })}
+            {suggestions.map((ato) => (
+              <li
+                key={ato.id}
+                onClick={() => {
+                  setSelectedAto(ato);
+                  setSearchTerm(`${ato.codigo} - ${ato.descricao}`);
+                  setSuggestions([]);
+                }}
+                style={{ padding: 8, cursor: 'pointer', borderBottom: '1px solid #eee' }}
+              >
+                {ato.codigo} - {ato.descricao} - R$ {ato.valor_total?.toFixed(2) ?? '0.00'}
+              </li>
+            ))}
           </ul>
         )}
       </div>
 
-      {/* Quantidade e formas de pagamento */}
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 32, alignItems: 'flex-end', justifyContent: 'center' }}>
-        <div>
-          <label>Quantidade:</label>
-          <input
-            type="number"
-            min={1}
-            value={quantidade}
-            onChange={(e) => setQuantidade(Number(e.target.value))}
-            style={{ marginLeft: 8, width: 60, padding: 6, borderRadius: 6, border: '1px solid #ccc' }}
-          />
-        </div>
+      {/* Quantidade total do ato */}
+      <div style={{ marginBottom: 24, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }}>
+        <label>Quantidade total do ato selecionado:</label>
+        <input
+          type="number"
+          min={1}
+          value={quantidade}
+          onChange={(e) => handleQuantidadeChange(e.target.value)}
+          disabled={!selectedAto}
+          style={{ width: 80, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc' }}
+        />
       </div>
 
+      {/* Formas de pagamento */}
       <div style={{ marginBottom: 24 }}>
         <h4 style={{ marginBottom: 8 }}>Formas de Pagamento</h4>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
@@ -240,7 +268,8 @@ function AtosPagos() {
                   type="number"
                   min={0}
                   value={pagamentos[fp.key].quantidade}
-                  onChange={(e) => handlePagamentoChange(fp.key, 'quantidade', e.target.value)}
+                  onChange={(e) => handlePagamentoQuantidadeChange(fp.key, e.target.value)}
+                  disabled={!selectedAto}
                   style={{ width: 50, marginLeft: 4, marginRight: 8, borderRadius: 4, border: '1px solid #ccc', padding: 4 }}
                 />
                 <label style={{ fontSize: 13 }}>Valor:</label>
@@ -249,8 +278,8 @@ function AtosPagos() {
                   min={0}
                   step="0.01"
                   value={pagamentos[fp.key].valor}
-                  onChange={(e) => handlePagamentoChange(fp.key, 'valor', e.target.value)}
-                  style={{ width: 80, marginLeft: 4, borderRadius: 4, border: '1px solid #ccc', padding: 4 }}
+                  readOnly
+                  style={{ width: 80, marginLeft: 4, borderRadius: 4, border: '1px solid #ccc', padding: 4, backgroundColor: '#eee' }}
                 />
               </div>
             </div>
@@ -279,6 +308,7 @@ function AtosPagos() {
               <th style={{ border: '1px solid #ddd', padding: 8 }}>Código Tributário</th>
               <th style={{ border: '1px solid #ddd', padding: 8 }}>Descrição</th>
               <th style={{ border: '1px solid #ddd', padding: 8 }}>Quantidade</th>
+              <th style={{ border: '1px solid #ddd', padding: 8 }}>Valor Unitário</th>
               <th style={{ border: '1px solid #ddd', padding: 8 }}>Pagamentos</th>
               <th style={{ border: '1px solid #ddd', padding: 8 }}>Ações</th>
             </tr>
@@ -291,6 +321,7 @@ function AtosPagos() {
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.descricao}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.quantidade}</td>
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>R$ {ato.valor_unitario.toFixed(2)}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>
                   {formasPagamento
                     .filter((fp) => ato.pagamentos[fp.key].valor > 0)
@@ -319,7 +350,7 @@ function AtosPagos() {
             ))}
             {atos.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
+                <td colSpan={8} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
                   Nenhum ato adicionado hoje.
                 </td>
               </tr>
