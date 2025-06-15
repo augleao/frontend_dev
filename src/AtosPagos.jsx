@@ -12,13 +12,17 @@ function formatarData(data) {
   return data.toLocaleDateString('pt-BR');
 }
 
-// Função utilitária para formatar valores monetários com segurança
 function formatarValor(valor) {
   const num = parseFloat(valor);
   return !isNaN(num) ? num.toFixed(2) : '0.00';
 }
 
 function AtosPagos() {
+  const [dataSelecionada, setDataSelecionada] = useState(() => {
+    const hoje = new Date();
+    return hoje.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  });
+  const [atos, setAtos] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [selectedAto, setSelectedAto] = useState(null);
@@ -29,14 +33,37 @@ function AtosPagos() {
       return acc;
     }, {})
   );
-  const [atos, setAtos] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
-  const dataHoje = formatarData(new Date());
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
   const nomeUsuario = usuario?.nome || 'Usuário não identificado';
 
   const debounceTimeout = useRef(null);
+
+  // Buscar atos pagos para a data selecionada
+  useEffect(() => {
+    async function carregarAtosPorData() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${dataSelecionada}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const data = await res.json();
+        if (res.ok) {
+          setAtos(data.atosPagos || []);
+        } else {
+          setAtos([]);
+        }
+      } catch (e) {
+        console.error('Erro ao carregar atos pagos:', e);
+        setAtos([]);
+      }
+    }
+    carregarAtosPorData();
+  }, [dataSelecionada]);
 
   // Busca atos no backend conforme o usuário digita (debounce)
   useEffect(() => {
@@ -94,7 +121,6 @@ function AtosPagos() {
     setPagamentos((prev) => {
       const novo = { ...prev };
       novo[key].quantidade = qtd;
-      // Calcula valor = qtd * valor unitário do ato
       const valorUnitario = selectedAto?.valor_final ?? 0;
       novo[key].valor = valorUnitario * qtd;
       return novo;
@@ -107,7 +133,6 @@ function AtosPagos() {
     if (isNaN(qtd) || qtd < 1) qtd = 1;
     setQuantidade(qtd);
 
-    // Atualiza os valores dos pagamentos multiplicando pelo novo qtd total
     setPagamentos((prev) => {
       const novo = { ...prev };
       const valorUnitario = selectedAto?.valor_final ?? 0;
@@ -118,7 +143,7 @@ function AtosPagos() {
     });
   };
 
-  const adicionarAto = () => {
+  const adicionarAto = async () => {
     if (!selectedAto) {
       alert('Selecione um ato válido.');
       return;
@@ -129,42 +154,95 @@ function AtosPagos() {
       return;
     }
 
+    // Montar objeto para salvar no backend
     const novoAto = {
-      data: dataHoje,
+      data: dataSelecionada,
       hora: new Date().toLocaleTimeString(),
       codigo: selectedAto.codigo,
       descricao: selectedAto.descricao,
       quantidade,
       valor_unitario: selectedAto.valor_final ?? 0,
-      pagamentos: { ...pagamentos },
+      pagamentos,
     };
-    setAtos((prev) => [...prev, novoAto]);
 
-    // Resetar campos
-    setSelectedAto(null);
-    setSearchTerm('');
-    setQuantidade(1);
-    setPagamentos(
-      formasPagamento.reduce((acc, fp) => {
-        acc[fp.key] = { quantidade: 0, valor: 0 };
-        return acc;
-      }, {})
-    );
-    setSuggestions([]);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(novoAto),
+        }
+      );
+      if (res.ok) {
+        // Atualiza lista localmente
+        setAtos((prev) => [...prev, novoAto]);
+        // Resetar campos
+        setSelectedAto(null);
+        setSearchTerm('');
+        setQuantidade(1);
+        setPagamentos(
+          formasPagamento.reduce((acc, fp) => {
+            acc[fp.key] = { quantidade: 0, valor: 0 };
+            return acc;
+          }, {})
+        );
+        setSuggestions([]);
+      } else {
+        alert('Erro ao salvar ato.');
+      }
+    } catch (e) {
+      console.error('Erro ao salvar ato:', e);
+      alert('Erro ao salvar ato.');
+    }
   };
 
-  const removerAto = (index) => {
-    setAtos(atos.filter((_, i) => i !== index));
+  const removerAto = async (index) => {
+    const atoParaRemover = atos[index];
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos/${atoParaRemover.id}`,
+        {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (res.ok) {
+        setAtos(atos.filter((_, i) => i !== index));
+      } else {
+        alert('Erro ao remover ato.');
+      }
+    } catch (e) {
+      console.error('Erro ao remover ato:', e);
+      alert('Erro ao remover ato.');
+    }
   };
-
-  // Calcula valor total do(s) ato(s) selecionado(s)
-  const valorTotalAtos = selectedAto ? (selectedAto.valor_final ?? 0) * quantidade : 0;
 
   return (
     <div style={{ maxWidth: 800, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 32 }}>
       <h2 style={{ textAlign: 'center', marginBottom: 8 }}>
-        Adicionar Ato Pago <span style={{ fontSize: 18, color: '#1976d2', marginLeft: 16 }}>{dataHoje}</span>
+        Atos Pagos
       </h2>
+
+      {/* Seletor de data */}
+      <div style={{ marginBottom: 24, textAlign: 'center' }}>
+        <label htmlFor="dataSelecionada" style={{ marginRight: 8, fontWeight: 'bold' }}>
+          Selecionar data:
+        </label>
+        <input
+          id="dataSelecionada"
+          type="date"
+          value={dataSelecionada}
+          onChange={(e) => setDataSelecionada(e.target.value)}
+          max={new Date().toISOString().slice(0, 10)}
+        />
+      </div>
+
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
         <input
           type="text"
@@ -256,15 +334,15 @@ function AtosPagos() {
           type="number"
           min={1}
           value={quantidade}
-          onChange={(e) => handleQuantidadeChange(e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            setQuantidade(val);
+            // Atualiza pagamentos também
+            handleQuantidadeChange(val);
+          }}
           disabled={!selectedAto}
           style={{ width: 80, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc' }}
         />
-      </div>
-
-      {/* Valor total do(s) ato(s) */}
-      <div style={{ marginBottom: 24, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto', fontWeight: 'bold' }}>
-        Valor do(s) ato(s): R$ {formatarValor(valorTotalAtos)}
       </div>
 
       {/* Formas de pagamento */}
@@ -310,7 +388,7 @@ function AtosPagos() {
       </div>
 
       {/* Tabela de atos adicionados */}
-      <h3 style={{ marginBottom: 12 }}>Atos Pagos do Dia</h3>
+      <h3 style={{ marginBottom: 12 }}>Atos Pagos em {dataSelecionada.split('-').reverse().join('/')}</h3>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa' }}>
           <thead>
@@ -326,6 +404,13 @@ function AtosPagos() {
             </tr>
           </thead>
           <tbody>
+            {atos.length === 0 && (
+              <tr>
+                <td colSpan={8} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
+                  Nenhum ato cadastrado para esta data.
+                </td>
+              </tr>
+            )}
             {atos.map((ato, idx) => (
               <tr key={idx}>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.data}</td>
@@ -365,13 +450,6 @@ function AtosPagos() {
                 </td>
               </tr>
             ))}
-            {atos.length === 0 && (
-              <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
-                  Nenhum ato adicionado hoje.
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>
