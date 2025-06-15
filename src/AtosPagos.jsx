@@ -330,13 +330,17 @@ function AtosPagos() {
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>R$ {ato.valor_unitario.toFixed(2)}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>
                   {formasPagamento
-  .filter((fp) => ato.pagamentos[fp.key].valor > 0)
-  .map((fp) => {
-    const valor = ato.pagamentos[fp.key].valor;
-    const valorFormatado = typeof valor === 'number' ? valor.toFixed(2) : '0.00';
-    return `${fp.label}: Qtd ${ato.pagamentos[fp.key].quantidade}, Valor R$ ${valorFormatado}`;
-  })
-  .join(' | ')}
+                    .filter((fp) => {
+                      const val = ato.pagamentos[fp.key]?.valor;
+                      return val !== undefined && val !== null && Number(val) > 0;
+                    })
+                    .map((fp) => {
+                      const val = ato.pagamentos[fp.key]?.valor;
+                      const valorNum = Number(val);
+                      const valorFormatado = !isNaN(valorNum) ? valorNum.toFixed(2) : '0.00';
+                      return `${fp.label}: Qtd ${ato.pagamentos[fp.key]?.quantidade ?? 0}, Valor R$ ${valorFormatado}`;
+                    })
+                    .join(' | ')}
                 </td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>
                   <button
