@@ -89,7 +89,7 @@ function AtosPagos() {
       const novo = { ...prev };
       novo[key].quantidade = qtd;
       // Calcula valor = qtd * valor unitário do ato
-      const valorUnitario = selectedAto?.valor_total ?? 0;
+      const valorUnitario = selectedAto?.valor_final ?? 0;
       novo[key].valor = valorUnitario * qtd;
       return novo;
     });
@@ -104,7 +104,7 @@ function AtosPagos() {
     // Atualiza os valores dos pagamentos multiplicando pelo novo qtd total
     setPagamentos((prev) => {
       const novo = { ...prev };
-      const valorUnitario = selectedAto?.valor_total ?? 0;
+      const valorUnitario = selectedAto?.valor_final ?? 0;
       formasPagamento.forEach((fp) => {
         novo[fp.key].valor = valorUnitario * novo[fp.key].quantidade;
       });
