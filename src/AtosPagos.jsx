@@ -115,7 +115,7 @@ const [pagamentos, setPagamentos] = useState(
       setQuantidade(1);
       setPagamentos(
         formasPagamento.reduce((acc, fp) => {
-          acc[fp.key] = { quantidade: 0, valor: 0 };
+          acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
           return acc;
         }, {})
       );
@@ -143,6 +143,38 @@ const handlePagamentoQuantidadeChange = (key, qtd) => {
   });
 };
 
+// Função para atualizar valor manualmente e marcar manual: true:
+
+const handlePagamentoValorChange = (key, valor) => {
+  valor = parseFloat(valor);
+  if (isNaN(valor) || valor < 0) valor = 0;
+
+  setPagamentos((prev) => ({
+    ...prev,
+    [key]: { ...prev[key], valor: valor, manual: true },
+  }));
+};
+
+//Função para atualizar quantidade e recalcular valores automáticos apenas para os que não foram editados manualmente:
+
+const handlePagamentoQuantidadeChange = (key, qtd) => {
+  qtd = parseInt(qtd);
+  if (isNaN(qtd) || qtd < 0) qtd = 0;
+
+  setPagamentos((prev) => {
+    const novo = { ...prev };
+    novo[key].quantidade = qtd;
+
+    const valorUnitario = selectedAto?.valor_final ?? 0;
+
+    if (!novo[key].manual) {
+      novo[key].valor = valorUnitario * qtd;
+    }
+
+    return novo;
+  });
+};
+
 // Atualiza valor manualmente e marca como manual
 const handlePagamentoValorChange = (key, valor) => {
   valor = parseFloat(valor);
@@ -154,7 +186,7 @@ const handlePagamentoValorChange = (key, valor) => {
   }));
 };
 
-// Ao mudar a quantidade total do ato, recalcula os valores automáticos para os não manuais
+//Ao mudar a quantidade total, recalcula os valores automáticos para os não manuais:
 const handleQuantidadeChange = (qtd) => {
   qtd = parseInt(qtd);
   if (isNaN(qtd) || qtd < 1) qtd = 1;
@@ -399,7 +431,8 @@ const handleQuantidadeChange = (qtd) => {
                   min={0}
                   step="0.01"
                   value={pagamentos[fp.key].valor}
-                  readOnly
+                  onChange={(e) => handlePagamentoValorChange(fp.key, e.target.value)}
+                  disabled={!selectedAto}
                   style={{ width: 80, marginLeft: 4, borderRadius: 4, border: '1px solid #ccc', padding: 4, backgroundColor: '#eee' }}
                 />
               </div>
