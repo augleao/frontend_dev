@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-
-
 const formasPagamento = [
   { key: 'dinheiro', label: 'Dinheiro' },
   { key: 'debito', label: 'Cartão de Débito' },
@@ -9,15 +7,6 @@ const formasPagamento = [
   { key: 'pix', label: 'PIX' },
   { key: 'cheque', label: 'Cheque' },
 ];
-
-function formatarData(data) {
-  return data.toLocaleDateString('pt-BR');
-}
-
-function formatarValor(valor) {
-  const num = parseFloat(valor);
-  return !isNaN(num) ? num.toFixed(2) : '0.00';
-}
 
 function formatarDataBR(dataISO) {
   const data = new Date(dataISO);
@@ -27,17 +16,10 @@ function formatarDataBR(dataISO) {
   return `${dia}/${mes}/${ano}`;
 }
 
-const calcularValorFinalCaixa = () => {
-  // Soma dos valores em dinheiro da tabela
-  const totalDinheiro = atos.reduce((acc, ato) => {
-    const valorDinheiro = parseFloat(ato.pagamentos?.dinheiro?.valor) || 0;
-    return acc + valorDinheiro;
-  }, 0);
-
-  // Calcula o valor final
-  const valorFinal = valorInicialCaixa + totalDinheiro - depositosCaixa - saidasCaixa;
-  return valorFinal;
-};
+function formatarValor(valor) {
+  const num = parseFloat(valor);
+  return !isNaN(num) ? num.toFixed(2) : '0.00';
+}
 
 function AtosPagos() {
   const [dataSelecionada, setDataSelecionada] = useState(() => {
@@ -53,11 +35,11 @@ function AtosPagos() {
   const [saidasCaixa, setSaidasCaixa] = useState(0);
   const [quantidade, setQuantidade] = useState(1);
   const [pagamentos, setPagamentos] = useState(
-  formasPagamento.reduce((acc, fp) => {
-    acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
-    return acc;
-  }, {})
-);
+    formasPagamento.reduce((acc, fp) => {
+      acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
+      return acc;
+    }, {})
+  );
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
@@ -66,13 +48,26 @@ function AtosPagos() {
   const debounceTimeout = useRef(null);
 
   // Valor total calculado (valor unitário × quantidade)
-const valorTotal = selectedAto ? (selectedAto.valor_final ?? 0) * quantidade : 0;
+  const valorTotal = selectedAto ? (selectedAto.valor_final ?? 0) * quantidade : 0;
 
-// Soma dos valores dos pagamentos
-const somaPagamentos = Object.values(pagamentos).reduce((acc, p) => acc + (parseFloat(p.valor) || 0), 0);
+  // Soma dos valores dos pagamentos
+  const somaPagamentos = Object.values(pagamentos).reduce(
+    (acc, p) => acc + (parseFloat(p.valor) || 0),
+    0
+  );
 
-// Função para comparar valores com tolerância
-const valoresIguais = (a, b, tolerancia = 0.01) => Math.abs(a - b) < tolerancia;
+  // Função para comparar valores com tolerância
+  const valoresIguais = (a, b, tolerancia = 0.01) => Math.abs(a - b) < tolerancia;
+
+  // Função para calcular o valor final do caixa
+  const calcularValorFinalCaixa = () => {
+    const totalDinheiro = atos.reduce((acc, ato) => {
+      const valorDinheiro = parseFloat(ato.pagamentos?.dinheiro?.valor) || 0;
+      return acc + valorDinheiro;
+    }, 0);
+
+    return valorInicialCaixa + totalDinheiro - depositosCaixa - saidasCaixa;
+  };
 
   // Buscar atos pagos para a data selecionada
   useEffect(() => {
@@ -114,7 +109,9 @@ const valoresIguais = (a, b, tolerancia = 0.01) => Math.abs(a - b) < tolerancia;
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos?search=${encodeURIComponent(searchTerm)}`,
+          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos?search=${encodeURIComponent(
+            searchTerm
+          )}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -148,60 +145,56 @@ const valoresIguais = (a, b, tolerancia = 0.01) => Math.abs(a - b) < tolerancia;
     }
   }, [selectedAto]);
 
- 
   // Atualiza quantidade e recalcula valores automáticos (exceto os manuais)
-const handlePagamentoQuantidadeChange = (key, qtd) => {
-  qtd = parseInt(qtd);
-  if (isNaN(qtd) || qtd < 0) qtd = 0;
+  const handlePagamentoQuantidadeChange = (key, qtd) => {
+    qtd = parseInt(qtd);
+    if (isNaN(qtd) || qtd < 0) qtd = 0;
 
-  setPagamentos((prev) => {
-    const novo = { ...prev };
-    novo[key].quantidade = qtd;
+    setPagamentos((prev) => {
+      const novo = { ...prev };
+      novo[key].quantidade = qtd;
 
-    const valorUnitario = selectedAto?.valor_final ?? 0;
+      const valorUnitario = selectedAto?.valor_final ?? 0;
 
-    // Se não foi editado manualmente, atualiza o valor automaticamente
-    if (!novo[key].manual) {
-      novo[key].valor = valorUnitario * qtd;
-    }
-
-    return novo;
-  });
-};
-
-// Função para atualizar valor manualmente e marcar manual: true:
-
-const handlePagamentoValorChange = (key, valor) => {
-  valor = parseFloat(valor);
-  if (isNaN(valor) || valor < 0) valor = 0;
-
-  setPagamentos((prev) => ({
-    ...prev,
-    [key]: { ...prev[key], valor: valor, manual: true },
-  }));
-};
-
-
-
-//Ao mudar a quantidade total, recalcula os valores automáticos para os não manuais:
-const handleQuantidadeChange = (qtd) => {
-  qtd = parseInt(qtd);
-  if (isNaN(qtd) || qtd < 1) qtd = 1;
-  setQuantidade(qtd);
-
-  setPagamentos((prev) => {
-    const novo = { ...prev };
-    const valorUnitario = selectedAto?.valor_final ?? 0;
-
-    formasPagamento.forEach((fp) => {
-      if (!novo[fp.key].manual) {
-        novo[fp.key].valor = valorUnitario * novo[fp.key].quantidade;
+      // Se não foi editado manualmente, atualiza o valor automaticamente
+      if (!novo[key].manual) {
+        novo[key].valor = valorUnitario * qtd;
       }
-    });
 
-    return novo;
-  });
-};
+      return novo;
+    });
+  };
+
+  // Atualiza valor manualmente e marca como manual
+  const handlePagamentoValorChange = (key, valor) => {
+    valor = parseFloat(valor);
+    if (isNaN(valor) || valor < 0) valor = 0;
+
+    setPagamentos((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], valor: valor, manual: true },
+    }));
+  };
+
+  // Ao mudar a quantidade total do ato, recalcula os valores automáticos para os não manuais
+  const handleQuantidadeChange = (qtd) => {
+    qtd = parseInt(qtd);
+    if (isNaN(qtd) || qtd < 1) qtd = 1;
+    setQuantidade(qtd);
+
+    setPagamentos((prev) => {
+      const novo = { ...prev };
+      const valorUnitario = selectedAto?.valor_final ?? 0;
+
+      formasPagamento.forEach((fp) => {
+        if (!novo[fp.key].manual) {
+          novo[fp.key].valor = valorUnitario * novo[fp.key].quantidade;
+        }
+      });
+
+      return novo;
+    });
+  };
 
   const adicionarAto = async () => {
     if (!selectedAto) {
@@ -211,6 +204,11 @@ const handleQuantidadeChange = (qtd) => {
     const algumPagamento = Object.values(pagamentos).some((p) => p.valor > 0);
     if (quantidade < 1 || !algumPagamento) {
       alert('Informe quantidade válida e pelo menos um valor de pagamento.');
+      return;
+    }
+
+    if (!valoresIguais(somaPagamentos, valorTotal)) {
+      alert('A soma dos pagamentos deve ser igual ao Valor Total do ato.');
       return;
     }
 
@@ -247,7 +245,7 @@ const handleQuantidadeChange = (qtd) => {
         setQuantidade(1);
         setPagamentos(
           formasPagamento.reduce((acc, fp) => {
-            acc[fp.key] = { quantidade: 0, valor: 0 };
+            acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
             return acc;
           }, {})
         );
@@ -284,10 +282,17 @@ const handleQuantidadeChange = (qtd) => {
   };
 
   return (
-<div style={{ maxWidth: '100%', margin: '10px auto', padding: '32px', background: '#fff', boxShadow: '0 2px 8px #0001', borderRadius: 12 }}>
-        <h2 style={{ textAlign: 'center', marginBottom: 8 }}>
-        Atos Pagos
-      </h2>
+    <div
+      style={{
+        maxWidth: '100%',
+        margin: '10px auto',
+        padding: '32px',
+        background: '#fff',
+        boxShadow: '0 2px 8px #0001',
+        borderRadius: 12,
+      }}
+    >
+      <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Atos Pagos</h2>
 
       {/* Seletor de data */}
       <div style={{ marginBottom: 24, textAlign: 'center' }}>
@@ -303,48 +308,87 @@ const handleQuantidadeChange = (qtd) => {
         />
       </div>
 
-<div style={{ marginBottom: 24, display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
-  <div>
-    <label>Valor Inicial do Caixa:</label>
-    <input
-      type="number"
-      value={valorInicialCaixa}
-      onChange={(e) => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
-      style={{ width: 120, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc', textAlign: 'right' }}
-    />
-  </div>
+      {/* Campos do caixa */}
+      <div
+        style={{
+          marginBottom: 24,
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 16,
+          justifyContent: 'center',
+        }}
+      >
+        <div>
+          <label>Valor Inicial do Caixa:</label>
+          <input
+            type="number"
+            value={valorInicialCaixa}
+            onChange={(e) => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
+            style={{
+              width: 120,
+              marginLeft: 8,
+              padding: 6,
+              borderRadius: 6,
+              border: '1px solid #ccc',
+              textAlign: 'right',
+            }}
+          />
+        </div>
 
-  <div>
-    <label>Depósitos do Caixa:</label>
-    <input
-      type="number"
-      value={depositosCaixa}
-      onChange={(e) => setDepositosCaixa(parseFloat(e.target.value) || 0)}
-      style={{ width: 120, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc', textAlign: 'right' }}
-    />
-  </div>
+        <div>
+          <label>Depósitos do Caixa:</label>
+          <input
+            type="number"
+            value={depositosCaixa}
+            onChange={(e) => setDepositosCaixa(parseFloat(e.target.value) || 0)}
+            style={{
+              width: 120,
+              marginLeft: 8,
+              padding: 6,
+              borderRadius: 6,
+              border: '1px solid #ccc',
+              textAlign: 'right',
+            }}
+          />
+        </div>
 
-  <div>
-    <label>Saídas do Caixa:</label>
-    <input
-      type="number"
-      value={saidasCaixa}
-      onChange={(e) => setSaidasCaixa(parseFloat(e.target.value) || 0)}
-      style={{ width: 120, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc', textAlign: 'right' }}
-    />
-  </div>
+        <div>
+          <label>Saídas do Caixa:</label>
+          <input
+            type="number"
+            value={saidasCaixa}
+            onChange={(e) => setSaidasCaixa(parseFloat(e.target.value) || 0)}
+            style={{
+              width: 120,
+              marginLeft: 8,
+              padding: 6,
+              borderRadius: 6,
+              border: '1px solid #ccc',
+              textAlign: 'right',
+            }}
+          />
+        </div>
 
-  <div>
-    <label>Valor Final do Caixa:</label>
-    <input
-      type="text"
-      value={`R$ ${calcularValorFinalCaixa().toFixed(2)}`}
-      readOnly
-      style={{ width: 120, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc', backgroundColor: '#eee', textAlign: 'right' }}
-    />
-  </div>
-</div>
+        <div>
+          <label>Valor Final do Caixa:</label>
+          <input
+            type="text"
+            value={`R$ ${calcularValorFinalCaixa().toFixed(2)}`}
+            readOnly
+            style={{
+              width: 120,
+              marginLeft: 8,
+              padding: 6,
+              borderRadius: 6,
+              border: '1px solid #ccc',
+              backgroundColor: '#eee',
+              textAlign: 'right',
+            }}
+          />
+        </div>
+      </div>
 
+      {/* Nome do usuário */}
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
         <input
           type="text"
@@ -365,7 +409,15 @@ const handleQuantidadeChange = (qtd) => {
       </div>
 
       {/* Busca e seleção do ato */}
-      <div style={{ marginBottom: 16, position: 'relative', maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }}>
+      <div
+        style={{
+          marginBottom: 16,
+          position: 'relative',
+          maxWidth: 400,
+          marginLeft: 'auto',
+          marginRight: 'auto',
+        }}
+      >
         <label>Buscar ato por código ou descrição:</label>
         <input
           type="text"
@@ -429,31 +481,51 @@ const handleQuantidadeChange = (qtd) => {
         )}
       </div>
 
-      {/* Quantidade total do ato */}
-      <div style={{ marginBottom: 8, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto' }}>
-        <label>Quantidade total do ato selecionado:</label>
-        <input
-          type="number"
-          min={1}
-          value={quantidade}
-          onChange={(e) => {
-            const val = e.target.value;
-            setQuantidade(val);
-            // Atualiza pagamentos também
-            handleQuantidadeChange(val);
-          }}
-          disabled={!selectedAto}
-          style={{ width: 80, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc' }}
-        />
+      {/* Quantidade total do ato e Valor Total */}
+      <div
+        style={{
+          marginBottom: 8,
+          maxWidth: 400,
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+        }}
+      >
         <div>
-    <label>Valor Total:</label>
-    <input
-      type="text"
-      value={`R$ ${valorTotal.toFixed(2)}`}
-      readOnly
-      style={{ width: 120, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc', backgroundColor: '#eee', textAlign: 'right' }}
-    />
-  </div>
+          <label>Quantidade total do ato selecionado:</label>
+          <input
+            type="number"
+            min={1}
+            value={quantidade}
+            onChange={(e) => {
+              const val = e.target.value;
+              setQuantidade(val);
+              handleQuantidadeChange(val);
+            }}
+            disabled={!selectedAto}
+            style={{ width: 80, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc' }}
+          />
+        </div>
+
+        <div>
+          <label>Valor Total:</label>
+          <input
+            type="text"
+            value={`R$ ${valorTotal.toFixed(2)}`}
+            readOnly
+            style={{
+              width: 120,
+              marginLeft: 8,
+              padding: 6,
+              borderRadius: 6,
+              border: '1px solid #ccc',
+              backgroundColor: '#eee',
+              textAlign: 'right',
+            }}
+          />
+        </div>
       </div>
 
       {/* Formas de pagamento */}
@@ -461,7 +533,10 @@ const handleQuantidadeChange = (qtd) => {
         <h4 style={{ marginBottom: 8 }}>Formas de Pagamento</h4>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
           {formasPagamento.map((fp) => (
-            <div key={fp.key} style={{ background: '#f5f5f5', borderRadius: 8, padding: 12, minWidth: 180 }}>
+            <div
+              key={fp.key}
+              style={{ background: '#f5f5f5', borderRadius: 8, padding: 12, minWidth: 180 }}
+            >
               <strong>{fp.label}</strong>
               <div style={{ marginTop: 8 }}>
                 <label style={{ fontSize: 13 }}>Qtd:</label>
@@ -471,7 +546,14 @@ const handleQuantidadeChange = (qtd) => {
                   value={pagamentos[fp.key].quantidade}
                   onChange={(e) => handlePagamentoQuantidadeChange(fp.key, e.target.value)}
                   disabled={!selectedAto}
-                  style={{ width: 50, marginLeft: 4, marginRight: 8, borderRadius: 4, border: '1px solid #ccc', padding: 4 }}
+                  style={{
+                    width: 50,
+                    marginLeft: 4,
+                    marginRight: 8,
+                    borderRadius: 4,
+                    border: '1px solid #ccc',
+                    padding: 4,
+                  }}
                 />
                 <label style={{ fontSize: 13 }}>Valor:</label>
                 <input
@@ -481,7 +563,13 @@ const handleQuantidadeChange = (qtd) => {
                   value={pagamentos[fp.key].valor}
                   onChange={(e) => handlePagamentoValorChange(fp.key, e.target.value)}
                   disabled={!selectedAto}
-                  style={{ width: 80, marginLeft: 4, borderRadius: 4, border: '1px solid #ccc', padding: 4, backgroundColor: '#eee' }}
+                  style={{
+                    width: 80,
+                    marginLeft: 4,
+                    borderRadius: 4,
+                    border: '1px solid #ccc',
+                    padding: 4,
+                  }}
                 />
               </div>
             </div>
@@ -489,25 +577,38 @@ const handleQuantidadeChange = (qtd) => {
         </div>
       </div>
 
+      {/* Botão adicionar ato */}
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <button
-          style={{ padding: '10px 24px', background: '#388e3c', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 'bold' }}
+          style={{
+            padding: '10px 24px',
+            background: '#388e3c',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 'bold',
+          }}
           onClick={adicionarAto}
-         disabled={
-    !selectedAto ||
-    quantidade < 1 ||
-    !Object.values(pagamentos).some((p) => p.valor > 0) ||
-    !valoresIguais(somaPagamentos, valorTotal)
-  }
->
-  Adicionar Ato
+          disabled={
+            !selectedAto ||
+            quantidade < 1 ||
+            !Object.values(pagamentos).some((p) => p.valor > 0) ||
+            !valoresIguais(somaPagamentos, valorTotal)
+          }
+        >
+          Adicionar Ato
         </button>
       </div>
 
       {/* Tabela de atos adicionados */}
-      <h3 style={{ marginBottom: 12 }}>Atos Pagos em {dataSelecionada.split('-').reverse().join('/')}</h3>
+      <h3 style={{ marginBottom: 12 }}>
+        Atos Pagos em {dataSelecionada.split('-').reverse().join('/')}
+      </h3>
       <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa' }}>
+        <table
+          style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa' }}
+        >
           <thead>
             <tr style={{ background: '#f5f5f5' }}>
               <th style={{ border: '1px solid #ddd', padding: 8 }}>Data</th>
@@ -536,18 +637,27 @@ const handleQuantidadeChange = (qtd) => {
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.descricao}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.quantidade}</td>
-                <td style={{ border: '1px solid #ddd', padding: 8 }}>R$ {formatarValor(ato.valor_unitario)}</td>
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>
+                  R$ {formatarValor(ato.valor_unitario)}
+                </td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>
                   {formasPagamento
                     .filter((fp) => {
                       const val = ato.pagamentos[fp.key]?.valor;
-                      return val !== undefined && val !== null && !isNaN(parseFloat(val)) && parseFloat(val) > 0;
+                      return (
+                        val !== undefined &&
+                        val !== null &&
+                        !isNaN(parseFloat(val)) &&
+                        parseFloat(val) > 0
+                      );
                     })
                     .map((fp) => {
                       const val = ato.pagamentos[fp.key]?.valor;
                       const valorNum = parseFloat(val);
                       const valorFormatado = !isNaN(valorNum) ? valorNum.toFixed(2) : '0.00';
-                      return `${fp.label}: Qtd ${ato.pagamentos[fp.key]?.quantidade ?? 0}, Valor R$ ${valorFormatado}`;
+                      return `${fp.label}: Qtd ${
+                        ato.pagamentos[fp.key]?.quantidade ?? 0
+                      }, Valor R$ ${valorFormatado}`;
                     })
                     .join(' | ')}
                 </td>
