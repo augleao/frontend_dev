@@ -92,40 +92,37 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
       {
         data,
         hora,
-        codigo: '',
+        codigo: '0000',
         descricao: 'Valor Inicial do Caixa',
         quantidade: 1,
         valor_unitario: valorInicialCaixa,
-        valor_total: valorInicialCaixa,  // campo adicionado
         pagamentos: pagamentosZerados,
         usuario: nomeUsuario,  // <-- adicionado
       },
       {
         data,
         hora,
-        codigo: '',
+        codigo: '0000',
         descricao: 'Depósitos do Caixa',
         quantidade: 1,
         valor_unitario: depositosCaixa,
-        valor_total: valorInicialCaixa,  // campo adicionado
         pagamentos: pagamentosZerados,
         usuario: nomeUsuario,  // <-- adicionado
       },
       {
         data,
         hora,
-        codigo: '',
+        codigo: '0000',
         descricao: 'Saídas do Caixa',
         quantidade: 1,
         valor_unitario: saidasCaixa,
-        valor_total: valorInicialCaixa,  // campo adicionado
         pagamentos: pagamentosZerados,
         usuario: nomeUsuario,  // <-- adicionado
       },
       {
         data,
         hora,
-        codigo: '',
+        codigo: '0000',
         descricao: 'Valor Final do Caixa',
         quantidade: 1,
         valor_unitario: calcularValorFinalCaixa(),
