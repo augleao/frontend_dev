@@ -65,7 +65,7 @@ function UploadForm() {
         <input
           type="file"
           id="fileInput"
-          accept=".txt"
+          accept=".pdf"
           onChange={handleFileChange}
           style={{ display: 'none' }}
         />
