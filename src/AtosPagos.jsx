@@ -69,6 +69,89 @@ function AtosPagos() {
     return valorInicialCaixa + totalDinheiro - depositosCaixa - saidasCaixa;
   };
 
+  // Função para formatar data e hora atual no formato desejado
+  const formatarDataHoraAtual = () => {
+    const agora = new Date();
+    const data = agora.toISOString().slice(0, 10); // YYYY-MM-DD
+    const hora = agora.toLocaleTimeString('pt-BR', { hour12: false });
+    return { data, hora };
+  };
+
+  // Função para fechamento diário
+  const fechamentoDiario = async () => {
+    if (!window.confirm('Confirma o fechamento diário do caixa?')) return;
+
+    const { data, hora } = formatarDataHoraAtual();
+
+    const linhasFechamento = [
+      {
+        data,
+        hora,
+        codigo: '',
+        descricao: 'Valor Inicial do Caixa',
+        quantidade: 1,
+        valor_unitario: valorInicialCaixa,
+        pagamentos: {},
+      },
+      {
+        data,
+        hora,
+        codigo: '',
+        descricao: 'Depósitos do Caixa',
+        quantidade: 1,
+        valor_unitario: depositosCaixa,
+        pagamentos: {},
+      },
+      {
+        data,
+        hora,
+        codigo: '',
+        descricao: 'Saídas do Caixa',
+        quantidade: 1,
+        valor_unitario: saidasCaixa,
+        pagamentos: {},
+      },
+      {
+        data,
+        hora,
+        codigo: '',
+        descricao: 'Valor Final do Caixa',
+        quantidade: 1,
+        valor_unitario: calcularValorFinalCaixa(),
+        pagamentos: {},
+      },
+    ];
+
+    try {
+      const token = localStorage.getItem('token');
+
+      for (const linha of linhasFechamento) {
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(linha),
+          }
+        );
+        if (!res.ok) {
+          alert('Erro ao salvar fechamento no banco.');
+          return;
+        }
+      }
+
+      setAtos((prev) => [...prev, ...linhasFechamento]);
+
+      alert('Fechamento diário realizado com sucesso!');
+    } catch (e) {
+      console.error('Erro no fechamento diário:', e);
+      alert('Erro ao realizar fechamento diário.');
+    }
+  };
+
   // Buscar atos pagos para a data selecionada
   useEffect(() => {
     async function carregarAtosPorData() {
@@ -577,8 +660,16 @@ function AtosPagos() {
         </div>
       </div>
 
-      {/* Botão adicionar ato */}
-      <div style={{ textAlign: 'center', marginBottom: 32 }}>
+      {/* Botões Adicionar Ato e Fechamento Diário */}
+      <div
+        style={{
+          textAlign: 'center',
+          marginBottom: 32,
+          display: 'flex',
+          justifyContent: 'center',
+          gap: 16,
+        }}
+      >
         <button
           style={{
             padding: '10px 24px',
@@ -598,6 +689,21 @@ function AtosPagos() {
           }
         >
           Adicionar Ato
+        </button>
+
+        <button
+          style={{
+            padding: '10px 24px',
+            background: '#1976d2',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 'bold',
+          }}
+          onClick={fechamentoDiario}
+        >
+          Fechamento Diário
         </button>
       </div>
 
@@ -632,7 +738,6 @@ function AtosPagos() {
             {atos.map((ato, idx) => (
               <tr key={idx}>
                 <td>{formatarDataBR(ato.data)}</td>
-                <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.data}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.hora}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.descricao}</td>
