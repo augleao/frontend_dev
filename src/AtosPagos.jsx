@@ -77,6 +77,11 @@ function AtosPagos() {
     return { data, hora };
   };
 
+const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
+  acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
+  return acc;
+}, {});
+
   // Função para fechamento diário
   const fechamentoDiario = async () => {
     if (!window.confirm('Confirma o fechamento diário do caixa?')) return;
@@ -91,7 +96,7 @@ function AtosPagos() {
         descricao: 'Valor Inicial do Caixa',
         quantidade: 1,
         valor_unitario: valorInicialCaixa,
-        pagamentos: {},
+        pagamentos: pagamentosZerados,
       },
       {
         data,
@@ -100,7 +105,7 @@ function AtosPagos() {
         descricao: 'Depósitos do Caixa',
         quantidade: 1,
         valor_unitario: depositosCaixa,
-        pagamentos: {},
+        pagamentos: pagamentosZerados,
       },
       {
         data,
@@ -109,7 +114,7 @@ function AtosPagos() {
         descricao: 'Saídas do Caixa',
         quantidade: 1,
         valor_unitario: saidasCaixa,
-        pagamentos: {},
+        pagamentos: pagamentosZerados,
       },
       {
         data,
@@ -118,10 +123,10 @@ function AtosPagos() {
         descricao: 'Valor Final do Caixa',
         quantidade: 1,
         valor_unitario: calcularValorFinalCaixa(),
-        pagamentos: {},
+        pagamentos: pagamentosZerados,
       },
     ];
-
+console.log('Enviando fechamento:', linha);
     try {
       const token = localStorage.getItem('token');
 
