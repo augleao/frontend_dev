@@ -126,11 +126,12 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
         pagamentos: pagamentosZerados,
       },
     ];
-console.log('Enviando fechamento:', linha);
+
     try {
       const token = localStorage.getItem('token');
 
       for (const linha of linhasFechamento) {
+        console.log('Enviando fechamento:', linha);
         const res = await fetch(
           `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
           {
