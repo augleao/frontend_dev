@@ -144,6 +144,7 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
           }
         );
         if (!res.ok) {
+          console.error('Erro no backend:', json);
           alert('Erro ao salvar fechamento no banco.');
           return;
         }
