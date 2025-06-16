@@ -131,24 +131,34 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
       const token = localStorage.getItem('token');
 
       for (const linha of linhasFechamento) {
-        console.log('Enviando fechamento:', linha);
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(linha),
-          }
-        );
-        if (!res.ok) {
-          console.error('Erro no backend:', json);
-          alert('Erro ao salvar fechamento no banco.');
-          return;
-        }
-      }
+  console.log('Enviando fechamento:', linha);
+  const res = await fetch(
+    `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(linha),
+    }
+  );
+
+  let json; // Declare a variável json
+  try {
+    json = await res.json();
+  } catch (e) {
+    console.error('Erro ao parsear JSON:', e);
+    alert('Erro ao parsear JSON da resposta do servidor.');
+    return;
+  }
+
+  if (!res.ok) {
+    console.error('Erro no backend:', json);
+    alert('Erro ao salvar fechamento no banco: ' + (json.message || JSON.stringify(json)));
+    return;
+  }
+}
 
       setAtos((prev) => [...prev, ...linhasFechamento]);
 
