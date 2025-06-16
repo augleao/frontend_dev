@@ -97,6 +97,7 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
         quantidade: 1,
         valor_unitario: valorInicialCaixa,
         pagamentos: pagamentosZerados,
+        usuario: nomeUsuario,  // <-- adicionado
       },
       {
         data,
@@ -106,6 +107,7 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
         quantidade: 1,
         valor_unitario: depositosCaixa,
         pagamentos: pagamentosZerados,
+        usuario: nomeUsuario,  // <-- adicionado
       },
       {
         data,
@@ -115,6 +117,7 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
         quantidade: 1,
         valor_unitario: saidasCaixa,
         pagamentos: pagamentosZerados,
+        usuario: nomeUsuario,  // <-- adicionado
       },
       {
         data,
@@ -124,6 +127,7 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
         quantidade: 1,
         valor_unitario: calcularValorFinalCaixa(),
         pagamentos: pagamentosZerados,
+        usuario: nomeUsuario,  // <-- adicionado
       },
     ];
 
