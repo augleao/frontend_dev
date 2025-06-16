@@ -27,6 +27,18 @@ function formatarDataBR(dataISO) {
   return `${dia}/${mes}/${ano}`;
 }
 
+const calcularValorFinalCaixa = () => {
+  // Soma dos valores em dinheiro da tabela
+  const totalDinheiro = atos.reduce((acc, ato) => {
+    const valorDinheiro = parseFloat(ato.pagamentos?.dinheiro?.valor) || 0;
+    return acc + valorDinheiro;
+  }, 0);
+
+  // Calcula o valor final
+  const valorFinal = valorInicialCaixa + totalDinheiro - depositosCaixa - saidasCaixa;
+  return valorFinal;
+};
+
 function AtosPagos() {
   const [dataSelecionada, setDataSelecionada] = useState(() => {
     const hoje = new Date();
@@ -36,6 +48,9 @@ function AtosPagos() {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [selectedAto, setSelectedAto] = useState(null);
+  const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
+  const [depositosCaixa, setDepositosCaixa] = useState(0);
+  const [saidasCaixa, setSaidasCaixa] = useState(0);
   const [quantidade, setQuantidade] = useState(1);
   const [pagamentos, setPagamentos] = useState(
   formasPagamento.reduce((acc, fp) => {
@@ -277,7 +292,7 @@ const handleQuantidadeChange = (qtd) => {
       {/* Seletor de data */}
       <div style={{ marginBottom: 24, textAlign: 'center' }}>
         <label htmlFor="dataSelecionada" style={{ marginRight: 8, fontWeight: 'bold' }}>
-          Selecionar data:
+          Selecione a data:
         </label>
         <input
           id="dataSelecionada"
@@ -287,6 +302,48 @@ const handleQuantidadeChange = (qtd) => {
           max={new Date().toISOString().slice(0, 10)}
         />
       </div>
+
+<div style={{ marginBottom: 24, display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
+  <div>
+    <label>Valor Inicial do Caixa:</label>
+    <input
+      type="number"
+      value={valorInicialCaixa}
+      onChange={(e) => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
+      style={{ width: 120, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc', textAlign: 'right' }}
+    />
+  </div>
+
+  <div>
+    <label>Depósitos do Caixa:</label>
+    <input
+      type="number"
+      value={depositosCaixa}
+      onChange={(e) => setDepositosCaixa(parseFloat(e.target.value) || 0)}
+      style={{ width: 120, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc', textAlign: 'right' }}
+    />
+  </div>
+
+  <div>
+    <label>Saídas do Caixa:</label>
+    <input
+      type="number"
+      value={saidasCaixa}
+      onChange={(e) => setSaidasCaixa(parseFloat(e.target.value) || 0)}
+      style={{ width: 120, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc', textAlign: 'right' }}
+    />
+  </div>
+
+  <div>
+    <label>Valor Final do Caixa:</label>
+    <input
+      type="text"
+      value={`R$ ${calcularValorFinalCaixa().toFixed(2)}`}
+      readOnly
+      style={{ width: 120, marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #ccc', backgroundColor: '#eee', textAlign: 'right' }}
+    />
+  </div>
+</div>
 
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
         <input
