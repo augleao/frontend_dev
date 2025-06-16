@@ -96,6 +96,7 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
         descricao: 'Valor Inicial do Caixa',
         quantidade: 1,
         valor_unitario: valorInicialCaixa,
+        valor_total: valorInicialCaixa,  // campo adicionado
         pagamentos: pagamentosZerados,
         usuario: nomeUsuario,  // <-- adicionado
       },
@@ -106,6 +107,7 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
         descricao: 'Depósitos do Caixa',
         quantidade: 1,
         valor_unitario: depositosCaixa,
+        valor_total: valorInicialCaixa,  // campo adicionado
         pagamentos: pagamentosZerados,
         usuario: nomeUsuario,  // <-- adicionado
       },
@@ -116,6 +118,7 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
         descricao: 'Saídas do Caixa',
         quantidade: 1,
         valor_unitario: saidasCaixa,
+        valor_total: valorInicialCaixa,  // campo adicionado
         pagamentos: pagamentosZerados,
         usuario: nomeUsuario,  // <-- adicionado
       },
@@ -126,6 +129,7 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
         descricao: 'Valor Final do Caixa',
         quantidade: 1,
         valor_unitario: calcularValorFinalCaixa(),
+        valor_total: calcularValorFinalCaixa(),  // campo adicionado
         pagamentos: pagamentosZerados,
         usuario: nomeUsuario,  // <-- adicionado
       },
