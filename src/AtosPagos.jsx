@@ -326,6 +326,7 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
       quantidade,
       valor_unitario: selectedAto.valor_final ?? 0,
       pagamentos,
+      usuario: nomeUsuario, // Adicione o nome do usuário
     };
 
     try {
