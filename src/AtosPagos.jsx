@@ -5,7 +5,7 @@ const formasPagamento = [
   { key: 'debito', label: 'Cartão de Débito' },
   { key: 'credito', label: 'Cartão de Crédito' },
   { key: 'pix', label: 'PIX' },
-  { key: 'cheque', label: 'Cheque' },
+  { key: 'depositoPrevio', label: 'Depósito Previo' },
 ];
 
 function formatDateLocal(date) {
