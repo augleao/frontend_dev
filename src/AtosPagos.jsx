@@ -386,7 +386,7 @@ function AtosPagos() {
         borderRadius: 12,
       }}
     >
-      <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Atos Pagos e Selados ao longo do Dia</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Atos Pagos e Selados ao Longo do Dia</h2>
  
  <UsuarioInfo nomeUsuario={nomeUsuario} /> {/* Use o componente aqui */}
  

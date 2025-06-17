@@ -2,6 +2,11 @@ import React from 'react';
 import { formatarValor } from './utils';
 
 export default function AtoSearch({ searchTerm, setSearchTerm, suggestions, loadingSuggestions, onSelect }) {
+  const handleSelect = (ato) => {
+    onSelect(ato);
+    setSearchTerm(''); // Limpa o campo de busca
+  };
+
   return (
     <div style={{ marginBottom: 24 }}>
       <h4 style={{ marginBottom: 8 }}>Buscar ato por código ou descrição:</h4>
@@ -21,7 +26,6 @@ export default function AtoSearch({ searchTerm, setSearchTerm, suggestions, load
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              onSelect(null);
             }}
             placeholder="Digite código ou descrição"
             style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ccc' }}
@@ -36,7 +40,7 @@ export default function AtoSearch({ searchTerm, setSearchTerm, suggestions, load
               {suggestions.map((ato) => (
                 <li
                   key={ato.id}
-                  onClick={() => onSelect(ato)}
+                  onClick={() => handleSelect(ato)}
                   style={{ padding: 8, cursor: 'pointer', borderBottom: '1px solid #eee' }}
                 >
                   {ato.codigo} - {ato.descricao} - R$ {formatarValor(ato.valor_final)}
