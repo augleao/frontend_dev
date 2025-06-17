@@ -29,20 +29,7 @@ const [dataSelecionada, setDataSelecionada] = useState(() => {
 
 const handleDataChange = (e) => {
   const dataISO = e.target.value;
-  const data = new Date(dataISO);
-
-  // Obter a data no formato local
-  const dataLocal = data.toLocaleDateString('pt-BR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-
-  // Formatar para YYYY-MM-DD
-  const [dia, mes, ano] = dataLocal.split('/');
-  const dataFormatada = `${ano}-${mes}-${dia}`;
-
-  setDataSelecionada(dataFormatada);
+  setDataSelecionada(dataISO);
 };
 
 return (
@@ -55,15 +42,7 @@ return (
   />
 );
 
-return (
-  <input
-    id="dataSelecionada"
-    type="date"
-    value={dataSelecionada}
-    onChange={handleDataChange}
-    max={new Date().toISOString().slice(0, 10)}
-  />
-);
+
   const [atos, setAtos] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
