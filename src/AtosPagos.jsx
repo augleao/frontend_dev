@@ -85,7 +85,7 @@ function AtosPagos() {
  // Função para definar a cor do fundo dos pagamentos
 const corFundoPagamentos = (key) => {
   const metodosParaValidar = ['dinheiro', 'cartao', 'pix', 'crc', 'depositoPrevio'];
-  if (!metodosParaValidar.includes(key)) return '#f5f5f5'; // cor padrão
+  if (!metodosParaValidar.includes(key)) return '#ffd1d1'; // cor padrão
 
   if (Math.abs(somaPagamentos - valorTotal) < 0.01) {
     return '#d4edda'; // verde claro
