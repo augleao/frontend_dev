@@ -387,7 +387,9 @@ function AtosPagos() {
       }}
     >
       <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Atos Pagos e Selados ao longo do Dia</h2>
-
+ 
+ <UsuarioInfo nomeUsuario={nomeUsuario} /> {/* Use o componente aqui */}
+ 
       <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
 
       <CaixaInputs
@@ -400,7 +402,7 @@ function AtosPagos() {
         valorFinalCaixa={calcularValorFinalCaixa()}
       />
 
-      <UsuarioInfo nomeUsuario={nomeUsuario} /> {/* Use o componente aqui */}
+     
 
       <AtoSearch
         searchTerm={searchTerm}
