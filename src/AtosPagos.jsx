@@ -11,6 +11,7 @@ import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
 import AtosTable from './AtosTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
+import UsuarioInfo from './UsuarioInfo';
 
 function AtosPagos() {
   // Estados
