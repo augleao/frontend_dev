@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const formasPagamento = [
   { key: 'dinheiro', label: 'Dinheiro' },
-  { key: 'debito', label: 'Cartão de Débito' },
-  { key: 'credito', label: 'Cartão de Crédito' },
+  { key: 'cartao', label: 'Cartão' },
   { key: 'pix', label: 'PIX' },
+  { key: 'crc', label: 'CRC' },
   { key: 'depositoPrevio', label: 'Depósito Previo' },
 ];
 
@@ -56,6 +56,7 @@ function AtosPagos() {
   const [depositosCaixa, setDepositosCaixa] = useState(0);
   const [saidasCaixa, setSaidasCaixa] = useState(0);
   const [quantidade, setQuantidade] = useState(1);
+  
   const [pagamentos, setPagamentos] = useState(
     formasPagamento.reduce((acc, fp) => {
       acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
