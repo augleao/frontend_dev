@@ -11,7 +11,6 @@ import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
 import AtosTable from './AtosTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
-import UsuarioInfo from './UsuarioInfo'; // Importe o componente
 
 function AtosPagos() {
   // Estados
@@ -119,6 +118,11 @@ function AtosPagos() {
 
       return novo;
     });
+  };
+
+  const handleSelectAto = (ato) => {
+    setSelectedAto(ato);
+    setSearchTerm(''); // Limpa o campo de busca
   };
 
   const adicionarAto = async () => {
@@ -386,21 +390,54 @@ function AtosPagos() {
         borderRadius: 12,
       }}
     >
-      <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Atos Pagos e Selados ao Longo do Dia</h2>
- 
- <UsuarioInfo nomeUsuario={nomeUsuario} /> {/* Use o componente aqui */}
- 
+      <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Atos Pagos</h2>
+
+      {/* Nome do usuário */}
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <input
+          type="text"
+          value={nomeUsuario}
+          readOnly
+          style={{
+            width: 320,
+            textAlign: 'center',
+            fontSize: 16,
+            padding: 8,
+            borderRadius: 6,
+            border: '1px solid #1976d2',
+            background: '#f5faff',
+            color: '#1976d2',
+            fontWeight: 'bold',
+          }}
+        />
+      </div>
+
       <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
 
-     
+      <CaixaInputs
+        valorInicialCaixa={valorInicialCaixa}
+        setValorInicialCaixa={setValorInicialCaixa}
+        depositosCaixa={depositosCaixa}
+        setDepositosCaixa={setDepositosCaixa}
+        saidasCaixa={saidasCaixa}
+        setSaidasCaixa={setSaidasCaixa}
+        valorFinalCaixa={calcularValorFinalCaixa()}
+      />
 
       <AtoSearch
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         suggestions={suggestions}
         loadingSuggestions={loadingSuggestions}
-        onSelect={setSelectedAto}
+        onSelect={handleSelectAto} // Use a função handleSelectAto aqui
       />
+
+      {/* Exibir o ato selecionado */}
+      {selectedAto && (
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
+          Ato selecionado: {selectedAto.codigo} - {selectedAto.descricao} - R$ {formatarMoeda(selectedAto.valor_final)}
+        </div>
+      )}
 
       <FormasPagamento
         formasPagamento={formasPagamento}
@@ -409,16 +446,6 @@ function AtosPagos() {
         onValorChange={handlePagamentoValorChange}
         corFundoPagamentos={corFundoPagamentos}
         selectedAto={selectedAto}
-      />
-
-            <CaixaInputs
-        valorInicialCaixa={valorInicialCaixa}
-        setValorInicialCaixa={setValorInicialCaixa}
-        depositosCaixa={depositosCaixa}
-        setDepositosCaixa={setDepositosCaixa}
-        saidasCaixa={saidasCaixa}
-        setSaidasCaixa={setSaidasCaixa}
-        valorFinalCaixa={calcularValorFinalCaixa()}
       />
 
       <div
