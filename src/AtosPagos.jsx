@@ -17,7 +17,7 @@ function formatDateLocal(date) {
   return [year, month.padStart(2, '0'), day.padStart(2, '0')].join('-');
 }
 
-const dataFormatada = formatarDataBR(formatDateLocal(data));
+
 
 function formatarDataBR(dataISO) {
   // dataISO no formato 'YYYY-MM-DD'
