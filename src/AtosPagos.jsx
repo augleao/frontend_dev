@@ -14,6 +14,10 @@ import FechamentoDiarioButton from './FechamentoDiarioButton';
 
 function AtosPagos() {
   // Estados
+  const [nomeUsuario, setNomeUsuario] = useState(() => {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    return usuario?.nome || 'Usuário não identificado';
+  });
   const [dataSelecionada, setDataSelecionada] = useState(() => {
     const hoje = new Date();
     return hoje.toISOString().slice(0, 10);
