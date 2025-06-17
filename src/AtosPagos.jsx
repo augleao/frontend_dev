@@ -439,6 +439,17 @@ function AtosPagos() {
         </div>
       )}
 
+      {/* Campo de quantidade */}
+      <div style={{ marginTop: 16, textAlign: 'center' }}>
+        <label>Quantidade:</label>
+        <input
+          type="number"
+          value={quantidade}
+          onChange={(e) => handleQuantidadeChange(e.target.value)}
+          style={{ width: 60, marginLeft: 8, padding: 4, borderRadius: 4, border: '1px solid #ccc' }}
+        />
+      </div>
+
       <FormasPagamento
         formasPagamento={formasPagamento}
         pagamentos={pagamentos}
