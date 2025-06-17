@@ -82,6 +82,18 @@ function AtosPagos() {
   // Função para comparar valores com tolerância
   const valoresIguais = (a, b, tolerancia = 0.01) => Math.abs(a - b) < tolerancia;
 
+ // Função para definar a cor do fundo dos pagamentos
+const corFundoPagamentos = (key) => {
+  const metodosParaValidar = ['dinheiro', 'cartao', 'pix', 'crc', 'depositoPrevio'];
+  if (!metodosParaValidar.includes(key)) return '#f5f5f5'; // cor padrão
+
+  if (Math.abs(somaPagamentos - valorTotal) < 0.01) {
+    return '#d4edda'; // verde claro
+  } else {
+    return '#ffd1d1'; // vermelho claro
+  }
+};
+
   // Função para calcular o valor final do caixa
   const calcularValorFinalCaixa = () => {
     const totalDinheiro = atos.reduce((acc, ato) => {
@@ -665,47 +677,52 @@ function AtosPagos() {
         <h4 style={{ marginBottom: 8 }}>Formas de Pagamento</h4>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
           {formasPagamento.map((fp) => (
-            <div
-              key={fp.key}
-              style={{ background: '#f5f5f5', borderRadius: 8, padding: 12, minWidth: 180 }}
-            >
-              <strong>{fp.label}</strong>
-              <div style={{ marginTop: 8 }}>
-                <label style={{ fontSize: 13 }}>Qtd:</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={pagamentos[fp.key].quantidade}
-                  onChange={(e) => handlePagamentoQuantidadeChange(fp.key, e.target.value)}
-                  disabled={!selectedAto}
-                  style={{
-                    width: 50,
-                    marginLeft: 4,
-                    marginRight: 8,
-                    borderRadius: 4,
-                    border: '1px solid #ccc',
-                    padding: 4,
-                  }}
-                />
-                <label style={{ fontSize: 13 }}>Valor:</label>
-                <input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={pagamentos[fp.key].valor}
-                  onChange={(e) => handlePagamentoValorChange(fp.key, e.target.value)}
-                  disabled={!selectedAto}
-                  style={{
-                    width: 80,
-                    marginLeft: 4,
-                    borderRadius: 4,
-                    border: '1px solid #ccc',
-                    padding: 4,
-                  }}
-                />
-              </div>
-            </div>
-          ))}
+  <div
+    key={fp.key}
+    style={{
+      backgroundColor: corFundoPagamentos(fp.key),
+      borderRadius: 8,
+      padding: 12,
+      minWidth: 180,
+    }}
+  >
+    <strong>{fp.label}</strong>
+    <div style={{ marginTop: 8 }}>
+      <label style={{ fontSize: 13 }}>Qtd:</label>
+      <input
+        type="number"
+        min={0}
+        value={pagamentos[fp.key].quantidade}
+        onChange={(e) => handlePagamentoQuantidadeChange(fp.key, e.target.value)}
+        disabled={!selectedAto}
+        style={{
+          width: 50,
+          marginLeft: 4,
+          marginRight: 8,
+          borderRadius: 4,
+          border: '1px solid #ccc',
+          padding: 4,
+        }}
+      />
+      <label style={{ fontSize: 13 }}>Valor:</label>
+      <input
+        type="number"
+        min={0}
+        step="0.01"
+        value={pagamentos[fp.key].valor}
+        onChange={(e) => handlePagamentoValorChange(fp.key, e.target.value)}
+        disabled={!selectedAto}
+        style={{
+          width: 80,
+          marginLeft: 4,
+          borderRadius: 4,
+          border: '1px solid #ccc',
+          padding: 4,
+        }}
+      />
+    </div>
+  </div>
+))}
         </div>
       </div>
 
