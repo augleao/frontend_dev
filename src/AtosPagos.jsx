@@ -9,10 +9,9 @@ const formasPagamento = [
 ];
 
 function formatarDataBR(dataISO) {
-  const data = new Date(dataISO);
-  const dia = String(data.getDate()).padStart(2, '0');
-  const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês começa do zero
-  const ano = data.getFullYear();
+  // dataISO no formato 'YYYY-MM-DD'
+  if (!dataISO) return '';
+  const [ano, mes, dia] = dataISO.split('-');
   return `${dia}/${mes}/${ano}`;
 }
 
