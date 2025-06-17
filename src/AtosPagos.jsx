@@ -22,26 +22,15 @@ function formatarValor(valor) {
 }
 
 function AtosPagos() {
-const [dataSelecionada, setDataSelecionada] = useState(() => {
-  const hoje = new Date();
-  return hoje.toISOString().slice(0, 10); // 'YYYY-MM-DD'
-});
+  const [dataSelecionada, setDataSelecionada] = useState(() => {
+    const hoje = new Date();
+    return hoje.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  });
 
-const handleDataChange = (e) => {
-  const dataISO = e.target.value;
-  setDataSelecionada(dataISO);
-};
-
-return (
-  <input
-    id="dataSelecionada"
-    type="date"
-    value={dataSelecionada}
-    onChange={handleDataChange}
-    max={new Date().toISOString().slice(0, 10)}
-  />
-);
-
+  const handleDataChange = (e) => {
+    const dataISO = e.target.value;
+    setDataSelecionada(dataISO);
+  };
 
   const [atos, setAtos] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -94,10 +83,10 @@ return (
     return { data, hora };
   };
 
-const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
-  acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
-  return acc;
-}, {});
+  const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
+    acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
+    return acc;
+  }, {});
 
   // Função para fechamento diário
   const fechamentoDiario = async () => {
@@ -153,34 +142,34 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
       const token = localStorage.getItem('token');
 
       for (const linha of linhasFechamento) {
-  console.log('Enviando fechamento:', linha);
-  const res = await fetch(
-    `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(linha),
-    }
-  );
+        console.log('Enviando fechamento:', linha);
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(linha),
+          }
+        );
 
-  let json; // Declare a variável json
-  try {
-    json = await res.json();
-  } catch (e) {
-    console.error('Erro ao parsear JSON:', e);
-    alert('Erro ao parsear JSON da resposta do servidor.');
-    return;
-  }
+        let json; // Declare a variável json
+        try {
+          json = await res.json();
+        } catch (e) {
+          console.error('Erro ao parsear JSON:', e);
+          alert('Erro ao parsear JSON da resposta do servidor.');
+          return;
+        }
 
-  if (!res.ok) {
-    console.error('Erro no backend:', json);
-    alert('Erro ao salvar fechamento no banco: ' + (json.message || JSON.stringify(json)));
-    return;
-  }
-}
+        if (!res.ok) {
+          console.error('Erro no backend:', json);
+          alert('Erro ao salvar fechamento no banco: ' + (json.message || JSON.stringify(json)));
+          return;
+        }
+      }
 
       setAtos((prev) => [...prev, ...linhasFechamento]);
 
@@ -424,15 +413,12 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
           Selecione a data:
         </label>
         <input
-  id="dataSelecionada"
-  type="date"
-  value={dataSelecionada}
-  onChange={(e) => {
-    setDataSelecionada(e.target.value);
-    setAtos([]); // limpa atos locais para evitar confusão
-  }}
-  max={new Date().toISOString().slice(0, 10)}
-/>
+          id="dataSelecionada"
+          type="date"
+          value={dataSelecionada}
+          onChange={handleDataChange}
+          max={new Date().toISOString().slice(0, 10)}
+        />
       </div>
 
       {/* Campos do caixa */}
