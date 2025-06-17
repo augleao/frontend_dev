@@ -11,14 +11,10 @@ import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
 import AtosTable from './AtosTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
-import UsuarioInfo from './UsuarioInfo';
+import UsuarioInfo from './UsuarioInfo'; // Importe o componente
 
 function AtosPagos() {
   // Estados
-  const [nomeUsuario, setNomeUsuario] = useState(() => {
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    return usuario?.nome || 'Usuário não identificado';
-  });
   const [dataSelecionada, setDataSelecionada] = useState(() => {
     const hoje = new Date();
     return hoje.toISOString().slice(0, 10);
@@ -44,6 +40,11 @@ function AtosPagos() {
   const [atos, setAtos] = useState([]);
 
   const debounceTimeout = useRef(null);
+
+  const [nomeUsuario, setNomeUsuario] = useState(() => {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    return usuario?.nome || 'Usuário não identificado';
+  });
 
   // Funções auxiliares
   const handleDataChange = (e) => {
@@ -398,6 +399,8 @@ function AtosPagos() {
         setSaidasCaixa={setSaidasCaixa}
         valorFinalCaixa={calcularValorFinalCaixa()}
       />
+
+      <UsuarioInfo nomeUsuario={nomeUsuario} /> {/* Use o componente aqui */}
 
       <AtoSearch
         searchTerm={searchTerm}
