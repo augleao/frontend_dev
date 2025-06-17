@@ -22,18 +22,38 @@ function formatarValor(valor) {
 }
 
 function AtosPagos() {
-  const [dataSelecionada, setDataSelecionada] = useState(() => {
+const [dataSelecionada, setDataSelecionada] = useState(() => {
   const hoje = new Date();
   return hoje.toISOString().slice(0, 10); // 'YYYY-MM-DD'
 });
 
 const handleDataChange = (e) => {
   const dataISO = e.target.value;
-  // Ajustar a data para o fuso horário local
-  const dataLocal = new Date(dataISO + 'T00:00:00');
-  const dataFormatada = dataLocal.toISOString().slice(0, 10);
+  const data = new Date(dataISO);
+
+  // Obter a data no formato local
+  const dataLocal = data.toLocaleDateString('pt-BR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+
+  // Formatar para YYYY-MM-DD
+  const [dia, mes, ano] = dataLocal.split('/');
+  const dataFormatada = `${ano}-${mes}-${dia}`;
+
   setDataSelecionada(dataFormatada);
 };
+
+return (
+  <input
+    id="dataSelecionada"
+    type="date"
+    value={dataSelecionada}
+    onChange={handleDataChange}
+    max={new Date().toISOString().slice(0, 10)}
+  />
+);
 
 return (
   <input
