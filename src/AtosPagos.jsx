@@ -8,6 +8,17 @@ const formasPagamento = [
   { key: 'cheque', label: 'Cheque' },
 ];
 
+function formatDateLocal(date) {
+  const d = new Date(date);
+  const month = '' + (d.getMonth() + 1);
+  const day = '' + d.getDate();
+  const year = d.getFullYear();
+
+  return [year, month.padStart(2, '0'), day.padStart(2, '0')].join('-');
+}
+
+const dataFormatada = formatarDataBR(formatDateLocal(data));
+
 function formatarDataBR(dataISO) {
   // dataISO no formato 'YYYY-MM-DD'
   if (!dataISO) return '';
