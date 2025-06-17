@@ -20,7 +20,7 @@ export default function AtoSearch({ searchTerm, setSearchTerm, suggestions, load
             position: 'relative', // Adicionado para posicionar as sugestões corretamente
           }}
         >
-          <label>Buscar ato por código ou descrição:</label>
+          
           <input
             type="text"
             value={searchTerm}
@@ -28,7 +28,7 @@ export default function AtoSearch({ searchTerm, setSearchTerm, suggestions, load
               setSearchTerm(e.target.value);
             }}
             placeholder="Digite código ou descrição"
-            style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ccc' }}
+            style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #ccc' }}
           />
           {loadingSuggestions && (
             <div style={{ position: 'absolute', top: '100%', left: 0, background: '#fff', border: '1px solid #ccc', width: '100%', zIndex: 10, padding: 8 }}>
