@@ -386,7 +386,7 @@ function AtosPagos() {
         borderRadius: 12,
       }}
     >
-      <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Atos Pagos</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Atos Pagos e Selados ao longo do Dia</h2>
 
       <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
 
