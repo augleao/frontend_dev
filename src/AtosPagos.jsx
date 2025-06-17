@@ -20,9 +20,15 @@ function formatDateLocal(date) {
 
 
 function formatarDataBR(dataISO) {
-  // dataISO no formato 'YYYY-MM-DD'
   if (!dataISO) return '';
-  const [ano, mes, dia] = dataISO.split('-');
+
+  // Verifica se a data já está no formato DD/MM/AAAA
+  if (dataISO.includes('/')) {
+    return dataISO;
+  }
+
+  // Se for uma data ISO, converte
+  const [ano, mes, dia] = dataISO.substring(0, 10).split('-');
   return `${dia}/${mes}/${ano}`;
 }
 
