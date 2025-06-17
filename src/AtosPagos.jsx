@@ -331,6 +331,7 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
 
     try {
       const token = localStorage.getItem('token');
+      console.log('Data a ser enviada:', dataSelecionada);
       const res = await fetch(
         `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
         {
