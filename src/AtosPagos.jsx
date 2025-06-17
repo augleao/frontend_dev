@@ -392,16 +392,6 @@ function AtosPagos() {
  
       <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
 
-      <CaixaInputs
-        valorInicialCaixa={valorInicialCaixa}
-        setValorInicialCaixa={setValorInicialCaixa}
-        depositosCaixa={depositosCaixa}
-        setDepositosCaixa={setDepositosCaixa}
-        saidasCaixa={saidasCaixa}
-        setSaidasCaixa={setSaidasCaixa}
-        valorFinalCaixa={calcularValorFinalCaixa()}
-      />
-
      
 
       <AtoSearch
@@ -419,6 +409,16 @@ function AtosPagos() {
         onValorChange={handlePagamentoValorChange}
         corFundoPagamentos={corFundoPagamentos}
         selectedAto={selectedAto}
+      />
+
+            <CaixaInputs
+        valorInicialCaixa={valorInicialCaixa}
+        setValorInicialCaixa={setValorInicialCaixa}
+        depositosCaixa={depositosCaixa}
+        setDepositosCaixa={setDepositosCaixa}
+        saidasCaixa={saidasCaixa}
+        setSaidasCaixa={setSaidasCaixa}
+        valorFinalCaixa={calcularValorFinalCaixa()}
       />
 
       <div
