@@ -7,12 +7,12 @@ export default function FechamentoDiarioButton({ onClick }) {
       <button
         style={{
           padding: '10px 24px',
-          background: '#1976d2',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 8,
-          cursor: 'pointer',
-          fontWeight: 'bold',
+            background: '#388e3c',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 'bold',
         }}
         onClick={onClick}
       >
