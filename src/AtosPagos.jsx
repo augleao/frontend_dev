@@ -183,6 +183,7 @@ function AtosPagos() {
   // Buscar atos pagos para a data selecionada
   useEffect(() => {
     async function carregarAtosPorData() {
+      console.log('Data para buscar atos:', dataSelecionada);
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
@@ -207,6 +208,7 @@ function AtosPagos() {
 
   // Busca atos no backend conforme o usuário digita (debounce)
   useEffect(() => {
+    console.log('useEffect chamado com data:', dataSelecionada)
     if (searchTerm.trim() === '') {
       setSuggestions([]);
       return;
