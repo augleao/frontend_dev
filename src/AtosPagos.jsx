@@ -406,12 +406,15 @@ const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
           Selecione a data:
         </label>
         <input
-          id="dataSelecionada"
-          type="date"
-          value={dataSelecionada}
-          onChange={(e) => setDataSelecionada(e.target.value)}
-          max={new Date().toISOString().slice(0, 10)}
-        />
+  id="dataSelecionada"
+  type="date"
+  value={dataSelecionada}
+  onChange={(e) => {
+    setDataSelecionada(e.target.value);
+    setAtos([]); // limpa atos locais para evitar confusão
+  }}
+  max={new Date().toISOString().slice(0, 10)}
+/>
       </div>
 
       {/* Campos do caixa */}
