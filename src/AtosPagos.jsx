@@ -268,95 +268,105 @@ const corFundoPagamentos = (key) => {
 
   // Função para fechamento diário
   const fechamentoDiario = async () => {
-    if (!window.confirm('Confirma o fechamento diário do caixa?')) return;
+  if (!window.confirm('Confirma o fechamento diário do caixa?')) return;
 
-    const { data, hora } = formatarDataHoraAtual();
+  const { data, hora } = formatarDataHoraAtual();
 
-    const linhasFechamento = [
-      {
-        data,
-        hora,
-        codigo: '0000',
-        descricao: 'Valor Inicial do Caixa',
-        quantidade: 1,
-        valor_unitario: valorInicialCaixa,
-        pagamentos: pagamentosZerados,
-        usuario: nomeUsuario,  // <-- adicionado
-      },
-      {
-        data,
-        hora,
-        codigo: '0000',
-        descricao: 'Depósitos do Caixa',
-        quantidade: 1,
-        valor_unitario: depositosCaixa,
-        pagamentos: pagamentosZerados,
-        usuario: nomeUsuario,  // <-- adicionado
-      },
-      {
-        data,
-        hora,
-        codigo: '0000',
-        descricao: 'Saídas do Caixa',
-        quantidade: 1,
-        valor_unitario: saidasCaixa,
-        pagamentos: pagamentosZerados,
-        usuario: nomeUsuario,  // <-- adicionado
-      },
-      {
-        data,
-        hora,
-        codigo: '0000',
-        descricao: 'Valor Final do Caixa',
-        quantidade: 1,
-        valor_unitario: calcularValorFinalCaixa(),
-        valor_total: calcularValorFinalCaixa(),  // campo adicionado
-        pagamentos: pagamentosZerados,
-        usuario: nomeUsuario,  // <-- adicionado
-      },
-    ];
+  const linhasFechamento = [
+    {
+      data,
+      hora,
+      codigo: '0000',
+      descricao: 'Valor Inicial do Caixa',
+      quantidade: 1,
+      valor_unitario: valorInicialCaixa,
+      pagamentos: pagamentosZerados,
+      usuario: nomeUsuario,
+    },
+    {
+      data,
+      hora,
+      codigo: '0000',
+      descricao: 'Depósitos do Caixa',
+      quantidade: 1,
+      valor_unitario: depositosCaixa,
+      pagamentos: pagamentosZerados,
+      usuario: nomeUsuario,
+    },
+    {
+      data,
+      hora,
+      codigo: '0000',
+      descricao: 'Saídas do Caixa',
+      quantidade: 1,
+      valor_unitario: saidasCaixa,
+      pagamentos: pagamentosZerados,
+      usuario: nomeUsuario,
+    },
+    {
+      data,
+      hora,
+      codigo: '0000',
+      descricao: 'Valor Final do Caixa',
+      quantidade: 1,
+      valor_unitario: calcularValorFinalCaixa(),
+      valor_total: calcularValorFinalCaixa(),
+      pagamentos: pagamentosZerados,
+      usuario: nomeUsuario,
+    },
+  ];
 
-    try {
-      const token = localStorage.getItem('token');
+  try {
+    const token = localStorage.getItem('token');
 
-      for (const linha of linhasFechamento) {
-        console.log('Enviando fechamento:', linha);
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(linha),
-          }
-        );
-
-        let json; // Declare a variável json
-        try {
-          json = await res.json();
-        } catch (e) {
-          console.error('Erro ao parsear JSON:', e);
-          alert('Erro ao parsear JSON da resposta do servidor.');
-          return;
+    for (const linha of linhasFechamento) {
+      console.log('Enviando fechamento:', linha);
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(linha),
         }
+      );
 
-        if (!res.ok) {
-          console.error('Erro no backend:', json);
-          alert('Erro ao salvar fechamento no banco: ' + (json.message || JSON.stringify(json)));
-          return;
-        }
+      let json; // Declare a variável json
+      try {
+        json = await res.json();
+      } catch (e) {
+        console.error('Erro ao parsear JSON:', e);
+        alert('Erro ao parsear JSON da resposta do servidor.');
+        return;
       }
 
-      setAtos((prev) => [...prev, ...linhasFechamento]);
-
-      alert('Fechamento diário realizado com sucesso!');
-    } catch (e) {
-      console.error('Erro no fechamento diário:', e);
-      alert('Erro ao realizar fechamento diário.');
+      if (!res.ok) {
+        console.error('Erro no backend:', json);
+        alert('Erro ao salvar fechamento no banco: ' + (json.message || JSON.stringify(json)));
+        return;
+      }
     }
-  };
+
+    setAtos((prev) => [...prev, ...linhasFechamento]);
+
+    // Gerar o relatório PDF
+    gerarRelatorioPDF({
+      dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
+      atos,
+      valorInicialCaixa,
+      depositosCaixa,
+      saidasCaixa,
+      responsavel: nomeUsuario,
+    });
+
+    alert('Fechamento diário realizado com sucesso!');
+  } catch (e) {
+    console.error('Erro no fechamento diário:', e);
+    alert('Erro ao realizar fechamento diário.');
+  }
+};
 
   // Buscar atos pagos para a data selecionada
   useEffect(() => {
@@ -1004,40 +1014,5 @@ const corFundoPagamentos = (key) => {
     </div>
   );
 }
-const handleGerarRelatorio = () => {
-    gerarRelatorioPDF({
-      dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
-      atos,
-      valorInicialCaixa,
-      depositosCaixa,
-      saidasCaixa,
-      responsavel: nomeUsuario,
-    });
-  };
 
-  return (
-    <div>
-      {/* ... seu JSX atual ... */}
-
-      <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <button
-          onClick={handleGerarRelatorio}
-          style={{
-            padding: '10px 24px',
-            background: '#1976d2',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-            fontWeight: 'bold',
-          }}
-          disabled={atos.length === 0}
-        >
-          Gerar Relatório PDF
-        </button>
-      </div>
-
-      {/* ... resto do JSX ... */}
-    </div>
-  );
 export default AtosPagos;
