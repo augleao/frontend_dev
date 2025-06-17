@@ -871,7 +871,7 @@ const corFundoPagamentos = (key) => {
       />
     </div>
   </div>
-))}
+ ))}
         </div>
       </div>
 
@@ -1004,5 +1004,40 @@ const corFundoPagamentos = (key) => {
     </div>
   );
 }
+const handleGerarRelatorio = () => {
+    gerarRelatorioPDF({
+      dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
+      atos,
+      valorInicialCaixa,
+      depositosCaixa,
+      saidasCaixa,
+      responsavel: nomeUsuario,
+    });
+  };
 
+  return (
+    <div>
+      {/* ... seu JSX atual ... */}
+
+      <div style={{ textAlign: 'center', marginBottom: 32 }}>
+        <button
+          onClick={handleGerarRelatorio}
+          style={{
+            padding: '10px 24px',
+            background: '#1976d2',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 'bold',
+          }}
+          disabled={atos.length === 0}
+        >
+          Gerar Relatório PDF
+        </button>
+      </div>
+
+      {/* ... resto do JSX ... */}
+    </div>
+  );
 export default AtosPagos;
