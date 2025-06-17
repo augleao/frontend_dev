@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { jsPDF } from 'jspdf';
+
 
 const formasPagamento = [
   { key: 'dinheiro', label: 'Dinheiro' },
@@ -17,6 +19,153 @@ function formatDateLocal(date) {
   return [year, month.padStart(2, '0'), day.padStart(2, '0')].join('-');
 }
 
+// Funções auxiliares (copie/adapte do seu relatório)
+function formatarMoeda(valor) {
+  if (isNaN(valor) || valor === null) return '';
+  return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function formatarDataParaNomeArquivo(dataStr) {
+  if (!dataStr) return 'sem_data';
+  const partes = dataStr.split('/');
+  if (partes.length !== 3) return 'sem_data';
+  return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+}
+
+
+// Função para gerar o PDF (adaptada do seu modelo)
+function gerarRelatorioPDF({ dataRelatorio, atos, valorInicialCaixa, depositosCaixa, saidasCaixa, responsavel }) {
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'pt',
+    format: 'a4',
+  });
+
+  const marginLeft = 40;
+  const marginTop = 40;
+  const lineHeight = 14;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Relatório de Atos Pagos - ${dataRelatorio || ''}`, marginLeft, marginTop);
+
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'normal');
+
+  doc.text(`Responsável: ${responsavel || 'Não informado'}`, marginLeft, marginTop + lineHeight);
+
+  const headerInfo = [
+    `Valor Inicial do Caixa: ${formatarMoeda(valorInicialCaixa)}`,
+    `Depósitos do Caixa: ${formatarMoeda(depositosCaixa)}`,
+    `Saídas do Caixa: ${formatarMoeda(saidasCaixa)}`,
+    `Valor Final do Caixa: ${formatarMoeda(valorInicialCaixa + atos.reduce((acc, ato) => acc + (ato.pagamentos?.dinheiro?.valor ?? 0), 0) - saidasCaixa - depositosCaixa)}`,
+  ];
+  headerInfo.forEach((text, i) => {
+    doc.text(text, marginLeft, marginTop + lineHeight * (i + 2));
+  });
+
+  let y = marginTop + lineHeight * (headerInfo.length + 3);
+
+  // Cabeçalho da tabela
+  const colWidths = {
+    data: 50,
+    hora: 40,
+    descricao: 200,
+    quantidade: 40,
+    valorUnitario: 60,
+    pagamentos: 200,
+  };
+
+  const headers = ['Data', 'Hora', 'Descrição', 'Qtd', 'Valor Unit.', 'Pagamentos'];
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  let x = marginLeft;
+  doc.setFillColor(40, 40, 40);
+  doc.setTextColor(255, 255, 255);
+
+  const headerHeight = lineHeight + 4;
+  const totalWidth = Object.values(colWidths).reduce((a, b) => a + b, 0);
+  doc.rect(x, y - headerHeight + 2, totalWidth, headerHeight, 'F');
+
+  headers.forEach((header, i) => {
+    doc.text(header, x + 2, y);
+    x += Object.values(colWidths)[i];
+  });
+
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
+  doc.line(marginLeft, y + 4, marginLeft + totalWidth, y + 4);
+
+  y += lineHeight + 4;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(0, 0, 0);
+
+  const checkPageBreak = (yPos) => {
+    if (yPos > pageHeight - marginTop) {
+      doc.addPage();
+      return marginTop;
+    }
+    return yPos;
+  };
+
+  atos.forEach((ato) => {
+    x = marginLeft;
+    y = checkPageBreak(y);
+
+    const pagamentosTexto = Object.entries(ato.pagamentos || {})
+      .filter(([, p]) => p.valor > 0)
+      .map(([key, p]) => {
+        const label = {
+          dinheiro: 'Dinheiro',
+          debito: 'Cartão Débito',
+          credito: 'Cartão Crédito',
+          pix: 'PIX',
+          cheque: 'Cheque',
+          depositoPrevio: 'Depósito Prévio',
+          crc: 'CRC',
+        }[key] || key;
+        return `${label}: Qtd ${p.quantidade}, Val ${formatarMoeda(p.valor)}`;
+      })
+      .join(' | ');
+
+    const rowData = [
+      formatarDataBR(ato.data),
+      ato.hora || '',
+      ato.descricao || '',
+      ato.quantidade?.toString() || '',
+      formatarMoeda(ato.valor_unitario),
+      pagamentosTexto,
+    ];
+
+    rowData.forEach((text, i) => {
+      const maxWidth = Object.values(colWidths)[i] - 4;
+      let displayText = text;
+
+      if (doc.getTextWidth(text) > maxWidth) {
+        while (doc.getTextWidth(displayText + '...') > maxWidth && displayText.length > 0) {
+          displayText = displayText.slice(0, -1);
+        }
+        displayText += '...';
+      }
+      doc.text(displayText, x, y);
+      x += Object.values(colWidths)[i];
+    });
+
+    // Linha fina abaixo da linha
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.2);
+    doc.line(marginLeft, y + lineHeight - 4, marginLeft + totalWidth, y + lineHeight - 4);
+
+    y += lineHeight;
+  });
+
+  const dataFormatada = formatarDataParaNomeArquivo(dataRelatorio);
+  doc.save(`${dataFormatada}_relatorio_atos_pagos.pdf`);
+}
 
 
 function formatarDataBR(dataISO) {
