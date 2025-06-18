@@ -9,7 +9,6 @@ export default function AtoSearch({ searchTerm, setSearchTerm, suggestions, load
 
   return (
     <div style={{ marginBottom: 24 }}>
-      <h4 style={{ marginBottom: 8, textAlign: 'left' }}>Buscar ato por código ou descrição</h4>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'left' }}>
         <div
           style={{
@@ -19,8 +18,21 @@ export default function AtoSearch({ searchTerm, setSearchTerm, suggestions, load
             minWidth: 350,
             position: 'relative',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)', // sombra leve para combinar
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
           }}
         >
+          <span
+            style={{
+              fontWeight: 'bold',
+              fontSize: 16,
+              color: '#1976d2',
+              userSelect: 'none',
+            }}
+          >
+            Buscar ato por código ou descrição
+          </span>
           <input
             type="text"
             value={searchTerm}
@@ -35,12 +47,40 @@ export default function AtoSearch({ searchTerm, setSearchTerm, suggestions, load
             }}
           />
           {loadingSuggestions && (
-            <div style={{ position: 'absolute', top: '100%', left: 0, background: '#fff', border: '1px solid #ccc', width: '100%', zIndex: 10, padding: 8 }}>
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                background: '#fff',
+                border: '1px solid #ccc',
+                width: '100%',
+                zIndex: 10,
+                padding: 8,
+              }}
+            >
               Carregando...
             </div>
           )}
           {!loadingSuggestions && suggestions.length > 0 && (
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0, position: 'absolute', top: '100%', left: 0, right: 0, maxHeight: 200, overflowY: 'auto', background: '#fff', border: '1px solid #ccc', borderTop: 'none', zIndex: 9999, boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+            <ul
+              style={{
+                listStyle: 'none',
+                margin: 0,
+                padding: 0,
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                maxHeight: 200,
+                overflowY: 'auto',
+                background: '#fff',
+                border: '1px solid #ccc',
+                borderTop: 'none',
+                zIndex: 9999,
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+              }}
+            >
               {suggestions.map((ato) => (
                 <li
                   key={ato.id}
