@@ -9,7 +9,7 @@ export default function AtoSearch({ searchTerm, setSearchTerm, suggestions, load
 
   return (
     <div style={{ marginBottom: 24 }}>
-      <h4 style={{ marginBottom: 8, textAlign: 'center' }}>Buscar ato por código ou descrição</h4>
+      <h4 style={{ marginBottom: 8, textAlign: 'left' }}>Buscar ato por código ou descrição</h4>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
         <div
           style={{
