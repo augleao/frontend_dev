@@ -533,6 +533,138 @@ return (
           Adicionar Ato
         </button>
       </div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 24 }}>
+        <button
+          style={{
+            padding: '10px 24px',
+            background: '#388e3c',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 'bold',
+          }}
+          onClick={adicionarAto}
+          disabled={
+            !selectedAto ||
+            quantidade < 1 ||
+            !Object.values(pagamentos).some((p) => p.valor > 0) ||
+            !valoresIguais(somaPagamentos, valorTotal)
+          }
+        >
+          Adicionar Ato
+        </button>
+      </div>
+
+      {/* Novo container: Adicionar Entrada no Caixa */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          marginBottom: 16,
+          padding: 16,
+          backgroundColor: '#f0f0f0',
+          borderRadius: 8,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        }}
+      >
+        <button
+          style={{
+            padding: '8px 20px',
+            background: '#1976d2',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            cursor: 'pointer',
+            fontWeight: 'bold',
+          }}
+          onClick={adicionarEntrada}
+        >
+          Adicionar Entrada no Caixa
+        </button>
+        <input
+          type="text"
+          placeholder="Valor (R$)"
+          value={entradaValor}
+          onChange={(e) => setEntradaValor(e.target.value)}
+          style={{
+            width: 120,
+            padding: 8,
+            borderRadius: 6,
+            border: '1px solid #ccc',
+            textAlign: 'right',
+          }}
+        />
+        <input
+          type="text"
+          placeholder="Observações"
+          value={entradaObs}
+          onChange={(e) => setEntradaObs(e.target.value)}
+          style={{
+            flex: 1,
+            padding: 8,
+            borderRadius: 6,
+            border: '1px solid #ccc',
+          }}
+        />
+      </div>
+
+      {/* Novo container: Adicionar Saída no Caixa */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          marginBottom: 24,
+          padding: 16,
+          backgroundColor: '#f0f0f0',
+          borderRadius: 8,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        }}
+      >
+        <button
+          style={{
+            padding: '8px 20px',
+            background: '#d32f2f',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            cursor: 'pointer',
+            fontWeight: 'bold',
+          }}
+          onClick={adicionarSaida}
+        >
+          Adicionar Saída no Caixa
+        </button>
+        <input
+          type="text"
+          placeholder="Valor (R$)"
+          value={saidaValor}
+          onChange={(e) => setSaidaValor(e.target.value)}
+          style={{
+            width: 120,
+            padding: 8,
+            borderRadius: 6,
+            border: '1px solid #ccc',
+            textAlign: 'right',
+          }}
+        />
+        <input
+          type="text"
+          placeholder="Observações"
+          value={saidaObs}
+          onChange={(e) => setSaidaObs(e.target.value)}
+          style={{
+            flex: 1,
+            padding: 8,
+            borderRadius: 6,
+            border: '1px solid #ccc',
+          }}
+        />
+      </div>
+
     </div>
 
     <div
