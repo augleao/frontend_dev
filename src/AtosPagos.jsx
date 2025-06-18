@@ -379,73 +379,87 @@ function AtosPagos() {
     }
   };
 
-  return (
+  // ... seu código anterior permanece igual até o return
+
+return (
+  <div
+    style={{
+      maxWidth: '100%',
+      margin: '10px auto',
+      padding: 32,
+      background: '#fff',
+      boxShadow: '0 2px 8px #0001',
+      borderRadius: 12,
+    }}
+  >
+    <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Movimento Diário do Caixa</h2>
+
+    {/* Nome do usuário */}
+    <div style={{ textAlign: 'center', marginBottom: 24 }}>
+      <input
+        type="text"
+        value={nomeUsuario}
+        readOnly
+        style={{
+          width: 320,
+          textAlign: 'center',
+          fontSize: 16,
+          padding: 8,
+          borderRadius: 6,
+          border: '1px solid #1976d2',
+          background: '#f5faff',
+          color: '#1976d2',
+          fontWeight: 'bold',
+        }}
+      />
+    </div>
+
+    <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
+
+    <CaixaInputs
+      valorInicialCaixa={valorInicialCaixa}
+      setValorInicialCaixa={setValorInicialCaixa}
+      depositosCaixa={depositosCaixa}
+      setDepositosCaixa={setDepositosCaixa}
+      saidasCaixa={saidasCaixa}
+      setSaidasCaixa={setSaidasCaixa}
+      valorFinalCaixa={calcularValorFinalCaixa()}
+    />
+
+    {/* Container único para AtoSearch + Quantidade e FormasPagamento */}
     <div
       style={{
-        maxWidth: '100%',
-        margin: '10px auto',
-        padding: 32,
-        background: '#fff',
-        boxShadow: '0 2px 8px #0001',
-        borderRadius: 12,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 8,
+        padding: 16,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        marginBottom: 24,
       }}
     >
-      <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Movimento Diário do Caixa</h2>
-
-      {/* Nome do usuário */}
-      <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <input
-          type="text"
-          value={nomeUsuario}
-          readOnly
-          style={{
-            width: 320,
-            textAlign: 'center',
-            fontSize: 16,
-            padding: 8,
-            borderRadius: 6,
-            border: '1px solid #1976d2',
-            background: '#f5faff',
-            color: '#1976d2',
-            fontWeight: 'bold',
-          }}
-        />
+      {/* Linha com AtoSearch e Quantidade */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 24,
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          marginBottom: 24,
+        }}
+      >
+        <div style={{ flex: '1 1 350px', minWidth: 350 }}>
+          <AtoSearch
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            suggestions={suggestions}
+            loadingSuggestions={loadingSuggestions}
+            onSelect={handleSelectAto}
+            quantidade={quantidade}
+            onQuantidadeChange={handleQuantidadeChange}
+          />
+        </div>
       </div>
 
-      <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
-
-      <CaixaInputs
-        valorInicialCaixa={valorInicialCaixa}
-        setValorInicialCaixa={setValorInicialCaixa}
-        depositosCaixa={depositosCaixa}
-        setDepositosCaixa={setDepositosCaixa}
-        saidasCaixa={saidasCaixa}
-        setSaidasCaixa={setSaidasCaixa}
-        valorFinalCaixa={calcularValorFinalCaixa()}
-      />
-
-      <AtoSearch
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        suggestions={suggestions}
-        loadingSuggestions={loadingSuggestions}
-        onSelect={handleSelectAto} // Use a função handleSelectAto aqui
-        quantidade={quantidade}
-        onQuantidadeChange={handleQuantidadeChange}
-      />
-
-      {/* Exibir o ato selecionado */}
-      {selectedAto && (
-        <div style={{ marginTop: 16, textAlign: 'center' }}>
-          Ato selecionado: {selectedAto.codigo} - {selectedAto.descricao} - R$ {formatarMoeda(selectedAto.valor_final)}
-        </div>
-      )}
-
-      {/* Campo de quantidade */}
-      {/* Campo de quantidade com formatação igual ao FormasPagamento */}
-{/* Campo de quantidade com formatação igual ao FormasPagamento e alinhado à esquerda */}
-
-
+      {/* Formas de Pagamento */}
       <FormasPagamento
         formasPagamento={formasPagamento}
         pagamentos={pagamentos}
@@ -454,47 +468,48 @@ function AtosPagos() {
         corFundoPagamentos={corFundoPagamentos}
         selectedAto={selectedAto}
       />
-
-      <div
-        style={{
-          textAlign: 'center',
-          marginBottom: 32,
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 16,
-        }}
-      >
-        <button
-          style={{
-            padding: '10px 24px',
-            background: '#388e3c',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-            fontWeight: 'bold',
-          }}
-          onClick={adicionarAto}
-          disabled={
-            !selectedAto ||
-            quantidade < 1 ||
-            !Object.values(pagamentos).some((p) => p.valor > 0) ||
-            !valoresIguais(somaPagamentos, valorTotal)
-          }
-        >
-          Adicionar Ato
-        </button>
-
-        <FechamentoDiarioButton onClick={fechamentoDiario} />
-      </div>
-
-      <h3 style={{ marginBottom: 12 }}>
-        Atos Pagos em {dataSelecionada.split('-').reverse().join('/')}
-      </h3>
-
-      <AtosTable atos={atos} removerAto={removerAto} />
     </div>
-  );
+
+    <div
+      style={{
+        textAlign: 'center',
+        marginBottom: 32,
+        display: 'flex',
+        justifyContent: 'center',
+        gap: 16,
+      }}
+    >
+      <button
+        style={{
+          padding: '10px 24px',
+          background: '#388e3c',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 8,
+          cursor: 'pointer',
+          fontWeight: 'bold',
+        }}
+        onClick={adicionarAto}
+        disabled={
+          !selectedAto ||
+          quantidade < 1 ||
+          !Object.values(pagamentos).some((p) => p.valor > 0) ||
+          !valoresIguais(somaPagamentos, valorTotal)
+        }
+      >
+        Adicionar Ato
+      </button>
+
+      <FechamentoDiarioButton onClick={fechamentoDiario} />
+    </div>
+
+    <h3 style={{ marginBottom: 12 }}>
+      Atos Pagos em {dataSelecionada.split('-').reverse().join('/')}
+    </h3>
+
+    <AtosTable atos={atos} removerAto={removerAto} />
+  </div>
+);
 }
 
 export default AtosPagos;
