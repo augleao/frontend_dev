@@ -448,7 +448,7 @@ function AtosPagos() {
     padding: 12,
     minWidth: 180,
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'left',
     justifyContent: 'flex-start',
     gap: 8,
     marginTop: 16,
