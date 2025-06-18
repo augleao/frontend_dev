@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import DataSelector from './DataSelector'; // Import necessário
+import DataSelector from './DataSelector'; // Import adicionado
 import {
   formasPagamento,
   gerarRelatorioPDF,
@@ -195,9 +195,10 @@ function AtosPagos() {
       <div
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
           alignItems: 'center',
           marginBottom: 24,
+          gap: 26,
         }}
       >
         <h2 style={{ margin: 0 }}>Movimento Diário do Caixa</h2>
