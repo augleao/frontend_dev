@@ -434,13 +434,14 @@ function AtosPagos() {
 
       {/* Exibir o ato selecionado */}
       {selectedAto && (
-        <div style={{ marginTop: 16, textAlign: 'left' }}>
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
           Ato selecionado: {selectedAto.codigo} - {selectedAto.descricao} - R$ {formatarMoeda(selectedAto.valor_final)}
         </div>
       )}
 
       {/* Campo de quantidade */}
       {/* Campo de quantidade com formatação igual ao FormasPagamento */}
+{/* Campo de quantidade com formatação igual ao FormasPagamento e alinhado à esquerda */}
 <div
   style={{
     backgroundColor: '#f0f0f0', // mesma cor de fundo do FormasPagamento
@@ -448,12 +449,10 @@ function AtosPagos() {
     padding: 12,
     minWidth: 180,
     display: 'flex',
-    alignItems: 'left',
-    justifyContent: 'flex-start',
+    alignItems: 'center',
+    justifyContent: 'flex-start', // alinhado à esquerda
     gap: 8,
     marginTop: 16,
-    marginLeft: 'auto',
-    marginRight: 'auto',
     maxWidth: 300,
   }}
 >
