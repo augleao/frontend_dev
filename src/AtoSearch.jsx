@@ -9,33 +9,31 @@ export default function AtoSearch({ searchTerm, setSearchTerm, suggestions, load
 
   return (
     <div style={{ marginBottom: 24 }}>
+      <h4 style={{ marginBottom: 8, textAlign: 'center' }}>Buscar ato por código ou descrição</h4>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
         <div
           style={{
-            backgroundColor: '#f0f0f0', // Cor de fundo similar ao FormasPagamento
+            backgroundColor: '#f0f0f0', // mesma cor de fundo do FormasPagamento
             borderRadius: 8,
             padding: 12,
-            minWidth: 300, // Aumentei o minWidth para acomodar o conteúdo
-            position: 'relative', // Adicionado para posicionar as sugestões corretamente
+            minWidth: 300,
+            position: 'relative',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)', // sombra leve para combinar
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <label style={{ marginRight: 8 }}>Buscar ato por código ou descrição:</label>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-              }}
-              placeholder="Digite código ou descrição"
-              style={{
-                width: '100%',
-                padding: 12,
-                borderRadius: 8,
-                border: '1px solid #ccc',
-              }}
-            />
-          </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Digite código ou descrição"
+            style={{
+              width: '100%',
+              padding: 8,
+              borderRadius: 4,
+              border: '1px solid #ccc',
+              fontSize: 14,
+            }}
+          />
           {loadingSuggestions && (
             <div style={{ position: 'absolute', top: '100%', left: 0, background: '#fff', border: '1px solid #ccc', width: '100%', zIndex: 10, padding: 8 }}>
               Carregando...
