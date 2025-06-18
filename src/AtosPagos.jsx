@@ -379,78 +379,142 @@ function AtosPagos() {
     }
   };
 
-  // ... seu código anterior permanece igual até o return
+ // ... seu código anterior permanece igual até o return
 
 return (
   <div
-  style={{
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    padding: 16,
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    marginBottom: 24,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 24,
-    position: 'relative',
-  }}
->
-  {/* Linha com AtoSearch e Quantidade */}
-  <div
     style={{
-      display: 'flex',
-      gap: 24,
-      alignItems: 'center',
-      flexWrap: 'wrap',
+      maxWidth: '100%',
+      margin: '10px auto',
+      padding: 32,
+      background: '#fff',
+      boxShadow: '0 2px 8px #0001',
+      borderRadius: 12,
     }}
   >
-    <div style={{ flex: '1 1 350px', minWidth: 350 }}>
-      <AtoSearch
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        suggestions={suggestions}
-        loadingSuggestions={loadingSuggestions}
-        onSelect={handleSelectAto}
-        quantidade={quantidade}
-        onQuantidadeChange={handleQuantidadeChange}
+    <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Movimento Diário do Caixa</h2>
+
+    {/* Nome do usuário */}
+    <div style={{ textAlign: 'center', marginBottom: 24 }}>
+      <input
+        type="text"
+        value={nomeUsuario}
+        readOnly
+        style={{
+          width: 320,
+          textAlign: 'center',
+          fontSize: 16,
+          padding: 8,
+          borderRadius: 6,
+          border: '1px solid #1976d2',
+          background: '#f5faff',
+          color: '#1976d2',
+          fontWeight: 'bold',
+        }}
       />
     </div>
-  </div>
 
-  {/* Formas de Pagamento */}
-  <FormasPagamento
-    formasPagamento={formasPagamento}
-    pagamentos={pagamentos}
-    onQuantidadeChange={handlePagamentoQuantidadeChange}
-    onValorChange={handlePagamentoValorChange}
-    corFundoPagamentos={corFundoPagamentos}
-    selectedAto={selectedAto}
-  />
+    <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
 
-  {/* Botão Adicionar Ato alinhado à direita */}
-  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-    <button
+    <CaixaInputs
+      valorInicialCaixa={valorInicialCaixa}
+      setValorInicialCaixa={setValorInicialCaixa}
+      depositosCaixa={depositosCaixa}
+      setDepositosCaixa={setDepositosCaixa}
+      saidasCaixa={saidasCaixa}
+      setSaidasCaixa={setSaidasCaixa}
+      valorFinalCaixa={calcularValorFinalCaixa()}
+    />
+
+    {/* Container único para AtoSearch + Quantidade, FormasPagamento e Botão */}
+    <div
       style={{
-        padding: '10px 24px',
-        background: '#388e3c',
-        color: '#fff',
-        border: 'none',
+        backgroundColor: '#f0f0f0',
         borderRadius: 8,
-        cursor: 'pointer',
-        fontWeight: 'bold',
+        padding: 16,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        marginBottom: 24,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 24,
+        position: 'relative',
       }}
-      onClick={adicionarAto}
-      disabled={
-        !selectedAto ||
-        quantidade < 1 ||
-        !Object.values(pagamentos).some((p) => p.valor > 0) ||
-        !valoresIguais(somaPagamentos, valorTotal)
-      }
     >
-      Adicionar Ato
-    </button>
+      {/* Linha com AtoSearch e Quantidade */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 24,
+          alignItems: 'center',
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ flex: '1 1 350px', minWidth: 350 }}>
+          <AtoSearch
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            suggestions={suggestions}
+            loadingSuggestions={loadingSuggestions}
+            onSelect={handleSelectAto}
+            quantidade={quantidade}
+            onQuantidadeChange={handleQuantidadeChange}
+          />
+        </div>
+      </div>
+
+      {/* Formas de Pagamento */}
+      <FormasPagamento
+        formasPagamento={formasPagamento}
+        pagamentos={pagamentos}
+        onQuantidadeChange={handlePagamentoQuantidadeChange}
+        onValorChange={handlePagamentoValorChange}
+        corFundoPagamentos={corFundoPagamentos}
+        selectedAto={selectedAto}
+      />
+
+      {/* Botão Adicionar Ato alinhado à direita */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button
+          style={{
+            padding: '10px 24px',
+            background: '#388e3c',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 'bold',
+          }}
+          onClick={adicionarAto}
+          disabled={
+            !selectedAto ||
+            quantidade < 1 ||
+            !Object.values(pagamentos).some((p) => p.valor > 0) ||
+            !valoresIguais(somaPagamentos, valorTotal)
+          }
+        >
+          Adicionar Ato
+        </button>
+      </div>
+    </div>
+
+    <div
+      style={{
+        textAlign: 'center',
+        marginBottom: 32,
+        display: 'flex',
+        justifyContent: 'center',
+        gap: 16,
+      }}
+    >
+      <FechamentoDiarioButton onClick={fechamentoDiario} />
+    </div>
+
+    <h3 style={{ marginBottom: 12 }}>
+      Atos Pagos em {dataSelecionada.split('-').reverse().join('/')}
+    </h3>
+
+    <AtosTable atos={atos} removerAto={removerAto} />
   </div>
-</div>
 );
 }
 
