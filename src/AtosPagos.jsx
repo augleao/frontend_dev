@@ -41,6 +41,73 @@ function AtosPagos() {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     return usuario?.nome || 'Usuário não identificado';
   });
+  const [entradaValor, setEntradaValor] = useState('');
+  const [entradaObs, setEntradaObs] = useState('');
+  const [saidaValor, setSaidaValor] = useState('');
+  const [saidaObs, setSaidaObs] = useState('');
+
+// Função para formatar valor de input para número (ex: "R$ 1.234,56" -> 1234.56)
+  const parseValorMoeda = (valorStr) => {
+    if (!valorStr) return 0;
+    // Remove tudo que não é número ou vírgula/ponto
+    const numStr = valorStr.replace(/[^\d,.-]/g, '').replace(',', '.');
+    const num = parseFloat(numStr);
+    return isNaN(num) ? 0 : num;
+  };
+
+  // Função para adicionar entrada no caixa
+  const adicionarEntrada = () => {
+    const valor = parseValorMoeda(entradaValor);
+    if (valor <= 0) {
+      alert('Informe um valor válido para a entrada.');
+      return;
+    }
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const nomeUsuario = usuario?.nome || 'Usuário não identificado';
+    const agora = new Date();
+
+    const novaEntrada = {
+      data: agora.toISOString().slice(0, 10),
+      hora: agora.toLocaleTimeString('pt-BR', { hour12: false }),
+      codigo: '0001',
+      descricao: `ENTRADA: ${entradaObs || ''}`.trim(),
+      quantidade: 1,
+      valor_unitario: valor,
+      pagamentos: {}, // vazio conforme solicitado
+      usuario: nomeUsuario,
+    };
+
+    setAtos((prev) => [...prev, novaEntrada]);
+    setEntradaValor('');
+    setEntradaObs('');
+  };
+
+  // Função para adicionar saída no caixa
+  const adicionarSaida = () => {
+    const valor = parseValorMoeda(saidaValor);
+    if (valor <= 0) {
+      alert('Informe um valor válido para a saída.');
+      return;
+    }
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const nomeUsuario = usuario?.nome || 'Usuário não identificado';
+    const agora = new Date();
+
+    const novaSaida = {
+      data: agora.toISOString().slice(0, 10),
+      hora: agora.toLocaleTimeString('pt-BR', { hour12: false }),
+      codigo: '0002',
+      descricao: `SAÍDA: ${saidaObs || ''}`.trim(),
+      quantidade: 1,
+      valor_unitario: valor,
+      pagamentos: {}, // vazio conforme solicitado
+      usuario: nomeUsuario,
+    };
+
+    setAtos((prev) => [...prev, novaSaida]);
+    setSaidaValor('');
+    setSaidaObs('');
+  };
 
   // Funções auxiliares
   const handleDataChange = (e) => {
@@ -344,8 +411,6 @@ function AtosPagos() {
         dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
         atos,
         valorInicialCaixa,
-        depositosCaixa,
-        saidasCaixa,
         responsavel: nomeUsuario,
       });
 
