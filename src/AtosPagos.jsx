@@ -278,13 +278,13 @@ function AtosPagos() {
 
   //useEffect para buscar o ultimo fechamento do caixa 
   useEffect(() => {
-let isMounted = true; // flag para evitar setState após desmontar
+  let isMounted = true; // Para evitar atualização após desmontagem
 
   async function buscarValorFinalAnterior() {
     let dataBusca = dayjs(dataSelecionada).subtract(1, 'day');
     let valorEncontrado = null;
 
-    while (!valorEncontrado && dataBusca.isAfter(dayjs('2000-01-01'))) {
+    while (dataBusca.isAfter(dayjs('2000-01-01'))) {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
@@ -293,18 +293,25 @@ let isMounted = true; // flag para evitar setState após desmontar
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        if (!res.ok) throw new Error('Erro ao buscar atos pagos');
+
+        if (!res.ok) {
+          console.error('Erro ao buscar atos pagos para data:', dataBusca.format('YYYY-MM-DD'));
+          break;
+        }
+
         const data = await res.json();
         const atosDia = data.atosPagos || [];
 
         // Busca ato com código '0001' (Valor Final do Caixa)
         const fechamento = atosDia.find((ato) => ato.codigo === '0001');
+
         if (fechamento && typeof fechamento.valor_unitario === 'number') {
           valorEncontrado = fechamento.valor_unitario;
           break;
-        } else {
-          dataBusca = dataBusca.subtract(1, 'day');
         }
+
+        // Se não encontrou, volta um dia e tenta novamente
+        dataBusca = dataBusca.subtract(1, 'day');
       } catch (e) {
         console.error('Erro ao buscar valor final do caixa:', e);
         break;
