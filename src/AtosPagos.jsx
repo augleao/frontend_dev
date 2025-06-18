@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import DataSelector from './DataSelector'; // Import necessário
 import {
   formasPagamento,
   gerarRelatorioPDF,
@@ -21,6 +22,7 @@ function AtosPagos() {
     return usuario?.nome || 'Usuário não identificado';
   });
 
+  // Função para calcular o valor final do caixa
   const calcularValorFinalCaixa = () => {
     const totalDinheiro = atos.reduce((acc, ato) => {
       const valorDinheiro = parseFloat(ato.pagamentos?.dinheiro?.valor) || 0;
@@ -29,6 +31,7 @@ function AtosPagos() {
     return valorInicialCaixa + totalDinheiro - depositosCaixa - saidasCaixa;
   };
 
+  // Função para remover ato
   const removerAto = async (index) => {
     const atoParaRemover = atos[index];
     try {
@@ -51,6 +54,7 @@ function AtosPagos() {
     }
   };
 
+  // Função para fechamento diário
   const fechamentoDiario = async () => {
     if (!window.confirm('Confirma o fechamento diário do caixa?')) return;
 
@@ -166,11 +170,44 @@ function AtosPagos() {
         borderRadius: 12,
       }}
     >
-      <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Movimento Diário do Caixa</h2>
+      {/* Nome do usuário acima do título */}
+      <div style={{ textAlign: 'center', marginBottom: 16 }}>
+        <input
+          type="text"
+          value={nomeUsuario}
+          readOnly
+          style={{
+            width: 320,
+            textAlign: 'center',
+            fontSize: 16,
+            padding: 8,
+            borderRadius: 6,
+            border: '1px solid #1976d2',
+            background: '#f5faff',
+            color: '#1976d2',
+            fontWeight: 'bold',
+            margin: 0,
+          }}
+        />
+      </div>
+
+      {/* Título e seletor de data na mesma linha */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 24,
+        }}
+      >
+        <h2 style={{ margin: 0 }}>Movimento Diário do Caixa</h2>
+        <DataSelector
+          dataSelecionada={dataSelecionada}
+          onChange={(e) => setDataSelecionada(e.target.value)}
+        />
+      </div>
 
       <ResumoCaixa
-        dataSelecionada={dataSelecionada}
-        setDataSelecionada={setDataSelecionada}
         valorInicialCaixa={valorInicialCaixa}
         setValorInicialCaixa={setValorInicialCaixa}
         depositosCaixa={depositosCaixa}
@@ -178,20 +215,17 @@ function AtosPagos() {
         saidasCaixa={saidasCaixa}
         setSaidasCaixa={setSaidasCaixa}
         valorFinalCaixa={calcularValorFinalCaixa()}
-        nomeUsuario={nomeUsuario}
       />
 
       <AtoBuscaEPagamento
         dataSelecionada={dataSelecionada}
         atos={atos}
         setAtos={setAtos}
-        nomeUsuario={nomeUsuario}
       />
 
       <EntradasSaidasManuais
         atos={atos}
         setAtos={setAtos}
-        nomeUsuario={nomeUsuario}
       />
 
       <Fechamento onFechar={fechamentoDiario} />
