@@ -38,17 +38,8 @@ export default function CaixaInputs({
         <input
           type="number"
           value={valorInicialCaixa}
+          readOnly
           onChange={(e) => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
-          style={inputStyle}
-        />
-      </div>
-      
-      <div>
-        <label>Saídas do Caixa:</label>
-        <input
-          type="number"
-          value={saidasCaixa}
-          onChange={(e) => setSaidasCaixa(parseFloat(e.target.value) || 0)}
           style={inputStyle}
         />
       </div>
