@@ -442,22 +442,7 @@ function AtosPagos() {
       {/* Campo de quantidade */}
       {/* Campo de quantidade com formatação igual ao FormasPagamento */}
 {/* Campo de quantidade com formatação igual ao FormasPagamento e alinhado à esquerda */}
-<div
-  style={{
-    backgroundColor: '#f0f0f0', // mesma cor de fundo do FormasPagamento
-    borderRadius: 8,
-    padding: 12,
-    minWidth: 180,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-start', // alinhado à esquerda
-    gap: 8,
-    marginTop: 16,
-    maxWidth: 300,
-  }}
->
 
-</div>
 
       <FormasPagamento
         formasPagamento={formasPagamento}
