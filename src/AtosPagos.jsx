@@ -277,7 +277,7 @@ function AtosPagos() {
   };
 
   //useEffect para buscar o ultimo fechamento do caixa 
-  import dayjs from 'dayjs';
+
 
 useEffect(() => {
   async function buscarFechamentosIntervalo() {
