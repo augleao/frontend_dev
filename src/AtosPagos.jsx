@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DataSelector from './DataSelector'; // Import adicionado
 import {
   formasPagamento,
@@ -21,6 +21,31 @@ function AtosPagos() {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     return usuario?.nome || 'Usuário não identificado';
   });
+//funcao para buscar atos por data
+  const buscarAtosPorData = async (data) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${data}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (res.ok) {
+        const dados = await res.json();
+        setAtos(dados);
+      } else {
+        alert('Erro ao buscar atos para a data selecionada.');
+      }
+    } catch (e) {
+      console.error('Erro ao buscar atos:', e);
+      alert('Erro ao buscar atos para a data selecionada.');
+    }
+  };
+
+useEffect(() => {
+    buscarAtosPorData(dataSelecionada);
+  }, [dataSelecionada]);
 
   // Função para calcular o valor final do caixa
   const calcularValorFinalCaixa = () => {
