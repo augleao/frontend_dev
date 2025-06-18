@@ -83,6 +83,9 @@ function AtosPagos() {
     setEntradaObs('');
   };
 
+  const fechamentoDoDia = atos.find((ato) => ato.codigo === '0001');
+  const valorFinalCaixa = fechamentoDoDia ? fechamentoDoDia.valor_unitario : 0;
+
   // Função para adicionar saída no caixa
   const adicionarSaida = () => {
     const valor = parseValorMoeda(saidaValor);
@@ -496,9 +499,9 @@ return (
     <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
 
     <CaixaInputs
-      valorInicialCaixa={valorInicialCaixa}
-      setValorInicialCaixa={setValorInicialCaixa}
-      valorFinalCaixa={calcularValorFinalCaixa()}
+valorInicialCaixa={valorInicialCaixa}
+  setValorInicialCaixa={setValorInicialCaixa}
+  valorFinalCaixa={valorFinalCaixa}
     />
 
     {/* Container único para AtoSearch + Quantidade, FormasPagamento e Botão */}
