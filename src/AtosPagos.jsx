@@ -434,7 +434,7 @@ function AtosPagos() {
 
       {/* Exibir o ato selecionado */}
       {selectedAto && (
-        <div style={{ marginTop: 16, textAlign: 'center' }}>
+        <div style={{ marginTop: 16, textAlign: 'left' }}>
           Ato selecionado: {selectedAto.codigo} - {selectedAto.descricao} - R$ {formatarMoeda(selectedAto.valor_final)}
         </div>
       )}
