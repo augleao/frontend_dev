@@ -283,8 +283,10 @@ function AtosPagos() {
   async function buscarValorFinalAnterior() {
     let dataBusca = dayjs(dataSelecionada).subtract(1, 'day');
     let valorEncontrado = null;
+    console.log('Iniciando busca para data:', dataSelecionada);
 
     while (dataBusca.isAfter(dayjs('2000-01-01'))) {
+      console.log('Buscando para:', dataBusca.format('YYYY-MM-DD'));
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
@@ -301,12 +303,14 @@ function AtosPagos() {
 
         const data = await res.json();
         const atosDia = data.atosPagos || [];
+        console.log('Atos do dia:', atosDia);
 
         // Busca ato com código '0001' (Valor Final do Caixa)
         const fechamento = atosDia.find((ato) => ato.codigo === '0001');
 
         if (fechamento && typeof fechamento.valor_unitario === 'number') {
           valorEncontrado = fechamento.valor_unitario;
+          console.log('Valor final do caixa encontrado:', valorEncontrado);
           break;
         }
 
@@ -319,6 +323,7 @@ function AtosPagos() {
     }
 
     if (isMounted) {
+      console.log('Atualizando valorInicialCaixa para:', valorEncontrado != null ? valorEncontrado : 0);
       setValorInicialCaixa(valorEncontrado != null ? valorEncontrado : 0);
     }
   }
