@@ -1,4 +1,3 @@
-// CaixaInputs.jsx
 import React from 'react';
 
 export default function CaixaInputs({
@@ -18,6 +17,12 @@ export default function CaixaInputs({
     border: '1px solid #ccc',
     textAlign: 'right',
   };
+
+  // Garante que valorFinalCaixa seja número válido para toFixed
+  const valorFinalFormatado =
+    typeof valorFinalCaixa === 'number' && !isNaN(valorFinalCaixa)
+      ? valorFinalCaixa.toFixed(2)
+      : '0.00';
 
   return (
     <div
@@ -47,7 +52,7 @@ export default function CaixaInputs({
         <label>Valor Final do Caixa:</label>
         <input
           type="text"
-          value={`R$ ${valorFinalCaixa.toFixed(2)}`}
+          value={`R$ ${valorFinalFormatado}`}
           readOnly
           style={{ ...inputStyle, backgroundColor: '#eee' }}
         />
