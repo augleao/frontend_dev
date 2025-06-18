@@ -440,15 +440,38 @@ function AtosPagos() {
       )}
 
       {/* Campo de quantidade */}
-      <div style={{ marginTop: 16, textAlign: 'center' }}>
-        <label>Quantidade:</label>
-        <input
-          type="number"
-          value={quantidade}
-          onChange={(e) => handleQuantidadeChange(e.target.value)}
-          style={{ width: 60, marginLeft: 8, padding: 4, borderRadius: 4, border: '1px solid #ccc' }}
-        />
-      </div>
+      {/* Campo de quantidade com formatação igual ao FormasPagamento */}
+<div
+  style={{
+    backgroundColor: '#f0f0f0', // mesma cor de fundo do FormasPagamento
+    borderRadius: 8,
+    padding: 12,
+    minWidth: 180,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: 8,
+    marginTop: 16,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    maxWidth: 300,
+  }}
+>
+  <label style={{ fontWeight: 'bold', fontSize: 14 }}>Quantidade:</label>
+  <input
+    type="number"
+    value={quantidade}
+    onChange={(e) => handleQuantidadeChange(e.target.value)}
+    style={{
+      width: 60,
+      padding: 4,
+      borderRadius: 4,
+      border: '1px solid #ccc',
+      fontSize: 14,
+    }}
+    min={1}
+  />
+</div>
 
       <FormasPagamento
         formasPagamento={formasPagamento}

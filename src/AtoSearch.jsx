@@ -16,7 +16,7 @@ export default function AtoSearch({ searchTerm, setSearchTerm, suggestions, load
             backgroundColor: '#f0f0f0', // mesma cor de fundo do FormasPagamento
             borderRadius: 8,
             padding: 12,
-            minWidth: 300,
+            minWidth: 350,
             position: 'relative',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)', // sombra leve para combinar
           }}
