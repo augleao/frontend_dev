@@ -278,63 +278,27 @@ function AtosPagos() {
 
   //useEffect para buscar o ultimo fechamento do caixa 
   useEffect(() => {
-  let isMounted = true; // Para evitar atualização após desmontagem
-
-  async function buscarValorFinalAnterior() {
-    let dataBusca = dayjs(dataSelecionada).subtract(1, 'day');
-    let valorEncontrado = null;
-    console.log('Iniciando busca para data:', dataSelecionada);
-
-    while (dataBusca.isAfter(dayjs('2000-01-01'))) {
-      console.log('Buscando para:', dataBusca.format('YYYY-MM-DD'));
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${dataBusca.format('YYYY-MM-DD')}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        if (!res.ok) {
-          console.error('Erro ao buscar atos pagos para data:', dataBusca.format('YYYY-MM-DD'));
-          break;
+  async function buscarUltimoFechamento() {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/fechamento-ultimo?data=${dataSelecionada}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-
-        const data = await res.json();
-        const atosDia = data.atosPagos || [];
-        console.log('Atos do dia:', atosDia);
-
-        // Busca ato com código '0001' (Valor Final do Caixa)
-        const fechamento = atosDia.find((ato) => ato.codigo === '0001');
-
-        if (fechamento && typeof fechamento.valor_unitario === 'number') {
-          valorEncontrado = fechamento.valor_unitario;
-          console.log('Valor final do caixa encontrado:', valorEncontrado);
-          break;
-        }
-
-        // Se não encontrou, volta um dia e tenta novamente
-        dataBusca = dataBusca.subtract(1, 'day');
-      } catch (e) {
-        console.error('Erro ao buscar valor final do caixa:', e);
-        break;
-      }
-    }
-
-    if (isMounted) {
-      console.log('Atualizando valorInicialCaixa para:', valorEncontrado != null ? valorEncontrado : 0);
-      setValorInicialCaixa(valorEncontrado != null ? valorEncontrado : 0);
+      );
+      if (!res.ok) throw new Error('Erro ao buscar último fechamento');
+      const data = await res.json();
+      const valor = data.valor_unitario || 0;
+      setValorInicialCaixa(valor);
+    } catch (e) {
+      console.error(e);
+      setValorInicialCaixa(0);
     }
   }
 
-  buscarValorFinalAnterior();
-
-  return () => {
-    isMounted = false;
-  };
+  buscarUltimoFechamento();
 }, [dataSelecionada]);
-
 
   // useEffect para carregar atos por data
   useEffect(() => {
