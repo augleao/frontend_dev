@@ -277,27 +277,44 @@ function AtosPagos() {
   };
 
   //useEffect para buscar o ultimo fechamento do caixa 
-  useEffect(() => {
-  async function buscarUltimoFechamento() {
+  import dayjs from 'dayjs';
+
+useEffect(() => {
+  async function buscarFechamentosIntervalo() {
     try {
       const token = localStorage.getItem('token');
+      const dataInicio = dayjs(dataSelecionada).subtract(30, 'day').format('YYYY-MM-DD');
+      const dataFim = dataSelecionada;
+
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/fechamento-ultimo?data=${dataSelecionada}`,
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?dataInicio=${dataInicio}&dataFim=${dataFim}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      if (!res.ok) throw new Error('Erro ao buscar último fechamento');
+
+      if (!res.ok) throw new Error('Erro ao buscar atos pagos');
+
       const data = await res.json();
-      const valor = data.valor_unitario || 0;
-      setValorInicialCaixa(valor);
+      const atos = data.atosPagos || [];
+
+      // Filtra atos com código '0001' e ordena por data decrescente
+      const fechamentos = atos
+        .filter((ato) => ato.codigo === '0001')
+        .sort((a, b) => (dayjs(b.data).isAfter(dayjs(a.data)) ? 1 : -1));
+
+      if (fechamentos.length > 0) {
+        setValorInicialCaixa(fechamentos[0].valor_unitario || 0);
+      } else {
+        setValorInicialCaixa(0);
+      }
     } catch (e) {
       console.error(e);
       setValorInicialCaixa(0);
     }
   }
 
-  buscarUltimoFechamento();
+  buscarFechamentosIntervalo();
 }, [dataSelecionada]);
 
   // useEffect para carregar atos por data
