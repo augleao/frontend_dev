@@ -16,7 +16,7 @@ export default function FechamentoDiarioButton({ onClick }) {
         }}
         onClick={onClick}
       >
-        Fechamento Diário
+        Fechamento Diário do Caixa
       </button>
     </div>
   );
