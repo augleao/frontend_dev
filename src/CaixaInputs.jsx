@@ -20,7 +20,19 @@ export default function CaixaInputs({
   };
 
   return (
-    <div style={{ marginBottom: 24, display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
+    <div
+      style={{
+        backgroundColor: '#f0f0f0', // fundo acinzentado
+        borderRadius: 8,
+        padding: 16,
+        marginBottom: 24,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)', // sombra leve
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 16,
+        justifyContent: 'center',
+      }}
+    >
       <div>
         <label>Valor Inicial do Caixa:</label>
         <input
