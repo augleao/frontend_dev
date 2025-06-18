@@ -390,13 +390,8 @@ function AtosPagos() {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     const nomeUsuario = usuario?.nome || 'Usuário não identificado';
 
-    const { data, hora } = (() => {
-      const agora = new Date();
-      return {
-        data: agora.toISOString().slice(0, 10),
-        hora: agora.toLocaleTimeString('pt-BR', { hour12: false }),
-      };
-    })();
+const data = dataSelecionada; // usa a data selecionada pelo usuário
+const hora = new Date().toLocaleTimeString('pt-BR', { hour12: false });
 
     const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
       acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
@@ -421,7 +416,7 @@ function AtosPagos() {
         descricao: 'Valor Final do Caixa',
         quantidade: 1,
         valor_unitario: calcularValorFinalCaixa(),
-        valor_total: calcularValorFinalCaixa(),
+        //valor_total: calcularValorFinalCaixa(),
         pagamentos: pagamentosZerados,
         usuario: nomeUsuario,
       },
