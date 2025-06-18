@@ -42,15 +42,7 @@ export default function CaixaInputs({
           style={inputStyle}
         />
       </div>
-      <div>
-        <label>Depósitos do Caixa:</label>
-        <input
-          type="number"
-          value={depositosCaixa}
-          onChange={(e) => setDepositosCaixa(parseFloat(e.target.value) || 0)}
-          style={inputStyle}
-        />
-      </div>
+      
       <div>
         <label>Saídas do Caixa:</label>
         <input
