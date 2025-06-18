@@ -390,7 +390,7 @@ function AtosPagos() {
         borderRadius: 12,
       }}
     >
-      <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Atos Pagos</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Movimento Diário do Caixa</h2>
 
       {/* Nome do usuário */}
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
