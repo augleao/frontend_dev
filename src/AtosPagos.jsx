@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import DataSelector from './DataSelector'; // Import adicionado
+import DataSelector from './DataSelector';
 import {
   formasPagamento,
   gerarRelatorioPDF,
@@ -21,7 +21,8 @@ function AtosPagos() {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     return usuario?.nome || 'Usuário não identificado';
   });
-//funcao para buscar atos por data
+
+  // Função para buscar atos por data
   const buscarAtosPorData = async (data) => {
     try {
       const token = localStorage.getItem('token');
@@ -33,22 +34,31 @@ function AtosPagos() {
       );
       if (res.ok) {
         const dados = await res.json();
-        setAtos(dados);
+        // Garantir que dados é array
+        if (Array.isArray(dados)) {
+          setAtos(dados);
+        } else {
+          console.warn('Dados recebidos não são array:', dados);
+          setAtos([]);
+        }
       } else {
         alert('Erro ao buscar atos para a data selecionada.');
+        setAtos([]);
       }
     } catch (e) {
       console.error('Erro ao buscar atos:', e);
       alert('Erro ao buscar atos para a data selecionada.');
+      setAtos([]);
     }
   };
 
-useEffect(() => {
+  useEffect(() => {
     buscarAtosPorData(dataSelecionada);
   }, [dataSelecionada]);
 
   // Função para calcular o valor final do caixa
   const calcularValorFinalCaixa = () => {
+    if (!Array.isArray(atos)) return 0;
     const totalDinheiro = atos.reduce((acc, ato) => {
       const valorDinheiro = parseFloat(ato.pagamentos?.dinheiro?.valor) || 0;
       return acc + valorDinheiro;
