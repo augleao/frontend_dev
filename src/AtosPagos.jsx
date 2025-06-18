@@ -20,9 +20,6 @@ function AtosPagos() {
   });
 
   const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
-  const [depositosCaixa, setDepositosCaixa] = useState(0);
-  const [saidasCaixa, setSaidasCaixa] = useState(0);
-
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
@@ -55,7 +52,7 @@ function AtosPagos() {
       const valorDinheiro = parseFloat(ato.pagamentos?.dinheiro?.valor) || 0;
       return acc + valorDinheiro;
     }, 0);
-    return valorInicialCaixa + totalDinheiro - depositosCaixa - saidasCaixa;
+    return valorInicialCaixa + totalDinheiro;
   };
 
   const valoresIguais = (a, b, tolerancia = 0.01) => Math.abs(a - b) < tolerancia;
@@ -308,27 +305,7 @@ function AtosPagos() {
       {
         data,
         hora,
-        codigo: '0000',
-        descricao: 'Depósitos do Caixa',
-        quantidade: 1,
-        valor_unitario: depositosCaixa,
-        pagamentos: pagamentosZerados,
-        usuario: nomeUsuario,
-      },
-      {
-        data,
-        hora,
-        codigo: '0000',
-        descricao: 'Saídas do Caixa',
-        quantidade: 1,
-        valor_unitario: saidasCaixa,
-        pagamentos: pagamentosZerados,
-        usuario: nomeUsuario,
-      },
-      {
-        data,
-        hora,
-        codigo: '0000',
+        codigo: '0001',
         descricao: 'Valor Final do Caixa',
         quantidade: 1,
         valor_unitario: calcularValorFinalCaixa(),
@@ -419,10 +396,6 @@ return (
     <CaixaInputs
       valorInicialCaixa={valorInicialCaixa}
       setValorInicialCaixa={setValorInicialCaixa}
-      depositosCaixa={depositosCaixa}
-      setDepositosCaixa={setDepositosCaixa}
-      saidasCaixa={saidasCaixa}
-      setSaidasCaixa={setSaidasCaixa}
       valorFinalCaixa={calcularValorFinalCaixa()}
     />
 
@@ -473,7 +446,7 @@ return (
       />
 
       {/* Botão Adicionar Ato alinhado à direita */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-startnd' }}>
         <button
           style={{
             padding: '10px 24px',
