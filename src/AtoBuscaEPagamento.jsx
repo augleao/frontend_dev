@@ -113,7 +113,7 @@ export default function AtoBuscaEPagamento({ dataSelecionada, atos, setAtos, nom
         selectedAto={selectedAto}
       />
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
         <button
           style={{
             padding: '10px 24px',
