@@ -430,6 +430,8 @@ function AtosPagos() {
         suggestions={suggestions}
         loadingSuggestions={loadingSuggestions}
         onSelect={handleSelectAto} // Use a função handleSelectAto aqui
+        quantidade={quantidade}
+        onQuantidadeChange={handleQuantidadeChange}
       />
 
       {/* Exibir o ato selecionado */}
