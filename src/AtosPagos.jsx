@@ -456,20 +456,7 @@ function AtosPagos() {
     maxWidth: 300,
   }}
 >
-  <label style={{ fontWeight: 'bold', fontSize: 14 }}>Quantidade:</label>
-  <input
-    type="number"
-    value={quantidade}
-    onChange={(e) => handleQuantidadeChange(e.target.value)}
-    style={{
-      width: 60,
-      padding: 4,
-      borderRadius: 4,
-      border: '1px solid #ccc',
-      fontSize: 14,
-    }}
-    min={1}
-  />
+
 </div>
 
       <FormasPagamento
