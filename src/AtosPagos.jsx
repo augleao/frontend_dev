@@ -277,45 +277,45 @@ function AtosPagos() {
       console.error('Erro ao remover ato:', e);
       alert('Erro ao remover ato.');
     }
-  };
+  };  // useEffect para buscar o último fechamento do caixa do dia anterior ou mais próximo
+  useEffect(() => {
+    async function buscarValorInicialCaixa() {
+      try {
+        const token = localStorage.getItem("token");
+        let dataBusca = dayjs(dataSelecionada).subtract(1, "day");
+        let foundValor = 0;
 
-  //useEffect para buscar o ultimo fechamento do caixa 
+        // Loop para buscar o ato 0001 do dia anterior ou do dia mais próximo para trás
+        for (let i = 0; i < 30; i++) { // Limita a busca a 30 dias para evitar loops infinitos
+          const dataFormatada = dataBusca.format("YYYY-MM-DD");
+          const res = await fetch(
+            `${process.env.REACT_APP_API_URL || "https://backend-dev-ypsu.onrender.com"}/api/atos-pagos?data=${dataFormatada}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
 
+          if (res.ok) {
+            const data = await res.json();
+            const atosDoDia = data.atosPagos || [];
+            const fechamentoDiaAnterior = atosDoDia.find((ato) => ato.codigo === "0001");
 
-useEffect(() => {
-  async function buscarFechamentosIntervalo() {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(
-        `${process.env.REACT_APP_API_URL || "https://backend-dev-ypsu.onrender.com"}/api/atos-pagos?data=${dataSelecionada}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
+            if (fechamentoDiaAnterior) {
+              foundValor = fechamentoDiaAnterior.valor_unitario || 0;
+              break; // Encontrou, pode sair do loop
+            }
+          }
+          dataBusca = dataBusca.subtract(1, "day"); // Volta mais um dia
         }
-      );
-
-      if (!res.ok) throw new Error("Erro ao buscar atos pagos");
-
-      const data = await res.json();
-      const atosDoDia = data.atosPagos || [];
-
-      // Filtra atos com código '0001' e ordena por data decrescente
-      const fechamentos = atosDoDia
-        .filter((ato) => ato.codigo === "0001")
-        .sort((a, b) => (dayjs(b.data).isAfter(dayjs(a.data)) ? 1 : -1));
-
-      if (fechamentos.length > 0) {
-        setValorInicialCaixa(fechamentos[0].valor_unitario || 0);
-      } else {
+        setValorInicialCaixa(foundValor);
+      } catch (e) {
+        console.error("Erro ao buscar valor inicial do caixa:", e);
         setValorInicialCaixa(0);
       }
-    } catch (e) {
-      console.error(e);
-      setValorInicialCaixa(0);
     }
-  }
 
-  buscarFechamentosIntervalo();
-}, [dataSelecionada]);
+    buscarValorInicialCaixa();
+  }, [dataSelecionada]);
 
   // useEffect para carregar atos por data
   useEffect(() => {
