@@ -118,13 +118,16 @@ function AtosPagos() {
     setDataSelecionada(e.target.value);
   };
 
-  const calcularValorFinalCaixa = () => {
-    const totalDinheiro = atos.reduce((acc, ato) => {
-      const valorDinheiro = parseFloat(ato.pagamentos?.dinheiro?.valor) || 0;
-      return acc + valorDinheiro;
-    }, 0);
-    return valorInicialCaixa + totalDinheiro;
-  };
+const calcularValorFinalCaixa = () => {
+  const totalDinheiro = atos.reduce((acc, ato) => {
+    const valorDinheiro = parseFloat(ato.pagamentos?.dinheiro?.valor) || 0;
+    return acc + valorDinheiro;
+  }, 0);
+  console.log("Valor Inicial do Caixa:", valorInicialCaixa);
+  console.log("Total Dinheiro dos Atos:", totalDinheiro);
+  console.log("Valor Final do Caixa Calculado:", valorInicialCaixa + totalDinheiro);
+  return valorInicialCaixa + totalDinheiro;
+};
 
   const valoresIguais = (a, b, tolerancia = 0.01) => Math.abs(a - b) < tolerancia;
 
