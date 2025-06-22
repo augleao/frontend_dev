@@ -383,15 +383,27 @@ useEffect(() => {
     return () => clearTimeout(debounceTimeout.current);
   }, [searchTerm]);
 
-  // Função fechamento diário (exemplo simplificado)
-  const fechamentoDiario = async () => {
-    if (!window.confirm('Confirma o fechamento diário do caixa?')) return;
+    const fechamentoDiario = async () => {
+    const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+    const nomeUsuario = usuario?.nome || "Usuário não identificado";
+    const dataAtual = dataSelecionada; // Usa a data selecionada pelo usuário
 
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    const nomeUsuario = usuario?.nome || 'Usuário não identificado';
+    // Verifica se já existe um ato 0001 para o dia e usuário
+    const existeFechamento = atos.some(
+      (ato) =>
+        ato.codigo === "0001" &&
+        ato.data === dataAtual &&
+        ato.usuario === nomeUsuario
+    );
 
-const data = dataSelecionada; // usa a data selecionada pelo usuário
-const hora = new Date().toLocaleTimeString('pt-BR', { hour12: false });
+    if (existeFechamento) {
+      alert("Já existe um fechamento de caixa (código 0001) para este usuário e data.");
+      return;
+    }
+
+    if (!window.confirm("Confirma o fechamento diário do caixa?")) return;
+
+    const hora = new Date().toLocaleTimeString("pt-BR", { hour12: false });
 
     const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
       acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
