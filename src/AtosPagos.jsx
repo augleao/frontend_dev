@@ -70,7 +70,7 @@ function AtosPagos() {
     const novaEntrada = {
       data: agora.toISOString().slice(0, 10),
       hora: agora.toLocaleTimeString('pt-BR', { hour12: false }),
-      codigo: '0001',
+      codigo: '0003',
       descricao: `ENTRADA: ${entradaObs || ''}`.trim(),
       quantidade: 1,
       valor_unitario: valor,
