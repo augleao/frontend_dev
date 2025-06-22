@@ -643,10 +643,12 @@ function AtosPagos() {
 
           <div style={{ marginBottom: '20px' }}>
             <FormasPagamento
+              formasPagamento={formasPagamento}
               pagamentos={pagamentos}
               onQuantidadeChange={handlePagamentoQuantidadeChange}
               onValorChange={handlePagamentoValorChange}
-              corFundo={corFundoPagamentos}
+              corFundoPagamentos={corFundoPagamentos}
+              selectedAto={selectedAto}
             />
           </div>
 
