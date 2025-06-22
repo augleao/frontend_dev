@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Configurar worker do PDF.js
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 function RelatorioCNJ() {
   const navigate = useNavigate();
@@ -7,6 +11,7 @@ function RelatorioCNJ() {
   const [processando, setProcessando] = useState(false);
   const [resultado, setResultado] = useState(null);
   const [erro, setErro] = useState('');
+  const [progresso, setProgresso] = useState('');
 
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -27,34 +32,72 @@ function RelatorioCNJ() {
     setErro('');
   };
 
+  const extrairTextoPDF = async (file) => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let textoCompleto = '';
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(' ');
+      textoCompleto += pageText + ' ';
+    }
+
+    return textoCompleto;
+  };
+
+  const extrairValorMonetario = (texto, padrao) => {
+    const regex = new RegExp(padrao + '\\s*R?\\$?\\s*([\\d.,]+)', 'i');
+    const match = texto.match(regex);
+    if (match) {
+      // Converter formato brasileiro para número
+      const valor = match[1].replace(/\./g, '').replace(',', '.');
+      return parseFloat(valor) || 0;
+    }
+    return 0;
+  };
+
+  const extrairAtosPraticados = (texto) => {
+    // Procurar por "Total" seguido de números (última ocorrência na linha de totais)
+    const linhasTotal = texto.match(/Total\s+(\d+)/g);
+    if (linhasTotal && linhasTotal.length > 0) {
+      // Pegar a última ocorrência (que é o total geral)
+      const ultimoTotal = linhasTotal[linhasTotal.length - 1];
+      const match = ultimoTotal.match(/Total\s+(\d+)/);
+      return match ? parseInt(match[1]) : 0;
+    }
+    return 0;
+  };
+
   const extrairDadosPDF = async (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const arrayBuffer = e.target.result;
-          
-          // Simular extração de dados (em produção, usaria uma biblioteca como pdf-parse)
-          // Por enquanto, vamos usar dados de exemplo baseados no PDF analisado
-          const dadosExtraidos = {
-            atosPraticados: Math.floor(Math.random() * 500) + 200, // Simular entre 200-700 atos
-            emolumentoApurado: (Math.random() * 30000 + 15000).toFixed(2), // 15k-45k
-            tfj: (Math.random() * 5000 + 2000).toFixed(2), // 2k-7k
-            valoresRecompe: (Math.random() * 10000 + 5000).toFixed(2), // 5k-15k
-            issqn: (Math.random() * 1000 + 300).toFixed(2), // 300-1300
-            recompeApurado: (Math.random() * 2000 + 800).toFixed(2), // 800-2800
-            totalDespesas: (Math.random() * 8000 + 4000).toFixed(2), // 4k-12k
-            nomeArquivo: file.name
-          };
-          
-          resolve(dadosExtraidos);
-        } catch (error) {
-          reject(error);
-        }
+    try {
+      const texto = await extrairTextoPDF(file);
+      
+      // Extrair dados específicos baseados no padrão do TJMG
+      const atosPraticados = extrairAtosPraticados(texto);
+      const emolumentoApurado = extrairValorMonetario(texto, 'Emolumento Apurado:');
+      const tfj = extrairValorMonetario(texto, 'Taxa de Fiscalização Judiciária Apurada:');
+      const valoresRecompe = extrairValorMonetario(texto, 'Valores recebidos do RECOMPE:');
+      const issqn = extrairValorMonetario(texto, 'ISSQN recebido dos usuários:');
+      const recompeApurado = extrairValorMonetario(texto, 'RECOMPE \\(Depósitos Compensação Gratuidade Art\\.31,§ ún\\. Lei nº 15\\.424\\) Apurado:');
+      const totalDespesas = extrairValorMonetario(texto, 'Total de despesas do mês:');
+
+      return {
+        atosPraticados,
+        emolumentoApurado: emolumentoApurado.toFixed(2),
+        tfj: tfj.toFixed(2),
+        valoresRecompe: valoresRecompe.toFixed(2),
+        issqn: issqn.toFixed(2),
+        recompeApurado: recompeApurado.toFixed(2),
+        totalDespesas: totalDespesas.toFixed(2),
+        nomeArquivo: file.name,
+        textoExtraido: texto.substring(0, 500) + '...' // Para debug
       };
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(file);
-    });
+    } catch (error) {
+      console.error('Erro ao extrair dados do PDF:', error);
+      throw new Error(`Erro ao processar ${file.name}: ${error.message}`);
+    }
   };
 
   const processarArquivos = async () => {
@@ -65,16 +108,20 @@ function RelatorioCNJ() {
 
     setProcessando(true);
     setErro('');
+    setProgresso('Iniciando processamento...');
 
     try {
       const dadosExtraidos = [];
       
       for (let i = 0; i < arquivos.length; i++) {
+        setProgresso(`Processando arquivo ${i + 1} de 6: ${arquivos[i].name}`);
         const dados = await extrairDadosPDF(arquivos[i]);
         dadosExtraidos.push(dados);
       }
 
-      // Calcular totais
+      setProgresso('Calculando totais...');
+
+      // Calcular totais conforme especificado
       const totais = {
         atosPraticados: dadosExtraidos.reduce((sum, item) => sum + item.atosPraticados, 0),
         arrecadacao: dadosExtraidos.reduce((sum, item) => 
@@ -92,8 +139,11 @@ function RelatorioCNJ() {
         totais: totais
       });
 
+      setProgresso('Processamento concluído!');
+
     } catch (error) {
       setErro('Erro ao processar os arquivos: ' + error.message);
+      console.error('Erro detalhado:', error);
     } finally {
       setProcessando(false);
     }
@@ -246,6 +296,19 @@ Data de Geração: ${new Date().toLocaleDateString('pt-BR')}
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {progresso && processando && (
+            <div style={{
+              background: '#3498db',
+              color: 'white',
+              padding: '12px',
+              borderRadius: '8px',
+              marginBottom: '20px',
+              textAlign: 'center'
+            }}>
+              🔄 {progresso}
             </div>
           )}
 
