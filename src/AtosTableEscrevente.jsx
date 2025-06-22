@@ -2,7 +2,7 @@
 import React from 'react';
 import { formasPagamento, formatarDataBR, formatarValor } from './utils';
 
-export default function AtosTable({ atos, removerAto }) {
+export default function AtosTable({ atos, onRemover }) {
   return (
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa' }}>
@@ -58,7 +58,7 @@ export default function AtosTable({ atos, removerAto }) {
                     padding: '6px 12px',
                     cursor: 'pointer',
                   }}
-                  onClick={() => removerAto(idx)}
+                  onClick={() => onRemover(idx)}
                 >
                   Excluir
                 </button>
