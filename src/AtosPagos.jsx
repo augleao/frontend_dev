@@ -412,9 +412,7 @@ useEffect(() => {
 
     const linhasFechamento = [
       {
-        data,
-        hora,
-        codigo: '0000',
+        data: dataAtual,
         descricao: 'Valor Inicial do Caixa',
         quantidade: 1,
         valor_unitario: valorInicialCaixa,
@@ -422,9 +420,7 @@ useEffect(() => {
         usuario: nomeUsuario,
       },
       {
-        data,
-        hora,
-        codigo: '0001',
+        data: dataAtual,
         descricao: 'Valor Final do Caixa',
         quantidade: 1,
         valor_unitario: calcularValorFinalCaixa(),
