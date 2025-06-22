@@ -118,11 +118,40 @@ function AtosPagos() {
   };
 
   const calcularValorFinalCaixa = () => {
+    // Soma todos os valores em dinheiro dos atos normais
     const totalDinheiro = atos.reduce((acc, ato) => {
       const valorDinheiro = parseFloat(ato.pagamentos?.dinheiro?.valor) || 0;
       return acc + valorDinheiro;
     }, 0);
-    return valorInicialCaixa + totalDinheiro;
+
+    // Soma as entradas manuais (código 0003)
+    const totalEntradas = atos.reduce((acc, ato) => {
+      if (ato.codigo === '0003') {
+        const valorEntrada = parseFloat(ato.valor_unitario) || 0;
+        return acc + valorEntrada;
+      }
+      return acc;
+    }, 0);
+
+    // Subtrai as saídas manuais (código 0002)
+    const totalSaidas = atos.reduce((acc, ato) => {
+      if (ato.codigo === '0002') {
+        const valorSaida = parseFloat(ato.valor_unitario) || 0;
+        return acc + valorSaida;
+      }
+      return acc;
+    }, 0);
+
+    const valorFinal = valorInicialCaixa + totalDinheiro + totalEntradas - totalSaidas;
+    
+    console.log("Cálculo do Valor Final do Caixa:");
+    console.log("- Valor Inicial:", valorInicialCaixa);
+    console.log("- Total Dinheiro (atos):", totalDinheiro);
+    console.log("- Total Entradas (0003):", totalEntradas);
+    console.log("- Total Saídas (0002):", totalSaidas);
+    console.log("- Valor Final Calculado:", valorFinal);
+
+    return isNaN(valorFinal) ? 0 : valorFinal;
   };
 
   const valoresIguais = (a, b, tolerancia = 0.01) => Math.abs(a - b) < tolerancia;
@@ -404,6 +433,13 @@ function AtosPagos() {
     if (!window.confirm("Confirma o fechamento diário do caixa?")) return;
 
     const hora = new Date().toLocaleTimeString("pt-BR", { hour12: false });
+    const valorFinalCalculado = calcularValorFinalCaixa();
+
+    // Validações antes de enviar
+    if (isNaN(valorFinalCalculado)) {
+      alert("Erro no cálculo do valor final do caixa. Verifique os dados e tente novamente.");
+      return;
+    }
 
     const pagamentosZerados = formasPagamento.reduce((acc, fp) => {
       acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
@@ -417,12 +453,13 @@ function AtosPagos() {
       codigo: '0001',
       descricao: 'Valor Final do Caixa',
       quantidade: 1,
-      valor_unitario: calcularValorFinalCaixa(),
+      valor_unitario: Number(valorFinalCalculado.toFixed(2)), // Garantir que é um número válido
       pagamentos: pagamentosZerados,
       usuario: nomeUsuario,
     };
 
     console.log("Dados do fechamento a serem enviados:", atoFechamento);
+    console.log("Valor unitário (tipo):", typeof atoFechamento.valor_unitario, atoFechamento.valor_unitario);
 
     try {
       const token = localStorage.getItem('token');
