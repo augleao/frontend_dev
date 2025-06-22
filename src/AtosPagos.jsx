@@ -57,7 +57,7 @@ function AtosPagos() {
   };
 
   // Função para adicionar entrada no caixa
-  const adicionarEntrada = () => {
+  const adicionarEntrada = async () => {
     const valor = parseValorMoeda(entradaValor);
     if (valor <= 0) {
       alert('Informe um valor válido para a entrada.');
@@ -68,7 +68,7 @@ function AtosPagos() {
     const agora = new Date();
 
     const novaEntrada = {
-      data: agora.toISOString().slice(0, 10),
+      data: dataSelecionada, // Usar a data selecionada
       hora: agora.toLocaleTimeString('pt-BR', { hour12: false }),
       codigo: '0003',
       descricao: `ENTRADA: ${entradaObs || ''}`.trim(),
@@ -78,15 +78,40 @@ function AtosPagos() {
       usuario: nomeUsuario,
     };
 
-    setAtos((prev) => [...prev, novaEntrada]);
-    setEntradaValor('');
-    setEntradaObs('');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(novaEntrada),
+        }
+      );
+
+      if (res.ok) {
+        setAtos((prev) => [...prev, novaEntrada]);
+        setEntradaValor('');
+        setEntradaObs('');
+        console.log('Entrada manual salva com sucesso:', novaEntrada);
+      } else {
+        const errorData = await res.json();
+        console.error('Erro ao salvar entrada:', errorData);
+        alert('Erro ao salvar entrada: ' + (errorData.message || 'Erro desconhecido'));
+      }
+    } catch (e) {
+      console.error('Erro ao salvar entrada:', e);
+      alert('Erro ao salvar entrada: ' + e.message);
+    }
   };
 
   const [valorFinalCaixa, setValorFinalCaixa] = useState(0);
 
   // Função para adicionar saída no caixa
-  const adicionarSaida = () => {
+  const adicionarSaida = async () => {
     const valor = parseValorMoeda(saidaValor);
     if (valor <= 0) {
       alert('Informe um valor válido para a saída.');
@@ -97,7 +122,7 @@ function AtosPagos() {
     const agora = new Date();
 
     const novaSaida = {
-      data: agora.toISOString().slice(0, 10),
+      data: dataSelecionada, // Usar a data selecionada
       hora: agora.toLocaleTimeString('pt-BR', { hour12: false }),
       codigo: '0002',
       descricao: `SAÍDA: ${saidaObs || ''}`.trim(),
@@ -107,9 +132,34 @@ function AtosPagos() {
       usuario: nomeUsuario,
     };
 
-    setAtos((prev) => [...prev, novaSaida]);
-    setSaidaValor('');
-    setSaidaObs('');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(novaSaida),
+        }
+      );
+
+      if (res.ok) {
+        setAtos((prev) => [...prev, novaSaida]);
+        setSaidaValor('');
+        setSaidaObs('');
+        console.log('Saída manual salva com sucesso:', novaSaida);
+      } else {
+        const errorData = await res.json();
+        console.error('Erro ao salvar saída:', errorData);
+        alert('Erro ao salvar saída: ' + (errorData.message || 'Erro desconhecido'));
+      }
+    } catch (e) {
+      console.error('Erro ao salvar saída:', e);
+      alert('Erro ao salvar saída: ' + e.message);
+    }
   };
 
   // Funções auxiliares
