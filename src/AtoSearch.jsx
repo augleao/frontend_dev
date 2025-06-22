@@ -6,135 +6,109 @@ export default function AtoSearch({
   setSearchTerm,
   suggestions,
   loadingSuggestions,
-  onSelect,
-  quantidade,
-  onQuantidadeChange,
+  onSelectAto,
 }) {
   const handleSelect = (ato) => {
-    onSelect(ato);
+    onSelectAto(ato);
     setSearchTerm(''); // Limpa o campo de busca
   };
 
   return (
-    <div style={{ marginBottom: 24 }}>
-      <div
-        style={{
-          backgroundColor: '#f0f0f0',
-          borderRadius: 8,
-          padding: 12,
-          minWidth: 600,
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 16,
-        }}
-      >
-        <label
-          htmlFor="searchInput"
-          style={{
-            fontWeight: 'bold',
-            fontSize: 16,
-            color: '#1976d2',
-            whiteSpace: 'nowrap',
-            userSelect: 'none',
-          }}
-        >
-          Buscar ato por código ou descrição:
-        </label>
-
-        {/* Container do input com position relative para dropdown */}
-        <div style={{ position: 'relative', flexGrow: 1 }}>
-          <input
-            id="searchInput"
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Digite código ou descrição"
-            style={{
-              width: '100%',
-              padding: 8,
-              borderRadius: 4,
-              border: '1px solid #ccc',
-              fontSize: 14,
-            }}
-          />
-
-          {loadingSuggestions && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                background: '#fff',
-                border: '1px solid #ccc',
-                width: '100%',
-                zIndex: 10,
-                padding: 8,
-              }}
-            >
-              Carregando...
-            </div>
-          )}
-
-          {!loadingSuggestions && suggestions.length > 0 && (
-            <ul
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                right: 0,
-                maxHeight: 200,
-                overflowY: 'auto',
-                background: '#fff',
-                border: '1px solid #ccc',
-                borderTop: 'none',
-                zIndex: 9999,
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-              }}
-            >
-              {suggestions.map((ato) => (
-                <li
-                  key={ato.id}
-                  onClick={() => handleSelect(ato)}
-                  style={{ padding: 8, cursor: 'pointer', borderBottom: '1px solid #eee' }}
-                >
-                  {ato.codigo} - {ato.descricao} - R$ {formatarValor(ato.valor_final)}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <label
-          htmlFor="quantidadeInput"
-          style={{
-            fontWeight: 'bold',
-            fontSize: 16,
-            color: '#1976d2',
-            whiteSpace: 'nowrap',
-            userSelect: 'none',
-          }}
-        >
-          Quantidade:
-        </label>
-
+    <div style={{ marginBottom: 20 }}>
+      <label style={{ 
+        display: 'block', 
+        marginBottom: '8px', 
+        fontWeight: '600',
+        color: '#2c3e50'
+      }}>
+        Buscar ato por código ou descrição:
+      </label>
+      
+      {/* Container do input com position relative para dropdown */}
+      <div style={{ position: 'relative', width: '100%' }}>
         <input
-          id="quantidadeInput"
-          type="number"
-          value={quantidade}
-          onChange={(e) => onQuantidadeChange(e.target.value)}
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Digite código ou descrição do ato"
           style={{
-            width: 60,
-            padding: 4,
-            borderRadius: 4,
-            border: '1px solid #ccc',
-            fontSize: 14,
+            width: '100%',
+            padding: '12px',
+            borderRadius: '8px',
+            border: '2px solid #e3f2fd',
+            fontSize: '16px',
+            boxSizing: 'border-box'
           }}
-          min={1}
         />
+
+        {loadingSuggestions && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              background: '#fff',
+              border: '2px solid #e3f2fd',
+              borderTop: 'none',
+              borderRadius: '0 0 8px 8px',
+              zIndex: 1000,
+              padding: '12px',
+              fontSize: '14px',
+              color: '#666'
+            }}
+          >
+            Carregando sugestões...
+          </div>
+        )}
+
+        {!loadingSuggestions && suggestions.length > 0 && (
+          <ul
+            style={{
+              listStyle: 'none',
+              margin: 0,
+              padding: 0,
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              maxHeight: '300px',
+              overflowY: 'auto',
+              background: '#fff',
+              border: '2px solid #e3f2fd',
+              borderTop: 'none',
+              borderRadius: '0 0 8px 8px',
+              zIndex: 1000,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            }}
+          >
+            {suggestions.map((ato) => (
+              <li
+                key={ato.id}
+                onClick={() => handleSelect(ato)}
+                style={{ 
+                  padding: '12px 16px', 
+                  cursor: 'pointer', 
+                  borderBottom: '1px solid #f0f0f0',
+                  fontSize: '14px',
+                  transition: 'background-color 0.2s ease',
+                  ':hover': {
+                    backgroundColor: '#f8f9fa'
+                  }
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+              >
+                <div style={{ fontWeight: '600', color: '#2c3e50', marginBottom: '4px' }}>
+                  {ato.codigo} - R$ {formatarValor(ato.valor_final)}
+                </div>
+                <div style={{ color: '#666', fontSize: '13px' }}>
+                  {ato.descricao}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

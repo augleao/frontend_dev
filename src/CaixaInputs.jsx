@@ -1,37 +1,30 @@
 import React from 'react';
+import { formatarMoeda } from './utils';
 
 export default function CaixaInputs({
   valorInicialCaixa,
-  setValorInicialCaixa,
-  depositosCaixa,
-  setDepositosCaixa,
-  saidasCaixa,
-  setSaidasCaixa,
   valorFinalCaixa,
 }) {
   const inputStyle = {
-    width: 120,
+    width: 150,
     marginLeft: 8,
-    padding: 6,
+    padding: 8,
     borderRadius: 6,
     border: '1px solid #ccc',
     textAlign: 'right',
+    backgroundColor: '#eee',
+    fontSize: '14px',
+    fontWeight: '600'
   };
-
-  // Garante que valorFinalCaixa seja número válido para toFixed
-  const valorFinalFormatado =
-    typeof valorFinalCaixa === 'number' && !isNaN(valorFinalCaixa)
-      ? valorFinalCaixa.toFixed(2)
-      : '0.00';
 
   return (
     <div
       style={{
-        backgroundColor: '#f0f0f0', // fundo acinzentado
+        backgroundColor: '#f0f0f0',
         borderRadius: 8,
         padding: 16,
         marginBottom: 24,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)', // sombra leve
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         display: 'flex',
         flexWrap: 'wrap',
         gap: 16,
@@ -39,22 +32,21 @@ export default function CaixaInputs({
       }}
     >
       <div>
-        <label>Valor Inicial do Caixa:</label>
+        <label style={{ fontWeight: '600', color: '#2c3e50' }}>Valor Inicial do Caixa:</label>
         <input
-          type="number"
-          value={valorInicialCaixa}
+          type="text"
+          value={formatarMoeda(valorInicialCaixa)}
           readOnly
-          onChange={(e) => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
           style={inputStyle}
         />
       </div>
       <div>
-        <label>Valor Final do Caixa:</label>
+        <label style={{ fontWeight: '600', color: '#2c3e50' }}>Valor Final do Caixa:</label>
         <input
           type="text"
-          value={`R$ ${valorFinalFormatado}`}
+          value={formatarMoeda(valorFinalCaixa)}
           readOnly
-          style={{ ...inputStyle, backgroundColor: '#eee' }}
+          style={inputStyle}
         />
       </div>
     </div>

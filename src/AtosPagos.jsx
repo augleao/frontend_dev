@@ -531,7 +531,7 @@ function AtosPagos() {
             alignItems: 'center',
             gap: '8px'
           }}>
-            <span style={{ color: '#666', fontSize: '14px' }}>📅 Data:</span>
+            <span style={{ color: '#666', fontSize: '14px' }}>📅</span>
             <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
           </div>
         </div>
@@ -862,6 +862,18 @@ function AtosPagos() {
         </div>
       </div>
 
+      {/* Botão de Fechamento */}
+      <div style={{
+        background: 'white',
+        borderRadius: '12px',
+        padding: '25px',
+        marginBottom: '20px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        textAlign: 'center'
+      }}>
+        <FechamentoDiarioButton onClick={fechamentoDiario} />
+      </div>
+
       {/* Tabela de Atos */}
       <div style={{
         background: 'white',
@@ -881,17 +893,6 @@ function AtosPagos() {
           📋 Atos do Dia
         </h3>
         <AtosTable atos={atos} onRemover={removerAto} />
-      </div>
-
-      {/* Botão de Fechamento */}
-      <div style={{
-        background: 'white',
-        borderRadius: '12px',
-        padding: '25px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-        textAlign: 'center'
-      }}>
-        <FechamentoDiarioButton onClick={fechamentoDiario} />
       </div>
     </div>
   );
