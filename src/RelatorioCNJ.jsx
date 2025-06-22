@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configurar worker do PDF.js para usar arquivo local
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+// Desabilitar worker para evitar problemas de carregamento
+pdfjsLib.GlobalWorkerOptions.workerSrc = false;
 
 function RelatorioCNJ() {
   const navigate = useNavigate();
@@ -33,57 +33,104 @@ function RelatorioCNJ() {
   };
 
   const extrairTextoPDF = async (file) => {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let textoCompleto = '';
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      
+      // Configurar PDF.js para não usar worker
+      const loadingTask = pdfjsLib.getDocument({
+        data: arrayBuffer,
+        useWorkerFetch: false,
+        isEvalSupported: false,
+        useSystemFonts: true
+      });
+      
+      const pdf = await loadingTask.promise;
+      let textoCompleto = '';
 
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items.map(item => item.str).join(' ');
-      textoCompleto += pageText + ' ';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(' ');
+        textoCompleto += pageText + ' ';
+      }
+
+      return textoCompleto;
+    } catch (error) {
+      console.error('Erro na extração de texto:', error);
+      throw error;
     }
-
-    return textoCompleto;
   };
 
   const extrairValorMonetario = (texto, padrao) => {
-    const regex = new RegExp(padrao + '\\s*R?\\$?\\s*([\\d.,]+)', 'i');
-    const match = texto.match(regex);
-    if (match) {
-      // Converter formato brasileiro para número
-      const valor = match[1].replace(/\./g, '').replace(',', '.');
-      return parseFloat(valor) || 0;
+    try {
+      // Múltiplas tentativas de regex para capturar valores monetários
+      const patterns = [
+        new RegExp(padrao + '\\s*R?\\$?\\s*([\\d.,]+)', 'i'),
+        new RegExp(padrao + '.*?R\\$\\s*([\\d.,]+)', 'i'),
+        new RegExp(padrao + '.*?([\\d.,]+)', 'i')
+      ];
+
+      for (const regex of patterns) {
+        const match = texto.match(regex);
+        if (match && match[1]) {
+          // Converter formato brasileiro para número
+          let valor = match[1].replace(/\./g, '').replace(',', '.');
+          const numero = parseFloat(valor);
+          if (!isNaN(numero)) {
+            return numero;
+          }
+        }
+      }
+      return 0;
+    } catch (error) {
+      console.error('Erro ao extrair valor monetário:', error);
+      return 0;
     }
-    return 0;
   };
 
   const extrairAtosPraticados = (texto) => {
-    // Procurar por "Total" seguido de números (última ocorrência na linha de totais)
-    const linhasTotal = texto.match(/Total\s+(\d+)/g);
-    if (linhasTotal && linhasTotal.length > 0) {
-      // Pegar a última ocorrência (que é o total geral)
-      const ultimoTotal = linhasTotal[linhasTotal.length - 1];
-      const match = ultimoTotal.match(/Total\s+(\d+)/);
-      return match ? parseInt(match[1]) : 0;
+    try {
+      // Procurar por padrões de total de atos
+      const patterns = [
+        /Total\s+(\d+)\s+R?\$?[\d.,]+$/gm,
+        /Total\s+(\d+)$/gm,
+        /(\d+)\s+Total/gm
+      ];
+
+      let maiorTotal = 0;
+      
+      for (const pattern of patterns) {
+        const matches = [...texto.matchAll(pattern)];
+        for (const match of matches) {
+          const numero = parseInt(match[1]);
+          if (!isNaN(numero) && numero > maiorTotal) {
+            maiorTotal = numero;
+          }
+        }
+      }
+
+      return maiorTotal;
+    } catch (error) {
+      console.error('Erro ao extrair atos praticados:', error);
+      return 0;
     }
-    return 0;
   };
 
   const extrairDadosPDF = async (file) => {
     try {
       const texto = await extrairTextoPDF(file);
+      console.log(`Texto extraído de ${file.name}:`, texto.substring(0, 1000));
       
       // Extrair dados específicos baseados no padrão do TJMG
       const atosPraticados = extrairAtosPraticados(texto);
-      const emolumentoApurado = extrairValorMonetario(texto, 'Emolumento Apurado:');
-      const tfj = extrairValorMonetario(texto, 'Taxa de Fiscalização Judiciária Apurada:');
-      const valoresRecompe = extrairValorMonetario(texto, 'Valores recebidos do RECOMPE:');
-      const issqn = extrairValorMonetario(texto, 'ISSQN recebido dos usuários:');
-      const recompeApurado = extrairValorMonetario(texto, 'RECOMPE \\(Depósitos Compensação Gratuidade Art\\.31,§ ún\\. Lei nº 15\\.424\\) Apurado:');
-      const totalDespesas = extrairValorMonetario(texto, 'Total de despesas do mês:');
+      const emolumentoApurado = extrairValorMonetario(texto, 'Emolumento Apurado');
+      const tfj = extrairValorMonetario(texto, 'Taxa de Fiscalização Judiciária Apurada');
+      const valoresRecompe = extrairValorMonetario(texto, 'Valores recebidos do RECOMPE');
+      const issqn = extrairValorMonetario(texto, 'ISSQN recebido dos usuários');
+      const recompeApurado = extrairValorMonetario(texto, 'RECOMPE.*?Apurado');
+      const totalDespesas = extrairValorMonetario(texto, 'Total de despesas do mês');
 
-      return {
+      const dadosExtraidos = {
         atosPraticados,
         emolumentoApurado: emolumentoApurado.toFixed(2),
         tfj: tfj.toFixed(2),
@@ -91,9 +138,12 @@ function RelatorioCNJ() {
         issqn: issqn.toFixed(2),
         recompeApurado: recompeApurado.toFixed(2),
         totalDespesas: totalDespesas.toFixed(2),
-        nomeArquivo: file.name,
-        textoExtraido: texto.substring(0, 500) + '...' // Para debug
+        nomeArquivo: file.name
       };
+
+      console.log(`Dados extraídos de ${file.name}:`, dadosExtraidos);
+      return dadosExtraidos;
+
     } catch (error) {
       console.error('Erro ao extrair dados do PDF:', error);
       throw new Error(`Erro ao processar ${file.name}: ${error.message}`);
