@@ -285,27 +285,22 @@ function AtosPagos() {
 useEffect(() => {
   async function buscarFechamentosIntervalo() {
     try {
-      const token = localStorage.getItem('token');
-      const dataInicio = dayjs(dataSelecionada).subtract(30, 'day').format('YYYY-MM-DD');
-      const dataFim = dataSelecionada;
-      console.log('Buscando fechamentos para o intervalo:', dataInicio, 'até', dataFim);
-      console.log('URL da requisição:', `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?dataInicio=${dataInicio}&dataFim=${dataFim}`);
-
+      const token = localStorage.getItem("token");
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?dataInicio=${dataInicio}&dataFim=${dataFim}`,
+        `${process.env.REACT_APP_API_URL || "https://backend-dev-ypsu.onrender.com"}/api/atos-pagos?data=${dataSelecionada}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      if (!res.ok) throw new Error('Erro ao buscar atos pagos');
+      if (!res.ok) throw new Error("Erro ao buscar atos pagos");
 
       const data = await res.json();
-      const atos = data.atosPagos || [];
+      const atosDoDia = data.atosPagos || [];
 
       // Filtra atos com código '0001' e ordena por data decrescente
-      const fechamentos = atos
-        .filter((ato) => ato.codigo === '0001')
+      const fechamentos = atosDoDia
+        .filter((ato) => ato.codigo === "0001")
         .sort((a, b) => (dayjs(b.data).isAfter(dayjs(a.data)) ? 1 : -1));
 
       if (fechamentos.length > 0) {
