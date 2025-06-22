@@ -469,271 +469,431 @@ function AtosPagos() {
     }
   };
 
- // ... seu código anterior permanece igual até o return
-
-return (
-  <div
-    style={{
-      maxWidth: '100%',
-      margin: '10px auto',
-      padding: 32,
-      background: '#fff',
-      boxShadow: '0 2px 8px #0001',
-      borderRadius: 12,
-    }}
-  >
-    <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Movimento Diário do Caixa</h2>
-
-    {/* Nome do usuário */}
-    <div style={{ textAlign: 'center', marginBottom: 24 }}>
-      <input
-        type="text"
-        value={nomeUsuario}
-        readOnly
-        style={{
-          width: 320,
-          textAlign: 'center',
-          fontSize: 16,
-          padding: 8,
-          borderRadius: 6,
-          border: '1px solid #1976d2',
-          background: '#f5faff',
-          color: '#1976d2',
-          fontWeight: 'bold',
-        }}
-      />
-    </div>
-
-    <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
-
-    <CaixaInputs
-valorInicialCaixa={valorInicialCaixa}
-  setValorInicialCaixa={setValorInicialCaixa}
-  valorFinalCaixa={valorFinalCaixa}
-    />
-
-    {/* Container único para AtoSearch + Quantidade, FormasPagamento e Botão */}
-    <div
-      style={{
-        backgroundColor: '#f0f0f0',
-        borderRadius: 8,
-        padding: 16,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        marginBottom: 24,
+  return (
+    <div style={{
+      maxWidth: '1400px',
+      margin: '0 auto',
+      padding: '20px',
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      minHeight: '100vh',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      {/* Header */}
+      <div style={{
+        background: 'white',
+        borderRadius: '12px',
+        padding: '20px',
+        marginBottom: '20px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
         display: 'flex',
-        flexDirection: 'column',
-        gap: 24,
-        position: 'relative',
-      }}
-    >
-      {/* Linha com AtoSearch e Quantidade */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 24,
-          alignItems: 'center',
-          flexWrap: 'wrap',
-        }}
-      >
-        <div style={{ flex: '1 1 350px', minWidth: 350 }}>
-          <AtoSearch
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            suggestions={suggestions}
-            loadingSuggestions={loadingSuggestions}
-            onSelect={handleSelectAto}
-            quantidade={quantidade}
-            onQuantidadeChange={handleQuantidadeChange}
-          />
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '15px'
+      }}>
+        <h1 style={{ 
+          margin: 0, 
+          color: '#2c3e50',
+          fontSize: '28px',
+          fontWeight: '600'
+        }}>
+          💰 Movimento Diário do Caixa
+        </h1>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '15px',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span style={{ color: '#666', fontSize: '14px' }}>👤 Usuário:</span>
+            <input
+              type="text"
+              value={nomeUsuario}
+              readOnly
+              style={{
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '2px solid #e3f2fd',
+                backgroundColor: '#f8f9fa',
+                fontWeight: '600',
+                color: '#2c3e50',
+                fontSize: '14px'
+              }}
+            />
+          </div>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span style={{ color: '#666', fontSize: '14px' }}>📅 Data:</span>
+            <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
+          </div>
         </div>
       </div>
 
-      {/* Formas de Pagamento */}
-      <FormasPagamento
-        formasPagamento={formasPagamento}
-        pagamentos={pagamentos}
-        onQuantidadeChange={handlePagamentoQuantidadeChange}
-        onValorChange={handlePagamentoValorChange}
-        corFundoPagamentos={corFundoPagamentos}
-        selectedAto={selectedAto}
-      />
-
-      {/* Botão Adicionar Ato alinhado à direita */}
-      <div style={{ display: 'flex', justifyContent: 'flex-startnd' }}>
-        <button
-          style={{
-            padding: '10px 24px',
-            background: '#388e3c',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-            fontWeight: 'bold',
-          }}
-          onClick={adicionarAto}
-          disabled={
-            !selectedAto ||
-            quantidade < 1 ||
-            !Object.values(pagamentos).some((p) => p.valor > 0) ||
-            !valoresIguais(somaPagamentos, valorTotal)
-          }
-        >
-          Adicionar Ato
-        </button>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 24 }}>
-        <button
-          style={{
-            padding: '10px 24px',
-            background: '#388e3c',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-            fontWeight: 'bold',
-          }}
-          onClick={adicionarAto}
-          disabled={
-            !selectedAto ||
-            quantidade < 1 ||
-            !Object.values(pagamentos).some((p) => p.valor > 0) ||
-            !valoresIguais(somaPagamentos, valorTotal)
-          }
-        >
-          Adicionar Ato
-        </button>
-      </div>
-
-      {/* Novo container: Adicionar Entrada no Caixa */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          marginBottom: 16,
-          padding: 16,
-          backgroundColor: '#f0f0f0',
-          borderRadius: 8,
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        }}
-      >
-        <button
-          style={{
-            padding: '8px 20px',
-            background: '#1976d2',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer',
-            fontWeight: 'bold',
-          }}
-          onClick={adicionarEntrada}
-        >
-          Adicionar Entrada no Caixa
-        </button>
-        <input
-          type="text"
-          placeholder="Valor (R$)"
-          value={entradaValor}
-          onChange={(e) => setEntradaValor(e.target.value)}
-          style={{
-            width: 120,
-            padding: 8,
-            borderRadius: 6,
-            border: '1px solid #ccc',
-            textAlign: 'right',
-          }}
-        />
-        <input
-          type="text"
-          placeholder="Observações"
-          value={entradaObs}
-          onChange={(e) => setEntradaObs(e.target.value)}
-          style={{
-            flex: 1,
-            padding: 8,
-            borderRadius: 6,
-            border: '1px solid #ccc',
-          }}
+      {/* Resumo do Caixa */}
+      <div style={{
+        background: 'white',
+        borderRadius: '12px',
+        padding: '25px',
+        marginBottom: '20px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+      }}>
+        <h2 style={{ 
+          margin: '0 0 20px 0', 
+          color: '#2c3e50',
+          fontSize: '20px',
+          fontWeight: '600',
+          borderBottom: '2px solid #3498db',
+          paddingBottom: '10px'
+        }}>
+          📊 Resumo do Caixa
+        </h2>
+        <CaixaInputs 
+          valorInicialCaixa={valorInicialCaixa} 
+          valorFinalCaixa={valorFinalCaixa} 
         />
       </div>
 
-      {/* Novo container: Adicionar Saída no Caixa */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          marginBottom: 24,
-          padding: 16,
-          backgroundColor: '#f0f0f0',
-          borderRadius: 8,
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        }}
-      >
-        <button
-          style={{
-            padding: '8px 20px',
-            background: '#d32f2f',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer',
-            fontWeight: 'bold',
-          }}
-          onClick={adicionarSaida}
-        >
-          Adicionar Saída no Caixa
-        </button>
-        <input
-          type="text"
-          placeholder="Valor (R$)"
-          value={saidaValor}
-          onChange={(e) => setSaidaValor(e.target.value)}
-          style={{
-            width: 120,
-            padding: 8,
-            borderRadius: 6,
-            border: '1px solid #ccc',
-            textAlign: 'right',
-          }}
-        />
-        <input
-          type="text"
-          placeholder="Observações"
-          value={saidaObs}
-          onChange={(e) => setSaidaObs(e.target.value)}
-          style={{
-            flex: 1,
-            padding: 8,
-            borderRadius: 6,
-            border: '1px solid #ccc',
-          }}
-        />
+      {/* Layout Principal - Grid */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+        gap: '20px',
+        marginBottom: '20px'
+      }}>
+        
+        {/* Seção de Adição de Atos */}
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '25px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+        }}>
+          <h3 style={{ 
+            margin: '0 0 20px 0', 
+            color: '#2c3e50',
+            fontSize: '18px',
+            fontWeight: '600',
+            borderBottom: '2px solid #27ae60',
+            paddingBottom: '10px'
+          }}>
+            ➕ Adicionar Ato
+          </h3>
+          
+          <div style={{ marginBottom: '20px' }}>
+            <AtoSearch
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              suggestions={suggestions}
+              loadingSuggestions={loadingSuggestions}
+              onSelectAto={handleSelectAto}
+            />
+          </div>
+
+          {selectedAto && (
+            <div style={{
+              background: '#f8f9fa',
+              border: '2px solid #27ae60',
+              borderRadius: '8px',
+              padding: '15px',
+              marginBottom: '20px'
+            }}>
+              <h4 style={{ margin: '0 0 10px 0', color: '#27ae60' }}>
+                Ato Selecionado:
+              </h4>
+              <p style={{ margin: '0', fontWeight: '600' }}>
+                {selectedAto.codigo} - {selectedAto.descricao}
+              </p>
+              <p style={{ margin: '5px 0 0 0', color: '#666' }}>
+                Valor: {formatarMoeda(selectedAto.valor_final)}
+              </p>
+            </div>
+          )}
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '8px', 
+              fontWeight: '600',
+              color: '#2c3e50'
+            }}>
+              Quantidade:
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={quantidade}
+              onChange={(e) => handleQuantidadeChange(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: '2px solid #e3f2fd',
+                fontSize: '16px'
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <FormasPagamento
+              pagamentos={pagamentos}
+              onQuantidadeChange={handlePagamentoQuantidadeChange}
+              onValorChange={handlePagamentoValorChange}
+              corFundo={corFundoPagamentos}
+            />
+          </div>
+
+          {selectedAto && (
+            <div style={{
+              background: valoresIguais(somaPagamentos, valorTotal) ? '#d4edda' : '#f8d7da',
+              border: `2px solid ${valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#dc3545'}`,
+              borderRadius: '8px',
+              padding: '15px',
+              marginBottom: '20px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <span style={{ fontWeight: '600' }}>Valor Total:</span>
+                <span style={{ fontWeight: '600' }}>{formatarMoeda(valorTotal)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: '600' }}>Soma Pagamentos:</span>
+                <span style={{ fontWeight: '600' }}>{formatarMoeda(somaPagamentos)}</span>
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={adicionarAto}
+            disabled={!selectedAto || !valoresIguais(somaPagamentos, valorTotal)}
+            style={{
+              width: '100%',
+              padding: '15px',
+              backgroundColor: selectedAto && valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#95a5a6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: selectedAto && valoresIguais(somaPagamentos, valorTotal) ? 'pointer' : 'not-allowed',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            ➕ Adicionar Ato
+          </button>
+        </div>
+
+        {/* Seção de Entradas e Saídas Manuais */}
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '25px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+        }}>
+          <h3 style={{ 
+            margin: '0 0 20px 0', 
+            color: '#2c3e50',
+            fontSize: '18px',
+            fontWeight: '600',
+            borderBottom: '2px solid #f39c12',
+            paddingBottom: '10px'
+          }}>
+            💸 Entradas e Saídas Manuais
+          </h3>
+
+          {/* Entrada Manual */}
+          <div style={{
+            background: '#f8f9fa',
+            border: '2px solid #27ae60',
+            borderRadius: '8px',
+            padding: '20px',
+            marginBottom: '20px'
+          }}>
+            <h4 style={{ margin: '0 0 15px 0', color: '#27ae60' }}>
+              📈 Entrada de Valor
+            </h4>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontWeight: '600',
+                color: '#2c3e50'
+              }}>
+                Valor:
+              </label>
+              <input
+                type="text"
+                value={entradaValor}
+                onChange={(e) => setEntradaValor(e.target.value)}
+                placeholder="R$ 0,00"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '2px solid #e3f2fd',
+                  fontSize: '16px'
+                }}
+              />
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontWeight: '600',
+                color: '#2c3e50'
+              }}>
+                Observação:
+              </label>
+              <input
+                type="text"
+                value={entradaObs}
+                onChange={(e) => setEntradaObs(e.target.value)}
+                placeholder="Descrição da entrada"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '2px solid #e3f2fd',
+                  fontSize: '16px'
+                }}
+              />
+            </div>
+            <button
+              onClick={adicionarEntrada}
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: '#27ae60',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              ➕ Adicionar Entrada
+            </button>
+          </div>
+
+          {/* Saída Manual */}
+          <div style={{
+            background: '#f8f9fa',
+            border: '2px solid #e74c3c',
+            borderRadius: '8px',
+            padding: '20px'
+          }}>
+            <h4 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>
+              📉 Saída de Valor
+            </h4>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontWeight: '600',
+                color: '#2c3e50'
+              }}>
+                Valor:
+              </label>
+              <input
+                type="text"
+                value={saidaValor}
+                onChange={(e) => setSaidaValor(e.target.value)}
+                placeholder="R$ 0,00"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '2px solid #e3f2fd',
+                  fontSize: '16px'
+                }}
+              />
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontWeight: '600',
+                color: '#2c3e50'
+              }}>
+                Observação:
+              </label>
+              <input
+                type="text"
+                value={saidaObs}
+                onChange={(e) => setSaidaObs(e.target.value)}
+                placeholder="Descrição da saída"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '2px solid #e3f2fd',
+                  fontSize: '16px'
+                }}
+              />
+            </div>
+            <button
+              onClick={adicionarSaida}
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: '#e74c3c',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              ➖ Adicionar Saída
+            </button>
+          </div>
+        </div>
       </div>
 
+      {/* Tabela de Atos */}
+      <div style={{
+        background: 'white',
+        borderRadius: '12px',
+        padding: '25px',
+        marginBottom: '20px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+      }}>
+        <h3 style={{ 
+          margin: '0 0 20px 0', 
+          color: '#2c3e50',
+          fontSize: '18px',
+          fontWeight: '600',
+          borderBottom: '2px solid #9b59b6',
+          paddingBottom: '10px'
+        }}>
+          📋 Atos do Dia
+        </h3>
+        <AtosTable atos={atos} onRemover={removerAto} />
+      </div>
+
+      {/* Botão de Fechamento */}
+      <div style={{
+        background: 'white',
+        borderRadius: '12px',
+        padding: '25px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        textAlign: 'center'
+      }}>
+        <FechamentoDiarioButton onClick={fechamentoDiario} />
+      </div>
     </div>
-
-    <div
-      style={{
-        textAlign: 'center',
-        marginBottom: 32,
-        display: 'flex',
-        justifyContent: 'center',
-        gap: 16,
-      }}
-    >
-      <FechamentoDiarioButton onClick={fechamentoDiario} />
-    </div>
-
-    <h3 style={{ marginBottom: 12 }}>
-      Atos Pagos em {dataSelecionada.split('-').reverse().join('/')}
-    </h3>
-
-    <AtosTable atos={atos} removerAto={removerAto} />
-  </div>
-);
+  );
 }
 
 export default AtosPagos;
+
