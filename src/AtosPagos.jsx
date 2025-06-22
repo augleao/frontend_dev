@@ -330,7 +330,9 @@ function AtosPagos() {
         const data = await res.json();
         if (res.ok) {
           setAtos(data.atosPagos || []);
+          console.log("Atos carregados para a data selecionada:", data.atosPagos);
           const fechamentoDoDiaAtual = data.atosPagos.find((ato) => ato.codigo === "0001");
+          console.log("Ato 0001 encontrado para a data selecionada (Valor Final do Caixa):", fechamentoDoDiaAtual);
           setValorFinalCaixa(fechamentoDoDiaAtual ? fechamentoDoDiaAtual.valor_unitario : 0);
         } else {
           setAtos([]);
