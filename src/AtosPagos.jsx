@@ -337,23 +337,36 @@ function AtosPagos() {
 
   const removerAto = async (index) => {
     const atoParaRemover = atos[index];
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos/${atoParaRemover.id}`,
-        {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
+    
+    // Verificar se o ato tem ID (foi salvo no backend)
+    if (atoParaRemover.id) {
+      // Ato existe no backend, precisa deletar lá também
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos/${atoParaRemover.id}`,
+          {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        
+        if (res.ok) {
+          setAtos(atos.filter((_, i) => i !== index));
+          console.log('Ato removido do backend e da lista local:', atoParaRemover);
+        } else {
+          const errorData = await res.json();
+          console.error('Erro ao remover ato do backend:', errorData);
+          alert('Erro ao remover ato: ' + (errorData.message || 'Erro desconhecido'));
         }
-      );
-      if (res.ok) {
-        setAtos(atos.filter((_, i) => i !== index));
-      } else {
-        alert('Erro ao remover ato.');
+      } catch (e) {
+        console.error('Erro ao remover ato:', e);
+        alert('Erro ao remover ato: ' + e.message);
       }
-    } catch (e) {
-      console.error('Erro ao remover ato:', e);
-      alert('Erro ao remover ato.');
+    } else {
+      // Ato só existe localmente, remover apenas da lista
+      setAtos(atos.filter((_, i) => i !== index));
+      console.log('Ato removido apenas da lista local (não tinha ID):', atoParaRemover);
     }
   };  // useEffect para buscar o último fechamento do caixa do dia anterior ou mais próximo
   useEffect(() => {
