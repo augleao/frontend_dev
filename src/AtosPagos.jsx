@@ -410,50 +410,49 @@ function AtosPagos() {
       return acc;
     }, {});
 
-    const linhasFechamento = [
-      {
-        data: dataAtual,
-        descricao: 'Valor Inicial do Caixa',
-        quantidade: 1,
-        valor_unitario: valorInicialCaixa,
-        pagamentos: pagamentosZerados,
-        usuario: nomeUsuario,
-      },
-      {
-        data: dataAtual,
-        descricao: 'Valor Final do Caixa',
-        quantidade: 1,
-        valor_unitario: calcularValorFinalCaixa(),
-        //valor_total: calcularValorFinalCaixa(),
-        pagamentos: pagamentosZerados,
-        usuario: nomeUsuario,
-      },
-    ];
+    // Criar apenas o ato de fechamento (código 0001) com o valor final do caixa
+    const atoFechamento = {
+      data: dataAtual,
+      hora: hora,
+      codigo: '0001',
+      descricao: 'Valor Final do Caixa',
+      quantidade: 1,
+      valor_unitario: calcularValorFinalCaixa(),
+      pagamentos: pagamentosZerados,
+      usuario: nomeUsuario,
+    };
+
+    console.log("Dados do fechamento a serem enviados:", atoFechamento);
 
     try {
       const token = localStorage.getItem('token');
 
-      for (const linha of linhasFechamento) {
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(linha),
-          }
-        );
-
-        if (!res.ok) {
-          const json = await res.json();
-          alert('Erro ao salvar fechamento no banco: ' + (json.message || JSON.stringify(json)));
-          return;
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(atoFechamento),
         }
+      );
+
+      console.log("Status da resposta:", res.status);
+
+      if (!res.ok) {
+        const json = await res.json();
+        console.error("Erro do backend:", json);
+        alert('Erro ao salvar fechamento no banco: ' + (json.message || JSON.stringify(json)));
+        return;
       }
 
-      setAtos((prev) => [...prev, ...linhasFechamento]);
+      const responseData = await res.json();
+      console.log("Resposta do backend:", responseData);
+
+      // Adiciona o ato de fechamento à lista local
+      setAtos((prev) => [...prev, atoFechamento]);
 
       gerarRelatorioPDF({
         dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
@@ -465,7 +464,7 @@ function AtosPagos() {
       alert('Fechamento diário realizado com sucesso!');
     } catch (e) {
       console.error('Erro no fechamento diário:', e);
-      alert('Erro ao realizar fechamento diário.');
+      alert('Erro ao realizar fechamento diário: ' + e.message);
     }
   };
 
@@ -756,7 +755,7 @@ function AtosPagos() {
                 type="text"
                 value={entradaObs}
                 onChange={(e) => setEntradaObs(e.target.value)}
-                placeholder="Descrição da entrada"
+                placeholder="Ex. Troco, abertura de caixa, outras entradas"
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -831,7 +830,7 @@ function AtosPagos() {
                 type="text"
                 value={saidaObs}
                 onChange={(e) => setSaidaObs(e.target.value)}
-                placeholder="Descrição da saída"
+                placeholder="Ex. Depósitos, retiradas, outras saídas."
                 style={{
                   width: '100%',
                   padding: '12px',
