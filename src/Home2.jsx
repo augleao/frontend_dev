@@ -40,16 +40,18 @@ function Home() {
       icon: '📋',
       color: '#9b59b6',
       route: '/meus-relatorios'
+    },
+    {
+      id: 'relatorio-cnj',
+      title: 'RELATÓRIO SEMESTRAL CNJ',
+      description: 'Processe arquivos PDF do TJMG para gerar relatório semestral',
+      icon: '📊',
+      color: '#e67e22',
+      route: '/relatorio-cnj'
     }
   ];
 
   const futureFeatures = [
-    {
-      title: 'RELATÓRIOS AVANÇADOS',
-      description: 'Em breve: Relatórios detalhados e análises',
-      icon: '📊',
-      color: '#e67e22'
-    },
     {
       title: 'BACKUP AUTOMÁTICO',
       description: 'Em breve: Sistema de backup automático',
@@ -61,6 +63,12 @@ function Home() {
       description: 'Em breve: Sistema de auditoria e logs',
       icon: '🔍',
       color: '#e74c3c'
+    },
+    {
+      title: 'INTEGRAÇÃO API',
+      description: 'Em breve: Integração com sistemas externos',
+      icon: '🔗',
+      color: '#16a085'
     }
   ];
 
