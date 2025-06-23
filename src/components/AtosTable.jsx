@@ -46,20 +46,24 @@ useEffect(() => {
     return valorInicialCaixa + totalDinheiro - saidasCaixa - depositosCaixa;
   }, [valorInicialCaixa, depositosCaixa, saidasCaixa, atosComISS]);
 
-  const handleAtoChange = (id, campo, subcampo, valor) => {
-    setAtos(prevAtos =>
-      prevAtos.map(ato => {
-        if (ato.id === id) {
-          const valorUnitario = ato.quantidade > 0 ? calcularValorTotalComISS(ato.valorTotal, moedaParaNumero(ISS)) / ato.quantidade : 0;
-          if (campo === 'observacoes') {
-            return { ...ato, observacoes: valor };
-          }
+const handleAtoChange = (id, campo, subcampo, valor) => {
+  setAtos(prevAtos =>
+    prevAtos.map(ato => {
+      if (ato.id === id) {
+        // Atualiza observações (campo simples)
+        if (campo === 'observacoes') {
+          return { ...ato, observacoes: valor };
+        }
+
+        // Atualiza campos que são objetos com quantidade e valor (formas de pagamento)
+        if (
+          ['pagamentoDinheiro', 'pagamentoCartao', 'pagamentoPix', 'pagamentoCRC', 'depositoPrevio'].includes(campo)
+        ) {
           if (subcampo === 'quantidade') {
             const quantidadeNum = parseInt(valor) || 0;
-            const valorAtual = ato[campo].valorManual ? ato[campo].valor : parseFloat((quantidadeNum * valorUnitario).toFixed(2));
             return {
               ...ato,
-              [campo]: { quantidade: quantidadeNum, valor: valorAtual, valorManual: false },
+              [campo]: { ...ato[campo], quantidade: quantidadeNum },
             };
           }
           if (subcampo === 'valor') {
@@ -70,10 +74,16 @@ useEffect(() => {
             };
           }
         }
+
+        // Caso tenha outros campos com estrutura similar, trate aqui...
+
+        // Se não for nenhum dos casos acima, retorna ato sem alteração
         return ato;
-      })
-    );
-  };
+      }
+      return ato;
+    })
+  );
+};
 
   const salvarRelatorio = async () => {
     console.log('Tentando salvar relatório...');
