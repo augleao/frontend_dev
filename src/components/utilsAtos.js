@@ -78,13 +78,16 @@ export function extrairDadosAntigo(texto) {
 }
 // Extração para layout novo
 export function extrairDadosNovo(texto) {
-  const textoLimpo = texto.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ');
+  const textoLimpo = texto.replace(/\s{2,}/g, ' ').trim();
+  console.log('Texto limpo (início):', textoLimpo.slice(0, 500));
   const regex = /(\d+)(\d{4})R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+) - (.*?)(?=\d{5}R\$|$)/g;
   const atos = [];
+  const testeMatch = regex.exec(textoLimpo);
   let match;
   let id = 0;
   while ((match = regex.exec(textoLimpo)) !== null) {
     console.log('Match:', match);
+    console.log('Teste de match:', testeMatch);
     atos.push({
       id: id++,
       quantidade: parseInt(match[1]),
