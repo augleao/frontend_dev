@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import * as pdfjsLib from 'pdfjs-dist';
+//import * as pdfjsLib from 'pdfjs-dist';
 
 // Desabilitar worker para evitar problemas de carregamento
 pdfjsLib.GlobalWorkerOptions.workerSrc = false;
@@ -32,172 +32,44 @@ function RelatorioCNJ() {
     setErro('');
   };
 
-  const extrairTextoPDF = async (file) => {
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      
-      // Configurar PDF.js para não usar worker
-      const loadingTask = pdfjsLib.getDocument({
-        data: arrayBuffer,
-        useWorkerFetch: false,
-        isEvalSupported: false,
-        useSystemFonts: true
-      });
-      
-      const pdf = await loadingTask.promise;
-      let textoCompleto = '';
+  const enviarArquivosParaBackend = async () => {
+  if (arquivos.length !== 6) {
+    setErro('Selecione exatamente 6 arquivos PDF.');
+    return;
+  }
+  setProcessando(true);
+  setErro('');
+  setProgresso('Enviando arquivos para o servidor...');
 
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map(item => item.str).join(' ');
-        textoCompleto += pageText + ' ';
-      }
+  const formData = new FormData();
+  arquivos.forEach((file, idx) => formData.append(`file${idx}`, file));
 
-      return textoCompleto;
-    } catch (error) {
-      console.error('Erro na extração de texto:', error);
-      throw error;
-    }
-  };
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/importar-atos-pdf`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
 
-  const extrairValorMonetario = (texto, padrao) => {
-    try {
-      // Múltiplas tentativas de regex para capturar valores monetários
-      const patterns = [
-        new RegExp(padrao + '\\s*R?\\$?\\s*([\\d.,]+)', 'i'),
-        new RegExp(padrao + '.*?R\\$\\s*([\\d.,]+)', 'i'),
-        new RegExp(padrao + '.*?([\\d.,]+)', 'i')
-      ];
-
-      for (const regex of patterns) {
-        const match = texto.match(regex);
-        if (match && match[1]) {
-          // Converter formato brasileiro para número
-          let valor = match[1].replace(/\./g, '').replace(',', '.');
-          const numero = parseFloat(valor);
-          if (!isNaN(numero)) {
-            return numero;
-          }
-        }
-      }
-      return 0;
-    } catch (error) {
-      console.error('Erro ao extrair valor monetário:', error);
-      return 0;
-    }
-  };
-
-  const extrairAtosPraticados = (texto) => {
-    try {
-      // Procurar por padrões de total de atos
-      const patterns = [
-        /Total\s+(\d+)\s+R?\$?[\d.,]+$/gm,
-        /Total\s+(\d+)$/gm,
-        /(\d+)\s+Total/gm
-      ];
-
-      let maiorTotal = 0;
-      
-      for (const pattern of patterns) {
-        const matches = [...texto.matchAll(pattern)];
-        for (const match of matches) {
-          const numero = parseInt(match[1]);
-          if (!isNaN(numero) && numero > maiorTotal) {
-            maiorTotal = numero;
-          }
-        }
-      }
-
-      return maiorTotal;
-    } catch (error) {
-      console.error('Erro ao extrair atos praticados:', error);
-      return 0;
-    }
-  };
-
-  const extrairDadosPDF = async (file) => {
-    try {
-      const texto = await extrairTextoPDF(file);
-      console.log(`Texto extraído de ${file.name}:`, texto.substring(0, 1000));
-      
-      // Extrair dados específicos baseados no padrão do TJMG
-      const atosPraticados = extrairAtosPraticados(texto);
-      const emolumentoApurado = extrairValorMonetario(texto, 'Emolumento Apurado');
-      const tfj = extrairValorMonetario(texto, 'Taxa de Fiscalização Judiciária Apurada');
-      const valoresRecompe = extrairValorMonetario(texto, 'Valores recebidos do RECOMPE');
-      const issqn = extrairValorMonetario(texto, 'ISSQN recebido dos usuários');
-      const recompeApurado = extrairValorMonetario(texto, 'RECOMPE.*?Apurado');
-      const totalDespesas = extrairValorMonetario(texto, 'Total de despesas do mês');
-
-      const dadosExtraidos = {
-        atosPraticados,
-        emolumentoApurado: emolumentoApurado.toFixed(2),
-        tfj: tfj.toFixed(2),
-        valoresRecompe: valoresRecompe.toFixed(2),
-        issqn: issqn.toFixed(2),
-        recompeApurado: recompeApurado.toFixed(2),
-        totalDespesas: totalDespesas.toFixed(2),
-        nomeArquivo: file.name
-      };
-
-      console.log(`Dados extraídos de ${file.name}:`, dadosExtraidos);
-      return dadosExtraidos;
-
-    } catch (error) {
-      console.error('Erro ao extrair dados do PDF:', error);
-      throw new Error(`Erro ao processar ${file.name}: ${error.message}`);
-    }
-  };
-
-  const processarArquivos = async () => {
-    if (arquivos.length !== 6) {
-      setErro('Selecione exatamente 6 arquivos PDF.');
-      return;
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Erro ao processar arquivos no servidor.');
     }
 
-    setProcessando(true);
-    setErro('');
-    setProgresso('Iniciando processamento...');
-
-    try {
-      const dadosExtraidos = [];
-      
-      for (let i = 0; i < arquivos.length; i++) {
-        setProgresso(`Processando arquivo ${i + 1} de 6: ${arquivos[i].name}`);
-        const dados = await extrairDadosPDF(arquivos[i]);
-        dadosExtraidos.push(dados);
-      }
-
-      setProgresso('Calculando totais...');
-
-      // Calcular totais conforme especificado
-      const totais = {
-        atosPraticados: dadosExtraidos.reduce((sum, item) => sum + item.atosPraticados, 0),
-        arrecadacao: dadosExtraidos.reduce((sum, item) => 
-          sum + parseFloat(item.emolumentoApurado) + parseFloat(item.tfj) + 
-          parseFloat(item.valoresRecompe) + parseFloat(item.issqn), 0
-        ).toFixed(2),
-        custeio: dadosExtraidos.reduce((sum, item) => sum + parseFloat(item.totalDespesas), 0).toFixed(2),
-        repasses: dadosExtraidos.reduce((sum, item) => 
-          sum + parseFloat(item.recompeApurado) + parseFloat(item.issqn) + parseFloat(item.tfj), 0
-        ).toFixed(2)
-      };
-
-      setResultado({
-        dadosIndividuais: dadosExtraidos,
-        totais: totais
-      });
-
-      setProgresso('Processamento concluído!');
-
-    } catch (error) {
-      setErro('Erro ao processar os arquivos: ' + error.message);
-      console.error('Erro detalhado:', error);
-    } finally {
-      setProcessando(false);
-    }
-  };
+    const data = await res.json();
+    setProgresso('Arquivos processados com sucesso!');
+    setResultado(data); // Dados extraídos do backend
+  } catch (err) {
+    setErro(err.message);
+  } finally {
+    setProcessando(false);
+  }
+};
+  
+  
 
   const gerarRelatorio = () => {
     if (!resultado) return;
