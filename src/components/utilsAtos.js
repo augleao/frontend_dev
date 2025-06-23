@@ -70,7 +70,8 @@ export function extrairDadosAntigo(texto) {
 // Extração para layout novo
 export function extrairDadosNovo(texto) {
   const textoLimpo = texto.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ');
-  const regex = /(\d)(\d{4})R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)(\d+) - ([^]+?)(?=\d{5}R\$|$)/g;
+  // Ajustei a regex para capturar a última coluna como grupo 7 e a descrição como grupo 8
+  const regex = /(\d+)(\d{4})R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+) - (.*?)(?=\d{5}R\$|$)/g;
   const atos = [];
   let match;
   let id = 0;
@@ -79,10 +80,11 @@ export function extrairDadosNovo(texto) {
       id: id++,
       quantidade: parseInt(match[1]),
       codigo: match[2],
-      emolumento: parseFloat(match[3].replace('.', '').replace(',', '.')),
-      recompe: parseFloat(match[4].replace('.', '').replace(',', '.')),
-      tfj: parseFloat(match[5].replace('.', '').replace(',', '.')),
-      valorTotal: parseFloat(match[6].replace('.', '').replace(',', '.')),
+      emolumento: parseFloat(match[3].replace(/\./g, '').replace(',', '.')),
+      recompe: parseFloat(match[4].replace(/\./g, '').replace(',', '.')),
+      tfj: parseFloat(match[5].replace(/\./g, '').replace(',', '.')),
+      valorTotal: parseFloat(match[6].replace(/\./g, '').replace(',', '.')),
+      valorUltimaColuna: parseFloat(match[7].replace(/\./g, '').replace(',', '.')), // novo campo
       descricao: match[8].trim(),
       pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
       pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
@@ -92,6 +94,16 @@ export function extrairDadosNovo(texto) {
       observacoes: '',
     });
   }
+
+  // Corrigir valorTotal da última linha
+  if (atos.length > 0) {
+    const ultimoAto = atos[atos.length - 1];
+    if (ultimoAto.quantidade > 0 && ultimoAto.valorUltimaColuna) {
+      ultimoAto.valorTotal = ultimoAto.valorUltimaColuna / ultimoAto.quantidade;
+    }
+    delete ultimoAto.valorUltimaColuna; // opcional, se não quiser manter esse campo
+  }
+
   let dataRelatorio = null;
   const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
   if (matchData) dataRelatorio = matchData[1];
