@@ -76,18 +76,28 @@ export function extrairDadosAntigo(texto) {
 
   return { dataRelatorio, atos };
 }
-// Extração para layout novo
+// Extração para layout novo CARTOSOFT DESKTOP
+function preprocessarTexto(texto) {
+  // Insere espaço entre número e "R$" para separar valores
+  let textoProcessado = texto.replace(/(\d)(R\$)/g, '$1 $2');
+  // Insere espaço entre "R$" e número para separar valores
+  textoProcessado = textoProcessado.replace(/(R\$)(\d)/g, '$1 $2');
+  // Insere espaço entre número e letra para separar código e descrição
+  textoProcessado = textoProcessado.replace(/(\d)([A-Za-z])/g, '$1 $2');
+  // Remove múltiplos espaços
+  textoProcessado = textoProcessado.replace(/\s{2,}/g, ' ');
+  return textoProcessado;
+}
 export function extrairDadosNovo(texto) {
-  const textoLimpo = texto.replace(/\s{2,}/g, ' ').trim();
-  console.log('Texto limpo (início):', textoLimpo.slice(0, 500));
-  const regex = /(\d+)(\d{4})R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+) - (.*?)(?=\d+\d{4}R\$|$)/g;
+  const textoProcessado = preprocessarTexto(texto);
+  console.log('Texto processado (início):', textoProcessado.slice(0, 500));
+
+  const regex = /(\d+)\s+(\d{4})\s+R\$ ([\d.,]+)\s+R\$ ([\d.,]+)\s+R\$ ([\d.,]+)\s+R\$ ([\d.,]+)\s+-\s+(.*?)(?=\d+\s+\d{4}\s+R\$|$)/g;
   const atos = [];
-  const testeMatch = regex.exec(textoLimpo);
   let match;
   let id = 0;
-  while ((match = regex.exec(textoLimpo)) !== null) {
-    console.log('Match:', match);
-    console.log('Teste de match:', testeMatch);
+
+  while ((match = regex.exec(textoProcessado)) !== null) {
     atos.push({
       id: id++,
       quantidade: parseInt(match[1]),
@@ -96,8 +106,7 @@ export function extrairDadosNovo(texto) {
       recompe: parseFloat(match[4].replace(/\./g, '').replace(',', '.')),
       tfj: parseFloat(match[5].replace(/\./g, '').replace(',', '.')),
       valorTotal: parseFloat(match[6].replace(/\./g, '').replace(',', '.')),
-      valorUltimaColuna: parseFloat(match[7].replace(/\./g, '').replace(',', '.')),
-      descricao: match[8].trim(),
+      descricao: match[7].trim(),
       pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
       pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
       pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
@@ -107,21 +116,15 @@ export function extrairDadosNovo(texto) {
     });
   }
 
-  // Corrigir valorTotal da última linha
+  // Ajuste do valorTotal da última linha
   if (atos.length > 0) {
     const ultimoAto = atos[atos.length - 1];
-    console.log('Antes do ajuste:', ultimoAto.valorTotal, ultimoAto.valorUltimaColuna, ultimoAto.quantidade);
-    if (ultimoAto.quantidade > 0 && ultimoAto.valorUltimaColuna) {
-      ultimoAto.valorTotal = ultimoAto.valorUltimaColuna / ultimoAto.quantidade;
+    if (ultimoAto.quantidade > 0 && ultimoAto.valorTotal > 0) {
+      ultimoAto.valorTotal = ultimoAto.valorTotal / ultimoAto.quantidade;
     }
-    console.log('Depois do ajuste:', ultimoAto.valorTotal);
-    delete ultimoAto.valorUltimaColuna; // opcional
   }
 
-  let dataRelatorio = null;
-  const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
-  if (matchData) dataRelatorio = matchData[1];
-  return { dataRelatorio, atos };
+  return { dataRelatorio: null, atos };
 }
 
 // Função principal de extração
