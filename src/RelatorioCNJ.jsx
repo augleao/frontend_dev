@@ -93,6 +93,7 @@ Arquivo ${index + 1}: ${item.nomeArquivo}
 - Valores RECOMPE: R$ ${item.valoresRecompe}
 - ISSQN: R$ ${item.issqn}
 - RECOMPE Apurado: R$ ${item.recompeApurado}
+- RECOMPE Recebido: R$ ${item.recompeRecebido}
 - Total de Despesas: R$ ${item.totalDespesas}
 `).join('')}
 
