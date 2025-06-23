@@ -75,6 +75,7 @@ export function extrairDadosNovo(texto) {
   let match;
   let id = 0;
   while ((match = regex.exec(textoLimpo)) !== null) {
+    console.log('Match:', match);
     atos.push({
       id: id++,
       quantidade: parseInt(match[1]),
@@ -92,15 +93,16 @@ export function extrairDadosNovo(texto) {
       depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
       observacoes: '',
     });
-          console.log(parseFloat(match[6].replace(/\./g, '').replace(',', '.')))
   }
 
   // Corrigir valorTotal da última linha
   if (atos.length > 0) {
     const ultimoAto = atos[atos.length - 1];
+    console.log('Antes do ajuste:', ultimoAto.valorTotal, ultimoAto.valorUltimaColuna, ultimoAto.quantidade);
     if (ultimoAto.quantidade > 0 && ultimoAto.valorUltimaColuna) {
       ultimoAto.valorTotal = ultimoAto.valorUltimaColuna / ultimoAto.quantidade;
     }
+    console.log('Depois do ajuste:', ultimoAto.valorTotal);
     delete ultimoAto.valorUltimaColuna; // opcional
   }
 
