@@ -64,9 +64,18 @@ export function extrairDadosAntigo(texto) {
       i = j;
     }
   }
+
+  // Ajuste do valorTotal na última linha dos atos
+  if (atos.length > 0) {
+    const ultimoAto = atos[atos.length - 1];
+    if (ultimoAto.quantidade > 0 && ultimoAto.valorTotal > 0) {
+      // Dividir o valor total da última coluna pela quantidade para obter valor unitário
+      ultimoAto.valorTotal = ultimoAto.valorTotal / ultimoAto.quantidade;
+    }
+  }
+
   return { dataRelatorio, atos };
 }
-
 // Extração para layout novo
 export function extrairDadosNovo(texto) {
   const textoLimpo = texto.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ');
