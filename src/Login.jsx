@@ -4,7 +4,7 @@ import { AuthContext } from './AuthContext';
 import config from './config';
 
 function Login() {
-  const [email, setEmail] = useState('');
+  const [nome, setNome] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,20 +22,18 @@ function Login() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ nome, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Salva o usuário e o token no localStorage
         localStorage.setItem('usuario', JSON.stringify(data.user));
         localStorage.setItem('token', data.token);
 
-        // Mantém o contexto de autenticação
         login(data.user, data.token);
 
-        navigate('/home2'); // Redireciona para /home2 após o login
+        navigate('/home2');
       } else {
         setError(data.message || 'Erro ao fazer login.');
       }
@@ -74,13 +72,13 @@ function Login() {
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-            Email:
+            Nome:
           </label>
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Digite seu email"
+            type="text"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            placeholder="Digite seu nome"
             style={{
               width: '100%',
               padding: '10px',
