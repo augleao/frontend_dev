@@ -21,13 +21,13 @@ function App() {
 
   const tooltipText = (
     <>
-      Gere no Cartosoft ou CartosoftWEB o relatório de Selos Pagos para o dia e salve em PDF.
+      Gere no Cartosoft ou Cartosoft WEB ou Cartosoft Desktop o relatório de Selos Pagos para o dia e salve em PDF.
       <br /><br />
       Carregue o arquivo pelo botão Escolher arquivo PDF e envie-o para o sistema pelo botão Enviar.
       Aguarde a leitura e Lance as informações de pagamento, indicando o número de atos praticados na forma de pagamento respectiva.
       Após indicar a forma de pagamento de todos os atos, todas as linhas ficarão verde e será possível gerar o relatório de conciliação.
       <br /><br />
-      <b>OBS1.:</b> O sistema não salva os dados, simplesmente gera um relatório PDF da conciliação.
+      <b>OBS1.:</b> As linhas vermelhas correspondem a valores ainda não conciliados e as verdes a valores já conciliados.
       <br />
       <b>OBS2.:</b> O sistema comporta pagamento de um ato por mais de uma forma de pagamento, para isto corrija manualmente o valor do ato sugerido pelo sistema e adicione o restante na outra forma de pagamento.
       <br />
@@ -38,7 +38,7 @@ function App() {
   return (
     <div>
       <h1>
-        Controle de Caixa diário pra Cartosoft
+        Controle de Caixa diário pra Cartosoft Web ou Desktop
         <Tooltip text={tooltipText}>
           <span className="info-icon">i</span>
         </Tooltip>

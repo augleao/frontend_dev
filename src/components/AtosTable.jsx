@@ -7,9 +7,10 @@ import config from '../config';
 import { extrairDadosDoTexto, calcularValorTotalComISS, moedaParaNumero, formatarMoeda } from './utilsAtos';
 
 export default function AtosTable({ texto, usuario: usuarioProp }) {
+  
   // Busca o usuário do localStorage caso não venha como prop
   const usuario = usuarioProp || JSON.parse(localStorage.getItem('usuario') || '{}');
-
+  
   const [atos, setAtos] = useState([]);
   const [dataRelatorio, setDataRelatorio] = useState(null);
   const [responsavel, setResponsavel] = useState('');
@@ -21,13 +22,17 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
   const [mensagemSalvar, setMensagemSalvar] = useState('');
   const [observacoesGerais, setObservacoesGerais] = useState('');
 
-  useEffect(() => {
-    if (texto) {
-      const { dataRelatorio, atos } = extrairDadosDoTexto(texto);
-      setDataRelatorio(dataRelatorio);
-      setAtos(atos);
-    }
-  }, [texto]);
+useEffect(() => {
+  if (texto) {
+    const { dataRelatorio, atos } = extrairDadosDoTexto(texto);
+    setDataRelatorio(dataRelatorio);
+    setAtos(atos);
+  }
+
+  if (usuario && usuario.nome) {
+    setResponsavel(usuario.nome);
+  }
+}, [texto, usuario]);
 
   const atosComISS = useMemo(() =>
     atos.map(ato => ({
