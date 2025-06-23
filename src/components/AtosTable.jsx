@@ -24,6 +24,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
   useEffect(() => {
     if (texto) {
       const { dataRelatorio, atos } = extrairDadosDoTexto(texto);
+      console.log('Dados extraídos do texto:', { dataRelatorio, atos });
       const atosComValorInput = atos.map(ato => ({
         ...ato,
         pagamentoDinheiro: { ...ato.pagamentoDinheiro, valorInput: '' },
@@ -34,50 +35,58 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       }));
       setDataRelatorio(dataRelatorio);
       setAtos(atosComValorInput);
+      console.log('Estado atos inicializado com valorInput:', atosComValorInput);
     }
     if (usuario && usuario.nome) {
       setResponsavel(usuario.nome);
+      console.log('Responsável definido:', usuario.nome);
     }
   }, [texto, usuario]);
 
-  const atosComISS = useMemo(() =>
-    atos.map(ato => ({
+  const atosComISS = useMemo(() => {
+    const resultado = atos.map(ato => ({
       ...ato,
       valorTotalComISS: calcularValorTotalComISS(ato.valorTotal, moedaParaNumero(ISS))
-    })), [atos, ISS]
-  );
+    }));
+    console.log('atosComISS recalculado:', resultado);
+    return resultado;
+  }, [atos, ISS]);
 
   const valorFinalCaixa = useMemo(() => {
     const totalDinheiro = atosComISS.reduce((acc, ato) => acc + ato.pagamentoDinheiro.valor, 0);
-    return valorInicialCaixa + totalDinheiro - saidasCaixa - depositosCaixa;
+    const valorFinal = valorInicialCaixa + totalDinheiro - saidasCaixa - depositosCaixa;
+    console.log('valorFinalCaixa calculado:', valorFinal);
+    return valorFinal;
   }, [valorInicialCaixa, depositosCaixa, saidasCaixa, atosComISS]);
 
-  // Atualiza valorInput para permitir digitação livre
   const handleValorChange = (id, campo, valorInput) => {
+    console.log('handleValorChange chamado:', { id, campo, valorInput });
     setAtos(prevAtos =>
       prevAtos.map(ato => {
         if (ato.id === id) {
-          return {
+          const novoAto = {
             ...ato,
             [campo]: {
               ...ato[campo],
               valorInput,
             },
           };
+          console.log('Novo ato após handleValorChange:', novoAto);
+          return novoAto;
         }
         return ato;
       })
     );
   };
 
-  // Converte valorInput para número ao sair do campo e limpa valorInput
   const handleValorBlur = (id, campo) => {
+    console.log('handleValorBlur chamado:', { id, campo });
     setAtos(prevAtos =>
       prevAtos.map(ato => {
         if (ato.id === id) {
           const valorStr = ato[campo].valorInput ?? '';
           const valorNum = valorStr === '' ? 0 : moedaParaNumero(valorStr);
-          return {
+          const novoAto = {
             ...ato,
             [campo]: {
               ...ato[campo],
@@ -86,29 +95,35 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
               valorInput: undefined,
             },
           };
+          console.log('Novo ato após handleValorBlur:', novoAto);
+          return novoAto;
         }
         return ato;
       })
     );
   };
 
-  // Atualiza quantidade e observações
   const handleAtoChange = (id, campo, subcampo, valor) => {
+    console.log('handleAtoChange chamado:', { id, campo, subcampo, valor });
     setAtos(prevAtos =>
       prevAtos.map(ato => {
         if (ato.id === id) {
           if (campo === 'observacoes') {
-            return { ...ato, observacoes: valor };
+            const novoAto = { ...ato, observacoes: valor };
+            console.log('Novo ato após atualizar observacoes:', novoAto);
+            return novoAto;
           }
           if (
             ['pagamentoDinheiro', 'pagamentoCartao', 'pagamentoPix', 'pagamentoCRC', 'depositoPrevio'].includes(campo)
           ) {
             if (subcampo === 'quantidade') {
               const quantidadeNum = parseInt(valor) || 0;
-              return {
+              const novoAto = {
                 ...ato,
                 [campo]: { ...ato[campo], quantidade: quantidadeNum },
               };
+              console.log('Novo ato após atualizar quantidade:', novoAto);
+              return novoAto;
             }
             return ato;
           }
