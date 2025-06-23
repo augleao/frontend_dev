@@ -7,8 +7,9 @@ import config from '../config';
 import { extrairDadosDoTexto, calcularValorTotalComISS, moedaParaNumero, formatarMoeda } from './utilsAtos';
 
 export default function AtosTable({ texto, usuario: usuarioProp }) {
-  const usuario = usuarioProp || JSON.parse(localStorage.getItem('usuario') || '{}');
-
+  const usuario = useMemo(() => {
+    return usuarioProp || JSON.parse(localStorage.getItem('usuario') || '{}');
+  }, [usuarioProp]);
   const [atos, setAtos] = useState([]);
   const [dataRelatorio, setDataRelatorio] = useState(null);
   const [responsavel, setResponsavel] = useState('');
