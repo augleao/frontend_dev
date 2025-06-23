@@ -46,77 +46,34 @@ useEffect(() => {
     return valorInicialCaixa + totalDinheiro - saidasCaixa - depositosCaixa;
   }, [valorInicialCaixa, depositosCaixa, saidasCaixa, atosComISS]);
 
-const handleValorChange = (id, campo, valorInput) => {
-  setAtos(prevAtos =>
-    prevAtos.map(ato => {
-      if (ato.id === id) {
-        return {
-          ...ato,
-          [campo]: {
-            ...ato[campo],
-            valorInput,
-          },
-        };
-      }
-      return ato;
-    })
-  );
-};
-
-const handleValorBlur = (id, campo) => {
-  setAtos(prevAtos =>
-    prevAtos.map(ato => {
-      if (ato.id === id) {
-        const valorStr = ato[campo].valorInput ?? '';
-        const valorNum = valorStr === '' ? 0 : moedaParaNumero(valorStr);
-        return {
-          ...ato,
-          [campo]: {
-            ...ato[campo],
-            valor: valorNum,
-            valorManual: true,
-            valorInput: undefined,
-          },
-        };
-      }
-      return ato;
-    })
-  );
-};
-
-const handleAtoChange = (id, campo, subcampo, valor) => {
-  setAtos(prevAtos =>
-    prevAtos.map(ato => {
-      if (ato.id === id) {
-        // Atualiza observações (campo simples)
-        if (campo === 'observacoes') {
-          return { ...ato, observacoes: valor };
-        }
-
-        // Atualiza somente quantidade das formas de pagamento aqui
-        if (
-          ['pagamentoDinheiro', 'pagamentoCartao', 'pagamentoPix', 'pagamentoCRC', 'depositoPrevio'].includes(campo)
-        ) {
+  const handleAtoChange = (id, campo, subcampo, valor) => {
+    setAtos(prevAtos =>
+      prevAtos.map(ato => {
+        if (ato.id === id) {
+          const valorUnitario = ato.quantidade > 0 ? calcularValorTotalComISS(ato.valorTotal, moedaParaNumero(ISS)) / ato.quantidade : 0;
+          if (campo === 'observacoes') {
+            return { ...ato, observacoes: valor };
+          }
           if (subcampo === 'quantidade') {
             const quantidadeNum = parseInt(valor) || 0;
+            const valorAtual = ato[campo].valorManual ? ato[campo].valor : parseFloat((quantidadeNum * valorUnitario).toFixed(2));
             return {
               ...ato,
-              [campo]: { ...ato[campo], quantidade: quantidadeNum },
+              [campo]: { quantidade: quantidadeNum, valor: valorAtual, valorManual: false },
             };
           }
-          // NÃO trate subcampo 'valor' aqui para evitar reset do input
-          return ato;
+          if (subcampo === 'valor') {
+            const valorNum = moedaParaNumero(valor);
+            return {
+              ...ato,
+              [campo]: { ...ato[campo], valor: valorNum, valorManual: true },
+            };
+          }
         }
-
-        // Caso tenha outros campos com estrutura similar, trate aqui...
-
-        // Se não for nenhum dos casos acima, retorna ato sem alteração
         return ato;
-      }
-      return ato;
-    })
-  );
-};
+      })
+    );
+  };
 
   const salvarRelatorio = async () => {
     console.log('Tentando salvar relatório...');
@@ -269,8 +226,6 @@ const handleAtoChange = (id, campo, subcampo, valor) => {
       <AtosGrid
         atos={atosComISS}
         handleAtoChange={handleAtoChange}
-        handleValorChange={handleValorChange}
-        handleValorBlur={handleValorBlur}
       />
     </div>
   );
