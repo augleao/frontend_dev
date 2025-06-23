@@ -269,6 +269,8 @@ const handleAtoChange = (id, campo, subcampo, valor) => {
       <AtosGrid
         atos={atosComISS}
         handleAtoChange={handleAtoChange}
+        handleValorChange={handleValorChange}
+        handleValorBlur={handleValorBlur}
       />
     </div>
   );
