@@ -92,6 +92,7 @@ export function extrairDadosNovo(texto) {
       depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
       observacoes: '',
     });
+          console.log(parseFloat(match[6].replace(/\./g, '').replace(',', '.')))
   }
 
   // Corrigir valorTotal da última linha
