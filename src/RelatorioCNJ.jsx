@@ -378,7 +378,8 @@ Data de Geração: ${new Date().toLocaleDateString('pt-BR')}
                     <div><strong>Atos:</strong> {item.atosPraticados}</div>
                     <div><strong>Emolumento:</strong> R$ {item.emolumentoApurado}</div>
                     <div><strong>TFJ:</strong> R$ {item.tfj}</div>
-                    <div><strong>RECOMPE:</strong> R$ {item.valoresRecompe}</div>
+                    <div><strong>RECOMPE Apurado:</strong> R$ {item.valoresRecompe}</div>
+                    <div><strong>RECOMPE Recebido:</strong> R$ {item.recompeRecebido}</div>
                     <div><strong>ISSQN:</strong> R$ {item.issqn}</div>
                     <div><strong>Despesas:</strong> R$ {item.totalDespesas}</div>
                   </div>
