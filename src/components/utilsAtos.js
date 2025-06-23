@@ -80,7 +80,7 @@ export function extrairDadosAntigo(texto) {
 export function extrairDadosNovo(texto) {
   const textoLimpo = texto.replace(/\s{2,}/g, ' ').trim();
   console.log('Texto limpo (início):', textoLimpo.slice(0, 500));
-  const regex = /(\d+)(\d{4})R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+) - (.*?)(?=\d{5}R\$|$)/g;
+  const regex = /(\d+)(\d{4})R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+) - (.*?)(?=\d+\d{4}R\$|$)/g;
   const atos = [];
   const testeMatch = regex.exec(textoLimpo);
   let match;
