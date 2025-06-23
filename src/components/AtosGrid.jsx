@@ -6,7 +6,7 @@ const inputStyleValor = { width: '110px' };
 const labelStyle = { fontSize: '0.75rem', marginRight: '4px', display: 'inline-block', width: '30px' };
 const brStyle = { display: 'block', height: '4px' };
 
-function renderPagamentoCell(ato, campo, handleAtoChange) {
+function renderPagamentoCell(ato, campo, handleAtoChange, handleValorChange, handleValorBlur) {
   return (
     <td>
       <label style={labelStyle}>qnt.</label>
@@ -23,15 +23,16 @@ function renderPagamentoCell(ato, campo, handleAtoChange) {
       <input
         type="text"
         placeholder="R$ 0,00"
-        value={formatarMoeda(ato[campo].valor)}
-        onChange={e => handleAtoChange(ato.id, campo, 'valor', e.target.value)}
+        value={ato[campo].valorInput !== undefined ? ato[campo].valorInput : formatarMoeda(ato[campo].valor)}
+        onChange={e => handleValorChange(ato.id, campo, e.target.value)}
+        onBlur={e => handleValorBlur(ato.id, campo)}
         style={inputStyleValor}
       />
     </td>
   );
 }
 
-export default function AtosGrid({ atos, handleAtoChange }) {
+export default function AtosGrid({ atos, handleAtoChange, handleValorChange, handleValorBlur }) {
   return (
     <div className="atos-table-container">
       <table className="atos-table">
@@ -73,11 +74,11 @@ export default function AtosGrid({ atos, handleAtoChange }) {
                 <td style={{ padding: '10px 8px', minWidth: 180 }}>{ato.descricao}</td>
                 <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 500 }}>{formatarMoeda(ato.valorTotalComISS)}</td>
                 <td style={{ padding: '10px 8px', textAlign: 'right', color: valorFaltante === 0 ? '#388e3c' : '#d32f2f', fontWeight: 500 }}>{formatarMoeda(valorFaltante)}</td>
-                {renderPagamentoCell(ato, 'pagamentoDinheiro', handleAtoChange)}
-                {renderPagamentoCell(ato, 'pagamentoCartao', handleAtoChange)}
-                {renderPagamentoCell(ato, 'pagamentoPix', handleAtoChange)}
-                {renderPagamentoCell(ato, 'pagamentoCRC', handleAtoChange)}
-                {renderPagamentoCell(ato, 'depositoPrevio', handleAtoChange)}
+                {renderPagamentoCell(ato, 'pagamentoDinheiro', handleAtoChange, handleValorChange, handleValorBlur)}
+                {renderPagamentoCell(ato, 'pagamentoCartao', handleAtoChange, handleValorChange, handleValorBlur)}
+                {renderPagamentoCell(ato, 'pagamentoPix', handleAtoChange, handleValorChange, handleValorBlur)}
+                {renderPagamentoCell(ato, 'pagamentoCRC', handleAtoChange, handleValorChange, handleValorBlur)}
+                {renderPagamentoCell(ato, 'depositoPrevio', handleAtoChange, handleValorChange, handleValorBlur)}
                 <td>
                   <textarea
                     value={ato.observacoes}

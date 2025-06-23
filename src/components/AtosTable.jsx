@@ -46,6 +46,44 @@ useEffect(() => {
     return valorInicialCaixa + totalDinheiro - saidasCaixa - depositosCaixa;
   }, [valorInicialCaixa, depositosCaixa, saidasCaixa, atosComISS]);
 
+const handleValorChange = (id, campo, valorInput) => {
+  setAtos(prevAtos =>
+    prevAtos.map(ato => {
+      if (ato.id === id) {
+        return {
+          ...ato,
+          [campo]: {
+            ...ato[campo],
+            valorInput,
+          },
+        };
+      }
+      return ato;
+    })
+  );
+};
+
+const handleValorBlur = (id, campo) => {
+  setAtos(prevAtos =>
+    prevAtos.map(ato => {
+      if (ato.id === id) {
+        const valorStr = ato[campo].valorInput ?? '';
+        const valorNum = valorStr === '' ? 0 : moedaParaNumero(valorStr);
+        return {
+          ...ato,
+          [campo]: {
+            ...ato[campo],
+            valor: valorNum,
+            valorManual: true,
+            valorInput: undefined,
+          },
+        };
+      }
+      return ato;
+    })
+  );
+};
+
 const handleAtoChange = (id, campo, subcampo, valor) => {
   setAtos(prevAtos =>
     prevAtos.map(ato => {
@@ -55,7 +93,7 @@ const handleAtoChange = (id, campo, subcampo, valor) => {
           return { ...ato, observacoes: valor };
         }
 
-        // Atualiza campos que são objetos com quantidade e valor (formas de pagamento)
+        // Atualiza somente quantidade das formas de pagamento aqui
         if (
           ['pagamentoDinheiro', 'pagamentoCartao', 'pagamentoPix', 'pagamentoCRC', 'depositoPrevio'].includes(campo)
         ) {
@@ -66,13 +104,8 @@ const handleAtoChange = (id, campo, subcampo, valor) => {
               [campo]: { ...ato[campo], quantidade: quantidadeNum },
             };
           }
-          if (subcampo === 'valor') {
-            const valorNum = moedaParaNumero(valor);
-            return {
-              ...ato,
-              [campo]: { ...ato[campo], valor: valorNum, valorManual: true },
-            };
-          }
+          // NÃO trate subcampo 'valor' aqui para evitar reset do input
+          return ato;
         }
 
         // Caso tenha outros campos com estrutura similar, trate aqui...
