@@ -88,6 +88,7 @@ function preprocessarTexto(texto) {
   textoProcessado = textoProcessado.replace(/\s{2,}/g, ' ');
   return textoProcessado;
 }
+
 export function extrairDadosNovo(texto) {
   const textoProcessado = preprocessarTexto(texto);
   console.log('Texto processado (início):', textoProcessado.slice(0, 500));
