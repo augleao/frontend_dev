@@ -54,11 +54,11 @@ export function extrairDadosAntigo(texto) {
         codigo,
         descricao,
         valorTotal,
-        pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
-        pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
-        pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
-        pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
-        depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
+        pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
+        pagamentoPix: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
+        pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
+        depositoPrevio: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
         observacoes: '',
       });
       i = j;
@@ -108,11 +108,11 @@ export function extrairDadosNovo(texto) {
       tfj: parseFloat(match[5].replace(/\./g, '').replace(',', '.')),
       valorTotal: parseFloat(match[6].replace(/\./g, '').replace(',', '.')),
       descricao: match[7].trim(),
-      pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
-      pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
-      pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
-      pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
-      depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
+      pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
+      pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
+      pagamentoPix: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
+      pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
+      depositoPrevio: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
       observacoes: '',
     });
   }
