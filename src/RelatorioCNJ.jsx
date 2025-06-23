@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 //import * as pdfjsLib from 'pdfjs-dist';
 
 // Desabilitar worker para evitar problemas de carregamento
-pdfjsLib.GlobalWorkerOptions.workerSrc = false;
+//pdfjsLib.GlobalWorkerOptions.workerSrc = false;
 
 function RelatorioCNJ() {
   const navigate = useNavigate();
@@ -247,7 +247,7 @@ Data de Geração: ${new Date().toLocaleDateString('pt-BR')}
           )}
 
           <button
-            onClick={processarArquivos}
+            onClick={enviarArquivosParaBackend}
             disabled={arquivos.length !== 6 || processando}
             style={{
               background: arquivos.length === 6 && !processando ? '#27ae60' : '#95a5a6',
