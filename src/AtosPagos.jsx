@@ -514,14 +514,13 @@ function AtosPagos() {
   const [saidaValor, setSaidaValor] = useState('');
   const [saidaObs, setSaidaObs] = useState('');
 
-// Função para formatar valor de input para número (ex: "R$ 1.234,56" -> 1234.56)
-  const parseValorMoeda = (valorStr) => {
-    if (!valorStr) return 0;
-    // Remove tudo que não é número ou vírgula/ponto
-    const numStr = valorStr.replace(/[^\d,.-]/g, '').replace(',', '.');
-    const num = parseFloat(numStr);
-    return isNaN(num) ? 0 : num;
-  };
+  function parseMoeda(valor) {
+    // Remove tudo que não for número ou vírgula
+    valor = valor.replace(/[^\d,]/g, '');
+    // Troca vírgula por ponto para parseFloat
+    valor = valor.replace(',', '.');
+    return parseFloat(valor) || 0;
+  }
 
   // Função para adicionar entrada no caixa
   const adicionarEntrada = async () => {
