@@ -913,6 +913,14 @@ function AtosPagos() {
     }
     carregarAtosPorData();
   }, [dataSelecionada]);
+   
+  useEffect(() => {
+  const totalEntradas = atos
+    .filter(ato => ato.codigo === '0003')
+    .reduce((acc, ato) => acc + (parseFloat(ato.valor_unitario) || 0), 0);
+  setDepositosCaixa(totalEntradas);
+}, [atos]);
+
 
   // useEffect para buscar sugestões com debounce
   useEffect(() => {
