@@ -88,7 +88,7 @@ function HeaderCaixa({ nomeUsuario, dataSelecionada, handleDataChange, azulFundo
   );
 }
 
-function ResumoCaixa({ azulFundo, valorInicialCaixa, valorFinalCaixa }) {
+function ResumoCaixa({ azulFundo, valorInicialCaixa, valorFinalCaixa, ISS }) {
   return (
     <div
       style={{
@@ -113,7 +113,7 @@ function ResumoCaixa({ azulFundo, valorInicialCaixa, valorFinalCaixa }) {
       >
         📊 Resumo do Caixa
       </h2>
-      <CaixaInputs valorInicialCaixa={valorInicialCaixa} valorFinalCaixa={valorFinalCaixa} />
+      <CaixaInputs valorInicialCaixa={valorInicialCaixa} valorFinalCaixa={valorFinalCaixa} ISS={ISS} />
     </div>
   );
 }
@@ -1067,6 +1067,7 @@ function AtosPagos() {
         azulFundo={azulFundo}
         valorInicialCaixa={valorInicialCaixa}
         valorFinalCaixa={valorFinalCaixa}
+        ISS={ISS}
       />
 
       {/* GRID PRINCIPAL */}
