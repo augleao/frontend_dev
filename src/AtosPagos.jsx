@@ -887,11 +887,11 @@ function AtosPagos() {
   }, [dataSelecionada]);
 
   // useEffect para carregar atos por data
-  async function carregarAtosPorData() {
+  async function carregarAtosPorData(data) {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${dataSelecionada}`,
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${data}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -913,7 +913,7 @@ function AtosPagos() {
   }
 
   useEffect(() => {
-    carregarAtosPorData();
+    carregarAtosPorData(dataSelecionada);
   }, [dataSelecionada]);
    
   useEffect(() => {
