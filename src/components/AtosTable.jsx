@@ -199,132 +199,124 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
 
   // --- LAYOUT AJUSTADO PARA NÃO ULTRAPASSAR O PAI ---
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      fontFamily: 'Arial, sans-serif'
+    <main style={{
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '60px 0',
+      background: 'rgba(255,0,0,0.08)' // VERMELHO CLARO
     }}>
-      {/* Container principal com fundo gradiente (ROXO) */}
+      {/* Área centralizada e limitada em largura */}
 
-      <main style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '60px 0',
-        background: 'rgba(255,0,0,0.08)' // VERMELHO CLARO
+      <div style={{
+        background: 'rgba(0,255,0,0.15)', // VERDE CLARO
+        backdropFilter: 'blur(10px)',
+        borderRadius: '24px',
+        padding: '48px 0',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        width: '100%',
+        boxSizing: 'border-box'
       }}>
-        {/* Área centralizada e limitada em largura */}
+        {/* Bloco principal com efeito glassmorphism */}
+
+        <h2 style={{
+          fontSize: '32px',
+          fontWeight: '700',
+          color: 'white',
+          textAlign: 'center',
+          margin: '0 0 32px 0',
+          textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+        }}>
+          Atos Extraídos
+        </h2>
+        {/* Título da seção, centralizado e destacado */}
 
         <div style={{
-          background: 'rgba(0,255,0,0.15)', // VERDE CLARO
-          backdropFilter: 'blur(10px)',
-          borderRadius: '24px',
-          padding: '48px 0',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
+          marginBottom: 32,
+          padding: '32px 0',
           width: '100%',
+          boxSizing: 'border-box',
+          background: 'rgba(0,0,255,0.10)' // AZUL CLARO
+        }}>
+          <CaixaInfo
+            responsavel={responsavel}
+            setResponsavel={setResponsavel}
+            ISS={ISS}
+            setISS={setISS}
+            valorInicialCaixa={valorInicialCaixa}
+            setValorInicialCaixa={setValorInicialCaixa}
+            depositosCaixa={depositosCaixa}
+            setDepositosCaixa={setDepositosCaixa}
+            saidasCaixa={saidasCaixa}
+            setSaidasCaixa={setSaidasCaixa}
+            valorFinalCaixa={valorFinalCaixa}
+            observacoesGerais={observacoesGerais}
+            setObservacoesGerais={setObservacoesGerais}
+          />
+        </div>
+        {/* Bloco de inputs e informações do caixa, com espaçamento e padding lateral */}
+
+        <div style={{
+          marginTop: 20,
+          display: 'flex',
+          gap: 10,
+          justifyContent: 'center',
+          padding: '0 32px',
+          width: '100%',
+          boxSizing: 'border-box',
+          background: 'rgba(255,255,0,0.10)' // AMARELO CLARO
+        }}>
+          <button
+            className="atos-table-btn"
+            style={{
+              background: '#27ae60',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 28px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(39,174,96,0.15)',
+              transition: 'all 0.2s'
+            }}
+            onClick={() => { conferirCaixa(); }}
+            onMouseEnter={e => e.target.style.background = '#219150'}
+            onMouseLeave={e => e.target.style.background = '#27ae60'}
+            disabled={salvando}
+          >
+            {salvando ? 'Salvando...' : 'Gerar Relatório'}
+          </button>
+        </div>
+        {/* Botão de ação centralizado, com efeito visual ao passar o mouse */}
+
+        <MensagemStatus mensagem={mensagemSalvar} />
+        {/* Mensagem de status para feedback ao usuário */}
+
+        <div style={{
+          marginTop: 32,
+          background: 'rgba(255,0,255,0.10)', // ROSA CLARO
+          borderRadius: '16px',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.07)',
+          padding: '24px',
+          width: '100%',
+          minWidth: 0,
+          maxWidth: '100%',
+          overflowX: 'auto',
           boxSizing: 'border-box'
         }}>
-          {/* Bloco principal com efeito glassmorphism */}
-
-          <h2 style={{
-            fontSize: '32px',
-            fontWeight: '700',
-            color: 'white',
-            textAlign: 'center',
-            margin: '0 0 32px 0',
-            textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
-          }}>
-            Atos Extraídos
-          </h2>
-          {/* Título da seção, centralizado e destacado */}
-
           <div style={{
-            marginBottom: 32,
-            padding: '32px 0',
-            width: '100%',
-            boxSizing: 'border-box',
-            background: 'rgba(0,0,255,0.10)' // AZUL CLARO
+            maxWidth: '1200px',
+            margin: '0 auto',
+            background: 'rgba(0,255,255,0.10)' // CIANO CLARO
           }}>
-            <CaixaInfo
-              responsavel={responsavel}
-              setResponsavel={setResponsavel}
-              ISS={ISS}
-              setISS={setISS}
-              valorInicialCaixa={valorInicialCaixa}
-              setValorInicialCaixa={setValorInicialCaixa}
-              depositosCaixa={depositosCaixa}
-              setDepositosCaixa={setDepositosCaixa}
-              saidasCaixa={saidasCaixa}
-              setSaidasCaixa={setSaidasCaixa}
-              valorFinalCaixa={valorFinalCaixa}
-              observacoesGerais={observacoesGerais}
-              setObservacoesGerais={setObservacoesGerais}
+            <AtosGrid
+              atos={atosComISS}
+              handleAtoChange={handleAtoChange}
             />
           </div>
-          {/* Bloco de inputs e informações do caixa, com espaçamento e padding lateral */}
-
-          <div style={{
-            marginTop: 20,
-            display: 'flex',
-            gap: 10,
-            justifyContent: 'center',
-            padding: '0 32px',
-            width: '100%',
-            boxSizing: 'border-box',
-            background: 'rgba(255,255,0,0.10)' // AMARELO CLARO
-          }}>
-            <button
-              className="atos-table-btn"
-              style={{
-                background: '#27ae60',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '12px 28px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(39,174,96,0.15)',
-                transition: 'all 0.2s'
-              }}
-              onClick={() => { conferirCaixa(); }}
-              onMouseEnter={e => e.target.style.background = '#219150'}
-              onMouseLeave={e => e.target.style.background = '#27ae60'}
-              disabled={salvando}
-            >
-              {salvando ? 'Salvando...' : 'Gerar Relatório'}
-            </button>
-          </div>
-          {/* Botão de ação centralizado, com efeito visual ao passar o mouse */}
-
-          <MensagemStatus mensagem={mensagemSalvar} />
-          {/* Mensagem de status para feedback ao usuário */}
-
-          <div style={{
-            marginTop: 32,
-            background: 'rgba(255,0,255,0.10)', // ROSA CLARO
-            borderRadius: '16px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.07)',
-            padding: '24px',
-            width: '100%',
-            minWidth: 0,
-            maxWidth: '100%',
-            overflowX: 'auto',
-            boxSizing: 'border-box'
-          }}>
-            <div style={{
-              maxWidth: '1200px',
-              margin: '0 auto',
-              background: 'rgba(0,255,255,0.10)' // CIANO CLARO
-            }}>
-              <AtosGrid
-                atos={atosComISS}
-                handleAtoChange={handleAtoChange}
-              />
-            </div>
-          </div>
-          {/* Tabela/grid dos atos extraídos, com fundo branco, bordas arredondadas e rolagem horizontal se necessário */}
         </div>
-      </main>
-    </div>
+        {/* Tabela/grid dos atos extraídos, com fundo branco, bordas arredondadas e rolagem horizontal se necessário */}
+      </div>
+    </main>
   );
 }
