@@ -20,14 +20,11 @@ function renderPagamentoCell(ato, campo, handleAtoChange, handleValorChange, han
       />
       <br style={brStyle} />
       <label style={labelStyle}>valor</label>
-      <input
-        type="text"
-        placeholder="R$ 0,00"
-        value={ato[campo]?.valorInput !== undefined ? ato[campo].valorInput : formatarMoeda(ato[campo]?.valor ?? 0)}
-        onChange={e => handleValorChange(ato.id, campo, e.target.value)}
-        onBlur={() => handleValorBlur(ato.id, campo)} // sem passar o evento, só id e campo
-        style={inputStyleValor}
-      />
+<input
+  type="text"
+  value={atos[index].valor || ''}
+  onChange={e => handleAtoChange(index, 'valor', e.target.value)}
+/>
     </td>
   );
 }
