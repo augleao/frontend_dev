@@ -46,7 +46,8 @@ function Conciliacao() {
   return (
     <div
       style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        //background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: '#667eea',
         borderRadius: '24px',
         padding: '32px 24px',
         margin: '32px 0 24px 0',
