@@ -1,19 +1,26 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { formatarMoeda } from './utilsAtos';
 
 export default function CaixaInfo({
   responsavel, setResponsavel,
-  ISS, g,
+  ISS: propISS, setISS: setPropISS,
   valorInicialCaixa, setValorInicialCaixa,
   depositosCaixa, setDepositosCaixa,
   saidasCaixa, setSaidasCaixa,
   observacoesGerais, setObservacoesGerais,
   atos
 }) {
+  const [ISS, setISS] = useState(propISS);
+
   // Fixar ISS em 3
   useEffect(() => {
     setISS(3);
-  }, [setISS]);
+  }, []);
+
+  // Sincronizar ISS com a prop
+  useEffect(() => {
+    setPropISS(ISS);
+  }, [ISS, setPropISS]);
 
   // Estilo para campos somente leitura (informação)
   const infoStyle = {
