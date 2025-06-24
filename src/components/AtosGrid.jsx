@@ -1,3 +1,13 @@
+import React from 'react';
+import { formatarMoeda } from './utilsAtos';
+
+const inputStyleQuantidade = { width: '50px', marginRight: '4px' };
+const inputStyleValor = { width: '110px' };
+const labelStyle = { fontSize: '0.75rem', marginRight: '4px', display: 'inline-block', width: '30px' };
+const brStyle = { display: 'block', height: '4px' };
+
+// ... resto do código do AtosGrid
+
 function renderPagamentoCell(ato, campo, handleAtoChange) {
   return (
     <td>
