@@ -104,36 +104,40 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
     );
   };
 
-  const handleAtoChange = (id, campo, subcampo, valor) => {
-    console.log('handleAtoChange chamado:', { id, campo, subcampo, valor });
-    setAtos(prevAtos =>
-      prevAtos.map(ato => {
-        if (ato.id === id) {
-          if (campo === 'observacoes') {
-            const novoAto = { ...ato, observacoes: valor };
-            console.log('Novo ato após atualizar observacoes:', novoAto);
-            return novoAto;
+const handleAtoChange = (id, campo, subcampo, valor) => {
+  setAtos(prevAtos =>
+    prevAtos.map(ato => {
+      if (ato.id === id) {
+        // Atualiza observações (campo simples)
+        if (campo === 'observacoes') {
+          return { ...ato, observacoes: valor };
+        }
+
+        // Atualiza somente quantidade das formas de pagamento aqui
+        if (
+          ['pagamentoDinheiro', 'pagamentoCartao', 'pagamentoPix', 'pagamentoCRC', 'depositoPrevio'].includes(campo)
+        ) {
+          if (subcampo === 'quantidade') {
+            const quantidadeNum = parseInt(valor) || 0;
+            return {
+              ...ato,
+              [campo]: { ...ato[campo], quantidade: quantidadeNum },
+            };
           }
-          if (
-            ['pagamentoDinheiro', 'pagamentoCartao', 'pagamentoPix', 'pagamentoCRC', 'depositoPrevio'].includes(campo)
-          ) {
-            if (subcampo === 'quantidade') {
-              const quantidadeNum = parseInt(valor) || 0;
-              const novoAto = {
-                ...ato,
-                [campo]: { ...ato[campo], quantidade: quantidadeNum },
-              };
-              console.log('Novo ato após atualizar quantidade:', novoAto);
-              return novoAto;
-            }
-            return ato;
-          }
+          // NÃO trate subcampo 'valor' aqui para evitar reset do input
           return ato;
         }
+
+        // Caso tenha outros campos com estrutura similar, trate aqui...
+
+        // Se não for nenhum dos casos acima, retorna ato sem alteração
         return ato;
-      })
-    );
-  };
+      }
+      return ato;
+    })
+  );
+};
+
 
   const salvarRelatorio = async () => {
     setSalvando(true);
