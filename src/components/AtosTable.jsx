@@ -197,81 +197,27 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
 
   if (!atos.length) return null;
 
-  // --- LAYOUT INSPIRADO NO HOME2.JSX ---
+  // --- LAYOUT AJUSTADO ---
   return (
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       fontFamily: 'Arial, sans-serif'
     }}>
-      {/* Header */}
-      <header style={{
-        background: 'rgba(44, 62, 80, 0.95)',
-        backdropFilter: 'blur(10px)',
-        padding: '16px 32px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-      }}>
-        <h1 style={{
-          color: 'white',
-          margin: 0,
-          fontSize: '24px',
-          fontWeight: '600',
-          letterSpacing: '0.5px'
-        }}>
-          Sistema Auxiliar do RCPN
-        </h1>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px'
-        }}>
-          <span style={{
-            color: 'white',
-            fontSize: '14px',
-            opacity: 0.9
-          }}>
-            👤 {usuario.nome || 'Usuário'}
-          </span>
-          <button
-            onClick={() => {
-              localStorage.removeItem('token');
-              localStorage.removeItem('usuario');
-              window.location.href = '/login';
-            }}
-            style={{
-              background: 'rgba(231, 76, 60, 0.8)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '8px 16px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={e => e.target.style.background = 'rgba(231, 76, 60, 1)'}
-            onMouseLeave={e => e.target.style.background = 'rgba(231, 76, 60, 0.8)'}
-          >
-            Sair
-          </button>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '60px 32px'
+        width: '100vw',
+        margin: 0,
+        padding: 0
       }}>
         <div style={{
           background: 'rgba(255, 255, 255, 0.1)',
           backdropFilter: 'blur(10px)',
-          borderRadius: '24px',
-          padding: '48px 0', // Remove padding lateral aqui
-          border: '1px solid rgba(255, 255, 255, 0.2)'
+          borderRadius: '0px',
+          padding: '48px 0 0 0',
+          border: 'none',
+          width: '100vw',
+          margin: 0
         }}>
           <h2 style={{
             fontSize: '32px',
@@ -284,7 +230,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
             Atos Extraídos
           </h2>
           {/* Bloco de informações do caixa */}
-          <div style={{ marginBottom: 32, padding: '0 32px' }}>
+          <div style={{ marginBottom: 32, padding: '0 32px', width: '100%' }}>
             <CaixaInfo
               responsavel={responsavel}
               setResponsavel={setResponsavel}
@@ -302,7 +248,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
             />
           </div>
 
-          <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'center', padding: '0 32px' }}>
+          <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'center', padding: '0 32px', width: '100%' }}>
             <button
               className="atos-table-btn"
               style={{
