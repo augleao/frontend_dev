@@ -206,7 +206,6 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       style={{
         background: azulFundo,
         borderRadius: 0,
-        padding: '48px 0',
         border: 'none',
         width: '100%',
         boxSizing: 'border-box',
