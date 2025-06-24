@@ -7,9 +7,9 @@ import config from '../config';
 import { extrairDadosDoTexto, calcularValorTotalComISS, moedaParaNumero, formatarMoeda } from './utilsAtos';
 
 export default function AtosTable({ texto, usuario: usuarioProp }) {
-  const usuario = useMemo(() => {
-    return usuarioProp || JSON.parse(localStorage.getItem('usuario') || '{}');
-  }, [usuarioProp]);
+  // Busca o usuário do localStorage caso não venha como prop
+  const usuario = usuarioProp || JSON.parse(localStorage.getItem('usuario') || '{}');
+
   const [atos, setAtos] = useState([]);
   const [dataRelatorio, setDataRelatorio] = useState(null);
   const [responsavel, setResponsavel] = useState('');
@@ -21,28 +21,13 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
   const [mensagemSalvar, setMensagemSalvar] = useState('');
   const [observacoesGerais, setObservacoesGerais] = useState('');
 
-  // Inicializa atos com valorInput vazio para cada forma de pagamento
   useEffect(() => {
     if (texto) {
       const { dataRelatorio, atos } = extrairDadosDoTexto(texto);
-      console.log('Dados extraídos do texto:', { dataRelatorio, atos });
-      const atosComValorInput = atos.map(ato => ({
-        ...ato,
-        pagamentoDinheiro: { ...ato.pagamentoDinheiro, valorInput: '' },
-        pagamentoCartao: { ...ato.pagamentoCartao, valorInput: '' },
-        pagamentoPix: { ...ato.pagamentoPix, valorInput: '' },
-        pagamentoCRC: { ...ato.pagamentoCRC, valorInput: '' },
-        depositoPrevio: { ...ato.depositoPrevio, valorInput: '' },
-      }));
       setDataRelatorio(dataRelatorio);
-      setAtos(atosComValorInput);
-      console.log('Estado atos inicializado com valorInput:', atosComValorInput);
+      setAtos(atos);
     }
-    if (usuario && usuario.nome) {
-      setResponsavel(usuario.nome);
-      console.log('Responsável definido:', usuario.nome);
-    }
-  }, [texto, usuario]);
+  }, [texto]);
 
   const atosComISS = useMemo(() => {
     const resultado = atos.map(ato => ({
@@ -54,114 +39,81 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
   }, [atos, ISS]);
 
   const valorFinalCaixa = useMemo(() => {
-    const totalDinheiro = atosComISS.reduce((acc, ato) => acc + ato.pagamentoDinheiro.valor, 0);
-    const valorFinal = valorInicialCaixa + totalDinheiro - saidasCaixa - depositosCaixa;
-    console.log('valorFinalCaixa calculado:', valorFinal);
-    return valorFinal;
+    const totalDinheiro = atosComISS.reduce((acc, ato) => {
+      const valorDinheiro = ato.pagamentoDinheiro.valor || 0;
+      console.log(`Ato ${ato.id}: pagamentoDinheiro.valor = ${valorDinheiro}`);
+      return acc + valorDinheiro;
+    }, 0);
+    
+    console.log('Valores para cálculo do caixa:', {
+      valorInicialCaixa,
+      totalDinheiro,
+      depositosCaixa,
+      saidasCaixa
+    });
+    
+    const resultado = valorInicialCaixa + totalDinheiro + depositosCaixa - saidasCaixa;
+    console.log('valorFinalCaixa calculado:', resultado);
+    return resultado;
   }, [valorInicialCaixa, depositosCaixa, saidasCaixa, atosComISS]);
 
-  const handleValorChange = (id, campo, valorInput) => {
-    console.log('handleValorChange chamado:', { id, campo, valorInput });
+  const handleAtoChange = (id, campo, subcampo, valor) => {
+    console.log('handleAtoChange chamado:', { id, campo, subcampo, valor });
+    
     setAtos(prevAtos =>
       prevAtos.map(ato => {
         if (ato.id === id) {
-          const novoAto = {
-            ...ato,
-            [campo]: {
-              ...ato[campo],
-              valorInput,
-            },
-          };
-          console.log('Novo ato após handleValorChange:', novoAto);
-          return novoAto;
-        }
-        return ato;
-      })
-    );
-  };
-
-  const handleValorBlur = (id, campo) => {
-    console.log('handleValorBlur chamado:', { id, campo });
-    setAtos(prevAtos =>
-      prevAtos.map(ato => {
-        if (ato.id === id) {
-          const valorStr = ato[campo].valorInput ?? '';
-          const valorNum = valorStr === '' ? 0 : moedaParaNumero(valorStr);
-          const novoAto = {
-            ...ato,
-            [campo]: {
-              ...ato[campo],
-              valor: valorNum,
-              valorManual: true,
-              valorInput: undefined,
-            },
-          };
-          console.log('Novo ato após handleValorBlur:', novoAto);
-          return novoAto;
-        }
-        return ato;
-      })
-    );
-  };
-
-const handleAtoChange = (id, campo, subcampo, valor) => {
-  setAtos(prevAtos =>
-    prevAtos.map(ato => {
-      if (ato.id === id) {
-        // Atualiza observações (campo simples)
-        if (campo === 'observacoes') {
-          return { ...ato, observacoes: valor };
-        }
-
-        // Atualiza somente quantidade das formas de pagamento aqui
-        if (
-          ['pagamentoDinheiro', 'pagamentoCartao', 'pagamentoPix', 'pagamentoCRC', 'depositoPrevio'].includes(campo)
-        ) {
+          console.log('Ato encontrado para edição:', ato);
+          
+          if (campo === 'observacoes') {
+            return { ...ato, observacoes: valor };
+          }
+          
           if (subcampo === 'quantidade') {
             const quantidadeNum = parseInt(valor) || 0;
-            return {
+            const valorUnitario = ato.quantidade > 0 ? calcularValorTotalComISS(ato.valorTotal, moedaParaNumero(ISS)) / ato.quantidade : 0;
+            const valorAtual = ato[campo].valorManual ? ato[campo].valor : parseFloat((quantidadeNum * valorUnitario).toFixed(2));
+            
+            const atoAtualizado = {
               ...ato,
-              [campo]: { ...ato[campo], quantidade: quantidadeNum },
+              [campo]: { quantidade: quantidadeNum, valor: valorAtual, valorManual: false },
             };
+            console.log('Ato atualizado (quantidade):', atoAtualizado);
+            return atoAtualizado;
           }
-          // NÃO trate subcampo 'valor' aqui para evitar reset do input
-          return ato;
+          
+          if (subcampo === 'valor') {
+            const valorNum = moedaParaNumero(valor);
+            console.log('Convertendo valor:', { valorOriginal: valor, valorConvertido: valorNum });
+            
+            const atoAtualizado = {
+              ...ato,
+              [campo]: { ...ato[campo], valor: valorNum, valorManual: true },
+            };
+            console.log('Ato atualizado (valor):', atoAtualizado);
+            return atoAtualizado;
+          }
         }
-
-        // Atualiza quantidade do ato (campo simples)
-        if (campo === 'quantidade') {
-          const novaQuantidade = parseInt(valor) || 0;
-          const valorUnitario = ato.quantidade > 0 ? ato.valorTotalComISS / ato.quantidade : 0;
-          const novoValor = parseFloat((valorUnitario * novaQuantidade).toFixed(2));
-          return {
-            ...ato,
-            quantidade: novaQuantidade,
-            valor: novoValor, // atualiza o campo valor, não o valorTotalComISS
-          };
-        }
-
-        // Caso tenha outros campos com estrutura similar, trate aqui...
-
-        // Se não for nenhum dos casos acima, retorna ato sem alteração
         return ato;
-      }
-      return ato;
-    })
-  );
-};
-
+      })
+    );
+  };
 
   const salvarRelatorio = async () => {
+    console.log('Tentando salvar relatório...');
     setSalvando(true);
     setMensagemSalvar('');
     try {
+      // Verificação defensiva do usuário
       if (!usuario || !usuario.serventia || !usuario.cargo) {
+        console.error('Usuário não definido ou incompleto:', usuario);
         setMensagemSalvar('Usuário não encontrado. Faça login novamente.');
         setSalvando(false);
         return;
       }
 
       const token = localStorage.getItem('token');
+      console.log('Token:', token);
 
       const atosDetalhados = atosComISS.map(ato => {
         const somaPagamentos = parseFloat((
@@ -206,6 +158,9 @@ const handleAtoChange = (id, campo, subcampo, valor) => {
         atos: atosDetalhados
       };
 
+      console.log('Payload:', payload);
+      console.log('URL da requisição:', `${config.apiURL}/salvar-relatorio`);
+
       const response = await fetch(`${config.apiURL}/salvar-relatorio`, {
         method: 'POST',
         headers: {
@@ -215,7 +170,9 @@ const handleAtoChange = (id, campo, subcampo, valor) => {
         body: JSON.stringify({ dadosRelatorio: payload })
       });
 
+      console.log('Resposta salvar-relatorio:', response);
       const data = await response.json();
+      console.log('Dados da resposta:', data);
 
       if (response.ok) {
         setMensagemSalvar('Relatório salvo com sucesso!');
@@ -231,6 +188,7 @@ const handleAtoChange = (id, campo, subcampo, valor) => {
   };
 
   const conferirCaixa = async () => {
+    console.log('conferirCaixa chamado');
     let totalValorPago = 0;
     atosComISS.forEach(ato => {
       totalValorPago += ato.pagamentoDinheiro.valor +
@@ -252,6 +210,7 @@ const handleAtoChange = (id, campo, subcampo, valor) => {
         ISS: moedaParaNumero(ISS),
         observacoesGerais,
       });
+      console.log('salvarRelatorio foi chamado');
       await salvarRelatorio();
     } else {
       alert(
@@ -281,7 +240,7 @@ const handleAtoChange = (id, campo, subcampo, valor) => {
       />
 
       <div style={{ marginTop: 20, display: 'flex', gap: 10 }}>
-        <button className="atos-table-btn" onClick={() => conferirCaixa()}>
+        <button className="atos-table-btn" onClick={() => { console.log('Botão clicado!'); conferirCaixa(); }}>
           Gerar Relatório
         </button>
       </div>
@@ -291,8 +250,6 @@ const handleAtoChange = (id, campo, subcampo, valor) => {
       <AtosGrid
         atos={atosComISS}
         handleAtoChange={handleAtoChange}
-        handleValorChange={handleValorChange}
-        handleValorBlur={handleValorBlur}
       />
     </div>
   );
