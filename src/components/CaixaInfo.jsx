@@ -1,15 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { formatarMoeda } from './utilsAtos';
 
 export default function CaixaInfo({
   responsavel, setResponsavel,
   ISS, setISS,
   valorInicialCaixa, setValorInicialCaixa,
-  depositosCaixa, setDepositosCaixa,
-  saidasCaixa, setSaidasCaixa,
   observacoesGerais, setObservacoesGerais,
   valorFinalCaixa
 }) {
+  const [depositosCaixa, setDepositosCaixa] = useState(0);
+  const [saidasCaixa, setSaidasCaixa] = useState(0);
+
   // Estilo para campos somente leitura (informação)
   const infoStyle = {
     width: '100%',
@@ -67,20 +68,22 @@ export default function CaixaInfo({
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
         <label style={{ fontSize: 13, color: '#555' }}>Depósitos do Caixa:</label>
         <input
-          type="text"
-          value={formatarMoeda(depositosCaixa)}
-          onChange={e => setDepositosCaixa(Number(e.target.value.replace(/\D/g, '')))}
-          placeholder="R$ 0,00"
+          type="number"
+          step="0.01"
+          value={depositosCaixa}
+          onChange={e => setDepositosCaixa(Number(e.target.value))}
+          placeholder="0.00"
           style={inputStyle}
         />
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
         <label style={{ fontSize: 13, color: '#555' }}>Saídas do Caixa:</label>
         <input
-          type="text"
-          value={formatarMoeda(saidasCaixa)}
-          onChange={e => setSaidasCaixa(Number(e.target.value.replace(/\D/g, '')))}
-          placeholder="R$ 0,00"
+          type="number"
+          step="0.01"
+          value={saidasCaixa}
+          onChange={e => setSaidasCaixa(Number(e.target.value))}
+          placeholder="0.00"
           style={inputStyle}
         />
       </div>
