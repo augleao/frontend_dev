@@ -128,6 +128,18 @@ const handleAtoChange = (id, campo, subcampo, valor) => {
           return ato;
         }
 
+        // Atualiza quantidade do ato (campo simples)
+        if (campo === 'quantidade') {
+          const novaQuantidade = parseInt(valor) || 0;
+          const valorUnitario = ato.quantidade > 0 ? ato.valorTotalComISS / ato.quantidade : 0;
+          const novoValor = parseFloat((valorUnitario * novaQuantidade).toFixed(2));
+          return {
+            ...ato,
+            quantidade: novaQuantidade,
+            valor: novoValor, // atualiza o campo valor, não o valorTotalComISS
+          };
+        }
+
         // Caso tenha outros campos com estrutura similar, trate aqui...
 
         // Se não for nenhum dos casos acima, retorna ato sem alteração
