@@ -44,19 +44,19 @@ export default function CaixaInfo({
   return (
     <div className="atos-table-caixa-container" style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
       <div style={{ flex: '1 1 140px', minWidth: 120, maxWidth: 200 }}>
-        <label style={{ fontSize: 13, color: '#555' }}>Responsável:</label>
+        <label style={{ fontSize: 18, color: '#fff' }}>Responsável:</label>
         <div style={infoStyle}>{responsavel}</div>
       </div>
       <div style={{ flex: '1 1 80px', minWidth: 80, maxWidth: 120 }}>
-        <label style={{ fontSize: 13, color: '#555' }}>ISS (%):</label>
+        <label style={{ fontSize: 18, color: '#fff' }}>ISS (%):</label>
         <div style={infoStyle}>{ISS}</div>
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 13, color: '#555' }}>Valor Final do Caixa:</label>
+        <label style={{ fontSize: 18, color: '#fff' }}>Valor Final do Caixa:</label>
         <div style={infoStyle}>{formatarMoeda(valorFinalCaixa)}</div>
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 13, color: '#555' }}>Valor Inicial do Caixa:</label>
+        <label style={{ fontSize: 18, color: '#fff' }}>Valor Inicial do Caixa:</label>
         <input
           type="text"
           value={valorInicialCaixa}
