@@ -9,7 +9,8 @@ export default function CaixaInputs({
   saidasCaixa,
   setValorInicialCaixa,
   setDepositosCaixa,
-  setSaidasCaixa
+  setSaidasCaixa,
+  atos // <-- Adicione esta linha
 }) {
   const inputStyle = {
     width: '100%',
