@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatarMoeda } from './utilsAtos';
 
 export default function CaixaInfo({
@@ -8,6 +8,7 @@ export default function CaixaInfo({
   depositosCaixa, setDepositosCaixa,
   saidasCaixa, setSaidasCaixa,
   observacoesGerais, setObservacoesGerais,
+  atos
 }) {
   // Estilo para campos somente leitura (informação)
   const infoStyle = {
@@ -40,6 +41,14 @@ export default function CaixaInfo({
   };
 
   const valorFinalCaixa = Number(valorInicialCaixa) + Number(depositosCaixa) - Number(saidasCaixa);
+
+  // Exemplo: recalculando sempre que atos mudam
+  useEffect(() => {
+    const totalDinheiro = atos
+      .filter(ato => ato.formaPagamento === 'Dinheiro')
+      .reduce((soma, ato) => soma + Number(ato.valor), 0);
+    setDepositosCaixa(totalDinheiro);
+  }, [atos]);
 
   return (
     <div className="atos-table-caixa-container" style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
