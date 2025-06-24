@@ -3,7 +3,7 @@ import { formatarMoeda } from './utilsAtos';
 
 export default function CaixaInfo({
   responsavel, setResponsavel,
-  ISS, setISS,
+  ISS, g,
   valorInicialCaixa, setValorInicialCaixa,
   depositosCaixa, setDepositosCaixa,
   saidasCaixa, setSaidasCaixa,
@@ -68,8 +68,8 @@ export default function CaixaInfo({
         <div style={infoStyle}>{ISS}</div>
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 15, color: '#fff' }}>Valor Final do Caixa:</label>
-        <div style={infoStyle}>{formatarMoeda(valorFinalCaixa)}</div>
+        <label style={{ fontSize: 15, color: '#fff' }}></label>
+        <div style={infoStyle}>{}</div>
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
         <label style={{ fontSize: 15, color: '#fff' }}>Valor Inicial do Caixa:</label>
