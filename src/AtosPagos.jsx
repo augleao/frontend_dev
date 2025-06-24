@@ -478,7 +478,9 @@ function AtosPagos() {
     return hoje.toISOString().slice(0, 10);
   });
 
-  const [valorInicialCaixa, setValorInicialCaixa] = useState('');
+  const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
+  const [depositosCaixa, setDepositosCaixa] = useState(0);
+  const [saidasCaixa, setSaidasCaixa] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
@@ -509,9 +511,9 @@ function AtosPagos() {
     return 0;
   });
 
-  const [entradaValor, setEntradaValor] = useState('');
+  const [entradaValor, setEntradaValor] = useState(0);
   const [entradaObs, setEntradaObs] = useState('');
-  const [saidaValor, setSaidaValor] = useState('');
+  const [saidaValor, setSaidaValor] = useState(0);
   const [saidaObs, setSaidaObs] = useState('');
 
   function parseMoeda(valor) {
