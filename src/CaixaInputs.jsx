@@ -74,7 +74,7 @@ export default function CaixaInputs({
         <div style={infoStyle}>{formatarMoeda(valorInicialCaixaProp)}</div>
       </div>
       <div>
-        <label style={labelStyle}>Depósitos do Caixa</label>
+        <label style={labelStyle}>Entradas no Caixa</label>
         <div style={infoStyle}>{formatarMoeda(depositosCaixa)}</div>
       </div>
       <div>
