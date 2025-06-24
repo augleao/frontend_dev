@@ -159,17 +159,3 @@
   width: 100%;
   height: 100%;
 }
-
-/* Exemplo no AtosPagos.jsx */
-const [ISS, setISS] = useState(() => {
-  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-  if (usuario?.serventia === 'RCPN de Campanha') return 3;
-  if (usuario?.serventia === 'RCPN de Lavras') return 0;
-  return 0;
-});
-
-<CaixaInputs
-  responsavel={responsavel}
-  ISS={ISS}
-  valorFinalCaixa={valorFinalCaixa}
-/>
