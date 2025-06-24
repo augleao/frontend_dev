@@ -522,6 +522,16 @@ function AtosPagos() {
     return parseFloat(valor) || 0;
   }
 
+  function parseValorMoeda(valor) {
+    if (typeof valor === 'number') return valor;
+    if (!valor) return 0;
+    // Remove tudo que não for número ou vírgula/ponto
+    let limpo = valor.replace(/[^\d,\.]/g, '');
+    // Troca vírgula por ponto se necessário
+    if (limpo.includes(',')) limpo = limpo.replace('.', '').replace(',', '.');
+    return parseFloat(limpo) || 0;
+  }
+
   // Função para adicionar entrada no caixa
   const adicionarEntrada = async () => {
     const valor = parseValorMoeda(entradaValor);
