@@ -37,13 +37,13 @@ function UploadForm() {
         formData,
         {
           headers: {
-            // NÃO defina 'Content-Type' manualmente, o axios faz isso para FormData!
             'Authorization': `Bearer ${token}`,
           },
         }
       );
 
-      setMessage(response.data.message);
+      // Não exiba mensagem de sucesso
+      setMessage('');
       setTextoExtraido(response.data.texto);
       setUploading(false);
     } catch (error) {
