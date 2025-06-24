@@ -10,7 +10,7 @@ function Conciliacao() {
 
   const handleUpload = (data) => {
     setData(data);
-    setUploadMsg('Upload e extração de dados do PDF concluídos');
+    //setUploadMsg('Upload e extração de dados do PDF concluídos');
   };
 
   useEffect(() => {
