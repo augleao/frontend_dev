@@ -106,16 +106,16 @@ export default function CaixaInputs({
       </div>      
       <div>
         <label style={labelStyle}>Valor Final do Caixa</label>
-        <div style={{
-          ...infoStyle,
-          backgroundColor: '#e3fcec',
-          color: '#218838',
-          fontWeight: 'bold',
-          fontSize: '17px'
-        }}>
-          {formatarMoeda(valorFinalCaixa)}
-        </div>
-      </div>
+        <input
+          type="number"
+          step="0.01"
+          value={saidasCaixa}
+          onChange={e => setSaidasCaixa(Number(e.target.value))}
+          placeholder="0.00"
+          style={inputStyle}
+        />
+        <div style={infoStyle}>{formatarMoeda(valorFinalCaixa)}</div>
+      </div>      
     </div>
   );
 }
