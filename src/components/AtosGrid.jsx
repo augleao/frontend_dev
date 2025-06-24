@@ -24,6 +24,8 @@ function renderPagamentoCell(ato, campo, handleAtoChange) {
       <label style={labelStyle}>valor</label>
       <input
         type="text"
+        step="0.01"
+        min="0"
         value={ato[campo]?.valor ?? ''}
         onChange={e => handleAtoChange(ato.id, campo, 'valor', e.target.value)}
         style={inputStyleValor}
