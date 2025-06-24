@@ -12,7 +12,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
 
   const [atos, setAtos] = useState([]);
   const [dataRelatorio, setDataRelatorio] = useState(null);
-  const [responsavel, setResponsavel] = useState('');
+  const [responsavel, setResponsavel] = useState(usuario.nome || ''); // Preenche com nome do usuário logado
   const [ISS, setISS] = useState('');
   const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
   const [depositosCaixa, setDepositosCaixa] = useState(0);
@@ -28,6 +28,11 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       setAtos(atos);
     }
   }, [texto]);
+
+  // Atualiza o responsável se o usuário mudar
+  useEffect(() => {
+    setResponsavel(usuario.nome || '');
+  }, [usuario.nome]);
 
   const atosComISS = useMemo(() => {
     const resultado = atos.map(ato => ({
@@ -116,12 +121,18 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       console.log('Token:', token);
 
       const atosDetalhados = atosComISS.map(ato => {
+        const pagamentoDinheiro = ato.pagamentoDinheiro || { quantidade: 0, valor: 0 };
+        const pagamentoCartao = ato.pagamentoCartao || { quantidade: 0, valor: 0 };
+        const pagamentoPix = ato.pagamentoPix || { quantidade: 0, valor: 0 };
+        const pagamentoCRC = ato.pagamentoCRC || { quantidade: 0, valor: 0 };
+        const depositoPrevio = ato.depositoPrevio || { quantidade: 0, valor: 0 };
+
         const somaPagamentos = parseFloat((
-          ato.pagamentoDinheiro.valor +
-          ato.pagamentoCartao.valor +
-          ato.pagamentoPix.valor +
-          ato.pagamentoCRC.valor +
-          ato.depositoPrevio.valor
+          pagamentoDinheiro.valor +
+          pagamentoCartao.valor +
+          pagamentoPix.valor +
+          pagamentoCRC.valor +
+          depositoPrevio.valor
         ).toFixed(2));
         const valorFaltante = parseFloat((ato.valorTotalComISS - somaPagamentos).toFixed(2));
         return {
@@ -130,16 +141,16 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           descricao: ato.descricao,
           valor_total: ato.valorTotalComISS,
           valor_faltante: valorFaltante,
-          dinheiro_qtd: ato.pagamentoDinheiro.quantidade,
-          dinheiro_valor: ato.pagamentoDinheiro.valor,
-          cartao_qtd: ato.pagamentoCartao.quantidade,
-          cartao_valor: ato.pagamentoCartao.valor,
-          pix_qtd: ato.pagamentoPix.quantidade,
-          pix_valor: ato.pagamentoPix.valor,
-          crc_qtd: ato.pagamentoCRC.quantidade,
-          crc_valor: ato.pagamentoCRC.valor,
-          deposito_previo_qtd: ato.depositoPrevio.quantidade,
-          deposito_previo_valor: ato.depositoPrevio.valor,
+          dinheiro_qtd: pagamentoDinheiro.quantidade,
+          dinheiro_valor: pagamentoDinheiro.valor,
+          cartao_qtd: pagamentoCartao.quantidade,
+          cartao_valor: pagamentoCartao.valor,
+          pix_qtd: pagamentoPix.quantidade,
+          pix_valor: pagamentoPix.valor,
+          crc_qtd: pagamentoCRC.quantidade,
+          crc_valor: pagamentoCRC.valor,
+          deposito_previo_qtd: depositoPrevio.quantidade,
+          deposito_previo_valor: depositoPrevio.valor,
           observacoes: ato.observacoes || ''
         };
       });
