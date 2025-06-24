@@ -523,12 +523,11 @@ function AtosPagos() {
   }
 
   function parseValorMoeda(valor) {
-    if (typeof valor === 'number') return valor;
     if (!valor) return 0;
-    // Remove tudo que não for número ou vírgula/ponto
-    let limpo = valor.replace(/[^\d,\.]/g, '');
-    // Troca vírgula por ponto se necessário
-    if (limpo.includes(',')) limpo = limpo.replace('.', '').replace(',', '.');
+    // Remove tudo que não for número ou vírgula
+    let limpo = valor.replace(/[^\d,]/g, '');
+    // Troca vírgula por ponto
+    limpo = limpo.replace(',', '.');
     return parseFloat(limpo) || 0;
   }
 
