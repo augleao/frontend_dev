@@ -5,11 +5,10 @@ export default function CaixaInfo({
   responsavel, setResponsavel,
   ISS, setISS,
   valorInicialCaixa, setValorInicialCaixa,
+  depositosCaixa, setDepositosCaixa,
+  saidasCaixa, setSaidasCaixa,
   observacoesGerais, setObservacoesGerais,
 }) {
-  const [depositosCaixa, setDepositosCaixa] = useState(0);
-  const [saidasCaixa, setSaidasCaixa] = useState(0);
-
   // Estilo para campos somente leitura (informação)
   const infoStyle = {
     width: '100%',
