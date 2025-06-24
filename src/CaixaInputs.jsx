@@ -86,8 +86,8 @@ export default function CaixaInputs({
         <div style={infoStyle}>{formatarMoeda(saidasCaixa)}</div>
       </div>
       <div>
-        <label style={{ fontWeight: '600', color: '#2c3e50' }}>Valor Final do Caixa:</label>
-        <div style={infoStyle}>{formatarMoeda(valorFinalCaixa)}</div>
+        <label style={{ fontWeight: '600', color: '#2c3e50' }}></label>
+        <div style={infoStyle}>{}</div>
       </div>
       <div>
         <label style={{ fontWeight: '600', color: '#2c3e50' }}>ISS:</label>
