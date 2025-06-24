@@ -84,8 +84,8 @@ function UploadForm() {
             color: message.toLowerCase().includes('sucesso') ? '#155724' : '#721c24',
             background: message.toLowerCase().includes('sucesso') ? '#d4edda' : '#f8d7da',
             borderRadius: 6,
-            padding: 10,
-            marginTop: 16,
+            padding: 5,
+            marginTop: 5,
           }}
         >
           {message}

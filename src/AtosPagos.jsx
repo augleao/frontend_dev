@@ -572,16 +572,16 @@ function AtosPagos() {
     <div style={{
       maxWidth: '1400px',
       margin: '0 auto',
-      padding: '20px',
+      padding: '5px',
       background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
       minHeight: '100vh',
       fontFamily: 'Arial, sans-serif'
     }}>
-      {/* Header */}
+      {/* ===================== HEADER ===================== */}
       <div style={{
         background: 'white',
         borderRadius: '12px',
-        padding: '20px',
+        padding: '5px',
         marginBottom: '20px',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
         display: 'flex',
@@ -590,6 +590,7 @@ function AtosPagos() {
         flexWrap: 'wrap',
         gap: '15px'
       }}>
+        {/* Título e usuário/data */}
         <h1 style={{ 
           margin: 0, 
           color: '#2c3e50',
@@ -604,6 +605,7 @@ function AtosPagos() {
           gap: '15px',
           flexWrap: 'wrap'
         }}>
+          {/* Usuário logado */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -625,6 +627,7 @@ function AtosPagos() {
               }}
             />
           </div>
+          {/* Seletor de data */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -635,8 +638,9 @@ function AtosPagos() {
           </div>
         </div>
       </div>
+      {/* ===================== FIM HEADER ===================== */}
 
-      {/* Resumo do Caixa */}
+      {/* ===================== RESUMO DO CAIXA ===================== */}
       <div style={{
         background: 'white',
         borderRadius: '12px',
@@ -654,21 +658,22 @@ function AtosPagos() {
         }}>
           📊 Resumo do Caixa
         </h2>
+        {/* Mostra valor inicial e final do caixa */}
         <CaixaInputs 
           valorInicialCaixa={valorInicialCaixa} 
           valorFinalCaixa={valorFinalCaixa} 
         />
       </div>
+      {/* ===================== FIM RESUMO DO CAIXA ===================== */}
 
-      {/* Layout Principal - Grid */}
+      {/* ===================== GRID PRINCIPAL ===================== */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
         gap: '20px',
         marginBottom: '20px'
       }}>
-        
-        {/* Seção de Adição de Atos */}
+        {/* ----------- ADICIONAR ATO ----------- */}
         <div style={{
           background: 'white',
           borderRadius: '12px',
@@ -685,7 +690,7 @@ function AtosPagos() {
           }}>
             ➕ Adicionar Ato
           </h3>
-          
+          {/* Busca e seleção de ato */}
           <div style={{ marginBottom: '20px' }}>
             <AtoSearch
               searchTerm={searchTerm}
@@ -695,7 +700,7 @@ function AtosPagos() {
               onSelectAto={handleSelectAto}
             />
           </div>
-
+          {/* Detalhes do ato selecionado */}
           {selectedAto && (
             <div style={{
               background: '#f8f9fa',
@@ -715,7 +720,7 @@ function AtosPagos() {
               </p>
             </div>
           )}
-
+          {/* Quantidade */}
           <div style={{ marginBottom: '20px' }}>
             <label style={{ 
               display: 'block', 
@@ -739,7 +744,7 @@ function AtosPagos() {
               }}
             />
           </div>
-
+          {/* Formas de pagamento */}
           <div style={{ marginBottom: '20px' }}>
             <FormasPagamento
               formasPagamento={formasPagamento}
@@ -750,7 +755,7 @@ function AtosPagos() {
               selectedAto={selectedAto}
             />
           </div>
-
+          {/* Validação de soma dos pagamentos */}
           {selectedAto && (
             <div style={{
               background: valoresIguais(somaPagamentos, valorTotal) ? '#d4edda' : '#f8d7da',
@@ -769,7 +774,7 @@ function AtosPagos() {
               </div>
             </div>
           )}
-
+          {/* Botão para adicionar ato */}
           <button
             onClick={adicionarAto}
             disabled={!selectedAto || !valoresIguais(somaPagamentos, valorTotal)}
@@ -789,8 +794,9 @@ function AtosPagos() {
             ➕ Adicionar Ato
           </button>
         </div>
+        {/* ----------- FIM ADICIONAR ATO ----------- */}
 
-        {/* Seção de Entradas e Saídas Manuais */}
+        {/* ----------- ENTRADAS E SAÍDAS MANUAIS ----------- */}
         <div style={{
           background: 'white',
           borderRadius: '12px',
@@ -807,7 +813,6 @@ function AtosPagos() {
           }}>
             💸 Entradas e Saídas Manuais
           </h3>
-
           {/* Entrada Manual */}
           <div style={{
             background: '#f8f9fa',
@@ -819,6 +824,7 @@ function AtosPagos() {
             <h4 style={{ margin: '0 0 15px 0', color: '#27ae60' }}>
               📈 Entrada de Valor
             </h4>
+            {/* Input valor entrada */}
             <div style={{ marginBottom: '15px' }}>
               <label style={{ 
                 display: 'block', 
@@ -842,6 +848,7 @@ function AtosPagos() {
                 }}
               />
             </div>
+            {/* Input observação entrada */}
             <div style={{ marginBottom: '15px' }}>
               <label style={{ 
                 display: 'block', 
@@ -865,6 +872,7 @@ function AtosPagos() {
                 }}
               />
             </div>
+            {/* Botão adicionar entrada */}
             <button
               onClick={adicionarEntrada}
               style={{
@@ -883,7 +891,6 @@ function AtosPagos() {
               ➕ Adicionar Entrada
             </button>
           </div>
-
           {/* Saída Manual */}
           <div style={{
             background: '#f8f9fa',
@@ -894,6 +901,7 @@ function AtosPagos() {
             <h4 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>
               📉 Saída de Valor
             </h4>
+            {/* Input valor saída */}
             <div style={{ marginBottom: '15px' }}>
               <label style={{ 
                 display: 'block', 
@@ -917,6 +925,7 @@ function AtosPagos() {
                 }}
               />
             </div>
+            {/* Input observação saída */}
             <div style={{ marginBottom: '15px' }}>
               <label style={{ 
                 display: 'block', 
@@ -940,6 +949,7 @@ function AtosPagos() {
                 }}
               />
             </div>
+            {/* Botão adicionar saída */}
             <button
               onClick={adicionarSaida}
               style={{
@@ -959,9 +969,11 @@ function AtosPagos() {
             </button>
           </div>
         </div>
+        {/* ----------- FIM ENTRADAS E SAÍDAS MANUAIS ----------- */}
       </div>
+      {/* ===================== FIM GRID PRINCIPAL ===================== */}
 
-      {/* Botão de Fechamento */}
+      {/* ===================== BOTÃO DE FECHAMENTO ===================== */}
       <div style={{
         background: 'white',
         borderRadius: '12px',
@@ -972,8 +984,9 @@ function AtosPagos() {
       }}>
         <FechamentoDiarioButton onClick={fechamentoDiario} />
       </div>
+      {/* ===================== FIM BOTÃO DE FECHAMENTO ===================== */}
 
-      {/* Tabela de Atos */}
+      {/* ===================== TABELA DE ATOS ===================== */}
       <div style={{
         background: 'white',
         borderRadius: '12px',
@@ -991,8 +1004,10 @@ function AtosPagos() {
         }}>
           📋 Atos do Dia
         </h3>
+        {/* Tabela com todos os atos do dia */}
         <AtosTable atos={atos} onRemover={removerAto} />
       </div>
+      {/* ===================== FIM TABELA DE ATOS ===================== */}
     </div>
   );
 }
