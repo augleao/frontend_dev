@@ -6,7 +6,6 @@ export default function CaixaInfo({
   ISS, setISS,
   valorInicialCaixa, setValorInicialCaixa,
   observacoesGerais, setObservacoesGerais,
-  valorFinalCaixa
 }) {
   const [depositosCaixa, setDepositosCaixa] = useState(0);
   const [saidasCaixa, setSaidasCaixa] = useState(0);
@@ -41,6 +40,8 @@ export default function CaixaInfo({
     lineHeight: '1.4'
   };
 
+  const valorFinalCaixa = Number(valorInicialCaixa) + Number(depositosCaixa) - Number(saidasCaixa);
+
   return (
     <div className="atos-table-caixa-container" style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
       <div style={{ flex: '1 1 140px', minWidth: 120, maxWidth: 200 }}>
@@ -58,10 +59,11 @@ export default function CaixaInfo({
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
         <label style={{ fontSize: 15, color: '#fff' }}>Valor Inicial do Caixa:</label>
         <input
-          type="text"
+          type="number"
+          step="0.01"
           value={valorInicialCaixa}
-          onChange={e => setValorInicialCaixa(e.target.value.replace(/[^0-9,\.]/g, ''))}
-          placeholder="R$ 0,00"
+          onChange={e => setValorInicialCaixa(Number(e.target.value))}
+          placeholder="0.00"
           style={inputStyle}
         />
       </div>
