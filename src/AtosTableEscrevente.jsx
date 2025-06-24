@@ -71,7 +71,3 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
   );
 }
 
-// Antes do AtosTable
-console.log("Atos enviados para a tabela:", atos);
-
-<AtosTable atos={atos} onRemover={removerAto} />
