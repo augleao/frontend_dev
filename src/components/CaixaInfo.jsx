@@ -10,19 +10,6 @@ export default function CaixaInfo({
   observacoesGerais, setObservacoesGerais,
   atos
 }) {
-  // Soma dos valores da coluna Dinheiro da tabela
-  const somaDinheiroAtos = Array.isArray(atos)
-    ? atos.filter(ato => ato.formaPagamento === 'Dinheiro')
-          .reduce((soma, ato) => soma + Number(ato.valor), 0)
-    : 0;
-
-  // Valor final do caixa
-  const valorFinalCaixa =
-    Number(valorInicialCaixa) +
-    somaDinheiroAtos +
-    Number(depositosCaixa) -
-    Number(saidasCaixa);
-
   // Estilo para campos somente leitura (informação)
   const infoStyle = {
     width: '100%',
@@ -40,7 +27,7 @@ export default function CaixaInfo({
 
   // Estilo para inputs editáveis
   const inputStyle = {
-    width: '100%',
+    width: '90%',
     padding: '6px 10px',
     borderRadius: '6px',
     border: '1.5px solid #e3f2fd',
@@ -52,6 +39,8 @@ export default function CaixaInfo({
     minHeight: '32px',
     lineHeight: '1.4'
   };
+
+  const valorFinalCaixa = Number(valorInicialCaixa) + Number(depositosCaixa) - Number(saidasCaixa);
 
   // Exemplo: recalculando sempre que atos mudam
   useEffect(() => {
@@ -89,7 +78,7 @@ export default function CaixaInfo({
         />
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 15, color: '#fff' }}>Entradas do Caixa (manuais):</label>
+        <label style={{ fontSize: 15, color: '#fff' }}>Entradas do Caixa:</label>
         <input
           type="number"
           step="0.01"
