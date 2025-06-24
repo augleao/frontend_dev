@@ -569,48 +569,62 @@ function AtosPagos() {
   };
 
   return (
-    <div style={{
-      maxWidth: '1400px',
-      margin: '0 auto',
-      padding: '5px',
-      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-      minHeight: '100vh',
-      fontFamily: 'Arial, sans-serif'
-    }}>
+    <div
+      style={{
+        width: '100vw',
+        minHeight: '100vh',
+        margin: 0,
+        padding: 0,
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        fontFamily: 'Arial, sans-serif',
+        boxSizing: 'border-box',
+        overflowX: 'hidden'
+      }}
+    >
       {/* ===================== HEADER ===================== */}
-      <div style={{
-        background: 'white',
-        borderRadius: '12px',
-        padding: '5px',
-        marginBottom: '20px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '15px'
-      }}>
+      <div
+        style={{
+          width: '100%',
+          background: 'white',
+          borderRadius: 0,
+          padding: 0,
+          margin: 0,
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '15px',
+          boxSizing: 'border-box'
+        }}
+      >
         {/* Título e usuário/data */}
-        <h1 style={{ 
-          margin: 0, 
-          color: '#2c3e50',
-          fontSize: '28px',
-          fontWeight: '600'
-        }}>
+        <h1
+          style={{
+            margin: 0,
+            color: '#2c3e50',
+            fontSize: '28px',
+            fontWeight: '600'
+          }}
+        >
           💰 Movimento Diário do Caixa
         </h1>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '15px',
-          flexWrap: 'wrap'
-        }}>
-          {/* Usuário logado */}
-          <div style={{
+        <div
+          style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
-          }}>
+            gap: '15px',
+            flexWrap: 'wrap'
+          }}
+        >
+          {/* Usuário logado */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
             <span style={{ color: '#666', fontSize: '14px' }}>👤 Usuário:</span>
             <input
               type="text"
@@ -628,11 +642,13 @@ function AtosPagos() {
             />
           </div>
           {/* Seletor de data */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
             <span style={{ color: '#666', fontSize: '14px' }}>📅</span>
             <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
           </div>
@@ -641,53 +657,68 @@ function AtosPagos() {
       {/* ===================== FIM HEADER ===================== */}
 
       {/* ===================== RESUMO DO CAIXA ===================== */}
-      <div style={{
-        background: 'white',
-        borderRadius: '12px',
-        padding: '25px',
-        marginBottom: '20px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-      }}>
-        <h2 style={{ 
-          margin: '0 0 20px 0', 
-          color: '#2c3e50',
-          fontSize: '20px',
-          fontWeight: '600',
-          borderBottom: '2px solid #3498db',
-          paddingBottom: '10px'
-        }}>
+      <div
+        style={{
+          width: '100%',
+          background: 'white',
+          borderRadius: 0,
+          padding: 0,
+          margin: 0,
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          boxSizing: 'border-box'
+        }}
+      >
+        <h2
+          style={{
+            margin: '0 0 20px 0',
+            color: '#2c3e50',
+            fontSize: '20px',
+            fontWeight: '600',
+            borderBottom: '2px solid #3498db',
+            paddingBottom: '10px'
+          }}
+        >
           📊 Resumo do Caixa
         </h2>
         {/* Mostra valor inicial e final do caixa */}
-        <CaixaInputs 
-          valorInicialCaixa={valorInicialCaixa} 
-          valorFinalCaixa={valorFinalCaixa} 
-        />
+        <CaixaInputs valorInicialCaixa={valorInicialCaixa} valorFinalCaixa={valorFinalCaixa} />
       </div>
       {/* ===================== FIM RESUMO DO CAIXA ===================== */}
 
       {/* ===================== GRID PRINCIPAL ===================== */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-        gap: '20px',
-        marginBottom: '20px'
-      }}>
+      <div
+        style={{
+          width: '100%',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+          gap: 0,
+          margin: 0,
+          padding: 0,
+          boxSizing: 'border-box'
+        }}
+      >
         {/* ----------- ADICIONAR ATO ----------- */}
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '25px',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h3 style={{ 
-            margin: '0 0 20px 0', 
-            color: '#2c3e50',
-            fontSize: '18px',
-            fontWeight: '600',
-            borderBottom: '2px solid #27ae60',
-            paddingBottom: '10px'
-          }}>
+        <div
+          style={{
+            width: '100%',
+            background: 'white',
+            borderRadius: 0,
+            padding: 0,
+            margin: 0,
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+            boxSizing: 'border-box'
+          }}
+        >
+          <h3
+            style={{
+              margin: '0 0 20px 0',
+              color: '#2c3e50',
+              fontSize: '18px',
+              fontWeight: '600',
+              borderBottom: '2px solid #27ae60',
+              paddingBottom: '10px'
+            }}
+          >
             ➕ Adicionar Ato
           </h3>
           {/* Busca e seleção de ato */}
@@ -702,16 +733,16 @@ function AtosPagos() {
           </div>
           {/* Detalhes do ato selecionado */}
           {selectedAto && (
-            <div style={{
-              background: '#f8f9fa',
-              border: '2px solid #27ae60',
-              borderRadius: '8px',
-              padding: '15px',
-              marginBottom: '20px'
-            }}>
-              <h4 style={{ margin: '0 0 10px 0', color: '#27ae60' }}>
-                Ato Selecionado:
-              </h4>
+            <div
+              style={{
+                background: '#f8f9fa',
+                border: '2px solid #27ae60',
+                borderRadius: '8px',
+                padding: '15px',
+                marginBottom: '20px'
+              }}
+            >
+              <h4 style={{ margin: '0 0 10px 0', color: '#27ae60' }}>Ato Selecionado:</h4>
               <p style={{ margin: '0', fontWeight: '600' }}>
                 {selectedAto.codigo} - {selectedAto.descricao}
               </p>
@@ -722,12 +753,14 @@ function AtosPagos() {
           )}
           {/* Quantidade */}
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              fontWeight: '600',
-              color: '#2c3e50'
-            }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontWeight: '600',
+                color: '#2c3e50'
+              }}
+            >
               Quantidade:
             </label>
             <input
@@ -757,13 +790,15 @@ function AtosPagos() {
           </div>
           {/* Validação de soma dos pagamentos */}
           {selectedAto && (
-            <div style={{
-              background: valoresIguais(somaPagamentos, valorTotal) ? '#d4edda' : '#f8d7da',
-              border: `2px solid ${valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#dc3545'}`,
-              borderRadius: '8px',
-              padding: '15px',
-              marginBottom: '20px'
-            }}>
+            <div
+              style={{
+                background: valoresIguais(somaPagamentos, valorTotal) ? '#d4edda' : '#f8d7da',
+                border: `2px solid ${valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#dc3545'}`,
+                borderRadius: '8px',
+                padding: '15px',
+                marginBottom: '20px'
+              }}
+            >
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                 <span style={{ fontWeight: '600' }}>Valor Total:</span>
                 <span style={{ fontWeight: '600' }}>{formatarMoeda(valorTotal)}</span>
@@ -797,41 +832,50 @@ function AtosPagos() {
         {/* ----------- FIM ADICIONAR ATO ----------- */}
 
         {/* ----------- ENTRADAS E SAÍDAS MANUAIS ----------- */}
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '25px',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h3 style={{ 
-            margin: '0 0 20px 0', 
-            color: '#2c3e50',
-            fontSize: '18px',
-            fontWeight: '600',
-            borderBottom: '2px solid #f39c12',
-            paddingBottom: '10px'
-          }}>
+        <div
+          style={{
+            width: '100%',
+            background: 'white',
+            borderRadius: 0,
+            padding: 0,
+            margin: 0,
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+            boxSizing: 'border-box'
+          }}
+        >
+          <h3
+            style={{
+              margin: '0 0 20px 0',
+              color: '#2c3e50',
+              fontSize: '18px',
+              fontWeight: '600',
+              borderBottom: '2px solid #f39c12',
+              paddingBottom: '10px'
+            }}
+          >
             💸 Entradas e Saídas Manuais
           </h3>
           {/* Entrada Manual */}
-          <div style={{
-            background: '#f8f9fa',
-            border: '2px solid #27ae60',
-            borderRadius: '8px',
-            padding: '20px',
-            marginBottom: '20px'
-          }}>
-            <h4 style={{ margin: '0 0 15px 0', color: '#27ae60' }}>
-              📈 Entrada de Valor
-            </h4>
+          <div
+            style={{
+              background: '#f8f9fa',
+              border: '2px solid #27ae60',
+              borderRadius: '8px',
+              padding: '20px',
+              marginBottom: '20px'
+            }}
+          >
+            <h4 style={{ margin: '0 0 15px 0', color: '#27ae60' }}>📈 Entrada de Valor</h4>
             {/* Input valor entrada */}
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '8px', 
-                fontWeight: '600',
-                color: '#2c3e50'
-              }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontWeight: '600',
+                  color: '#2c3e50'
+                }}
+              >
                 Valor:
               </label>
               <input
@@ -850,12 +894,14 @@ function AtosPagos() {
             </div>
             {/* Input observação entrada */}
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '8px', 
-                fontWeight: '600',
-                color: '#2c3e50'
-              }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontWeight: '600',
+                  color: '#2c3e50'
+                }}
+              >
                 Observação:
               </label>
               <input
@@ -892,23 +938,25 @@ function AtosPagos() {
             </button>
           </div>
           {/* Saída Manual */}
-          <div style={{
-            background: '#f8f9fa',
-            border: '2px solid #e74c3c',
-            borderRadius: '8px',
-            padding: '20px'
-          }}>
-            <h4 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>
-              📉 Saída de Valor
-            </h4>
+          <div
+            style={{
+              background: '#f8f9fa',
+              border: '2px solid #e74c3c',
+              borderRadius: '8px',
+              padding: '20px'
+            }}
+          >
+            <h4 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>📉 Saída de Valor</h4>
             {/* Input valor saída */}
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '8px', 
-                fontWeight: '600',
-                color: '#2c3e50'
-              }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontWeight: '600',
+                  color: '#2c3e50'
+                }}
+              >
                 Valor:
               </label>
               <input
@@ -927,12 +975,14 @@ function AtosPagos() {
             </div>
             {/* Input observação saída */}
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '8px', 
-                fontWeight: '600',
-                color: '#2c3e50'
-              }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontWeight: '600',
+                  color: '#2c3e50'
+                }}
+              >
                 Observação:
               </label>
               <input
@@ -974,34 +1024,44 @@ function AtosPagos() {
       {/* ===================== FIM GRID PRINCIPAL ===================== */}
 
       {/* ===================== BOTÃO DE FECHAMENTO ===================== */}
-      <div style={{
-        background: 'white',
-        borderRadius: '12px',
-        padding: '25px',
-        marginBottom: '20px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-        textAlign: 'center'
-      }}>
+      <div
+        style={{
+          width: '100%',
+          background: 'white',
+          borderRadius: 0,
+          padding: 0,
+          margin: 0,
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          textAlign: 'center',
+          boxSizing: 'border-box'
+        }}
+      >
         <FechamentoDiarioButton onClick={fechamentoDiario} />
       </div>
       {/* ===================== FIM BOTÃO DE FECHAMENTO ===================== */}
 
       {/* ===================== TABELA DE ATOS ===================== */}
-      <div style={{
-        background: 'white',
-        borderRadius: '12px',
-        padding: '25px',
-        marginBottom: '20px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-      }}>
-        <h3 style={{ 
-          margin: '0 0 20px 0', 
-          color: '#2c3e50',
-          fontSize: '18px',
-          fontWeight: '600',
-          borderBottom: '2px solid #9b59b6',
-          paddingBottom: '10px'
-        }}>
+      <div
+        style={{
+          width: '100%',
+          background: 'white',
+          borderRadius: 0,
+          padding: 0,
+          margin: 0,
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          boxSizing: 'border-box'
+        }}
+      >
+        <h3
+          style={{
+            margin: '0 0 20px 0',
+            color: '#2c3e50',
+            fontSize: '18px',
+            fontWeight: '600',
+            borderBottom: '2px solid #9b59b6',
+            paddingBottom: '10px'
+          }}
+        >
           📋 Atos do Dia
         </h3>
         {/* Tabela com todos os atos do dia */}
