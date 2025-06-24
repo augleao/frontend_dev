@@ -216,12 +216,11 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
     >
       <h2
         style={{
-          fontSize: '32px',
-          fontWeight: '700',
-          color: '#2c3e50',
-          textAlign: 'center',
-          margin: '0 0 32px 0',
-          textShadow: '0 2px 4px rgba(0, 0, 0, 0.08)',
+          color: 'white',
+          fontSize: '22px',
+          fontWeight: 700,
+          margin: 0,
+          textShadow: '0 2px 4px rgba(0,0,0,0.18)',
           background: azulFundo
         }}
       >
@@ -259,7 +258,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           marginTop: 20,
           display: 'flex',
           gap: 10,
-          justifyContent: 'center',
+          justifyContent: 'left',
           padding: 0,
           width: '100%',
           boxSizing: 'border-box',
