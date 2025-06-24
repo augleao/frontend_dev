@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   formasPagamento,
   formatarMoeda,
-  formatarDataBR,
   gerarRelatorioPDF,
 } from './utils';
 import DataSelector from './DataSelector';
@@ -12,6 +11,465 @@ import FormasPagamento from './FormasPagamento';
 import AtosTable from './AtosTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
 import dayjs from 'dayjs';
+
+// --- NOVOS COMPONENTES ---
+
+function HeaderCaixa({ nomeUsuario, dataSelecionada, handleDataChange, azulFundo }) {
+  return (
+    <div
+      style={{
+        width: '100%',
+        background: azulFundo,
+        borderRadius: 0,
+        padding: 0,
+        margin: 0,
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '15px',
+        boxSizing: 'border-box'
+      }}
+    >
+      <h1
+        style={{
+          margin: 0,
+          color: '#2c3e50',
+          fontSize: '28px',
+          fontWeight: '600'
+        }}
+      >
+        💰 Movimento Diário do Caixa
+      </h1>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '15px',
+          flexWrap: 'wrap'
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <span style={{ color: '#666', fontSize: '14px' }}>👤 Usuário:</span>
+          <input
+            type="text"
+            value={nomeUsuario}
+            readOnly
+            style={{
+              padding: '8px 12px',
+              borderRadius: '8px',
+              border: '2px solid #e3f2fd',
+              backgroundColor: '#f8f9fa',
+              fontWeight: '600',
+              color: '#2c3e50',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <span style={{ color: '#666', fontSize: '14px' }}>📅</span>
+          <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ResumoCaixa({ azulFundo, valorInicialCaixa, valorFinalCaixa }) {
+  return (
+    <div
+      style={{
+        width: '100%',
+        background: azulFundo,
+        borderRadius: 0,
+        padding: 0,
+        margin: 0,
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        boxSizing: 'border-box'
+      }}
+    >
+      <h2
+        style={{
+          margin: '0 0 20px 0',
+          color: '#2c3e50',
+          fontSize: '20px',
+          fontWeight: '600',
+          borderBottom: '2px solid #3498db',
+          paddingBottom: '10px'
+        }}
+      >
+        📊 Resumo do Caixa
+      </h2>
+      <CaixaInputs valorInicialCaixa={valorInicialCaixa} valorFinalCaixa={valorFinalCaixa} />
+    </div>
+  );
+}
+
+function AdicionarAtoSection(props) {
+  const {
+    azulFundo,
+    searchTerm,
+    setSearchTerm,
+    suggestions,
+    loadingSuggestions,
+    handleSelectAto,
+    selectedAto,
+    quantidade,
+    handleQuantidadeChange,
+    pagamentos,
+    formasPagamento,
+    handlePagamentoQuantidadeChange,
+    handlePagamentoValorChange,
+    corFundoPagamentos,
+    valorTotal,
+    somaPagamentos,
+    valoresIguais,
+    adicionarAto
+  } = props;
+
+  return (
+    <div
+      style={{
+        width: '100%',
+        background: azulFundo,
+        borderRadius: 0,
+        padding: 0,
+        margin: 0,
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        boxSizing: 'border-box'
+      }}
+    >
+      <h3
+        style={{
+          margin: '0 0 20px 0',
+          color: '#2c3e50',
+          fontSize: '18px',
+          fontWeight: '600',
+          borderBottom: '2px solid #27ae60',
+          paddingBottom: '10px'
+        }}
+      >
+        ➕ Adicionar Ato
+      </h3>
+      <div style={{ marginBottom: '20px' }}>
+        <AtoSearch
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          suggestions={suggestions}
+          loadingSuggestions={loadingSuggestions}
+          onSelectAto={handleSelectAto}
+        />
+      </div>
+      {selectedAto && (
+        <div
+          style={{
+            background: '#f8f9fa',
+            border: '2px solid #27ae60',
+            borderRadius: '8px',
+            padding: '15px',
+            marginBottom: '20px'
+          }}
+        >
+          <h4 style={{ margin: '0 0 10px 0', color: '#27ae60' }}>Ato Selecionado:</h4>
+          <p style={{ margin: '0', fontWeight: '600' }}>
+            {selectedAto.codigo} - {selectedAto.descricao}
+          </p>
+          <p style={{ margin: '5px 0 0 0', color: '#666' }}>
+            Valor: {formatarMoeda(selectedAto.valor_final)}
+          </p>
+        </div>
+      )}
+      <div style={{ marginBottom: '20px' }}>
+        <label
+          style={{
+            display: 'block',
+            marginBottom: '8px',
+            fontWeight: '600',
+            color: '#2c3e50'
+          }}
+        >
+          Quantidade:
+        </label>
+        <input
+          type="number"
+          min="1"
+          value={quantidade}
+          onChange={(e) => handleQuantidadeChange(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: '8px',
+            border: '2px solid #e3f2fd',
+            fontSize: '16px'
+          }}
+        />
+      </div>
+      <div style={{ marginBottom: '20px' }}>
+        <FormasPagamento
+          formasPagamento={formasPagamento}
+          pagamentos={pagamentos}
+          onQuantidadeChange={handlePagamentoQuantidadeChange}
+          onValorChange={handlePagamentoValorChange}
+          corFundoPagamentos={corFundoPagamentos}
+          selectedAto={selectedAto}
+        />
+      </div>
+      {selectedAto && (
+        <div
+          style={{
+            background: valoresIguais(somaPagamentos, valorTotal) ? '#d4edda' : '#f8d7da',
+            border: `2px solid ${valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#dc3545'}`,
+            borderRadius: '8px',
+            padding: '15px',
+            marginBottom: '20px'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span style={{ fontWeight: '600' }}>Valor Total:</span>
+            <span style={{ fontWeight: '600' }}>{formatarMoeda(valorTotal)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontWeight: '600' }}>Soma Pagamentos:</span>
+            <span style={{ fontWeight: '600' }}>{formatarMoeda(somaPagamentos)}</span>
+          </div>
+        </div>
+      )}
+      <button
+        onClick={adicionarAto}
+        disabled={!selectedAto || !valoresIguais(somaPagamentos, valorTotal)}
+        style={{
+          width: '100%',
+          padding: '15px',
+          backgroundColor: selectedAto && valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#b7e1cd',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '16px',
+          fontWeight: '600',
+          cursor: selectedAto && valoresIguais(somaPagamentos, valorTotal) ? 'pointer' : 'not-allowed',
+          transition: 'all 0.3s ease'
+        }}
+      >
+        ➕ Adicionar Ato
+      </button>
+    </div>
+  );
+}
+
+function EntradasSaidasSection(props) {
+  const {
+    azulFundo,
+    entradaValor,
+    setEntradaValor,
+    entradaObs,
+    setEntradaObs,
+    saidaValor,
+    setSaidaValor,
+    saidaObs,
+    setSaidaObs,
+    adicionarEntrada,
+    adicionarSaida
+  } = props;
+
+  return (
+    <div
+      style={{
+        width: '100%',
+        background: azulFundo,
+        borderRadius: 0,
+        padding: 0,
+        margin: 0,
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        boxSizing: 'border-box'
+      }}
+    >
+      <h3
+        style={{
+          margin: '0 0 20px 0',
+          color: '#2c3e50',
+          fontSize: '18px',
+          fontWeight: '600',
+          borderBottom: '2px solid #f39c12',
+          paddingBottom: '10px'
+        }}
+      >
+        💸 Entradas e Saídas Manuais
+      </h3>
+      {/* Entrada Manual */}
+      <div
+        style={{
+          background: '#f8f9fa',
+          border: '2px solid #27ae60',
+          borderRadius: '8px',
+          padding: '20px',
+          marginBottom: '20px'
+        }}
+      >
+        <h4 style={{ margin: '0 0 15px 0', color: '#27ae60' }}>📈 Entrada de Valor</h4>
+        <div style={{ marginBottom: '15px' }}>
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: '#2c3e50'
+            }}
+          >
+            Valor:
+          </label>
+          <input
+            type="text"
+            value={entradaValor}
+            onChange={(e) => setEntradaValor(e.target.value)}
+            placeholder="R$ 0,00"
+            style={{
+              width: '100%',
+              padding: '12px',
+              borderRadius: '8px',
+              border: '2px solid #e3f2fd',
+              fontSize: '16px'
+            }}
+          />
+        </div>
+        <div style={{ marginBottom: '15px' }}>
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: '#2c3e50'
+            }}
+          >
+            Observação:
+          </label>
+          <input
+            type="text"
+            value={entradaObs}
+            onChange={(e) => setEntradaObs(e.target.value)}
+            placeholder="Ex. Troco, abertura de caixa, outras entradas"
+            style={{
+              width: '100%',
+              padding: '12px',
+              borderRadius: '8px',
+              border: '2px solid #e3f2fd',
+              fontSize: '16px'
+            }}
+          />
+        </div>
+        <button
+          onClick={adicionarEntrada}
+          style={{
+            width: '100%',
+            padding: '12px',
+            backgroundColor: '#27ae60',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          ➕ Adicionar Entrada
+        </button>
+      </div>
+      {/* Saída Manual */}
+      <div
+        style={{
+          background: '#f8f9fa',
+          border: '2px solid #e74c3c',
+          borderRadius: '8px',
+          padding: '20px'
+        }}
+      >
+        <h4 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>📉 Saída de Valor</h4>
+        <div style={{ marginBottom: '15px' }}>
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: '#2c3e50'
+            }}
+          >
+            Valor:
+          </label>
+          <input
+            type="text"
+            value={saidaValor}
+            onChange={(e) => setSaidaValor(e.target.value)}
+            placeholder="R$ 0,00"
+            style={{
+              width: '100%',
+              padding: '12px',
+              borderRadius: '8px',
+              border: '2px solid #e3f2fd',
+              fontSize: '16px'
+            }}
+          />
+        </div>
+        <div style={{ marginBottom: '15px' }}>
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: '#2c3e50'
+            }}
+          >
+            Observação:
+          </label>
+          <input
+            type="text"
+            value={saidaObs}
+            onChange={(e) => setSaidaObs(e.target.value)}
+            placeholder="Ex. Depósitos, retiradas, outras saídas."
+            style={{
+              width: '100%',
+              padding: '12px',
+              borderRadius: '8px',
+              border: '2px solid #e3f2fd',
+              fontSize: '16px'
+            }}
+          />
+        </div>
+        <button
+          onClick={adicionarSaida}
+          style={{
+            width: '100%',
+            padding: '12px',
+            backgroundColor: '#27ae60',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          ➖ Adicionar Saída
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// --- FIM DOS NOVOS COMPONENTES ---
 
 function AtosPagos() {
   // Estados
@@ -596,111 +1054,22 @@ function AtosPagos() {
         overflowX: 'hidden'
       }}
     >
-      {/* ===================== HEADER ===================== */}
-      <div
-        style={{
-          width: '100%',
-          background: azulFundo,
-          borderRadius: 0,
-          padding: 0,
-          margin: 0,
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '15px',
-          boxSizing: 'border-box'
-        }}
-      >
-        {/* Título e usuário/data */}
-        <h1
-          style={{
-            margin: 0,
-            color: '#2c3e50',
-            fontSize: '28px',
-            fontWeight: '600'
-          }}
-        >
-          💰 Movimento Diário do Caixa
-        </h1>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '15px',
-            flexWrap: 'wrap'
-          }}
-        >
-          {/* Usuário logado */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
-          >
-            <span style={{ color: '#666', fontSize: '14px' }}>👤 Usuário:</span>
-            <input
-              type="text"
-              value={nomeUsuario}
-              readOnly
-              style={{
-                padding: '8px 12px',
-                borderRadius: '8px',
-                border: '2px solid #e3f2fd',
-                backgroundColor: '#f8f9fa',
-                fontWeight: '600',
-                color: '#2c3e50',
-                fontSize: '14px'
-              }}
-            />
-          </div>
-          {/* Seletor de data */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
-          >
-            <span style={{ color: '#666', fontSize: '14px' }}>📅</span>
-            <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
-          </div>
-        </div>
-      </div>
-      {/* ===================== FIM HEADER ===================== */}
+      {/* HEADER */}
+      <HeaderCaixa
+        nomeUsuario={nomeUsuario}
+        dataSelecionada={dataSelecionada}
+        handleDataChange={handleDataChange}
+        azulFundo={azulFundo}
+      />
 
-      {/* ===================== RESUMO DO CAIXA ===================== */}
-      <div
-        style={{
-          width: '100%',
-          background: azulFundo,
-          borderRadius: 0,
-          padding: 0,
-          margin: 0,
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-          boxSizing: 'border-box'
-        }}
-      >
-        <h2
-          style={{
-            margin: '0 0 20px 0',
-            color: '#2c3e50',
-            fontSize: '20px',
-            fontWeight: '600',
-            borderBottom: '2px solid #3498db',
-            paddingBottom: '10px'
-          }}
-        >
-          📊 Resumo do Caixa
-        </h2>
-        {/* Mostra valor inicial e final do caixa */}
-        <CaixaInputs valorInicialCaixa={valorInicialCaixa} valorFinalCaixa={valorFinalCaixa} />
-      </div>
-      {/* ===================== FIM RESUMO DO CAIXA ===================== */}
+      {/* RESUMO DO CAIXA */}
+      <ResumoCaixa
+        azulFundo={azulFundo}
+        valorInicialCaixa={valorInicialCaixa}
+        valorFinalCaixa={valorFinalCaixa}
+      />
 
-      {/* ===================== GRID PRINCIPAL ===================== */}
+      {/* GRID PRINCIPAL */}
       <div
         style={{
           width: '100%',
@@ -713,333 +1082,45 @@ function AtosPagos() {
           background: azulFundo
         }}
       >
-        {/* ----------- ADICIONAR ATO ----------- */}
-        <div
-          style={{
-            width: '100%',
-            background: azulFundo,
-            borderRadius: 0,
-            padding: 0,
-            margin: 0,
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-            boxSizing: 'border-box'
-          }}
-        >
-          <h3
-            style={{
-              margin: '0 0 20px 0',
-              color: '#2c3e50',
-              fontSize: '18px',
-              fontWeight: '600',
-              borderBottom: '2px solid #27ae60',
-              paddingBottom: '10px'
-            }}
-          >
-            ➕ Adicionar Ato
-          </h3>
-          {/* Busca e seleção de ato */}
-          <div style={{ marginBottom: '20px' }}>
-            <AtoSearch
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              suggestions={suggestions}
-              loadingSuggestions={loadingSuggestions}
-              onSelectAto={handleSelectAto}
-            />
-          </div>
-          {/* Detalhes do ato selecionado */}
-          {selectedAto && (
-            <div
-              style={{
-                background: '#f8f9fa',
-                border: '2px solid #27ae60',
-                borderRadius: '8px',
-                padding: '15px',
-                marginBottom: '20px'
-              }}
-            >
-              <h4 style={{ margin: '0 0 10px 0', color: '#27ae60' }}>Ato Selecionado:</h4>
-              <p style={{ margin: '0', fontWeight: '600' }}>
-                {selectedAto.codigo} - {selectedAto.descricao}
-              </p>
-              <p style={{ margin: '5px 0 0 0', color: '#666' }}>
-                Valor: {formatarMoeda(selectedAto.valor_final)}
-              </p>
-            </div>
-          )}
-          {/* Quantidade */}
-          <div style={{ marginBottom: '20px' }}>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontWeight: '600',
-                color: '#2c3e50'
-              }}
-            >
-              Quantidade:
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={quantidade}
-              onChange={(e) => handleQuantidadeChange(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '2px solid #e3f2fd',
-                fontSize: '16px'
-              }}
-            />
-          </div>
-          {/* Formas de pagamento */}
-          <div style={{ marginBottom: '20px' }}>
-            <FormasPagamento
-              formasPagamento={formasPagamento}
-              pagamentos={pagamentos}
-              onQuantidadeChange={handlePagamentoQuantidadeChange}
-              onValorChange={handlePagamentoValorChange}
-              corFundoPagamentos={corFundoPagamentos}
-              selectedAto={selectedAto}
-            />
-          </div>
-          {/* Validação de soma dos pagamentos */}
-          {selectedAto && (
-            <div
-              style={{
-                background: valoresIguais(somaPagamentos, valorTotal) ? '#d4edda' : '#f8d7da',
-                border: `2px solid ${valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#dc3545'}`,
-                borderRadius: '8px',
-                padding: '15px',
-                marginBottom: '20px'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span style={{ fontWeight: '600' }}>Valor Total:</span>
-                <span style={{ fontWeight: '600' }}>{formatarMoeda(valorTotal)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontWeight: '600' }}>Soma Pagamentos:</span>
-                <span style={{ fontWeight: '600' }}>{formatarMoeda(somaPagamentos)}</span>
-              </div>
-            </div>
-          )}
-          {/* Botão para adicionar ato */}
-          <button
-            onClick={adicionarAto}
-            disabled={!selectedAto || !valoresIguais(somaPagamentos, valorTotal)}
-            style={{
-              width: '100%',
-              padding: '15px',
-              backgroundColor: selectedAto && valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#b7e1cd', // verde ou verde claro desabilitado
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: selectedAto && valoresIguais(somaPagamentos, valorTotal) ? 'pointer' : 'not-allowed',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            ➕ Adicionar Ato
-          </button>
-        </div>
-        {/* ----------- FIM ADICIONAR ATO ----------- */}
+        {/* ADICIONAR ATO */}
+        <AdicionarAtoSection
+          azulFundo={azulFundo}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          suggestions={suggestions}
+          loadingSuggestions={loadingSuggestions}
+          handleSelectAto={handleSelectAto}
+          selectedAto={selectedAto}
+          quantidade={quantidade}
+          handleQuantidadeChange={handleQuantidadeChange}
+          pagamentos={pagamentos}
+          formasPagamento={formasPagamento}
+          handlePagamentoQuantidadeChange={handlePagamentoQuantidadeChange}
+          handlePagamentoValorChange={handlePagamentoValorChange}
+          corFundoPagamentos={corFundoPagamentos}
+          valorTotal={valorTotal}
+          somaPagamentos={somaPagamentos}
+          valoresIguais={valoresIguais}
+          adicionarAto={adicionarAto}
+        />
 
-        {/* ----------- ENTRADAS E SAÍDAS MANUAIS ----------- */}
-        <div
-          style={{
-            width: '100%',
-            background: azulFundo,
-            borderRadius: 0,
-            padding: 0,
-            margin: 0,
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-            boxSizing: 'border-box'
-          }}
-        >
-          <h3
-            style={{
-              margin: '0 0 20px 0',
-              color: '#2c3e50',
-              fontSize: '18px',
-              fontWeight: '600',
-              borderBottom: '2px solid #f39c12',
-              paddingBottom: '10px'
-            }}
-          >
-            💸 Entradas e Saídas Manuais
-          </h3>
-          {/* Entrada Manual */}
-          <div
-            style={{
-              background: '#f8f9fa',
-              border: '2px solid #27ae60',
-              borderRadius: '8px',
-              padding: '20px',
-              marginBottom: '20px'
-            }}
-          >
-            <h4 style={{ margin: '0 0 15px 0', color: '#27ae60' }}>📈 Entrada de Valor</h4>
-            {/* Input valor entrada */}
-            <div style={{ marginBottom: '15px' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: '600',
-                  color: '#2c3e50'
-                }}
-              >
-                Valor:
-              </label>
-              <input
-                type="text"
-                value={entradaValor}
-                onChange={(e) => setEntradaValor(e.target.value)}
-                placeholder="R$ 0,00"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '2px solid #e3f2fd',
-                  fontSize: '16px'
-                }}
-              />
-            </div>
-            {/* Input observação entrada */}
-            <div style={{ marginBottom: '15px' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: '600',
-                  color: '#2c3e50'
-                }}
-              >
-                Observação:
-              </label>
-              <input
-                type="text"
-                value={entradaObs}
-                onChange={(e) => setEntradaObs(e.target.value)}
-                placeholder="Ex. Troco, abertura de caixa, outras entradas"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '2px solid #e3f2fd',
-                  fontSize: '16px'
-                }}
-              />
-            </div>
-            {/* Botão adicionar entrada */}
-            <button
-              onClick={adicionarEntrada}
-              style={{
-                width: '100%',
-                padding: '12px',
-                backgroundColor: '#27ae60', // verde
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              ➕ Adicionar Entrada
-            </button>
-          </div>
-          {/* Saída Manual */}
-          <div
-            style={{
-              background: '#f8f9fa',
-              border: '2px solid #e74c3c',
-              borderRadius: '8px',
-              padding: '20px'
-            }}
-          >
-            <h4 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>📉 Saída de Valor</h4>
-            {/* Input valor saída */}
-            <div style={{ marginBottom: '15px' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: '600',
-                  color: '#2c3e50'
-                }}
-              >
-                Valor:
-              </label>
-              <input
-                type="text"
-                value={saidaValor}
-                onChange={(e) => setSaidaValor(e.target.value)}
-                placeholder="R$ 0,00"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '2px solid #e3f2fd',
-                  fontSize: '16px'
-                }}
-              />
-            </div>
-            {/* Input observação saída */}
-            <div style={{ marginBottom: '15px' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: '600',
-                  color: '#2c3e50'
-                }}
-              >
-                Observação:
-              </label>
-              <input
-                type="text"
-                value={saidaObs}
-                onChange={(e) => setSaidaObs(e.target.value)}
-                placeholder="Ex. Depósitos, retiradas, outras saídas."
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '2px solid #e3f2fd',
-                  fontSize: '16px'
-                }}
-              />
-            </div>
-            {/* Botão adicionar saída */}
-            <button
-              onClick={adicionarSaida}
-              style={{
-                width: '100%',
-                padding: '12px',
-                backgroundColor: '#27ae60', // verde
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              ➖ Adicionar Saída
-            </button>
-          </div>
-        </div>
-        {/* ----------- FIM ENTRADAS E SAÍDAS MANUAIS ----------- */}
+        {/* ENTRADAS E SAÍDAS MANUAIS */}
+        <EntradasSaidasSection
+          azulFundo={azulFundo}
+          entradaValor={entradaValor}
+          setEntradaValor={setEntradaValor}
+          entradaObs={entradaObs}
+          setEntradaObs={setEntradaObs}
+          saidaValor={saidaValor}
+          setSaidaValor={setSaidaValor}
+          saidaObs={saidaObs}
+          setSaidaObs={setSaidaObs}
+          adicionarEntrada={adicionarEntrada}
+          adicionarSaida={adicionarSaida}
+        />
       </div>
-      {/* ===================== FIM GRID PRINCIPAL ===================== */}
 
-      {/* ===================== BOTÃO DE FECHAMENTO ===================== */}
+      {/* BOTÃO DE FECHAMENTO */}
       <div
         style={{
           width: '100%',
@@ -1054,9 +1135,8 @@ function AtosPagos() {
       >
         <FechamentoDiarioButton onClick={fechamentoDiario} />
       </div>
-      {/* ===================== FIM BOTÃO DE FECHAMENTO ===================== */}
 
-      {/* ===================== TABELA DE ATOS ===================== */}
+      {/* TABELA DE ATOS */}
       <div
         style={{
           width: '100%',
@@ -1080,10 +1160,8 @@ function AtosPagos() {
         >
           📋 Atos do Dia
         </h3>
-        {/* Tabela com todos os atos do dia */}
         <AtosTable atos={atos} onRemover={removerAto} />
       </div>
-      {/* ===================== FIM TABELA DE ATOS ===================== */}
     </div>
   );
 }
