@@ -78,7 +78,7 @@ export default function CaixaInfo({
         />
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 15, color: '#fff' }}>Depósitos do Caixa:</label>
+        <label style={{ fontSize: 15, color: '#fff' }}>Entradas do Caixa:</label>
         <input
           type="number"
           step="0.01"
