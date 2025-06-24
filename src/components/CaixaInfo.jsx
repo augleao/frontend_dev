@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { formatarMoeda } from './utilsAtos';
 
 export default function CaixaInfo({
@@ -10,6 +10,11 @@ export default function CaixaInfo({
   observacoesGerais, setObservacoesGerais,
   atos
 }) {
+  // Fixar ISS em 3
+  useEffect(() => {
+    setISS(3);
+  }, [setISS]);
+
   // Estilo para campos somente leitura (informação)
   const infoStyle = {
     width: '100%',
@@ -50,7 +55,7 @@ export default function CaixaInfo({
         .reduce((soma, ato) => soma + Number(ato.valor), 0);
       setDepositosCaixa(totalDinheiro);
     }
-  }, [atos]);
+  }, [atos, setDepositosCaixa]);
 
   return (
     <div className="atos-table-caixa-container" style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
