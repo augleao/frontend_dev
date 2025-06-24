@@ -43,6 +43,17 @@ export default function CaixaInputs({
     fontSize: '15px'
   };
 
+  // Supondo que ISS é um número (ex: 3 para 3%)
+  const somaDinheiroAtos = Array.isArray(atos)
+    ? atos
+        .filter(ato => ato.formaPagamento === 'Dinheiro')
+        .reduce(
+          (soma, ato) =>
+            soma + Number(ato.valor) + (Number(ato.valor) * (Number(ISS) / 100)),
+          0
+        )
+    : 0;
+
   return (
     <div
       style={{
