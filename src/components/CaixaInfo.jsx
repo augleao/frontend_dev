@@ -44,10 +44,12 @@ export default function CaixaInfo({
 
   // Exemplo: recalculando sempre que atos mudam
   useEffect(() => {
-    const totalDinheiro = atos
-      .filter(ato => ato.formaPagamento === 'Dinheiro')
-      .reduce((soma, ato) => soma + Number(ato.valor), 0);
-    setDepositosCaixa(totalDinheiro);
+    if (Array.isArray(atos)) {
+      const totalDinheiro = atos
+        .filter(ato => ato.formaPagamento === 'Dinheiro')
+        .reduce((soma, ato) => soma + Number(ato.valor), 0);
+      setDepositosCaixa(totalDinheiro);
+    }
   }, [atos]);
 
   return (
