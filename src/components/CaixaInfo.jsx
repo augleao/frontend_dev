@@ -10,20 +10,20 @@ export default function CaixaInfo({
   observacoesGerais, setObservacoesGerais,
   atos
 }) {
-  // Calcula a soma dos valores em dinheiro da tabela
+  // Soma dos valores da coluna Dinheiro da tabela
   const somaDinheiroAtos = Array.isArray(atos)
     ? atos.filter(ato => ato.formaPagamento === 'Dinheiro')
           .reduce((soma, ato) => soma + Number(ato.valor), 0)
     : 0;
 
-  // Valor final do caixa: valor inicial + depósitos manuais + soma dos atos em dinheiro - saídas
+  // Valor final do caixa
   const valorFinalCaixa =
     Number(valorInicialCaixa) +
-    Number(depositosCaixa) +
-    somaDinheiroAtos -
+    somaDinheiroAtos +
+    Number(depositosCaixa) -
     Number(saidasCaixa);
 
-  // Estilos (mantidos)
+  // Estilo para campos somente leitura (informação)
   const infoStyle = {
     width: '100%',
     padding: '6px 10px',
@@ -38,6 +38,7 @@ export default function CaixaInfo({
     lineHeight: '1.4'
   };
 
+  // Estilo para inputs editáveis
   const inputStyle = {
     width: '100%',
     padding: '6px 10px',
@@ -51,6 +52,16 @@ export default function CaixaInfo({
     minHeight: '32px',
     lineHeight: '1.4'
   };
+
+  // Exemplo: recalculando sempre que atos mudam
+  useEffect(() => {
+    if (Array.isArray(atos)) {
+      const totalDinheiro = atos
+        .filter(ato => ato.formaPagamento === 'Dinheiro')
+        .reduce((soma, ato) => soma + Number(ato.valor), 0);
+      setDepositosCaixa(totalDinheiro);
+    }
+  }, [atos]);
 
   return (
     <div className="atos-table-caixa-container" style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
@@ -87,9 +98,6 @@ export default function CaixaInfo({
           placeholder="0.00"
           style={inputStyle}
         />
-        <div style={{ color: '#fff', fontSize: 13 }}>
-          + Entradas em dinheiro dos atos: {formatarMoeda(somaDinheiroAtos)}
-        </div>
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
         <label style={{ fontSize: 15, color: '#fff' }}>Saídas do Caixa:</label>
