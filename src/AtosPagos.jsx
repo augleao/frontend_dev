@@ -820,7 +820,7 @@ function AtosPagos() {
             style={{
               width: '100%',
               padding: '15px',
-              backgroundColor: selectedAto && valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#95a5a6',
+              backgroundColor: selectedAto && valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#b7e1cd', // verde ou verde claro desabilitado
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -928,7 +928,7 @@ function AtosPagos() {
               style={{
                 width: '100%',
                 padding: '12px',
-                backgroundColor: '#27ae60',
+                backgroundColor: '#27ae60', // verde
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
@@ -1009,7 +1009,7 @@ function AtosPagos() {
               style={{
                 width: '100%',
                 padding: '12px',
-                backgroundColor: '#e74c3c',
+                backgroundColor: '#27ae60', // verde
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
