@@ -641,6 +641,7 @@ function AtosPagos() {
 
   // Funções auxiliares
   const handleDataChange = (e) => {
+    console.log('Data selecionada alterada para:', e.target.value);
     setDataSelecionada(e.target.value);
   };
 
@@ -913,6 +914,7 @@ function AtosPagos() {
   }
 
   useEffect(() => {
+    console.log('dataSelecionada mudou para:', dataSelecionada);
     carregarAtosPorData(dataSelecionada);
   }, [dataSelecionada]);
    
