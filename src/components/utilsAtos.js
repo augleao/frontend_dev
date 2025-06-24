@@ -37,12 +37,20 @@ export function extrairDadosAntigo(texto) {
       }
       if (j < linhas.length) {
         codigo = linhas[j];
-        for (let k = j + 1; k < linhas.length; k++) {
+        let k = j + 1;
+        while (k < linhas.length) {
+          // Interrompe se encontrar início de novo ato ou linha de totalização
           if (linhas[k].match(regexInicioAto)) break;
-          // Interrompe se encontrar linha de totalização
-          if (/total emolumento/i.test(linhas[k])) break;
+          if (/Qtde. Selo/i.test(linhas[k])) break;
+          // Só coleta se for valor
           const matchValor = linhas[k].match(regexValor);
-          if (matchValor) valores.push(matchValor[1]);
+          if (matchValor) {
+            valores.push(matchValor[1]);
+            k++;
+          } else {
+            // Se não for valor, para de coletar
+            break;
+          }
         }
       }
       let valorTotal = 0;
