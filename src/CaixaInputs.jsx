@@ -71,50 +71,18 @@ export default function CaixaInputs({
     >
       <div>
         <label style={labelStyle}>Valor Inicial do Caixa</label>
-        <input
-          type="number"
-          step="0.01"
-          value={valorInicialCaixaProp}
-          onChange={e => setValorInicialCaixa(Number(e.target.value))}
-          placeholder="0.00"
-          style={inputStyle}
-        />
         <div style={infoStyle}>{formatarMoeda(valorInicialCaixaProp)}</div>
       </div>
       <div>
         <label style={labelStyle}>Depósitos do Caixa</label>
-        <input
-          type="number"
-          step="0.01"
-          value={depositosCaixa}
-          onChange={e => setDepositosCaixa(Number(e.target.value))}
-          placeholder="0.00"
-          style={inputStyle}
-        />
         <div style={infoStyle}>{formatarMoeda(depositosCaixa)}</div>
       </div>
       <div>
         <label style={labelStyle}>Saídas do Caixa</label>
-        <input
-          type="number"
-          step="0.01"
-          value={saidasCaixa}
-          onChange={e => setSaidasCaixa(Number(e.target.value))}
-          placeholder="0.00"
-          style={inputStyle}
-        />
         <div style={infoStyle}>{formatarMoeda(saidasCaixa)}</div>
       </div>      
       <div>
         <label style={labelStyle}>Valor Final do Caixa</label>
-        <input
-          type="number"
-          step="0.01"
-          value={saidasCaixa}
-          onChange={e => setSaidasCaixa(Number(e.target.value))}
-          placeholder="0.00"
-          style={inputStyle}
-        />
         <div style={infoStyle}>{formatarMoeda(valorFinalCaixa)}</div>
       </div>      
     </div>
