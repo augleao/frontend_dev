@@ -568,6 +568,9 @@ function AtosPagos() {
     }
   };
 
+  // Defina a cor azul desejada para o fundo dos containers
+  const azulFundo = '#e3f0fd';
+
   return (
     <div
       style={{
@@ -575,7 +578,7 @@ function AtosPagos() {
         minHeight: '100vh',
         margin: 0,
         padding: 0,
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        background: azulFundo,
         fontFamily: 'Arial, sans-serif',
         boxSizing: 'border-box',
         overflowX: 'hidden'
@@ -585,7 +588,7 @@ function AtosPagos() {
       <div
         style={{
           width: '100%',
-          background: 'white',
+          background: azulFundo,
           borderRadius: 0,
           padding: 0,
           margin: 0,
@@ -660,7 +663,7 @@ function AtosPagos() {
       <div
         style={{
           width: '100%',
-          background: 'white',
+          background: azulFundo,
           borderRadius: 0,
           padding: 0,
           margin: 0,
@@ -694,14 +697,15 @@ function AtosPagos() {
           gap: 0,
           margin: 0,
           padding: 0,
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          background: azulFundo
         }}
       >
         {/* ----------- ADICIONAR ATO ----------- */}
         <div
           style={{
             width: '100%',
-            background: 'white',
+            background: azulFundo,
             borderRadius: 0,
             padding: 0,
             margin: 0,
@@ -835,7 +839,7 @@ function AtosPagos() {
         <div
           style={{
             width: '100%',
-            background: 'white',
+            background: azulFundo,
             borderRadius: 0,
             padding: 0,
             margin: 0,
@@ -1027,7 +1031,7 @@ function AtosPagos() {
       <div
         style={{
           width: '100%',
-          background: 'white',
+          background: azulFundo,
           borderRadius: 0,
           padding: 0,
           margin: 0,
@@ -1044,22 +1048,22 @@ function AtosPagos() {
       <div
         style={{
           width: '100%',
-          background: 'white',
+          background: azulFundo,
           borderRadius: 0,
-          padding: 0, // Remover padding
-          margin: 0,  // Remover margin
+          padding: 0,
+          margin: 0,
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
           boxSizing: 'border-box'
         }}
       >
         <h3
           style={{
-            margin: 0, // Remover margem lateral
+            margin: 0,
             color: '#2c3e50',
             fontSize: '18px',
             fontWeight: '600',
             borderBottom: '2px solid #9b59b6',
-            padding: '10px 0 10px 0' // Padding só em cima e embaixo
+            padding: '10px 0 10px 0'
           }}
         >
           📋 Atos do Dia

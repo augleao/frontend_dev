@@ -197,36 +197,35 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
 
   if (!atos.length) return null;
 
-  // Removido o <main> externo, mantendo apenas o bloco principal
+  // Azul padrão para todos os containers
+  const azulFundo = '#e3f0fd';
+
   return (
     <div
       style={{
-        background: 'rgba(0,255,0,0.15)', // VERDE CLARO
-        backdropFilter: 'blur(10px)',
-        borderRadius: '24px',
+        background: azulFundo,
+        borderRadius: 0,
         padding: '48px 0',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
+        border: 'none',
         width: '100%',
         boxSizing: 'border-box',
-        maxWidth: '1200px',
-        margin: '60px auto'
+        maxWidth: '100%',
+        margin: 0
       }}
     >
-      {/* Bloco principal com efeito glassmorphism */}
-
       <h2
         style={{
           fontSize: '32px',
           fontWeight: '700',
-          color: 'white',
+          color: '#2c3e50',
           textAlign: 'center',
           margin: '0 0 32px 0',
-          textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+          textShadow: '0 2px 4px rgba(0, 0, 0, 0.08)',
+          background: azulFundo
         }}
       >
         Atos Extraídos
       </h2>
-      {/* Título da seção, centralizado e destacado */}
 
       <div
         style={{
@@ -234,7 +233,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           padding: '32px 0',
           width: '100%',
           boxSizing: 'border-box',
-          background: 'rgba(0,0,255,0.10)' // AZUL CLARO
+          background: azulFundo
         }}
       >
         <CaixaInfo
@@ -253,7 +252,6 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           setObservacoesGerais={setObservacoesGerais}
         />
       </div>
-      {/* Bloco de inputs e informações do caixa, com espaçamento e padding lateral */}
 
       <div
         style={{
@@ -261,10 +259,10 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           display: 'flex',
           gap: 10,
           justifyContent: 'center',
-          padding: '0 32px',
+          padding: 0,
           width: '100%',
           boxSizing: 'border-box',
-          background: 'rgba(255,255,0,0.10)' // AMARELO CLARO
+          background: azulFundo
         }}
       >
         <button
@@ -291,18 +289,16 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           {salvando ? 'Salvando...' : 'Gerar Relatório'}
         </button>
       </div>
-      {/* Botão de ação centralizado, com efeito visual ao passar o mouse */}
 
       <MensagemStatus mensagem={mensagemSalvar} />
-      {/* Mensagem de status para feedback ao usuário */}
 
       <div
         style={{
           marginTop: 32,
-          background: 'rgba(255,0,255,0.10)', // ROSA CLARO
+          background: azulFundo,
           borderRadius: '16px',
           boxShadow: '0 4px 16px rgba(0,0,0,0.07)',
-          padding: '24px',
+          padding: '24px 0',
           width: '100%',
           minWidth: 0,
           maxWidth: '100%',
@@ -312,15 +308,14 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       >
         <div
           style={{
-            maxWidth: '1200px',
-            margin: '0 auto',
-            background: 'rgba(0,255,255,0.10)' // CIANO CLARO
+            maxWidth: '100%',
+            margin: 0,
+            background: azulFundo
           }}
         >
           <AtosGrid atos={atosComISS} handleAtoChange={handleAtoChange} />
         </div>
       </div>
-      {/* Tabela/grid dos atos extraídos */}
     </div>
   );
 }
