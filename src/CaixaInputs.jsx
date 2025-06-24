@@ -4,10 +4,13 @@ import { formatarMoeda } from './utils';
 export default function CaixaInputs({
   valorInicialCaixa: valorInicialCaixaProp,
   valorFinalCaixa,
-  ISS, // <-- adicione ISS aqui
+  ISS,
+  depositosCaixa,
+  saidasCaixa,
+  setValorInicialCaixa,
+  setDepositosCaixa,
+  setSaidasCaixa
 }) {
-  const [valorInicialCaixa, setValorInicialCaixa] = useState(valorInicialCaixaProp);
-
   const inputStyle = {
     width: 150,
     marginLeft: 8,
@@ -16,6 +19,18 @@ export default function CaixaInputs({
     border: '1px solid #ccc',
     textAlign: 'right',
     backgroundColor: '#eee',
+    fontSize: '14px',
+    fontWeight: '600'
+  };
+
+  const infoStyle = {
+    width: 150,
+    marginLeft: 8,
+    padding: 8,
+    borderRadius: 6,
+    border: 'none',
+    textAlign: 'right',
+    backgroundColor: 'transparent',
     fontSize: '14px',
     fontWeight: '600'
   };
@@ -37,21 +52,42 @@ export default function CaixaInputs({
       <div>
         <label style={{ fontWeight: '600', color: '#2c3e50' }}>Valor Inicial do Caixa:</label>
         <input
-          type="text"
-          value={valorInicialCaixa}
-          onChange={e => setValorInicialCaixa(e.target.value.replace(/[^0-9,\.]/g, ''))}
-          placeholder="R$ 0,00"
+          type="number"
+          step="0.01"
+          value={valorInicialCaixaProp}
+          onChange={e => setValorInicialCaixa(Number(e.target.value))}
+          placeholder="0.00"
           style={inputStyle}
         />
+        <div style={infoStyle}>{formatarMoeda(valorInicialCaixaProp)}</div>
+      </div>
+      <div>
+        <label style={{ fontWeight: '600', color: '#2c3e50' }}>Depósitos do Caixa:</label>
+        <input
+          type="number"
+          step="0.01"
+          value={depositosCaixa}
+          onChange={e => setDepositosCaixa(Number(e.target.value))}
+          placeholder="0.00"
+          style={inputStyle}
+        />
+        <div style={infoStyle}>{formatarMoeda(depositosCaixa)}</div>
+      </div>
+      <div>
+        <label style={{ fontWeight: '600', color: '#2c3e50' }}>Saídas do Caixa:</label>
+        <input
+          type="number"
+          step="0.01"
+          value={saidasCaixa}
+          onChange={e => setSaidasCaixa(Number(e.target.value))}
+          placeholder="0.00"
+          style={inputStyle}
+        />
+        <div style={infoStyle}>{formatarMoeda(saidasCaixa)}</div>
       </div>
       <div>
         <label style={{ fontWeight: '600', color: '#2c3e50' }}>Valor Final do Caixa:</label>
-        <input
-          type="text"
-          value={formatarMoeda(valorFinalCaixa)}
-          readOnly
-          style={inputStyle}
-        />
+        <div style={infoStyle}>{formatarMoeda(valorFinalCaixa)}</div>
       </div>
       <div>
         <label style={{ fontWeight: '600', color: '#2c3e50' }}>ISS:</label>
