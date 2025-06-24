@@ -198,7 +198,8 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
   if (!atos.length) return null;
 
   // Azul padrão para todos os containers
-  const azulFundo = '#e3f0fd';
+  //const azulFundo = '#e3f0fd';
+  const azulFundo = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
 
   return (
     <div
