@@ -10,10 +10,7 @@
   >
     Responsável:
   </label>
-  <input
-    type="text"
-    value={responsavel}
-    readOnly
+  <div
     style={{
       width: '100%',
       padding: '12px',
@@ -24,7 +21,9 @@
       color: '#2c3e50',
       fontWeight: '600'
     }}
-  />
+  >
+    {responsavel}
+  </div>
 </div>
 
 <div style={{ marginBottom: '15px' }}>
