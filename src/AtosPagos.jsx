@@ -803,6 +803,7 @@ function AtosPagos() {
           }, {})
         );
         setSuggestions([]);
+        await carregarAtosPorData(); // Função que faz o fetch dos atos do backend
       } else {
         alert('Erro ao salvar ato.');
       }
