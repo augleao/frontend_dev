@@ -44,19 +44,19 @@ export default function CaixaInfo({
   return (
     <div className="atos-table-caixa-container" style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
       <div style={{ flex: '1 1 140px', minWidth: 120, maxWidth: 200 }}>
-        <label style={{ fontSize: 18, color: '#fff' }}>Responsável:</label>
+        <label style={{ fontSize: 15, color: '#fff' }}>Responsável:</label>
         <div style={infoStyle}>{responsavel}</div>
       </div>
       <div style={{ flex: '1 1 80px', minWidth: 80, maxWidth: 120 }}>
-        <label style={{ fontSize: 18, color: '#fff' }}>ISS (%):</label>
+        <label style={{ fontSize: 15, color: '#fff' }}>ISS (%):</label>
         <div style={infoStyle}>{ISS}</div>
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 18, color: '#fff' }}>Valor Final do Caixa:</label>
+        <label style={{ fontSize: 15, color: '#fff' }}>Valor Final do Caixa:</label>
         <div style={infoStyle}>{formatarMoeda(valorFinalCaixa)}</div>
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 18, color: '#fff' }}>Valor Inicial do Caixa:</label>
+        <label style={{ fontSize: 15, color: '#fff' }}>Valor Inicial do Caixa:</label>
         <input
           type="text"
           value={valorInicialCaixa}
@@ -66,7 +66,7 @@ export default function CaixaInfo({
         />
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 13, color: '#555' }}>Depósitos do Caixa:</label>
+        <label style={{ fontSize: 15, color: '#fff' }}>Depósitos do Caixa:</label>
         <input
           type="number"
           step="0.01"
@@ -77,7 +77,7 @@ export default function CaixaInfo({
         />
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 13, color: '#555' }}>Saídas do Caixa:</label>
+        <label style={{ fontSize: 15, color: '#fff' }}>Saídas do Caixa:</label>
         <input
           type="number"
           step="0.01"
@@ -88,7 +88,7 @@ export default function CaixaInfo({
         />
       </div>
       <div style={{ flex: '1 1 100%', minWidth: 180 }}>
-        <label style={{ fontSize: 13, color: '#555', verticalAlign: 'top' }}>OBS:</label>
+        <label style={{ fontSize: 15, color: '#fff', verticalAlign: 'top' }}>OBS:</label>
         <textarea
           value={observacoesGerais}
           onChange={e => setObservacoesGerais(e.target.value)}
