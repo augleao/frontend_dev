@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UploadForm from './UploadForm';
 import DataTable from './DataTable';
 import Tooltip from './Tooltip';
@@ -6,10 +6,19 @@ import './Tooltip.css';
 
 function Conciliacao() {
   const [data, setData] = useState([]);
+  const [uploadMsg, setUploadMsg] = useState('');
 
   const handleUpload = (data) => {
     setData(data);
+    setUploadMsg('Upload e extração de dados do PDF concluídos');
   };
+
+  useEffect(() => {
+    if (uploadMsg) {
+      const timer = setTimeout(() => setUploadMsg(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [uploadMsg]);
 
   const handlePaymentChange = (id, field, value) => {
     setData((prevData) =>
@@ -41,8 +50,10 @@ function Conciliacao() {
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         borderRadius: '24px',
         padding: '32px 24px',
-        margin: '32px auto 24px auto',
-        maxWidth: 900,
+        margin: '32px 0 24px 0',
+        width: '100%',
+        maxWidth: '100vw',
+        boxSizing: 'border-box',
         boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
         border: '1px solid rgba(255,255,255,0.18)',
         minHeight: 0,
@@ -84,6 +95,21 @@ function Conciliacao() {
       </div>
       <div style={{ marginBottom: 12 }}>
         <UploadForm onUpload={handleUpload} />
+        {uploadMsg && (
+          <div style={{
+            marginTop: 10,
+            color: '#27ae60',
+            background: 'rgba(255,255,255,0.85)',
+            borderRadius: 8,
+            padding: '8px 16px',
+            fontWeight: 600,
+            fontSize: 15,
+            textAlign: 'center',
+            boxShadow: '0 2px 8px rgba(39,174,96,0.08)'
+          }}>
+            {uploadMsg}
+          </div>
+        )}
       </div>
       {data.length > 0 && (
         <div style={{
