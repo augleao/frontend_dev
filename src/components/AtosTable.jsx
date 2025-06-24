@@ -39,64 +39,41 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       ...ato,
       valorTotalComISS: calcularValorTotalComISS(ato.valorTotal, moedaParaNumero(ISS))
     }));
-    console.log('atosComISS recalculado:', resultado);
     return resultado;
   }, [atos, ISS]);
 
   const valorFinalCaixa = useMemo(() => {
     const totalDinheiro = atosComISS.reduce((acc, ato) => {
       const valorDinheiro = ato.pagamentoDinheiro.valor || 0;
-      console.log(`Ato ${ato.id}: pagamentoDinheiro.valor = ${valorDinheiro}`);
       return acc + valorDinheiro;
     }, 0);
-    
-    console.log('Valores para cálculo do caixa:', {
-      valorInicialCaixa,
-      totalDinheiro,
-      depositosCaixa,
-      saidasCaixa
-    });
-    
+
     const resultado = valorInicialCaixa + totalDinheiro + depositosCaixa - saidasCaixa;
-    console.log('valorFinalCaixa calculado:', resultado);
     return resultado;
   }, [valorInicialCaixa, depositosCaixa, saidasCaixa, atosComISS]);
 
   const handleAtoChange = (id, campo, subcampo, valor) => {
-    console.log('handleAtoChange chamado:', { id, campo, subcampo, valor });
-    
     setAtos(prevAtos =>
       prevAtos.map(ato => {
         if (ato.id === id) {
-          console.log('Ato encontrado para edição:', ato);
-          
           if (campo === 'observacoes') {
             return { ...ato, observacoes: valor };
           }
-          
           if (subcampo === 'quantidade') {
             const quantidadeNum = parseInt(valor) || 0;
             const valorUnitario = ato.quantidade > 0 ? calcularValorTotalComISS(ato.valorTotal, moedaParaNumero(ISS)) / ato.quantidade : 0;
             const valorAtual = ato[campo].valorManual ? ato[campo].valor : parseFloat((quantidadeNum * valorUnitario).toFixed(2));
-            
-            const atoAtualizado = {
+            return {
               ...ato,
               [campo]: { quantidade: quantidadeNum, valor: valorAtual, valorManual: false },
             };
-            console.log('Ato atualizado (quantidade):', atoAtualizado);
-            return atoAtualizado;
           }
-          
           if (subcampo === 'valor') {
             const valorNum = moedaParaNumero(valor);
-            console.log('Convertendo valor:', { valorOriginal: valor, valorConvertido: valorNum });
-            
-            const atoAtualizado = {
+            return {
               ...ato,
               [campo]: { ...ato[campo], valor: valorNum, valorManual: true },
             };
-            console.log('Ato atualizado (valor):', atoAtualizado);
-            return atoAtualizado;
           }
         }
         return ato;
@@ -105,20 +82,16 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
   };
 
   const salvarRelatorio = async () => {
-    console.log('Tentando salvar relatório...');
     setSalvando(true);
     setMensagemSalvar('');
     try {
-      // Verificação defensiva do usuário
       if (!usuario || !usuario.serventia || !usuario.cargo) {
-        console.error('Usuário não definido ou incompleto:', usuario);
         setMensagemSalvar('Usuário não encontrado. Faça login novamente.');
         setSalvando(false);
         return;
       }
 
       const token = localStorage.getItem('token');
-      console.log('Token:', token);
 
       const atosDetalhados = atosComISS.map(ato => {
         const pagamentoDinheiro = ato.pagamentoDinheiro || { quantidade: 0, valor: 0 };
@@ -169,9 +142,6 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
         atos: atosDetalhados
       };
 
-      console.log('Payload:', payload);
-      console.log('URL da requisição:', `${config.apiURL}/salvar-relatorio`);
-
       const response = await fetch(`${config.apiURL}/salvar-relatorio`, {
         method: 'POST',
         headers: {
@@ -181,9 +151,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
         body: JSON.stringify({ dadosRelatorio: payload })
       });
 
-      console.log('Resposta salvar-relatorio:', response);
       const data = await response.json();
-      console.log('Dados da resposta:', data);
 
       if (response.ok) {
         setMensagemSalvar('Relatório salvo com sucesso!');
@@ -192,14 +160,12 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       }
     } catch (error) {
       setMensagemSalvar('Erro de conexão ao salvar relatório.');
-      console.error('Erro no salvarRelatorio:', error);
     } finally {
       setSalvando(false);
     }
   };
 
   const conferirCaixa = async () => {
-    console.log('conferirCaixa chamado');
     let totalValorPago = 0;
     atosComISS.forEach(ato => {
       totalValorPago += ato.pagamentoDinheiro.valor +
@@ -221,7 +187,6 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
         ISS: moedaParaNumero(ISS),
         observacoesGerais,
       });
-      console.log('salvarRelatorio foi chamado');
       await salvarRelatorio();
     } else {
       alert(
@@ -232,36 +197,151 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
 
   if (!atos.length) return null;
 
+  // --- LAYOUT INSPIRADO NO HOME2.JSX ---
   return (
-    <div>
-      <CaixaInfo
-        responsavel={responsavel}
-        setResponsavel={setResponsavel}
-        ISS={ISS}
-        setISS={setISS}
-        valorInicialCaixa={valorInicialCaixa}
-        setValorInicialCaixa={setValorInicialCaixa}
-        depositosCaixa={depositosCaixa}
-        setDepositosCaixa={setDepositosCaixa}
-        saidasCaixa={saidasCaixa}
-        setSaidasCaixa={setSaidasCaixa}
-        valorFinalCaixa={valorFinalCaixa}
-        observacoesGerais={observacoesGerais}
-        setObservacoesGerais={setObservacoesGerais}
-      />
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      {/* Header */}
+      <header style={{
+        background: 'rgba(44, 62, 80, 0.95)',
+        backdropFilter: 'blur(10px)',
+        padding: '16px 32px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+      }}>
+        <h1 style={{
+          color: 'white',
+          margin: 0,
+          fontSize: '24px',
+          fontWeight: '600',
+          letterSpacing: '0.5px'
+        }}>
+          Sistema Auxiliar do RCPN
+        </h1>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px'
+        }}>
+          <span style={{
+            color: 'white',
+            fontSize: '14px',
+            opacity: 0.9
+          }}>
+            👤 {usuario.nome || 'Usuário'}
+          </span>
+          <button
+            onClick={() => {
+              localStorage.removeItem('token');
+              localStorage.removeItem('usuario');
+              window.location.href = '/login';
+            }}
+            style={{
+              background: 'rgba(231, 76, 60, 0.8)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 16px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={e => e.target.style.background = 'rgba(231, 76, 60, 1)'}
+            onMouseLeave={e => e.target.style.background = 'rgba(231, 76, 60, 0.8)'}
+          >
+            Sair
+          </button>
+        </div>
+      </header>
 
-      <div style={{ marginTop: 20, display: 'flex', gap: 10 }}>
-        <button className="atos-table-btn" onClick={() => { console.log('Botão clicado!'); conferirCaixa(); }}>
-          Gerar Relatório
-        </button>
-      </div>
+      {/* Main Content */}
+      <main style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '60px 32px'
+      }}>
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '24px',
+          padding: '48px 32px',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
+        }}>
+          <h2 style={{
+            fontSize: '32px',
+            fontWeight: '700',
+            color: 'white',
+            textAlign: 'center',
+            margin: '0 0 32px 0',
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+          }}>
+            Atos Extraídos
+          </h2>
+          {/* Bloco de informações do caixa */}
+          <div style={{ marginBottom: 32 }}>
+            <CaixaInfo
+              responsavel={responsavel}
+              setResponsavel={setResponsavel}
+              ISS={ISS}
+              setISS={setISS}
+              valorInicialCaixa={valorInicialCaixa}
+              setValorInicialCaixa={setValorInicialCaixa}
+              depositosCaixa={depositosCaixa}
+              setDepositosCaixa={setDepositosCaixa}
+              saidasCaixa={saidasCaixa}
+              setSaidasCaixa={setSaidasCaixa}
+              valorFinalCaixa={valorFinalCaixa}
+              observacoesGerais={observacoesGerais}
+              setObservacoesGerais={setObservacoesGerais}
+            />
+          </div>
 
-      <MensagemStatus mensagem={mensagemSalvar} />
+          <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'center' }}>
+            <button
+              className="atos-table-btn"
+              style={{
+                background: '#27ae60',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '12px 28px',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(39,174,96,0.15)',
+                transition: 'all 0.2s'
+              }}
+              onClick={() => { conferirCaixa(); }}
+              onMouseEnter={e => e.target.style.background = '#219150'}
+              onMouseLeave={e => e.target.style.background = '#27ae60'}
+              disabled={salvando}
+            >
+              {salvando ? 'Salvando...' : 'Gerar Relatório'}
+            </button>
+          </div>
 
-      <AtosGrid
-        atos={atosComISS}
-        handleAtoChange={handleAtoChange}
-      />
+          <MensagemStatus mensagem={mensagemSalvar} />
+
+          <div style={{
+            marginTop: 32,
+            background: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.07)',
+            padding: '24px'
+          }}>
+            <AtosGrid
+              atos={atosComISS}
+              handleAtoChange={handleAtoChange}
+            />
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
