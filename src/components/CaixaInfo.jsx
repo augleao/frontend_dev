@@ -1,62 +1,63 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { formatarMoeda } from './utilsAtos';
 
 export default function CaixaInfo({
   responsavel, setResponsavel,
   ISS, setISS,
   valorInicialCaixa, setValorInicialCaixa,
-  depositosCaixa, setDepositosCaixa,
-  saidasCaixa, setSaidasCaixa,
   observacoesGerais, setObservacoesGerais,
 }) {
+  const [depositosCaixa, setDepositosCaixa] = useState(0);
+  const [saidasCaixa, setSaidasCaixa] = useState(0);
+
   // Estilo para campos somente leitura (informação)
   const infoStyle = {
     width: '100%',
-    padding: '4px 6px',
-    borderRadius: '4px',
+    padding: '6px 10px',
+    borderRadius: '6px',
     border: 'none',
-    fontSize: '13px',
+    fontSize: '15px',
     backgroundColor: 'transparent',
     color: '#2c3e50',
     fontWeight: '600',
-    marginBottom: '2px',
-    minHeight: '24px',
-    lineHeight: '1.2'
+    marginBottom: '4px',
+    minHeight: '32px',
+    lineHeight: '1.4'
   };
 
-  // Estilo para inputs editáveis (menor)
+  // Estilo para inputs editáveis
   const inputStyle = {
     width: '100%',
-    padding: '4px 6px',
-    borderRadius: '4px',
-    border: '1px solid #e3f2fd',
-    fontSize: '13px',
-    marginBottom: '2px',
+    padding: '6px 10px',
+    borderRadius: '6px',
+    border: '1.5px solid #e3f2fd',
+    fontSize: '15px',
+    marginBottom: '4px',
     backgroundColor: '#f0f0f0',
     color: '#2c3e50',
     fontWeight: '600',
-    minHeight: '24px',
-    lineHeight: '1.2'
+    minHeight: '32px',
+    lineHeight: '1.4'
   };
 
   const valorFinalCaixa = Number(valorInicialCaixa) + Number(depositosCaixa) - Number(saidasCaixa);
 
   return (
-    <div className="atos-table-caixa-container" style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-      <div style={{ flex: '1 1 120px', minWidth: 90, maxWidth: 140 }}>
-        <label style={{ fontSize: 13, color: '#fff' }}>Responsável:</label>
+    <div className="atos-table-caixa-container" style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+      <div style={{ flex: '1 1 140px', minWidth: 120, maxWidth: 200 }}>
+        <label style={{ fontSize: 15, color: '#fff' }}>Responsável:</label>
         <div style={infoStyle}>{responsavel}</div>
       </div>
-      <div style={{ flex: '1 1 60px', minWidth: 60, maxWidth: 90 }}>
-        <label style={{ fontSize: 13, color: '#fff' }}>ISS (%):</label>
+      <div style={{ flex: '1 1 80px', minWidth: 80, maxWidth: 120 }}>
+        <label style={{ fontSize: 15, color: '#fff' }}>ISS (%):</label>
         <div style={infoStyle}>{ISS}</div>
       </div>
-      <div style={{ flex: '1 1 100px', minWidth: 80, maxWidth: 120 }}>
-        <label style={{ fontSize: 13, color: '#fff' }}>Valor Final do Caixa:</label>
+      <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
+        <label style={{ fontSize: 15, color: '#fff' }}>Valor Final do Caixa:</label>
         <div style={infoStyle}>{formatarMoeda(valorFinalCaixa)}</div>
       </div>
-      <div style={{ flex: '1 1 100px', minWidth: 80, maxWidth: 120 }}>
-        <label style={{ fontSize: 13, color: '#fff' }}>Valor Inicial:</label>
+      <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
+        <label style={{ fontSize: 15, color: '#fff' }}>Valor Inicial do Caixa:</label>
         <input
           type="number"
           step="0.01"
@@ -66,8 +67,8 @@ export default function CaixaInfo({
           style={inputStyle}
         />
       </div>
-      <div style={{ flex: '1 1 100px', minWidth: 80, maxWidth: 120 }}>
-        <label style={{ fontSize: 13, color: '#fff' }}>Depósitos:</label>
+      <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
+        <label style={{ fontSize: 15, color: '#fff' }}>Depósitos do Caixa:</label>
         <input
           type="number"
           step="0.01"
@@ -77,8 +78,8 @@ export default function CaixaInfo({
           style={inputStyle}
         />
       </div>
-      <div style={{ flex: '1 1 100px', minWidth: 80, maxWidth: 120 }}>
-        <label style={{ fontSize: 13, color: '#fff' }}>Saídas:</label>
+      <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
+        <label style={{ fontSize: 15, color: '#fff' }}>Saídas do Caixa:</label>
         <input
           type="number"
           step="0.01"
@@ -88,24 +89,24 @@ export default function CaixaInfo({
           style={inputStyle}
         />
       </div>
-      <div style={{ flex: '1 1 100%', minWidth: 120 }}>
-        <label style={{ fontSize: 13, color: '#fff', verticalAlign: 'top' }}>OBS:</label>
+      <div style={{ flex: '1 1 100%', minWidth: 180 }}>
+        <label style={{ fontSize: 15, color: '#fff', verticalAlign: 'top' }}>OBS:</label>
         <textarea
           value={observacoesGerais}
           onChange={e => setObservacoesGerais(e.target.value)}
           placeholder="Observações gerais do relatório"
           style={{
             width: '100%',
-            height: '40px',
+            height: '60px',
             resize: 'vertical',
-            marginTop: 2,
+            marginTop: 4,
             background: '#f0f0f0',
-            borderRadius: '4px',
-            border: '1px solid #e3f2fd',
-            fontSize: '13px',
+            borderRadius: '6px',
+            border: '1.5px solid #e3f2fd',
+            fontSize: '15px',
             color: '#2c3e50',
             fontWeight: '600',
-            padding: '4px 6px'
+            padding: '6px 10px'
           }}
         />
       </div>
