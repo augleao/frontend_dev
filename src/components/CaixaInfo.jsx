@@ -58,8 +58,8 @@ export default function CaixaInfo({
         <label style={{ fontSize: 13, color: '#555' }}>Valor Inicial do Caixa:</label>
         <input
           type="text"
-          value={formatarMoeda(valorInicialCaixa)}
-          onChange={e => setValorInicialCaixa(Number(e.target.value.replace(/\D/g, '')))}
+          value={valorInicialCaixa}
+          onChange={e => setValorInicialCaixa(e.target.value.replace(/[^0-9,\.]/g, ''))}
           placeholder="R$ 0,00"
           style={inputStyle}
         />

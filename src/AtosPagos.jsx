@@ -478,7 +478,7 @@ function AtosPagos() {
     return hoje.toISOString().slice(0, 10);
   });
 
-  const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
+  const [valorInicialCaixa, setValorInicialCaixa] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);

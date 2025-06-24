@@ -1,10 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import CaixaInputs from './CaixaInputs';
 
 export default function ResumoCaixa({
   azulFundo,
-  valorInicialCaixa,
-  setValorInicialCaixa,
   depositosCaixa,
   setDepositosCaixa,
   saidasCaixa,
@@ -12,6 +10,9 @@ export default function ResumoCaixa({
   valorFinalCaixa,
   ISS,
 }) {
+  // No componente pai, armazene o valor como string:
+  const [valorInicialCaixa, setValorInicialCaixa] = useState('');
+
   return (
     <>
       <CaixaInputs
@@ -19,6 +20,14 @@ export default function ResumoCaixa({
         valorFinalCaixa={valorFinalCaixa}
         ISS={ISS}
       />
+      {/* No input:
+      <input
+        type="text"
+        value={valorInicialCaixa}
+        onChange={e => setValorInicialCaixa(e.target.value.replace(/[^0-9,\.]/g, ''))}
+        placeholder="R$ 0,00"
+        style={inputStyle}
+      /> */}
     </>
   );
 }

@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { formatarMoeda } from './utils';
 
 export default function CaixaInputs({
-  valorInicialCaixa,
+  valorInicialCaixa: valorInicialCaixaProp,
   valorFinalCaixa,
   ISS, // <-- adicione ISS aqui
 }) {
+  const [valorInicialCaixa, setValorInicialCaixa] = useState(valorInicialCaixaProp);
+
   const inputStyle = {
     width: 150,
     marginLeft: 8,
@@ -36,8 +38,9 @@ export default function CaixaInputs({
         <label style={{ fontWeight: '600', color: '#2c3e50' }}>Valor Inicial do Caixa:</label>
         <input
           type="text"
-          value={formatarMoeda(valorInicialCaixa)}
-          readOnly
+          value={valorInicialCaixa}
+          onChange={e => setValorInicialCaixa(e.target.value.replace(/[^0-9,\.]/g, ''))}
+          placeholder="R$ 0,00"
           style={inputStyle}
         />
       </div>
