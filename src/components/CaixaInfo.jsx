@@ -14,7 +14,20 @@ export default function CaixaInfo({
     <div className="atos-table-caixa-container">
       <div>
         <label>Responsável: </label>
-        <input type="text" value={responsavel} onChange={e => setResponsavel(e.target.value)} placeholder="Nome do Responsável" />
+        <div
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: '8px',
+            border: '2px solid #e3f2fd',
+            fontSize: '16px',
+            backgroundColor: '#f8f9fa',
+            color: '#2c3e50',
+            fontWeight: '600'
+          }}
+        >
+          {responsavel}
+        </div>
       </div>
       <div>
         <label>ISS (%): </label>
