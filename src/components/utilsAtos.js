@@ -39,6 +39,8 @@ export function extrairDadosAntigo(texto) {
         codigo = linhas[j];
         for (let k = j + 1; k < linhas.length; k++) {
           if (linhas[k].match(regexInicioAto)) break;
+          // Interrompe se encontrar linha de totalização
+          if (/total emolumento/i.test(linhas[k])) break;
           const matchValor = linhas[k].match(regexValor);
           if (matchValor) valores.push(matchValor[1]);
         }
