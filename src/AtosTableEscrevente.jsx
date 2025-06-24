@@ -26,8 +26,8 @@ export default function AtosTable({ atos, onRemover }) {
               </td>
             </tr>
           )}
-          {atos.map((ato, idx) => (
-            <tr key={idx}>
+          {atos.map(ato => (
+            <tr key={ato.id}>
               <td>{formatarDataBR(ato.data)}</td>
               <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.hora}</td>
               <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
@@ -70,3 +70,8 @@ export default function AtosTable({ atos, onRemover }) {
     </div>
   );
 }
+
+// Antes do AtosTable
+console.log("Atos enviados para a tabela:", atos);
+
+<AtosTable atos={atos} onRemover={removerAto} />

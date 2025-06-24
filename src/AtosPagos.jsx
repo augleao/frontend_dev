@@ -1178,6 +1178,8 @@ function AtosPagos() {
         >
           📋 Atos do Dia
         </h3>
+        {console.log("Atos enviados para a tabela:", atos)}
+
         <AtosTable atos={atos} onRemover={removerAto} />
       </div>
     </div>
