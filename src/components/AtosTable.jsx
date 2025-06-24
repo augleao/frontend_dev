@@ -197,27 +197,26 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
 
   if (!atos.length) return null;
 
-  // --- LAYOUT AJUSTADO ---
+  // --- LAYOUT AJUSTADO PARA NÃO ULTRAPASSAR O PAI ---
   return (
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       fontFamily: 'Arial, sans-serif'
     }}>
-      {/* Main Content */}
       <main style={{
-        width: '100vw',
-        margin: 0,
-        padding: 0
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '60px 0'
       }}>
         <div style={{
           background: 'rgba(255, 255, 255, 0.1)',
           backdropFilter: 'blur(10px)',
-          borderRadius: '0px',
-          padding: '48px 0 0 0',
-          border: 'none',
-          width: '100vw',
-          margin: 0
+          borderRadius: '24px',
+          padding: '48px 0',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          width: '100%',
+          boxSizing: 'border-box'
         }}>
           <h2 style={{
             fontSize: '32px',
@@ -230,7 +229,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
             Atos Extraídos
           </h2>
           {/* Bloco de informações do caixa */}
-          <div style={{ marginBottom: 32, padding: '0 32px', width: '100%' }}>
+          <div style={{ marginBottom: 32, padding: '0 32px', width: '100%', boxSizing: 'border-box' }}>
             <CaixaInfo
               responsavel={responsavel}
               setResponsavel={setResponsavel}
@@ -248,7 +247,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
             />
           </div>
 
-          <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'center', padding: '0 32px', width: '100%' }}>
+          <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'center', padding: '0 32px', width: '100%', boxSizing: 'border-box' }}>
             <button
               className="atos-table-btn"
               style={{
@@ -280,15 +279,10 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
             borderRadius: '16px',
             boxShadow: '0 4px 16px rgba(0,0,0,0.07)',
             padding: '24px',
-            width: '100vw',
-            minWidth: '100%',
+            width: '100%',
+            minWidth: 0,
             maxWidth: '100%',
             overflowX: 'auto',
-            position: 'relative',
-            left: '50%',
-            right: '50%',
-            marginLeft: '-50vw',
-            marginRight: '-50vw',
             boxSizing: 'border-box'
           }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
