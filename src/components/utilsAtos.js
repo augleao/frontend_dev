@@ -54,78 +54,48 @@ export function extrairDadosAntigo(texto) {
         codigo,
         descricao,
         valorTotal,
-        pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
-        pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
-        pagamentoPix: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
-        pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
-        depositoPrevio: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
+        pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
+        depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
         observacoes: '',
       });
       i = j;
     }
   }
-
-  // Ajuste do valorTotal na última linha dos atos
-  if (atos.length > 0) {
-    const ultimoAto = atos[atos.length - 1];
-    if (ultimoAto.quantidade > 0 && ultimoAto.valorTotal > 0) {
-      // Dividir o valor total da última coluna pela quantidade para obter valor unitário
-      ultimoAto.valorTotal = ultimoAto.valorTotal / ultimoAto.quantidade;
-    }
-  }
-
   return { dataRelatorio, atos };
 }
-// Extração para layout novo CARTOSOFT DESKTOP
-function preprocessarTexto(texto) {
-  // Insere espaço entre número e "R$" para separar valores
-  let textoProcessado = texto.replace(/(\d)(R\$)/g, '$1 $2');
-  // Insere espaço entre "R$" e número para separar valores
-  textoProcessado = textoProcessado.replace(/(R\$)(\d)/g, '$1 $2');
-  // Insere espaço entre número e letra para separar código e descrição
-  textoProcessado = textoProcessado.replace(/(\d)([A-Za-z])/g, '$1 $2');
-  // Remove múltiplos espaços
-  textoProcessado = textoProcessado.replace(/\s{2,}/g, ' ');
-  return textoProcessado;
-}
 
+// Extração para layout novo
 export function extrairDadosNovo(texto) {
-  const textoProcessado = preprocessarTexto(texto);
-  console.log('Texto processado (início):', textoProcessado.slice(0, 500));
-
-  const regex = /(\d+)\s+(\d{4})\s+R\$ ([\d.,]+)\s+R\$ ([\d.,]+)\s+R\$ ([\d.,]+)\s+R\$ ([\d.,]+)\s+-\s+(.*?)(?=\d+\s+\d{4}\s+R\$|$)/g;
+  const textoLimpo = texto.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ');
+  const regex = /(\d)(\d{4})R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)R\$ ([\d.,]+)(\d+) - ([^]+?)(?=\d{5}R\$|$)/g;
   const atos = [];
   let match;
   let id = 0;
-
-  while ((match = regex.exec(textoProcessado)) !== null) {
+  while ((match = regex.exec(textoLimpo)) !== null) {
     atos.push({
       id: id++,
       quantidade: parseInt(match[1]),
       codigo: match[2],
-      emolumento: parseFloat(match[3].replace(/\./g, '').replace(',', '.')),
-      recompe: parseFloat(match[4].replace(/\./g, '').replace(',', '.')),
-      tfj: parseFloat(match[5].replace(/\./g, '').replace(',', '.')),
-      valorTotal: parseFloat(match[6].replace(/\./g, '').replace(',', '.')),
-      descricao: match[7].trim(),
-      pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
-      pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
-      pagamentoPix: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
-      pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
-      depositoPrevio: { quantidade: 0, valor: 0, valorManual: false, valorInput: '' },
+      emolumento: parseFloat(match[3].replace('.', '').replace(',', '.')),
+      recompe: parseFloat(match[4].replace('.', '').replace(',', '.')),
+      tfj: parseFloat(match[5].replace('.', '').replace(',', '.')),
+      valorTotal: parseFloat(match[6].replace('.', '').replace(',', '.')),
+      descricao: match[8].trim(),
+      pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
+      pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
+      pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
+      pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
+      depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
       observacoes: '',
     });
   }
-
-  // Ajuste do valorTotal da última linha
-  if (atos.length > 0) {
-    const ultimoAto = atos[atos.length - 1];
-    if (ultimoAto.quantidade > 0 && ultimoAto.valorTotal > 0) {
-      ultimoAto.valorTotal = ultimoAto.valorTotal / ultimoAto.quantidade;
-    }
-  }
-
-  return { dataRelatorio: null, atos };
+  let dataRelatorio = null;
+  const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
+  if (matchData) dataRelatorio = matchData[1];
+  return { dataRelatorio, atos };
 }
 
 // Função principal de extração
@@ -144,8 +114,34 @@ export function formatarMoeda(valor) {
 // Converte string moeda para número
 export function moedaParaNumero(valorStr) {
   if (!valorStr) return 0;
-  const num = valorStr.replace(/[^\d,.-]/g, '').replace(',', '.');
-  return parseFloat(num) || 0;
+  
+  // Remove todos os caracteres que não são dígitos, vírgula ou ponto
+  let num = valorStr.toString().replace(/[^\d,.-]/g, '');
+  
+  // Se tem vírgula e ponto, assume formato brasileiro (1.234,56)
+  if (num.includes(',') && num.includes('.')) {
+    num = num.replace(/\./g, '').replace(',', '.');
+  }
+  // Se tem apenas vírgula, assume que é decimal brasileiro (123,45)
+  else if (num.includes(',') && !num.includes('.')) {
+    num = num.replace(',', '.');
+  }
+  // Se tem apenas ponto, pode ser decimal americano (123.45) ou separador de milhares (1.234)
+  else if (num.includes('.') && !num.includes(',')) {
+    // Se tem mais de 3 dígitos após o ponto, provavelmente é separador de milhares
+    const partes = num.split('.');
+    if (partes.length === 2 && partes[1].length <= 2) {
+      // Formato decimal americano (123.45)
+      num = num;
+    } else {
+      // Formato com separador de milhares (1.234)
+      num = num.replace(/\./g, '');
+    }
+  }
+  
+  const resultado = parseFloat(num) || 0;
+  console.log('moedaParaNumero:', { entrada: valorStr, processado: num, resultado });
+  return resultado;
 }
 
 // Calcula valor total com ISS
