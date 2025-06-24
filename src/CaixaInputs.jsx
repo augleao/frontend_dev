@@ -49,6 +49,24 @@ export default function CaixaInputs({
           style={inputStyle}
         />
       </div>
+      <div>
+        <label style={{ fontWeight: '600', color: '#2c3e50' }}>ISS:</label>
+        <input
+          type="text"
+          value={ISS}
+          readOnly
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: '8px',
+            border: '2px solid #e3f2fd',
+            fontSize: '16px',
+            backgroundColor: '#f8f9fa',
+            color: '#2c3e50',
+            fontWeight: '600'
+          }}
+        />
+      </div>
     </div>
   );
 }

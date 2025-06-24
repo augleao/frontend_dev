@@ -504,11 +504,8 @@ function AtosPagos() {
   // Novo estado para ISS
   const [ISS, setISS] = useState(() => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    if (usuario?.serventia === 'RCPN de Campanha') {
-      return 3;
-    } else if (usuario?.serventia === 'RCPN de Lavras') {
-      return 0;
-    }
+    if (usuario?.serventia === 'RCPN de Campanha') return 3;
+    if (usuario?.serventia === 'RCPN de Lavras') return 0;
     return 0;
   });
 

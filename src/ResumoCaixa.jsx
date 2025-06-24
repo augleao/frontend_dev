@@ -2,6 +2,7 @@ import React from 'react';
 import CaixaInputs from './CaixaInputs';
 
 export default function ResumoCaixa({
+  azulFundo,
   valorInicialCaixa,
   setValorInicialCaixa,
   depositosCaixa,
@@ -9,17 +10,14 @@ export default function ResumoCaixa({
   saidasCaixa,
   setSaidasCaixa,
   valorFinalCaixa,
+  ISS,
 }) {
   return (
     <>
       <CaixaInputs
         valorInicialCaixa={valorInicialCaixa}
-        setValorInicialCaixa={setValorInicialCaixa}
-        depositosCaixa={depositosCaixa}
-        setDepositosCaixa={setDepositosCaixa}
-        saidasCaixa={saidasCaixa}
-        setSaidasCaixa={setSaidasCaixa}
         valorFinalCaixa={valorFinalCaixa}
+        ISS={ISS}
       />
     </>
   );
