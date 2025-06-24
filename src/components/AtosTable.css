@@ -123,14 +123,13 @@
 }
 
 .atos-table-caixa-container input {
-  width: 130px;
-  margin-right: 12px;
+  width: 100%;
 }
 
 /* Botão customizado para upload */
 .custom-file-button {
   padding: 10px 24px;
-  background: #1976d2;
+  background: #19d272;
   color: #fff;
   border: none;
   border-radius: 6px;
