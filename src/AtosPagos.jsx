@@ -887,31 +887,32 @@ function AtosPagos() {
   }, [dataSelecionada]);
 
   // useEffect para carregar atos por data
-  useEffect(() => {
-    async function carregarAtosPorData() {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${dataSelecionada}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const data = await res.json();
-        if (res.ok) {
-          setAtos(data.atosPagos || []);
-          console.log("Atos carregados para a data selecionada:", data.atosPagos);
-          const fechamentoDoDiaAtual = data.atosPagos.find((ato) => ato.codigo === "0001");
-          console.log("Ato 0001 encontrado para a data selecionada (Valor Final do Caixa):", fechamentoDoDiaAtual);
-          setValorFinalCaixa(fechamentoDoDiaAtual ? fechamentoDoDiaAtual.valor_unitario : 0);
-        } else {
-          setAtos([]);
+  async function carregarAtosPorData() {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${dataSelecionada}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-      } catch (e) {
-        console.error('Erro ao carregar atos pagos:', e);
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setAtos(data.atosPagos || []);
+        console.log("Atos carregados para a data selecionada:", data.atosPagos);
+        const fechamentoDoDiaAtual = data.atosPagos.find((ato) => ato.codigo === "0001");
+        console.log("Ato 0001 encontrado para a data selecionada (Valor Final do Caixa):", fechamentoDoDiaAtual);
+        setValorFinalCaixa(fechamentoDoDiaAtual ? fechamentoDoDiaAtual.valor_unitario : 0);
+      } else {
         setAtos([]);
       }
+    } catch (e) {
+      console.error('Erro ao carregar atos pagos:', e);
+      setAtos([]);
     }
+  }
+
+  useEffect(() => {
     carregarAtosPorData();
   }, [dataSelecionada]);
    
