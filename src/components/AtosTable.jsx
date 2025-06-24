@@ -104,39 +104,24 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
     );
   };
 
-const handleAtoChange = (id, campo, subcampo, valor) => {
-  setAtos(prevAtos =>
-    prevAtos.map(ato => {
-      if (ato.id === id) {
-        // Atualiza observações (campo simples)
-        if (campo === 'observacoes') {
-          return { ...ato, observacoes: valor };
-        }
+function handleAtoChange(index, field, value) {
+  setAtos(prevAtos => {
+    const novosAtos = [...prevAtos];
+    novosAtos[index] = { ...novosAtos[index], [field]: value };
 
-        // Atualiza somente quantidade das formas de pagamento aqui
-        if (
-          ['pagamentoDinheiro', 'pagamentoCartao', 'pagamentoPix', 'pagamentoCRC', 'depositoPrevio'].includes(campo)
-        ) {
-          if (subcampo === 'quantidade') {
-            const quantidadeNum = parseInt(valor) || 0;
-            return {
-              ...ato,
-              [campo]: { ...ato[campo], quantidade: quantidadeNum },
-            };
-          }
-          // NÃO trate subcampo 'valor' aqui para evitar reset do input
-          return ato;
-        }
-
-        // Caso tenha outros campos com estrutura similar, trate aqui...
-
-        // Se não for nenhum dos casos acima, retorna ato sem alteração
-        return ato;
+    // Se o campo alterado for o número do ato, buscar o valor correspondente
+    if (field === 'numeroAto') {
+      const atoEncontrado = listaDeAtos.find(ato => ato.numero === value);
+      if (atoEncontrado) {
+        novosAtos[index].valor = atoEncontrado.valor; // Atualiza o valor automaticamente
+      } else {
+        novosAtos[index].valor = ''; // Limpa se não encontrar
       }
-      return ato;
-    })
-  );
-};
+    }
+
+    return novosAtos;
+  });
+}
 
 
   const salvarRelatorio = async () => {
