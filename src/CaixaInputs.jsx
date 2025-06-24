@@ -4,6 +4,7 @@ import { formatarMoeda } from './utils';
 export default function CaixaInputs({
   valorInicialCaixa,
   valorFinalCaixa,
+  ISS, // <-- adicione ISS aqui
 }) {
   const inputStyle = {
     width: 150,
