@@ -1,12 +1,4 @@
-import React from 'react';
-import { formatarMoeda } from './utilsAtos';
-
-const inputStyleQuantidade = { width: '50px', marginRight: '4px' };
-const inputStyleValor = { width: '110px' };
-const labelStyle = { fontSize: '0.75rem', marginRight: '4px', display: 'inline-block', width: '30px' };
-const brStyle = { display: 'block', height: '4px' };
-
-function renderPagamentoCell(ato, campo, handleAtoChange, handleValorChange, handleValorBlur) {
+function renderPagamentoCell(ato, campo, handleAtoChange) {
   return (
     <td>
       <label style={labelStyle}>qnt.</label>
@@ -14,22 +6,23 @@ function renderPagamentoCell(ato, campo, handleAtoChange, handleValorChange, han
         type="number"
         min="0"
         placeholder="Qtde"
-        value={ato[campo]?.quantidade ?? 0} // proteção caso ato[campo] seja undefined
+        value={ato[campo]?.quantidade ?? 0}
         onChange={e => handleAtoChange(ato.id, campo, 'quantidade', e.target.value)}
         style={inputStyleQuantidade}
       />
       <br style={brStyle} />
       <label style={labelStyle}>valor</label>
-<input
-  type="text"
-  value={atos[index].valor || ''}
-  onChange={e => handleAtoChange(index, 'valor', e.target.value)}
-/>
+      <input
+        type="text"
+        value={ato[campo]?.valor ?? ''}
+        onChange={e => handleAtoChange(ato.id, campo, 'valor', e.target.value)}
+        style={inputStyleValor}
+      />
     </td>
   );
 }
 
-export default function AtosGrid({ atos, handleAtoChange, handleValorChange, handleValorBlur }) {
+export default function AtosGrid({ atos, handleAtoChange }) {
   return (
     <div className="atos-table-container">
       <table className="atos-table">
@@ -67,15 +60,22 @@ export default function AtosGrid({ atos, handleAtoChange, handleValorChange, han
             return (
               <tr key={ato.id} className={linhaClass}>
                 <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 500 }}>{ato.quantidade}</td>
-                <td style={{ padding: '10px 8px', textAlign: 'center' }}>{ato.codigo}</td>
+                <td style={{ padding: '10px 8px', textAlign: 'center' }}>
+                  <input
+                    type="text"
+                    value={ato.codigo}
+                    onChange={e => handleAtoChange(ato.id, 'codigo', null, e.target.value)}
+                    style={{ width: '60px' }}
+                  />
+                </td>
                 <td style={{ padding: '10px 8px', minWidth: 180 }}>{ato.descricao}</td>
                 <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 500 }}>{formatarMoeda(ato.valorTotalComISS)}</td>
                 <td style={{ padding: '10px 8px', textAlign: 'right', color: valorFaltante === 0 ? '#388e3c' : '#d32f2f', fontWeight: 500 }}>{formatarMoeda(valorFaltante)}</td>
-{renderPagamentoCell(ato, 'pagamentoDinheiro', handleAtoChange, handleValorChange, handleValorBlur)}
-{renderPagamentoCell(ato, 'pagamentoCartao', handleAtoChange, handleValorChange, handleValorBlur)}
-{renderPagamentoCell(ato, 'pagamentoPix', handleAtoChange, handleValorChange, handleValorBlur)}
-{renderPagamentoCell(ato, 'pagamentoCRC', handleAtoChange, handleValorChange, handleValorBlur)}
-{renderPagamentoCell(ato, 'depositoPrevio', handleAtoChange, handleValorChange, handleValorBlur)}
+                {renderPagamentoCell(ato, 'pagamentoDinheiro', handleAtoChange)}
+                {renderPagamentoCell(ato, 'pagamentoCartao', handleAtoChange)}
+                {renderPagamentoCell(ato, 'pagamentoPix', handleAtoChange)}
+                {renderPagamentoCell(ato, 'pagamentoCRC', handleAtoChange)}
+                {renderPagamentoCell(ato, 'depositoPrevio', handleAtoChange)}
                 <td>
                   <textarea
                     value={ato.observacoes}
