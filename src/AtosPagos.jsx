@@ -1046,20 +1046,20 @@ function AtosPagos() {
           width: '100%',
           background: 'white',
           borderRadius: 0,
-          padding: 0,
-          margin: 0,
+          padding: 0, // Remover padding
+          margin: 0,  // Remover margin
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
           boxSizing: 'border-box'
         }}
       >
         <h3
           style={{
-            margin: '0 0 20px 0',
+            margin: 0, // Remover margem lateral
             color: '#2c3e50',
             fontSize: '18px',
             fontWeight: '600',
             borderBottom: '2px solid #9b59b6',
-            paddingBottom: '10px'
+            padding: '10px 0 10px 0' // Padding só em cima e embaixo
           }}
         >
           📋 Atos do Dia
