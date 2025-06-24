@@ -44,17 +44,15 @@ function AtosPagos() {
   });
 
   // Novo estado para ISS
-  const [ISS, setISS] = useState(0);
-
-  // Definir ISS conforme serventia do usuário logado
-  useEffect(() => {
+  const [ISS, setISS] = useState(() => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     if (usuario?.serventia === 'RCPN de Campanha') {
-      setISS(3);
+      return 3;
     } else if (usuario?.serventia === 'RCPN de Lavras') {
-      setISS(0);
+      return 0;
     }
-  }, []);
+    return 0;
+  });
 
   const [entradaValor, setEntradaValor] = useState('');
   const [entradaObs, setEntradaObs] = useState('');
