@@ -204,17 +204,18 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       fontFamily: 'Arial, sans-serif'
     }}>
-      {/* Container principal com fundo gradiente */}
+      {/* Container principal com fundo gradiente (ROXO) */}
 
       <main style={{
         maxWidth: '1200px',
         margin: '0 auto',
-        padding: '60px 0'
+        padding: '60px 0',
+        background: 'rgba(255,0,0,0.08)' // VERMELHO CLARO
       }}>
         {/* Área centralizada e limitada em largura */}
 
         <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
+          background: 'rgba(0,255,0,0.15)', // VERDE CLARO
           backdropFilter: 'blur(10px)',
           borderRadius: '24px',
           padding: '48px 0',
@@ -236,7 +237,13 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           </h2>
           {/* Título da seção, centralizado e destacado */}
 
-          <div style={{ marginBottom: 32, padding: '32px 0', width: '100%', boxSizing: 'border-box' }}>
+          <div style={{
+            marginBottom: 32,
+            padding: '32px 0',
+            width: '100%',
+            boxSizing: 'border-box',
+            background: 'rgba(0,0,255,0.10)' // AZUL CLARO
+          }}>
             <CaixaInfo
               responsavel={responsavel}
               setResponsavel={setResponsavel}
@@ -255,7 +262,16 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           </div>
           {/* Bloco de inputs e informações do caixa, com espaçamento e padding lateral */}
 
-          <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'center', padding: '0 32px', width: '100%', boxSizing: 'border-box' }}>
+          <div style={{
+            marginTop: 20,
+            display: 'flex',
+            gap: 10,
+            justifyContent: 'center',
+            padding: '0 32px',
+            width: '100%',
+            boxSizing: 'border-box',
+            background: 'rgba(255,255,0,0.10)' // AMARELO CLARO
+          }}>
             <button
               className="atos-table-btn"
               style={{
@@ -285,7 +301,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
 
           <div style={{
             marginTop: 32,
-            background: 'white',
+            background: 'rgba(255,0,255,0.10)', // ROSA CLARO
             borderRadius: '16px',
             boxShadow: '0 4px 16px rgba(0,0,0,0.07)',
             padding: '24px',
@@ -295,7 +311,11 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
             overflowX: 'auto',
             boxSizing: 'border-box'
           }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div style={{
+              maxWidth: '1200px',
+              margin: '0 auto',
+              background: 'rgba(0,255,255,0.10)' // CIANO CLARO
+            }}>
               <AtosGrid
                 atos={atosComISS}
                 handleAtoChange={handleAtoChange}
