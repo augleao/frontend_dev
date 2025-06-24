@@ -12,45 +12,53 @@ export default function CaixaInputs({
   setSaidasCaixa
 }) {
   const inputStyle = {
-    width: 150,
-    marginLeft: 8,
+    width: '100%',
     padding: 8,
     borderRadius: 6,
     border: '1px solid #ccc',
     textAlign: 'right',
     backgroundColor: '#eee',
-    fontSize: '14px',
-    fontWeight: '600'
+    fontSize: '15px',
+    fontWeight: '600',
+    marginBottom: 4
   };
 
   const infoStyle = {
-    width: 150,
-    marginLeft: 8,
+    width: '100%',
     padding: 8,
     borderRadius: 6,
     border: 'none',
     textAlign: 'right',
     backgroundColor: 'transparent',
-    fontSize: '14px',
-    fontWeight: '600'
+    fontSize: '15px',
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginBottom: 8
+  };
+
+  const labelStyle = {
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginBottom: 2,
+    fontSize: '15px'
   };
 
   return (
     <div
       style={{
-        backgroundColor: '#f0f0f0',
-        borderRadius: 8,
-        padding: 16,
+        backgroundColor: '#f8fafc',
+        borderRadius: 12,
+        padding: 24,
         marginBottom: 24,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 16,
-        justifyContent: 'center',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        gap: 24,
+        alignItems: 'end'
       }}
     >
       <div>
-        <label style={{ fontWeight: '600', color: '#2c3e50' }}>Valor Inicial do Caixa:</label>
+        <label style={labelStyle}>Valor Inicial do Caixa</label>
         <input
           type="number"
           step="0.01"
@@ -62,7 +70,7 @@ export default function CaixaInputs({
         <div style={infoStyle}>{formatarMoeda(valorInicialCaixaProp)}</div>
       </div>
       <div>
-        <label style={{ fontWeight: '600', color: '#2c3e50' }}>Depósitos do Caixa:</label>
+        <label style={labelStyle}>Depósitos do Caixa</label>
         <input
           type="number"
           step="0.01"
@@ -74,7 +82,7 @@ export default function CaixaInputs({
         <div style={infoStyle}>{formatarMoeda(depositosCaixa)}</div>
       </div>
       <div>
-        <label style={{ fontWeight: '600', color: '#2c3e50' }}>Saídas do Caixa:</label>
+        <label style={labelStyle}>Saídas do Caixa</label>
         <input
           type="number"
           step="0.01"
@@ -86,17 +94,25 @@ export default function CaixaInputs({
         <div style={infoStyle}>{formatarMoeda(saidasCaixa)}</div>
       </div>
       <div>
-        <label style={{ fontWeight: '600', color: '#2c3e50' }}></label>
-        <div style={infoStyle}>{}</div>
-      </div>
-      <div>
-        <label style={{ fontWeight: '600', color: '#2c3e50' }}>ISS:</label>
+        <label style={labelStyle}>ISS (%)</label>
         <input
-          type="text"
+          type="number"
           value={ISS}
           readOnly
           style={inputStyle}
         />
+      </div>
+      <div>
+        <label style={labelStyle}>Valor Final do Caixa</label>
+        <div style={{
+          ...infoStyle,
+          backgroundColor: '#e3fcec',
+          color: '#218838',
+          fontWeight: 'bold',
+          fontSize: '17px'
+        }}>
+          {formatarMoeda(valorFinalCaixa)}
+        </div>
       </div>
     </div>
   );
