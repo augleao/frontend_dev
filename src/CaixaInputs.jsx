@@ -92,16 +92,7 @@ export default function CaixaInputs({
           style={inputStyle}
         />
         <div style={infoStyle}>{formatarMoeda(saidasCaixa)}</div>
-      </div>
-      <div>
-        <label style={labelStyle}>ISS (%)</label>
-        <input
-          type="number"
-          value={ISS}
-          readOnly
-          style={inputStyle}
-        />
-      </div>
+      </div>      
       <div>
         <label style={labelStyle}>Valor Final do Caixa</label>
         <div style={{
