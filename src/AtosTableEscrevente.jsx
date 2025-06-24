@@ -2,7 +2,7 @@
 import React from 'react';
 import { formasPagamento, formatarDataBR, formatarValor } from './utils';
 
-export default function AtosTable({ atos, onRemover }) {
+export default function AtosTableEscrevente({ atos, onRemover }) {
   return (
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa' }}>
@@ -26,8 +26,8 @@ export default function AtosTable({ atos, onRemover }) {
               </td>
             </tr>
           )}
-          {atos.map(ato => (
-            <tr key={ato.id}>
+          {atos.map((ato, idx) => (
+            <tr key={idx}>
               <td>{formatarDataBR(ato.data)}</td>
               <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.hora}</td>
               <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
