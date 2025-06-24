@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import UploadForm from './UploadForm';
 import DataTable from './DataTable';
-import Tooltip from './Tooltip'; // Importe o componente Tooltip
-import './Tooltip.css'; // Importe o CSS do Tooltip
+import Tooltip from './Tooltip';
+import './Tooltip.css';
 
-function App() {
+function Conciliacao() {
   const [data, setData] = useState([]);
 
   const handleUpload = (data) => {
@@ -36,19 +36,70 @@ function App() {
   );
 
   return (
-    <div>
-      <h1>
-        Controle de Caixa diário pra Cartosoft Web ou Desktop
+    <div
+      style={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        borderRadius: '24px',
+        padding: '32px 24px',
+        margin: '32px auto 24px auto',
+        maxWidth: 900,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+        border: '1px solid rgba(255,255,255,0.18)',
+        minHeight: 0,
+      }}
+    >
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 18,
+        flexWrap: 'wrap'
+      }}>
+        <h2 style={{
+          color: 'white',
+          fontSize: '22px',
+          fontWeight: 700,
+          margin: 0,
+          textShadow: '0 2px 4px rgba(0,0,0,0.18)'
+        }}>
+          Controle de Caixa diário pra Cartosoft Web ou Desktop
+        </h2>
         <Tooltip text={tooltipText}>
-          <span className="info-icon">i</span>
+          <span className="info-icon" style={{
+            marginLeft: 12,
+            background: 'rgba(255,255,255,0.15)',
+            color: 'white',
+            borderRadius: '50%',
+            width: 24,
+            height: 24,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 700,
+            fontSize: 16,
+            cursor: 'pointer',
+            border: '1px solid rgba(255,255,255,0.25)'
+          }}>i</span>
         </Tooltip>
-      </h1>
-      <UploadForm onUpload={handleUpload} />
+      </div>
+      <div style={{ marginBottom: 12 }}>
+        <UploadForm onUpload={handleUpload} />
+      </div>
       {data.length > 0 && (
-        <DataTable data={data} onPaymentChange={handlePaymentChange} />
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          padding: '16px 8px',
+          marginTop: 8,
+          marginBottom: 0,
+          overflowX: 'auto'
+        }}>
+          <DataTable data={data} onPaymentChange={handlePaymentChange} />
+        </div>
       )}
     </div>
   );
 }
 
-export default App;
+export default Conciliacao;
