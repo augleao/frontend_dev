@@ -1036,8 +1036,8 @@ function AtosPagos() {
   };
 
   // Defina a cor azul desejada para o fundo dos containers
-  const azulFundo = '#e3f0fd';
-
+  //const azulFundo = '#e3f0fd';
+const azulFundo = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
   return (
     <div
       style={{
