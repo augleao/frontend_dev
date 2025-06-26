@@ -424,9 +424,10 @@ function AtosPagos() {
         // 2. Buscar valor inicial do caixa (fechamento do dia anterior)
         let dataBusca = dayjs(dataSelecionada).subtract(1, "day");
         let foundValor = 0;
+        let encontrou = false;
 
         // Loop para buscar o ato 0001 do dia anterior ou do dia mais próximo para trás
-        for (let i = 0; i < 30 && isMounted; i++) { // Limita a busca a 30 dias
+        for (let i = 0; i < 10 && isMounted; i++) { // Limita a busca a 30 dias
           const dataFormatada = dataBusca.format("YYYY-MM-DD");
           const resValorInicial = await fetch(
             `${process.env.REACT_APP_API_URL || "https://backend-dev-ypsu.onrender.com"}/api/atos-pagos?data=${dataFormatada}`,
