@@ -3,6 +3,8 @@ import React from 'react';
 import { formasPagamento, formatarDataBR, formatarValor } from './utils';
 
 export default function AtosTableEscrevente({ atos, onRemover }) {
+  console.log("Atos recebidos na tabela:", atos);
+
   return (
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa' }}>
