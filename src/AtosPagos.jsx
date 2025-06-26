@@ -644,6 +644,18 @@ useEffect(() => {
     }
   };
 
+  // ISS automático conforme serventia do usuário
+useEffect(() => {
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+  if (usuario?.serventia === 'RCPN de Campanha') {
+    setPercentualISS(3);
+  } else if (usuario?.serventia === 'RCPN de Lavras') {
+    setPercentualISS(0);
+  } else {
+    setPercentualISS(0);
+  }
+}, []);
+
   return (
     <div style={{
       minHeight: '100vh',
