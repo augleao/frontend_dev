@@ -509,7 +509,7 @@ useEffect(() => {
       (ato) =>
         ato.codigo === "0001" &&
         ato.data === dataAtual &&
-        (ato.usuario || '').trim().toLowerCase() === (nomeUsuario || '').trim().toLowerCase()
+        (ato.usuario || '').trim().toLowerCase() === (usuario || '').trim().toLowerCase()
     );
     if (existeFechamento) {
       alert("Já existe um fechamento de caixa (código 0001) para este usuário e data.");
