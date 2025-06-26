@@ -179,7 +179,7 @@ function AtosPagos() {
       (ato) =>
         ato.codigo === '0005' &&
         ato.data === dataSelecionada &&
-        ato.usuario === nomeUsuario
+        (ato.usuario || '').trim().toLowerCase() === (nomeUsuario || '').trim().toLowerCase()
     );
     const valorInicial = atoValorInicial ? parseFloat(atoValorInicial.valor_unitario) || 0 : 0;
 
