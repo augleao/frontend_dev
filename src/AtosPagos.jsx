@@ -69,8 +69,9 @@ function AtosPagos() {
       alert('Informe um valor válido para a entrada.');
       return;
     }
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    const nomeUsuario = usuario?.nome || 'Usuário não identificado';
+   // const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+   //
+   //  const nomeUsuario = usuario?.nome || 'Usuário não identificado';
     const agora = new Date();
 
     const novaEntrada = {
@@ -121,8 +122,8 @@ function AtosPagos() {
       alert('Informe um valor válido para a saída.');
       return;
     }
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    const nomeUsuario = usuario?.nome || 'Usuário não identificado';
+    //const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    //const nomeUsuario = usuario?.nome || 'Usuário não identificado';
     const agora = new Date();
 
     const novaSaida = {
@@ -300,8 +301,8 @@ function AtosPagos() {
       return;
     }
 
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    const nomeUsuario = usuario?.nome || 'Usuário não identificado';
+    //const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    //const nomeUsuario = usuario?.nome || 'Usuário não identificado';
 
     // Calcular valor unitário com ISS
     const valorUnitarioComISS = calcularValorComISS(selectedAto.valor_final ?? 0);
@@ -477,8 +478,9 @@ function AtosPagos() {
   }, [searchTerm]);
 
     const fechamentoDiario = async () => {
-    const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
-    const nomeUsuario = usuario?.nome || "Usuário não identificado";
+    //const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+   // const nomeUsuario = usuario?.nome || "Usuário não identificado";
+    
     const dataAtual = dataSelecionada; // Usa a data selecionada pelo usuário
 
     // Verifica se já existe um ato 0001 para o dia e usuário
@@ -571,8 +573,8 @@ function AtosPagos() {
 
   const salvarValorInicialCaixa = async () => {
     // Remove qualquer ato 0005 já existente para o dia
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    const nomeUsuario = usuario?.nome || 'Usuário não identificado';
+    //const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+   // const nomeUsuario = usuario?.nome || 'Usuário não identificado';
 
     // Se não digitou nada, não salva
     if (!valorInicialCaixa || valorInicialCaixa <= 0) return;
