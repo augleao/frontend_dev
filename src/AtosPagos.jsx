@@ -413,7 +413,6 @@ function AtosPagos() {
       if (resAtos.ok) {
         const dataAtos = await resAtos.json();
         setAtos(dataAtos.atosPagos || []);
-        // ...outros tratamentos se necessário...
       }
     } catch (e) {
       console.error('Erro ao carregar dados da data:', e);
@@ -434,10 +433,8 @@ function AtosPagos() {
       return;
     }
 
-    // useEffect carregar atos na entrada do componente
-useEffect(() => {
-  carregarDadosDaData();
-}, []);
+  
+
     
     setLoadingSuggestions(true);
 
