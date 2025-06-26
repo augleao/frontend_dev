@@ -434,6 +434,11 @@ function AtosPagos() {
       return;
     }
 
+    // useEffect carregar atos na entrada do componente
+useEffect(() => {
+  carregarDadosDaData();
+}, []);
+    
     setLoadingSuggestions(true);
 
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
