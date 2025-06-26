@@ -571,9 +571,13 @@ useEffect(() => {
       // Adiciona o ato de fechamento à lista local
       setAtos((prev) => [...prev, atoFechamento]);
 
+      // Aguarde carregar os atos atualizados do backend
+      await carregarDadosDaData();
+
+      // Agora sim, gere o PDF com os atos atualizados
       gerarRelatorioPDF({
         dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
-        atos,
+        atos: [...atos, atoFechamento], // ou use o novo estado se carregar do backend
         valorInicialCaixa,
         responsavel: nomeUsuario,
       });
