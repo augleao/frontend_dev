@@ -20,7 +20,7 @@ function normalizar(str) {
 }
 
 // Função auxiliar para formatar moeda
-function formatarMoeda(valor) {
+export function formatarMoeda(valor) {
   return (valor ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
