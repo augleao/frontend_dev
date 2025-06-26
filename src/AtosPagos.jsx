@@ -3,7 +3,7 @@ import {
   formasPagamento,
   formatarMoeda,
   formatarDataBR,
-  gerarRelatorioPDF,
+  gerarRelatorioPDFatosPagos,
 } from './utils';
 import DataSelector from './DataSelector';
 import CaixaInputs from './CaixaInputs';
@@ -575,7 +575,7 @@ useEffect(() => {
       const dataAtos = await resAtos.json();
       const atosAtualizados = dataAtos.atosPagos || [];
 
-      gerarRelatorioPDF({
+      gerarRelatorioPDFatosPagos({
         dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
         atos: atosAtualizados,
         valorInicialCaixa,
