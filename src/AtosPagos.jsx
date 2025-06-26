@@ -734,7 +734,8 @@ useEffect(() => {
           paddingBottom: '10px'
         }}>
           📊 Resumo do Caixa
-
+        </h2>
+        
         
         {/* Campo para ISS */}
         <div style={{
