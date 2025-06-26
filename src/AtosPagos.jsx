@@ -25,7 +25,7 @@ function AtosPagos() {
   });
 
   const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
-  const [valorFinalCaixa, setValorFinalCaixa] = useState(0); // Deixe só esta!
+  const [valorFinalCaixa, ValorFinalCaixa] = useState(0); // Deixe só esta!
   const [percentualISS, setPercentualISS] = useState(0); // Estado para ISS
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -772,9 +772,7 @@ useEffect(() => {
               fontWeight: '600'
             }}
           />
-          <span style={{ marginLeft: '10px', color: '#666', fontSize: '14px' }}>
-            {percentualISS > 0 ? `(Os valores dos atos serão acrescidos de ${percentualISS}%)` : '(ISS desabilitado)'}
-          </span>
+
         
 
           <label style={{ 
