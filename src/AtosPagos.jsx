@@ -505,16 +505,23 @@ useEffect(() => {
     );
     const dataAtos = await res.json();
     const atosPagos = dataAtos.atosPagos || [];
-    const existeFechamento = atosPagos.some(
-      (ato) =>
-        ato.codigo === "0001" &&
-        ato.data === dataAtual &&
-        (ato.usuario || '').trim().toLowerCase() === (usuario || '').trim().toLowerCase()
-    );
-    if (existeFechamento) {
-      alert("Já existe um fechamento de caixa (código 0001) para este usuário e data.");
-      return;
-    }
+    const normalizar = (str) =>
+  (str || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // remove acentos
+    .trim()
+    .toLowerCase();
+
+const existeFechamento = atosPagos.some(
+  (ato) =>
+    ato.codigo === "0001" &&
+    ato.data === dataAtual &&
+    normalizar(ato.usuario) === normalizar(nomeUsuario)
+);
+if (existeFechamento) {
+  alert("Já existe um fechamento de caixa (código 0001) para este usuário e data.");
+  return;
+}
   } catch (e) {
     alert("Erro ao verificar fechamento existente: " + e.message);
     return;
