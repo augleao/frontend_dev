@@ -502,7 +502,7 @@ useEffect(() => {
       (ato) =>
         ato.codigo === "0001" &&
         ato.data === dataAtual &&
-        ato.usuario === nsuario
+        ato.usuario === usuario
     );
 
     if (existeFechamento) {
