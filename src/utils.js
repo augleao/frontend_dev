@@ -51,6 +51,7 @@ export function gerarRelatorioPDFatosPagos({
   dataRelatorio,
   atos,
   valorInicialCaixa,
+  valorFinalCaixa,
   depositosCaixa,
   saidasCaixa,
   responsavel,
@@ -71,7 +72,7 @@ export function gerarRelatorioPDFatosPagos({
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Relatório de Conciliação - ${dataRelatorio || ''}`, marginLeft, marginTop);
+  doc.text(`Relatório de Atos Pagos no dia - ${dataRelatorio || ''}`, marginLeft, marginTop);
 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
@@ -84,7 +85,7 @@ export function gerarRelatorioPDFatosPagos({
     `Valor Inicial do Caixa: ${formatarMoeda(valorInicialCaixa)}`,
     `Depósitos do Caixa: ${formatarMoeda(depositosCaixa)}`,
     `Saídas do Caixa: ${formatarMoeda(saidasCaixa)}`,
-    `Valor Final do Caixa: ${formatarMoeda(valorInicialCaixa + atos.reduce((acc, ato) => acc + (ato.pagamentoDinheiro?.valor ?? ato.dinheiro_valor ?? 0), 0) - saidasCaixa - depositosCaixa)}`,
+    `Valor Final do Caixa: ${formatarMoeda(valorFinalCaixa)}`,
   ];
   headerInfo.forEach((text, i) => {
     doc.text(text, marginLeft, marginTop + lineHeight * (i + 3));
