@@ -739,89 +739,106 @@ useEffect(() => {
 
 
 
-        {/* Campo para ISS */}
-        <div style={{
-          marginTop: '20px',
-          padding: '15px',
-          background: '#f8f9fa',
-          border: '2px solid #3498db',
-          borderRadius: '8px'
-        }}>
-          <label style={{ 
-            display: 'block', 
-            marginBottom: '8px', 
-            fontWeight: '600',
-            color: '#2c3e50'
-          }}>
-            📊 Percentual de ISS (%):
-          </label>
-          <input
-            type="number"
-            min="0"
-            max="100"
-            step="0.01"
-            value={percentualISS}
-            onChange={(e) => setPercentualISS(parseFloat(e.target.value) || 0)}
-            placeholder="0.00"
-            style={{
-              width: '150px',
-              padding: '12px',
-              borderRadius: '8px',
-              border: '2px solid #e3f2fd',
-              fontSize: '16px',
-              fontWeight: '600'
-            }}
-          />
+        {/* Campo para ISS, Valor Inicial e Valor Final do Caixa */}
+<div
+  style={{
+    marginTop: '20px',
+    padding: '15px',
+    background: '#f8f9fa',
+    border: '2px solid #3498db',
+    borderRadius: '8px',
+    display: 'flex',
+    gap: '32px', // Espaço entre os campos
+    alignItems: 'flex-end', // Alinha os inputs na base
+    flexWrap: 'wrap' // Responsivo para telas pequenas
+  }}
+>
+  {/* ISS */}
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <label
+      style={{
+        marginBottom: '8px',
+        fontWeight: '600',
+        color: '#2c3e50'
+      }}
+    >
+      📊 Percentual de ISS (%):
+    </label>
+    <input
+      type="number"
+      min="0"
+      max="100"
+      step="0.01"
+      value={percentualISS}
+      onChange={(e) => setPercentualISS(parseFloat(e.target.value) || 0)}
+      placeholder="0.00"
+      style={{
+        width: '150px',
+        padding: '12px',
+        borderRadius: '8px',
+        border: '2px solid #e3f2fd',
+        fontSize: '16px',
+        fontWeight: '600'
+      }}
+    />
+  </div>
 
-        
+  {/* Valor Inicial */}
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <label
+      style={{
+        marginBottom: '8px',
+        fontWeight: '600',
+        color: '#2c3e50'
+      }}
+    >
+      Valor Inicial do Caixa:
+    </label>
+    <input
+      type="number"
+      min="0"
+      step="0.01"
+      value={valorInicialCaixa}
+      onChange={e => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
+      onBlur={salvarValorInicialCaixa}
+      style={{
+        width: '150px',
+        padding: '12px',
+        borderRadius: '8px',
+        border: '2px solid #e3f2fd',
+        fontSize: '16px',
+        fontWeight: '600'
+      }}
+    />
+  </div>
 
-          <label style={{ 
-            display: 'block', 
-            marginBottom: '8px', 
-            fontWeight: '600',
-            color: '#2c3e50'
-          }}>
-            Valor Inicial do Caixa:
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={valorInicialCaixa}
-            onChange={e => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
-            onBlur={salvarValorInicialCaixa}
-            style={{
-              width: '150px',
-              padding: '12px',
-              borderRadius: '8px',
-              border: '2px solid #e3f2fd',
-              fontSize: '16px',
-              fontWeight: '600'
-            }}
-          />
-          <label style={{ 
-            display: 'block', 
-            marginBottom: '8px', 
-            fontWeight: '600',
-            color: '#2c3e50'
-          }}>
-            Valor Final do Caixa:
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={valorFinalCaixa}
-            style={{
-              width: '150px',
-              padding: '12px',
-              borderRadius: '8px',
-              border: '2px solid #e3f2fd',
-              fontSize: '16px',
-              fontWeight: '600'
-            }}
-          />
-        </div>
+  {/* Valor Final */}
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <label
+      style={{
+        marginBottom: '8px',
+        fontWeight: '600',
+        color: '#2c3e50'
+      }}
+    >
+      Valor Final do Caixa:
+    </label>
+    <input
+      type="number"
+      min="0"
+      step="0.01"
+      value={valorFinalCaixa}
+      style={{
+        width: '150px',
+        padding: '12px',
+        borderRadius: '8px',
+        border: '2px solid #e3f2fd',
+        fontSize: '16px',
+        fontWeight: '600'
+      }}
+    />
+  </div>
+</div>
       </div>
 
 
