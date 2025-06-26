@@ -1079,7 +1079,7 @@ function AtosPagos() {
       </div>
       
       </div> {/* Fim do Container Principal */}
-    </div> {/* Fim do Container Geral */}
+    </div> 
   );
 }
 
