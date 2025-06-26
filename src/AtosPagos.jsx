@@ -175,13 +175,7 @@ function AtosPagos() {
 
   const calcularValorFinalCaixa = () => {
     // Busca o valor inicial do caixa (código 0005) da tabela de atos
-    const atoValorInicial = atos.find(
-      (ato) =>
-        ato.codigo === '0005' &&
-        ato.data === dataSelecionada &&
-        (ato.usuario || '').trim().toLowerCase() === (nomeUsuario || '').trim().toLowerCase()
-    );
-    const valorInicial = atoValorInicial ? parseFloat(atoValorInicial.valor_unitario) || 0 : 0;
+    
 
     // Soma todos os valores em dinheiro dos atos normais (exceto entradas/saídas/valor inicial)
     const totalDinheiro = atos.reduce((acc, ato) => {
@@ -201,6 +195,15 @@ function AtosPagos() {
       if (ato.codigo === '0003') {
         const valorEntrada = parseFloat(ato.valor_unitario) || 0;
         return acc + valorEntrada;
+      }
+      return acc;
+    }, 0);
+
+        // Soma as entradas manuais (código 0005)
+    const valorInicial = atos.reduce((acc, ato) => {
+      if (ato.codigo === '0005') {
+        const valorInicial = parseFloat(ato.valor_unitario) || 0;
+        return acc + valorInicial;
       }
       return acc;
     }, 0);
