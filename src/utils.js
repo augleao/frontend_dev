@@ -69,12 +69,12 @@ export function gerarRelatorioPDFatosPagos({
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  doc.setFontSize(9);
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Relatório de Atos Pagos no dia - ${dataRelatorio || ''}`, marginLeft, marginTop);
+  doc.text(`Relatório de Atos Pagos no Dia - ${dataRelatorio || ''}`, marginLeft, marginTop);
 
   doc.setFontSize(7);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont('helvetica', 'bold');
 
   // Responsável e ISS no relatório
   doc.text(`Responsável: ${responsavel || 'Não informado'}`, marginLeft, marginTop + lineHeight);
@@ -109,17 +109,7 @@ export function gerarRelatorioPDFatosPagos({
 
   let y = marginTop + lineHeight * (headerInfo.length + 4);
 
-  // Adiciona as observações gerais (OBS) se houver
-  if (observacoesGerais && observacoesGerais.trim() !== '') {
-    doc.setFont('helvetica', 'bold');
-    doc.text('OBS:', marginLeft, y);
-    doc.setFont('helvetica', 'normal');
-    y += lineHeight;
-    const obsLinhas = doc.splitTextToSize(observacoesGerais, pageWidth - marginLeft * 2);
-    doc.text(obsLinhas, marginLeft, y);
-    y += obsLinhas.length * lineHeight;
-    y += lineHeight; // espaço extra antes da tabela
-  }
+ 
 
   const colWidths = {
     qtde: 25,
@@ -143,7 +133,6 @@ export function gerarRelatorioPDFatosPagos({
     { label: 'Código', width: colWidths.codigo },
     { label: 'Descrição', width: colWidths.descricao },
     { label: 'Valor Tot.', width: colWidths.valorTotal },
-    { label: 'Valor Falt.', width: colWidths.valorFaltante },
     { label: 'Dinheiro', width: colWidths.pagamento },
     { label: 'Cartão', width: colWidths.pagamento },
     { label: 'Pix', width: colWidths.pagamento },
