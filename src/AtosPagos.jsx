@@ -83,9 +83,8 @@ function AtosPagos() {
       valor_unitario: valor,
       pagamentos: {}, // vazio conforme solicitado
       usuario: nomeUsuario,
-      console.log('Nome do usuario:', nomeUsuario);
-    };
-
+      };
+    console.log('Nome do usuario:', novaEntrada);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
