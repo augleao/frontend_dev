@@ -579,8 +579,6 @@ useEffect(() => {
         dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
         atos: atosAtualizados,
         valorInicialCaixa,
-        depositosCaixa,
-        saidasCaixa,
         entradasCaixa: atosAtualizados.filter(ato => ato.codigo === '0003'),
         responsavel: nomeUsuario,
         ISS: percentualISS,
