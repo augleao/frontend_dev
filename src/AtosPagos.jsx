@@ -492,40 +492,25 @@ useEffect(() => {
   }, [searchTerm]);
 
     const fechamentoDiario = async () => {
-  const dataAtual = dataSelecionada;
+    //const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+   // const nomeUsuario = usuario?.nome || "Usuário não identificado";
+    
+    const dataAtual = dataSelecionada; // Usa a data selecionada pelo usuário
 
-  // Verificação no backend para garantir que não existe fechamento para o dia/usuário
-  try {
-    const token = localStorage.getItem('token');
-    const res = await fetch(
-      `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${dataAtual}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+    // Verifica se já existe um ato 0001 para o dia e usuário
+    const existeFechamento = atos.some(
+      (ato) =>
+        ato.codigo === "0001" &&
+        ato.data === dataAtual &&
+        ato.usuario === nsuario
     );
-    const dataAtos = await res.json();
-    const atosPagos = dataAtos.atosPagos || [];
-    const normalizar = (str) =>
-  (str || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // remove acentos
-    .trim()
-    .toLowerCase();
 
-const existeFechamento = atosPagos.some(
-  (ato) =>
-    ato.codigo === "0001" &&
-    ato.data === dataAtual &&
-    normalizar(ato.usuario) === normalizar(nomeUsuario)
-);
-if (existeFechamento) {
-  alert("Já existe um fechamento de caixa (código 0001) para este usuário e data.");
-  return;
-}
-  } catch (e) {
-    alert("Erro ao verificar fechamento existente: " + e.message);
-    return;
-  }
+    if (existeFechamento) {
+      alert("Já existe um fechamento de caixa (código 0001) para este usuário e data.");
+      return;
+    }
+
+    if (!window.confirm("Confirma o fechamento diário do caixa?")) return;
 
     const hora = new Date().toLocaleTimeString("pt-BR", { hour12: false });
     const valorFinalCalculado = calcularValorFinalCaixa();
