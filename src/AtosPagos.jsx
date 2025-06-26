@@ -21,7 +21,7 @@ function AtosPagos() {
   });
 
   const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
-  const [valorFinalCaixa, setValorFinalCaixa] = useState(0); // Estado faltante
+  const [valorFinalCaixa, setValorFinalCaixa] = useState(0); // Deixe só esta!
   const [percentualISS, setPercentualISS] = useState(0); // Estado para ISS
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -109,8 +109,6 @@ function AtosPagos() {
       alert('Erro ao salvar entrada: ' + e.message);
     }
   };
-
-  const [valorFinalCaixa, setValorFinalCaixa] = useState(0);
 
   // Função para adicionar saída no caixa
   const adicionarSaida = async () => {
