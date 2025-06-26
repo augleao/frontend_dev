@@ -50,7 +50,6 @@ export function gerarRelatorioPDF({ dataRelatorio, atos, valorInicialCaixa, depo
 export function gerarRelatorioPDFatosPagos({
   dataRelatorio,
   atos,
-  valorInicialCaixa,
   valorFinalCaixa,
   depositosCaixa,
   saidasCaixa,
@@ -81,9 +80,13 @@ export function gerarRelatorioPDFatosPagos({
   doc.text(`Responsável: ${responsavel || 'Não informado'}`, marginLeft, marginTop + lineHeight);
   doc.text(`ISS aplicado: ${ISS ? ISS + '%' : '0%'}`, marginLeft, marginTop + lineHeight * 2);
 
+  // Busca o valor inicial do caixa (ato 0005)
+  const atoValorInicial = atos.find(ato => ato.codigo === '0005');
+  const valorInicialCaixa = atoValorInicial ? parseFloat(atoValorInicial.valor_unitario) || 0 : 0;
+
   const headerInfo = [
     `Valor Inicial do Caixa: ${formatarMoeda(valorInicialCaixa)}`,
-    `Depósitos do Caixa: ${formatarMoeda(depositosCaixa)}`,
+    `Entradas do Caixa: ${formatarMoeda(depositosCaixa)}`,
     `Saídas do Caixa: ${formatarMoeda(saidasCaixa)}`,
     `Valor Final do Caixa: ${formatarMoeda(valorFinalCaixa)}`,
   ];
