@@ -578,11 +578,12 @@ useEffect(() => {
       gerarRelatorioPDFatosPagos({
         dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
         atos: atosAtualizados,
-        valorInicialCaixa,
+        valorInicialCaixa: atosAtualizados.filter(ato => ato.codigo === '0005'),
         entradasCaixa: atosAtualizados.filter(ato => ato.codigo === '0003'),
+        saidasCaixa: atosAtualizados.filter(ato => ato.codigo === '0004'),
         responsavel: nomeUsuario,
         ISS: percentualISS,
-        valorFinalCaixa: valorFinalCalculado, 
+        valorFinalCaixa: atosAtualizados.filter(ato => ato.codigo === '0001'), 
       });
 
       alert('Fechamento diário realizado com sucesso!');
