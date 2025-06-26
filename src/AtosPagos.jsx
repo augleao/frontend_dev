@@ -17,7 +17,11 @@ function AtosPagos() {
   // Estados
   const [dataSelecionada, setDataSelecionada] = useState(() => {
     const hoje = new Date();
-    return hoje.toISOString().slice(0, 10);
+    // Corrige para o fuso local
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
   });
 
   const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
