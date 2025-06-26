@@ -780,7 +780,7 @@ useEffect(() => {
       type="number"
       min="0"
       max="100"
-      step="0.01"
+      step="0.1"
       value={percentualISS}
       readOnly
       tabIndex={-1}
@@ -788,11 +788,11 @@ useEffect(() => {
         width: '150px',
         padding: '12px',
         borderRadius: '8px',
-        border: '2px solid #e3f2fd',
+        border: '2px solidrgb(0, 0, 0)',
         backgroundColor: '#e3f2fd', // azul claro
         fontSize: '16px',
         fontWeight: '600',
-        color: '#1565c0', // azul escuro para contraste
+        color: '#000', // azul escuro para contraste
         pointerEvents: 'none', // impede clique/foco via mouse
       }}
     />
