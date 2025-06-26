@@ -400,45 +400,32 @@ function AtosPagos() {
     }
   };
 
-  // useEffect unificado para carregar dados da data selecionada
-  useEffect(() => {
-    let isMounted = true; // Flag para evitar atualizações se componente foi desmontado
-    
-    async function carregarDadosDaData() {
-      try {
-        const token = localStorage.getItem('token');
-        
-        // 1. Carregar atos do dia selecionado
-        const resAtos = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${dataSelecionada}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        
-        if (resAtos.ok && isMounted) {
-          const dataAtos = await resAtos.json();
-          setAtos(dataAtos.atosPagos || []);
-          console.log("Atos carregados para a data selecionada:", dataAtos.atosPagos);
-          
-          // Verificar se há fechamento do dia atual
-          const fechamentoDoDiaAtual = dataAtos.atosPagos.find((ato) => ato.codigo === "0001");
-          console.log("Ato 0001 encontrado para a data selecionada (Valor Final do Caixa):", fechamentoDoDiaAtual);
-          setValorFinalCaixa(fechamentoDoDiaAtual ? fechamentoDoDiaAtual.valor_unitario : 0);
+  // Função para carregar atos do backend
+  const carregarDadosDaData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const resAtos = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${dataSelecionada}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-      } catch (e) {
-        console.error('Erro ao carregar dados da data:', e);
-        
+      );
+      if (resAtos.ok) {
+        const dataAtos = await resAtos.json();
+        setAtos(dataAtos.atosPagos || []);
+        // ...outros tratamentos se necessário...
       }
+    } catch (e) {
+      console.error('Erro ao carregar dados da data:', e);
     }
+  };
 
+  // useEffect para carregar atos ao mudar a data
+  useEffect(() => {
+    let isMounted = true;
     carregarDadosDaData();
-
-    // Cleanup function para evitar atualizações em componente desmontado
-    return () => {
-      isMounted = false;
-    };
-  }, [dataSelecionada]); // Apenas quando a data muda
+    return () => { isMounted = false; };
+  }, [dataSelecionada]);
 
   // useEffect para buscar sugestões com debounce
   useEffect(() => {
