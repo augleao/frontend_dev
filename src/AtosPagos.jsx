@@ -711,7 +711,7 @@ useEffect(() => {
               style={{
                 padding: '8px 12px',
                 borderRadius: '8px',
-                border: '2px solid #fff',
+                border: '2px solid rgb(0, 0, 0)',
                 backgroundColor: '#e3f2fd', // azul claro
                 fontWeight: '600',
                 color: '#fff', // azul escuro para contraste
