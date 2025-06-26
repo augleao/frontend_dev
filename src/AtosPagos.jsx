@@ -577,7 +577,17 @@ useEffect(() => {
 
       gerarRelatorioPDFatosPagos({
         dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
-        atos: atosAtualizados, // array de objetos, não undefined
+        atos: atosAtualizados,
+        valorFinalCaixa: valorFinalCalculado,
+        depositosCaixa: atosAtualizados.filter(ato => ato.codigo === '0003'),
+        saidasCaixa: atosAtualizados.filter(ato => ato.codigo === '0004'),
+        responsavel: nomeUsuario,
+        ISS: percentualISS,
+      });
+
+      console.log({
+        dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
+        atos: atosAtualizados,
         valorFinalCaixa: valorFinalCalculado,
         depositosCaixa: atosAtualizados.filter(ato => ato.codigo === '0003'),
         saidasCaixa: atosAtualizados.filter(ato => ato.codigo === '0004'),
