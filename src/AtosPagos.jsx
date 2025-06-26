@@ -603,6 +603,84 @@ function AtosPagos() {
     }
   };
 
+  const salvarValorInicialCaixa = async () => {
+    // Remove qualquer ato 0005 já existente para o dia
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const nomeUsuario = usuario?.nome || 'Usuário não identificado';
+
+    // Se não digitou nada, não salva
+    if (!valorInicialCaixa || valorInicialCaixa <= 0) return;
+
+    // Verifica se já existe um ato 0005 para o dia e usuário
+    const existe = atos.find(
+      (ato) =>
+        ato.codigo === '0005' &&
+        ato.data === dataSelecionada &&
+        ato.usuario === nomeUsuario
+    );
+
+    // Se já existe e o valor não mudou, não faz nada
+    if (existe && existe.valor_unitario === valorInicialCaixa) return;
+
+    // Se já existe, remove do backend e da lista local
+    if (existe && existe.id) {
+      try {
+        const token = localStorage.getItem('token');
+        await fetch(
+          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos/${existe.id}`,
+          {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      } catch (e) {
+        console.error('Erro ao remover valor inicial antigo:', e);
+      }
+    }
+
+    // Remove localmente
+    setAtos((prev) => prev.filter(
+      (ato) =>
+        !(ato.codigo === '0005' && ato.data === dataSelecionada && ato.usuario === nomeUsuario)
+    ));
+
+    // Salva novo valor inicial no backend
+    const novoAto = {
+      data: dataSelecionada,
+      hora: new Date().toLocaleTimeString(),
+      codigo: '0005',
+      descricao: 'Valor Inicial do Caixa',
+      quantidade: 1,
+      valor_unitario: Number(valorInicialCaixa),
+      pagamentos: {},
+      usuario: nomeUsuario,
+    };
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(novoAto),
+        }
+      );
+      if (res.ok) {
+        const salvo = await res.json();
+        setAtos((prev) => [...prev, { ...novoAto, id: salvo.id }]);
+      } else {
+        alert('Erro ao salvar valor inicial do caixa.');
+      }
+    } catch (e) {
+      console.error('Erro ao salvar valor inicial do caixa:', e);
+      alert('Erro ao salvar valor inicial do caixa: ' + e.message);
+    }
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
