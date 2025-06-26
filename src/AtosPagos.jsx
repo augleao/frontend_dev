@@ -100,9 +100,10 @@ function AtosPagos() {
       );
 
       if (res.ok) {
-        setAtos((prev) => [...prev, novaEntrada]);
         setEntradaValor('');
         setEntradaObs('');
+        // Em vez de setAtos([...]), recarregue do backend:
+        await carregarDadosDaData();
         console.log('Entrada manual salva com sucesso:', novaEntrada);
       } else {
         const errorData = await res.json();
