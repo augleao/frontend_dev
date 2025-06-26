@@ -83,6 +83,7 @@ function AtosPagos() {
       valor_unitario: valor,
       pagamentos: {}, // vazio conforme solicitado
       usuario: nomeUsuario,
+      console.log('Nome do usuario:', nomeUsuario);
     };
 
     try {
