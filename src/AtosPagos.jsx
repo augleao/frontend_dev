@@ -782,15 +782,18 @@ useEffect(() => {
       max="100"
       step="0.01"
       value={percentualISS}
-      onChange={(e) => setPercentualISS(parseFloat(e.target.value) || 0)}
-      placeholder="0.00"
+      readOnly
+      tabIndex={-1}
       style={{
         width: '150px',
         padding: '12px',
         borderRadius: '8px',
         border: '2px solid #e3f2fd',
+        backgroundColor: '#e3f2fd', // azul claro
         fontSize: '16px',
-        fontWeight: '600'
+        fontWeight: '600',
+        color: '#1565c0', // azul escuro para contraste
+        pointerEvents: 'none', // impede clique/foco via mouse
       }}
     />
   </div>
