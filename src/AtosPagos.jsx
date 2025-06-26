@@ -556,35 +556,34 @@ useEffect(() => {
         }
       );
 
-      console.log("Status da resposta:", res.status);
-
       if (!res.ok) {
         const json = await res.json();
-        console.error("Erro do backend:", json);
         alert('Erro ao salvar fechamento no banco: ' + (json.message || JSON.stringify(json)));
         return;
       }
 
-      const responseData = await res.json();
-      console.log("Resposta do backend:", responseData);
-
-      // Adiciona o ato de fechamento à lista local
-      setAtos((prev) => [...prev, atoFechamento]);
-
       // Aguarde carregar os atos atualizados do backend
       await carregarDadosDaData();
 
-      // Agora sim, gere o PDF com os atos atualizados
+      // Busque os atos atualizados diretamente do backend
+      const resAtos = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${dataSelecionada}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const dataAtos = await resAtos.json();
+      const atosAtualizados = dataAtos.atosPagos || [];
+
       gerarRelatorioPDF({
         dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
-        atos: [...atos, atoFechamento], // ou use o novo estado se carregar do backend
+        atos: atosAtualizados,
         valorInicialCaixa,
         responsavel: nomeUsuario,
       });
 
       alert('Fechamento diário realizado com sucesso!');
     } catch (e) {
-      console.error('Erro no fechamento diário:', e);
       alert('Erro ao realizar fechamento diário: ' + e.message);
     }
   };
