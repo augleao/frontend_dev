@@ -420,47 +420,9 @@ function AtosPagos() {
           console.log("Ato 0001 encontrado para a data selecionada (Valor Final do Caixa):", fechamentoDoDiaAtual);
           setValorFinalCaixa(fechamentoDoDiaAtual ? fechamentoDoDiaAtual.valor_unitario : 0);
         }
-
-        // 2. Buscar valor inicial do caixa (fechamento do dia anterior)
-        let dataBusca = dayjs(dataSelecionada).subtract(1, "day");
-        let foundValor = 0;
-        let encontrou = false;
-
-        // Loop para buscar o ato 0001 do dia anterior ou do dia mais próximo para trás
-        for (let i = 0; i < 10 && isMounted; i++) { // Limita a busca a 30 dias
-          const dataFormatada = dataBusca.format("YYYY-MM-DD");
-          const resValorInicial = await fetch(
-            `${process.env.REACT_APP_API_URL || "https://backend-dev-ypsu.onrender.com"}/api/atos-pagos?data=${dataFormatada}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-
-          if (resValorInicial.ok && isMounted) {
-            const dataValorInicial = await resValorInicial.json();
-            const atosDoDia = dataValorInicial.atosPagos || [];
-            const fechamentoDiaAnterior = atosDoDia.find((ato) => ato.codigo === "0001");
-
-            if (fechamentoDiaAnterior) {
-              foundValor = fechamentoDiaAnterior.valor_unitario || 0;
-              break; // Encontrou, pode sair do loop
-            }
-          }
-          dataBusca = dataBusca.subtract(1, "day"); // Volta mais um dia
-        }
-
-        if (isMounted) {
-          setValorInicialCaixa(foundValor);
-          console.log("Valor inicial do caixa definido:", foundValor);
-        }
-
       } catch (e) {
         console.error('Erro ao carregar dados da data:', e);
-        if (isMounted) {
-          setAtos([]);
-          setValorInicialCaixa(0);
-          setValorFinalCaixa(0);
-        }
+        
       }
     }
 
