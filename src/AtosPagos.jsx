@@ -736,7 +736,9 @@ useEffect(() => {
           📊 Resumo do Caixa
         </h2>
         
-        
+
+
+
         {/* Campo para ISS */}
         <div style={{
           marginTop: '20px',
@@ -773,12 +775,11 @@ useEffect(() => {
           <span style={{ marginLeft: '10px', color: '#666', fontSize: '14px' }}>
             {percentualISS > 0 ? `(Os valores dos atos serão acrescidos de ${percentualISS}%)` : '(ISS desabilitado)'}
           </span>
-        </div>
+        
 
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{
-            display: 'block',
-            marginBottom: '8px',
+          <label style={{ 
+            display: 'block', 
+            marginBottom: '8px', 
             fontWeight: '600',
             color: '#2c3e50'
           }}>
@@ -800,8 +801,11 @@ useEffect(() => {
               fontWeight: '600'
             }}
           />
-        </div>
+        
       </div>
+
+
+
 
       {/* Layout Principal - Grid Responsivo */}
       <div style={{
