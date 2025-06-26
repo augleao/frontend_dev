@@ -80,8 +80,21 @@ export function gerarRelatorioPDFatosPagos({
   doc.text(`Responsável: ${responsavel || 'Não informado'}`, marginLeft, marginTop + lineHeight);
   doc.text(`ISS aplicado: ${ISS ? ISS + '%' : '0%'}`, marginLeft, marginTop + lineHeight * 2);
 
-  // Busca o valor inicial do caixa (ato 0005)
-  const atoValorInicial = atos.find(ato => ato.codigo === '0005');
+  // Função para normalizar usuário (remove acentos, espaços e deixa minúsculo)
+  const normalizar = (str) =>
+    (str || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
+
+  // Busca o valor inicial do caixa (ato 0005) do usuário e data do relatório
+  const atoValorInicial = atos.find(
+    ato =>
+      ato.codigo === '0005' &&
+      (ato.data === dataRelatorio || formatarDataBR(ato.data) === dataRelatorio) &&
+      normalizar(ato.usuario) === normalizar(responsavel)
+  );
   const valorInicialCaixa = atoValorInicial ? parseFloat(atoValorInicial.valor_unitario) || 0 : 0;
 
   const headerInfo = [
