@@ -714,7 +714,7 @@ useEffect(() => {
                 border: '2px solid rgb(0, 0, 0)',
                 backgroundColor: '#e3f2fd', // azul claro
                 fontWeight: '600',
-                color: '#fff', // azul escuro para contraste
+                color: '#000', // azul escuro para contraste
                 fontSize: '14px',
                 pointerEvents: 'none', // impede clique/foco via mouse
               }}
@@ -841,17 +841,20 @@ useEffect(() => {
       Valor Final do Caixa:
     </label>
     <input
-      type="number"
-      min="0"
-      step="0.01"
-      value={valorFinalCaixa}
+      type="text"
+      value={formatarMoeda(calcularValorFinalCaixa())}
+      readOnly
+      tabIndex={-1}
       style={{
         width: '150px',
         padding: '12px',
         borderRadius: '8px',
         border: '2px solid #e3f2fd',
+        backgroundColor: '#e3f2fd',
         fontSize: '16px',
-        fontWeight: '600'
+        fontWeight: '600',
+        color: '#1565c0',
+        pointerEvents: 'none'
       }}
     />
   </div>
