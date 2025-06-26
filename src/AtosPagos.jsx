@@ -174,10 +174,26 @@ function AtosPagos() {
   };
 
   const calcularValorFinalCaixa = () => {
-    // Soma todos os valores em dinheiro dos atos normais
+    // Busca o valor inicial do caixa (código 0005) da tabela de atos
+    const atoValorInicial = atos.find(
+      (ato) =>
+        ato.codigo === '0005' &&
+        ato.data === dataSelecionada &&
+        ato.usuario === nomeUsuario
+    );
+    const valorInicial = atoValorInicial ? parseFloat(atoValorInicial.valor_unitario) || 0 : 0;
+
+    // Soma todos os valores em dinheiro dos atos normais (exceto entradas/saídas/valor inicial)
     const totalDinheiro = atos.reduce((acc, ato) => {
-      const valorDinheiro = parseFloat(ato.pagamentos?.dinheiro?.valor) || 0;
-      return acc + valorDinheiro;
+      if (
+        ato.codigo !== '0003' && // não entrada manual
+        ato.codigo !== '0002' && // não saída manual
+        ato.codigo !== '0005'    // não valor inicial
+      ) {
+        const valorDinheiro = parseFloat(ato.pagamentos?.dinheiro?.valor) || 0;
+        return acc + valorDinheiro;
+      }
+      return acc;
     }, 0);
 
     // Soma as entradas manuais (código 0003)
@@ -198,10 +214,10 @@ function AtosPagos() {
       return acc;
     }, 0);
 
-    const valorFinal = valorInicialCaixa + totalDinheiro + totalEntradas - totalSaidas;
-    
+    const valorFinal = valorInicial + totalDinheiro + totalEntradas - totalSaidas;
+
     console.log("Cálculo do Valor Final do Caixa:");
-    console.log("- Valor Inicial:", valorInicialCaixa);
+    console.log("- Valor Inicial (tabela):", valorInicial);
     console.log("- Total Dinheiro (atos):", totalDinheiro);
     console.log("- Total Entradas (0003):", totalEntradas);
     console.log("- Total Saídas (0002):", totalSaidas);
