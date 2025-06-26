@@ -84,7 +84,7 @@ function AtosPagos() {
       pagamentos: {}, // vazio conforme solicitado
       usuario: nomeUsuario,
       };
-    console.log('Nome do usuario:', novaEntrada);
+    console.log('entrada enviada para o backend:', novaEntrada);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
