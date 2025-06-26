@@ -734,11 +734,7 @@ useEffect(() => {
           paddingBottom: '10px'
         }}>
           📊 Resumo do Caixa
-        </h2>
-        <CaixaInputs 
-          valorInicialCaixa={valorInicialCaixa} 
-          valorFinalCaixa={valorFinalCaixa} 
-        />
+
         
         {/* Campo para ISS */}
         <div style={{
