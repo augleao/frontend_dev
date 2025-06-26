@@ -711,10 +711,10 @@ useEffect(() => {
               style={{
                 padding: '8px 12px',
                 borderRadius: '8px',
-                border: '2px solid #e3f2fd',
+                border: '2px solid #fff',
                 backgroundColor: '#e3f2fd', // azul claro
                 fontWeight: '600',
-                color: '#1565c0', // azul escuro para contraste
+                color: '#fff', // azul escuro para contraste
                 fontSize: '14px',
                 pointerEvents: 'none', // impede clique/foco via mouse
               }}
