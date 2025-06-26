@@ -801,6 +801,28 @@ useEffect(() => {
               fontWeight: '600'
             }}
           />
+          <label style={{ 
+            display: 'block', 
+            marginBottom: '8px', 
+            fontWeight: '600',
+            color: '#2c3e50'
+          }}>
+            Valor Final do Caixa:
+          </label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={valorFinalCaixa}
+            style={{
+              width: '150px',
+              padding: '12px',
+              borderRadius: '8px',
+              border: '2px solid #e3f2fd',
+              fontSize: '16px',
+              fontWeight: '600'
+            }}
+          />
         </div>
       </div>
 
