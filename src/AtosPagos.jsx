@@ -707,14 +707,16 @@ useEffect(() => {
               type="text"
               value={nomeUsuario}
               readOnly
+              tabIndex={-1}
               style={{
                 padding: '8px 12px',
                 borderRadius: '8px',
                 border: '2px solid #e3f2fd',
-                backgroundColor: '#f8f9fa',
+                backgroundColor: '#e3f2fd', // azul claro
                 fontWeight: '600',
-                color: '#2c3e50',
-                fontSize: '14px'
+                color: '#1565c0', // azul escuro para contraste
+                fontSize: '14px',
+                pointerEvents: 'none', // impede clique/foco via mouse
               }}
             />
           </div>
