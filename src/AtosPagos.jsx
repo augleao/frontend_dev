@@ -419,6 +419,11 @@ function AtosPagos() {
     }
   };
 
+// Adicione este useEffect:
+useEffect(() => {
+  carregarDadosDaData();
+}, []);
+
   // useEffect para carregar atos ao mudar a data
   useEffect(() => {
     let isMounted = true;
