@@ -492,25 +492,33 @@ useEffect(() => {
   }, [searchTerm]);
 
     const fechamentoDiario = async () => {
-    //const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
-   // const nomeUsuario = usuario?.nome || "Usuário não identificado";
-    
-    const dataAtual = dataSelecionada; // Usa a data selecionada pelo usuário
+  const dataAtual = dataSelecionada;
 
-    // Verifica se já existe um ato 0001 para o dia e usuário
-    const existeFechamento = atos.some(
+  // Verificação no backend para garantir que não existe fechamento para o dia/usuário
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(
+      `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${dataAtual}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const dataAtos = await res.json();
+    const atosPagos = dataAtos.atosPagos || [];
+    const existeFechamento = atosPagos.some(
       (ato) =>
         ato.codigo === "0001" &&
         ato.data === dataAtual &&
-        ato.usuario === nomeUsuario
+        (ato.usuario || '').trim().toLowerCase() === (nomeUsuario || '').trim().toLowerCase()
     );
-
     if (existeFechamento) {
       alert("Já existe um fechamento de caixa (código 0001) para este usuário e data.");
       return;
     }
-
-    if (!window.confirm("Confirma o fechamento diário do caixa?")) return;
+  } catch (e) {
+    alert("Erro ao verificar fechamento existente: " + e.message);
+    return;
+  }
 
     const hora = new Date().toLocaleTimeString("pt-BR", { hour12: false });
     const valorFinalCalculado = calcularValorFinalCaixa();
@@ -583,7 +591,7 @@ useEffect(() => {
         saidasCaixa: atosAtualizados.filter(ato => ato.codigo === '0004'),
         responsavel: nomeUsuario,
         ISS: percentualISS,
-        valorFinalCaixa: atosAtualizados.filter(ato => ato.codigo === '0001'), 
+        valorFinalCaixa: valorFinalCalculado, 
       });
 
       alert('Fechamento diário realizado com sucesso!');
