@@ -98,6 +98,9 @@ export function gerarRelatorioPDFatosPagos({
   doc.text(`Saídas do Caixa: ${formatarMoeda(Array.isArray(saidasCaixa) ? saidasCaixa.reduce((acc, ato) => acc + (parseFloat(ato.valor_unitario) || 0), 0) : 0)}`, marginLeft, marginTop + lineHeight * 5);
   doc.text(`Valor Final do Caixa: ${formatarMoeda(valorFinalCaixa)}`, marginLeft, marginTop + lineHeight * 6);
 
+  let y = marginTop + lineHeight * 8;
+  const pageHeight = doc.internal.pageSize.getHeight();
+
   // a tabela de atos pagos, 
   
    const colWidths = {
