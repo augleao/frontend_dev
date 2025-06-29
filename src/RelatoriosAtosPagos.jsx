@@ -14,12 +14,11 @@ function MeusFechamentos() {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?codigo=0001&usuario=${encodeURIComponent(nomeUsuario)}`,
+          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/meus-fechamentos`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        if (!res.ok) throw new Error('Erro ao buscar fechamentos');
         const data = await res.json();
-        setFechamentos(data.atosPagos || []);
+        setFechamentos(data.fechamentos || []);
       } catch (e) {
         setErro(e.message);
       }
