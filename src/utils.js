@@ -360,5 +360,5 @@ export function gerarRelatorioPDFatosPagos({
   });
 
   const dataFormatada = formatarDataParaNomeArquivo(dataRelatorio);
-  doc.save(`${dataFormatada}_relatorio_conciliacao.pdf`);
+  doc.save(`${dataFormatada}_relatorio_fechamento_caixa.pdf`);
 }
