@@ -224,17 +224,21 @@ export function extrairDadosNovo(texto) {
 
     for (const linha of linhasTabela) {
       // Regex para linha de ato
-      const match = linha.match(/^(\d{4,5})R\$ ?([\d,.]+)R\$ ?([\d,.]+)R\$ ?([\d,.]+)R\$ ?([\d,.]+)\s*-\s*(.+)$/);
+      const match = linha.match(/^(\d{5})R\$ ?([\d,.]+)R\$ ?([\d,.]+)R\$ ?([\d,.]+)R\$ ?([\d,.]+)\s*-\s*(.+)$/);
       if (match) {
+        // Separar quantidade e código
+        const quantidade = parseInt(match[1][0], 10);
+        const codigo = match[1].slice(1);
+
         atos.push({
           id: atos.length,
-          codigo: match[1],
+          quantidade: quantidade,
+          codigo: codigo,
           emolumento: parseFloat(match[2].replace('.', '').replace(',', '.')),
           recompe: parseFloat(match[3].replace('.', '').replace(',', '.')),
           tfj: parseFloat(match[4].replace('.', '').replace(',', '.')),
           valorTotal: parseFloat(match[5].replace('.', '').replace(',', '.')),
           descricao: match[6],
-          quantidade: 1, // ou tente casar com quantidadesDescricoes, se necessário
           pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
           pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
           pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
