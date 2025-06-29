@@ -25,6 +25,14 @@ function Home() {
       color: '#27ae60',
       route: '/atos-pagos'
     },
+        {
+      id: 'meus-fechamentos',
+      title: 'CAIXAS FECHADOS',
+      description: 'Visualize seus fechamentos de caixa',
+      icon: '💰',
+      color: '#27ae60',
+      route: '/meus-fechamentos'
+    },
     {
       id: 'conciliacao',
       title: 'CONCILIAÇÃO DO CAIXA',
