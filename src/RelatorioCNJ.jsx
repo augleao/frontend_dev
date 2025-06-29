@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-//import * as pdfjsLib from 'pdfjs-dist';
-
-// Desabilitar worker para evitar problemas de carregamento
-//pdfjsLib.GlobalWorkerOptions.workerSrc = false;
+import { apiURL } from './config';
 
 function RelatorioCNJ() {
   const navigate = useNavigate();
@@ -46,7 +43,7 @@ function RelatorioCNJ() {
 
   try {
     const token = localStorage.getItem('token');
-    const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/importar-atos-pdf`, {
+    const res = await fetch(`${apiURL}/api/importar-atos-pdf`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`

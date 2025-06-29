@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import AtosTable from './components/AtosTable';
 import './components/AtosTable.css';
+import { apiURL } from './config';
 
 function UploadForm() {
   const [file, setFile] = useState(null);
@@ -33,7 +34,7 @@ function UploadForm() {
 
     try {
       const response = await axios.post(
-        'https://backend-dev-ypsu.onrender.com/api/upload',
+        `${apiURL}/api/upload`,
         formData,
         {
           headers: {

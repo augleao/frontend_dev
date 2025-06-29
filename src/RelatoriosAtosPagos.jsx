@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiURL } from './config';
 
 function MeusFechamentos() {
   const [fechamentos, setFechamentos] = useState([]);
@@ -14,7 +15,7 @@ function MeusFechamentos() {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/meus-fechamentos`,
+          `${apiURL}/api/meus-fechamentos`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();

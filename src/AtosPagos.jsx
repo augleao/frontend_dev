@@ -12,6 +12,7 @@ import FormasPagamento from './FormasPagamento';
 import AtosTable from './AtosTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
 import dayjs from 'dayjs';
+import { apiURL } from './config';
 
 function AtosPagos() {
   // Estados
@@ -88,7 +89,7 @@ function AtosPagos() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+        `${apiURL}/atos-pagos`,
         {
           method: 'POST',
           headers: {
@@ -141,7 +142,7 @@ function AtosPagos() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+        `${apiURL}/atos-pagos`,
         {
           method: 'POST',
           headers: {
@@ -353,7 +354,7 @@ function AtosPagos() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+        `${apiURL}/atos-pagos`,
         {
           method: 'POST',
           headers: {
@@ -393,7 +394,7 @@ function AtosPagos() {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos/${atoParaRemover.id}`,
+          `${apiURL}/atos-pagos/${atoParaRemover.id}`,
           {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
@@ -424,7 +425,7 @@ function AtosPagos() {
     try {
       const token = localStorage.getItem('token');
       const resAtos = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${dataSelecionada}`,
+        `${apiURL}/atos-pagos?data=${dataSelecionada}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -468,7 +469,7 @@ useEffect(() => {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos?search=${encodeURIComponent(
+          `${apiURL}/atos?search=${encodeURIComponent(
             searchTerm
           )}`,
           {
@@ -545,7 +546,7 @@ useEffect(() => {
       const token = localStorage.getItem('token');
 
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+        `${apiURL}/atos-pagos`,
         {
           method: 'POST',
           headers: {
@@ -567,7 +568,7 @@ useEffect(() => {
 
       // Busque os atos atualizados diretamente do backend
       const resAtos = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos?data=${dataSelecionada}`,
+        `${apiURL}/atos-pagos?data=${dataSelecionada}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -625,7 +626,7 @@ useEffect(() => {
       try {
         const token = localStorage.getItem('token');
         await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos/${existe.id}`,
+          `${apiURL}/atos-pagos/${existe.id}`,
           {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
@@ -657,7 +658,7 @@ useEffect(() => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-pagos`,
+        `${apiURL}/atos-pagos`,
         {
           method: 'POST',
           headers: {
