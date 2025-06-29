@@ -228,8 +228,8 @@ export function extrairDadosNovo(texto) {
 // Função principal de extração
 export function extrairDadosDoTexto(texto) {
   const tipo = detectarLayoutPDF(texto);
-  if (tipo === 'novo') return extrairDadosWEB(texto);
-  return extrairDadosDeskstop(texto);
+  if (tipo === 'novo') return extrairDadosNovo(texto);
+  return extrairDadosAntigo(texto);
 }
 
 // Formata número para moeda BRL
