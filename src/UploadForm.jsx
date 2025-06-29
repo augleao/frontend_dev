@@ -34,7 +34,7 @@ function UploadForm() {
 
     try {
       const response = await axios.post(
-        `${apiURL}/api/upload`,
+        `${apiURL}/upload`,
         formData,
         {
           headers: {

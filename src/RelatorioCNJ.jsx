@@ -43,7 +43,7 @@ function RelatorioCNJ() {
 
   try {
     const token = localStorage.getItem('token');
-    const res = await fetch(`${apiURL}/api/importar-atos-pdf`, {
+    const res = await fetch(`${apiURL}/importar-atos-pdf`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
