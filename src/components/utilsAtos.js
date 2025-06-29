@@ -7,8 +7,8 @@ export function detectarLayoutPDF(texto) {
   return 'antigo';
 }
 
-// Extração para layout antigo
-export function extrairDadosAntigo(texto) {
+// Extração para layout CartosoftWeb
+export function extrairDadosWEB(texto) {
   const linhas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   let dataRelatorio = null;
   for (const linha of linhas) {
@@ -77,8 +77,8 @@ export function extrairDadosAntigo(texto) {
   return { dataRelatorio, atos };
 }
 
-// Extração para layout novo
-export function extrairDadosNovo(texto) {
+// Extração para layout Cartosoft Desktop
+export function extrairDadosDesktop(texto) {
   console.log('Texto recebido para extração:', texto.substring(0, 500));
   
   const atos = [];
@@ -228,8 +228,8 @@ export function extrairDadosNovo(texto) {
 // Função principal de extração
 export function extrairDadosDoTexto(texto) {
   const tipo = detectarLayoutPDF(texto);
-  if (tipo === 'novo') return extrairDadosNovo(texto);
-  return extrairDadosAntigo(texto);
+  if (tipo === 'novo') return extrairDadosWEB(texto);
+  return extrairDadosDeskstop(texto);
 }
 
 // Formata número para moeda BRL
