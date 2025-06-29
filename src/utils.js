@@ -98,7 +98,7 @@ export function gerarRelatorioPDFatosPagos({
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Relatório de Conciliação - ${dataRelatorio || ''}`, marginLeft, marginTop);
+  doc.text(`Relatório de Fechamento de Caixa Diário - ${dataRelatorio || ''}`, marginLeft, marginTop);
 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
