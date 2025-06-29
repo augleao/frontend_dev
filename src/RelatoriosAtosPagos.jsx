@@ -15,7 +15,7 @@ function MeusFechamentos() {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${apiURL}/api/meus-fechamentos`,
+          `${apiURL}/meus-fechamentos`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
