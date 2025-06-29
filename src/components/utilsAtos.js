@@ -173,7 +173,7 @@ export function extrairDadosDesktop(texto) {
 export function extrairDadosDoTexto(texto) {
   const tipo = detectarLayoutPDF(texto);
   if (tipo === 'novo') return extrairDadosWEB(texto);
-  return extrairDadosDeskstop(texto);
+  return extrairDadosDesktop(texto);
 }
 
 // Formata número para moeda BRL
