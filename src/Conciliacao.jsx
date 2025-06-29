@@ -75,6 +75,7 @@ function Conciliacao() {
         }}>
           Controle de Caixa diário pra Cartosoft Web ou Desktop
         </h2>
+        {/* Tooltip movido para logo após o texto */}
         <Tooltip text={tooltipText}>
           <span className="info-icon" style={{
             marginLeft: 12,
