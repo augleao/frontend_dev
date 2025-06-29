@@ -14,7 +14,7 @@ import AdminRoute from './AdminRoute';
 import AtosPagos from './AtosPagos'; // ajuste o caminho se necessário
 import ImportarAtos from './ImportarAtos'; // ajuste o caminho se necessário
 import RelatorioCNJ from './RelatorioCNJ';
-import MeusFechamentos from './componentes/MeusFechamentos'; // ajuste o caminho se necessário
+import MeusFechamentos from './RelatoriosAtosPagos'; // ajuste o caminho se necessário
 
 
 function App() {
