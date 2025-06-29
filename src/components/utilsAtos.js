@@ -79,7 +79,7 @@ export function extrairDadosWEB(texto) {
 
 // Extração para layout Cartosoft Desktop
 export function extrairDadosDesktop(texto) {
-  console.log('Texto recebido para extração:', texto.substring(0, 500));
+  console.log('Texto recebido para extração:', texto.substring(0, 200));
   
   const atos = [];
   let dataRelatorio = null;
@@ -91,133 +91,77 @@ export function extrairDadosDesktop(texto) {
     console.log('Data do relatório encontrada:', dataRelatorio);
   }
   
-  // Extrair quantidades e descrições da primeira seção
-  const quantidadesDescricoes = {};
-  const linhas = texto.split('\n');
-  let capturandoDescricoes = false;
-  let numeroAto = 1;
+  // Novo padrão baseado no log: quantidade + código + valores + descrição
+  // Exemplo: "11501R$ 7,60R$ 0,57R$ 2,54R$ 10,715 - Reconhecimento de firma - a) Por assinatura"
+  const padraoAto = /(\d)(\d{4})R\$\s*([\d,]+)R\$\s*([\d,]+)R\$\s*([\d,]+)R\$\s*([\d,]+)(\d+\s*-\s*[^]+?)(?=\d\d{4}R\$|$)/g;
   
-  for (let i = 0; i < linhas.length; i++) {
-    const linha = linhas[i].trim();
+  let match;
+  let id = 0;
+  
+  while ((match = padraoAto.exec(texto)) !== null) {
+    const quantidade = parseInt(match[1]);
+    const codigo = match[2];
+    const emolumento = parseFloat(match[3].replace(',', '.'));
+    const recompe = parseFloat(match[4].replace(',', '.'));
+    const tfj = parseFloat(match[5].replace(',', '.'));
+    const valorTotal = parseFloat(match[6].replace(',', '.'));
+    const descricao = match[7].trim();
     
-    // Detectar início da seção de descrições
-    if (linha.includes('QTDE. DESCRIÇÃO DO EMOLUMENTO')) {
-      capturandoDescricoes = true;
-      continue;
-    }
+    console.log(`Ato encontrado: Qtd=${quantidade}, Código=${codigo}, Desc=${descricao}`);
     
-    // Parar quando chegar na seção de totais
-    if (linha.includes('TOTAL EMOLUMENTO LÍQUIDO') || linha.includes('CÓDIGO')) {
-      capturandoDescricoes = false;
-      break;
-    }
-    
-    if (capturandoDescricoes && linha) {
-      // Se a linha é apenas um número, é a quantidade
-      if (/^\d+$/.test(linha)) {
-        const quantidade = parseInt(linha);
-        // A próxima linha deve ser a descrição
-        if (i + 1 < linhas.length) {
-          const descricao = linhas[i + 1].trim();
-          // Filtrar linhas que não são descrições válidas
-          if (descricao && 
-              !(/^\d+$/.test(descricao)) && 
-              !descricao.includes('QTDE. SELOS') &&
-              !descricao.includes('TOTAL EMOLUMENTO') &&
-              !descricao.includes('R$') &&
-              descricao.includes(' - ')) {
-            quantidadesDescricoes[numeroAto] = {
-              quantidade: quantidade,
-              descricao: descricao
-            };
-            console.log(`Ato ${numeroAto}: Qtd=${quantidade}, Desc=${descricao}`);
-            numeroAto++;
-            i++; // Pular a próxima linha já processada
-          }
-        }
-      }
-    }
+    atos.push({
+      id: id++,
+      quantidade: quantidade,
+      codigo: codigo,
+      emolumento: emolumento,
+      recompe: recompe,
+      tfj: tfj,
+      valorTotal: valorTotal,
+      descricao: descricao
+    });
   }
   
-  // Extrair códigos e valores da tabela
-  const tabelaMatch = texto.match(/CÓDIGO[\s\S]*?TOTAL[\s\S]*?ASSINATURA/);
-  if (tabelaMatch) {
-    const tabelaTexto = tabelaMatch[0];
-    console.log('Texto da tabela encontrado:', tabelaTexto);
+  // Se não encontrou atos com o padrão principal, tentar abordagem alternativa
+  if (atos.length === 0) {
+    console.log('Tentando abordagem alternativa...');
     
-    // Extrair códigos
-    const codigosMatch = tabelaTexto.match(/CÓDIGO\s+((?:\d{4}\s*)+)/);
-    const codigos = codigosMatch ? codigosMatch[1].trim().split(/\s+/) : [];
-    console.log('Códigos encontrados:', codigos);
+    // Buscar por padrões individuais no texto
+    const linhasAtos = texto.match(/\d\d{4}R\$[\s\S]*?(?=\d\d{4}R\$|Emitido em:|$)/g);
     
-    // Extrair emolumentos
-    const emolumentosMatch = tabelaTexto.match(/EMOLUMENTO\s+((?:R\$\s*[\d,]+\s*)+)/);
-    const emolumentos = emolumentosMatch ? 
-      emolumentosMatch[1].match(/R\$\s*([\d,]+)/g)?.map(v => 
-        parseFloat(v.replace('R$', '').replace(',', '.').trim())
-      ) || [] : [];
-    console.log('Emolumentos encontrados:', emolumentos);
-    
-    // Extrair RECOMPE
-    const recompeMatch = tabelaTexto.match(/RECOMPE\s+((?:R\$\s*[\d,]+\s*)+)/);
-    const recompes = recompeMatch ? 
-      recompeMatch[1].match(/R\$\s*([\d,]+)/g)?.map(v => 
-        parseFloat(v.replace('R$', '').replace(',', '.').trim())
-      ) || [] : [];
-    console.log('RECOMPE encontrados:', recompes);
-    
-    // Extrair TFJ
-    const tfjs = [];
-    const tfjMatch = tabelaTexto.match(/TFJ\s+((?:R\$\s*[\d,]+\s*)+)/);
-    if (tfjMatch) {
-      const tfjValues = tfjMatch[1].match(/R\$\s*([\d,]+)/g);
-      if (tfjValues) {
-        tfjValues.forEach(v => {
-          tfjs.push(parseFloat(v.replace('R$', '').replace(',', '.').trim()));
-        });
-      }
-    }
-    console.log('TFJ encontrados:', tfjs);
-    
-    // Extrair totais
-    const totaisMatch = tabelaTexto.match(/TOTAL\s+((?:R\$\s*[\d,]+\s*)+)/);
-    const totais = totaisMatch ? 
-      totaisMatch[1].match(/R\$\s*([\d,]+)/g)?.map(v => 
-        parseFloat(v.replace('R$', '').replace(',', '.').trim())
-      ) || [] : [];
-    console.log('Totais encontrados:', totais);
-    
-    // Combinar todos os dados
-    const maxLength = Math.max(codigos.length, emolumentos.length, recompes.length, tfjs.length, totais.length);
-    
-    for (let i = 0; i < maxLength; i++) {
-      const codigo = codigos[i] || '';
-      const emolumento = emolumentos[i] || 0;
-      const recompe = recompes[i] || 0;
-      const tfj = tfjs[i] || 0;
-      const valorTotal = totais[i] || 0;
+    if (linhasAtos) {
+      console.log('Linhas de atos encontradas:', linhasAtos.length);
       
-      // Buscar quantidade e descrição correspondente
-      const dadosAto = quantidadesDescricoes[i + 1] || { quantidade: 1, descricao: 'Descrição não encontrada' };
-      
-      if (codigo) {
-        atos.push({
-          id: i,
-          quantidade: dadosAto.quantidade,
-          codigo: codigo,
-          emolumento: emolumento,
-          recompe: recompe,
-          tfj: tfj,
-          valorTotal: valorTotal,
-          descricao: dadosAto.descricao,
-          pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
-          depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
-          observacoes: '',
-        });
-      }
+      linhasAtos.forEach((linha, index) => {
+        console.log(`Linha ${index + 1}:`, linha);
+        // Extrair dados de cada linha
+        const matchLinha = linha.match(/(\d)(\d{4})R\$\s*([\d,]+)R\$\s*([\d,]+)R\$\s*([\d,]+)R\$\s*([\d,]+)(.+)/);
+        
+        if (matchLinha) {
+          const quantidade = parseInt(matchLinha[1]);
+          const codigo = matchLinha[2];
+          const emolumento = parseFloat(matchLinha[3].replace(',', '.'));
+          const recompe = parseFloat(matchLinha[4].replace(',', '.'));
+          const tfj = parseFloat(matchLinha[5].replace(',', '.'));
+          const valorTotal = parseFloat(matchLinha[6].replace(',', '.'));
+          let descricao = matchLinha[7].trim();
+          
+          // Limpar a descrição removendo números e caracteres extras
+          descricao = descricao.replace(/^\d+\s*-\s*/, '').trim();
+          
+          console.log(`Ato alternativo encontrado: Qtd=${quantidade}, Código=${codigo}, Desc=${descricao}`);
+          
+          atos.push({
+            id: index,
+            quantidade: quantidade,
+            codigo: codigo,
+            emolumento: emolumento,
+            recompe: recompe,
+            tfj: tfj,
+            valorTotal: valorTotal,
+            descricao: descricao
+          });
+        }
+      });
     }
   }
   
