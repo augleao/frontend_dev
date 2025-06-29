@@ -71,28 +71,29 @@ function Conciliacao() {
           fontSize: '22px',
           fontWeight: 700,
           margin: 0,
-          textShadow: '0 2px 4px rgba(0,0,0,0.18)'
+          textShadow: '0 2px 4px rgba(0,0,0,0.18)',
+          display: 'flex',
+          alignItems: 'center'
         }}>
           Controle de Caixa diário pra Cartosoft Web ou Desktop
+          <Tooltip text={tooltipText}>
+            <span className="info-icon" style={{
+              marginLeft: 12,
+              background: 'rgba(255,255,255,0.15)',
+              color: 'white',
+              borderRadius: '50%',
+              width: 24,
+              height: 24,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 700,
+              fontSize: 16,
+              cursor: 'pointer',
+              border: '1px solid rgba(255,255,255,0.25)'
+            }}>i</span>
+          </Tooltip>
         </h2>
-        {/* Tooltip movido para logo após o texto */}
-        <Tooltip text={tooltipText}>
-          <span className="info-icon" style={{
-            marginLeft: 12,
-            background: 'rgba(255,255,255,0.15)',
-            color: 'white',
-            borderRadius: '50%',
-            width: 24,
-            height: 24,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 700,
-            fontSize: 16,
-            cursor: 'pointer',
-            border: '1px solid rgba(255,255,255,0.25)'
-          }}>i</span>
-        </Tooltip>
       </div>
       <div style={{ marginBottom: 12 }}>
         <UploadForm onUpload={handleUpload} />
