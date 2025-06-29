@@ -219,6 +219,31 @@ export function extrairDadosNovo(texto) {
         });
       }
     }
+    
+    const linhasTabela = tabelaTexto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+    for (const linha of linhasTabela) {
+      // Regex para linha de ato
+      const match = linha.match(/^(\d{4,5})R\$ ?([\d,.]+)R\$ ?([\d,.]+)R\$ ?([\d,.]+)R\$ ?([\d,.]+)\s*-\s*(.+)$/);
+      if (match) {
+        atos.push({
+          id: atos.length,
+          codigo: match[1],
+          emolumento: parseFloat(match[2].replace('.', '').replace(',', '.')),
+          recompe: parseFloat(match[3].replace('.', '').replace(',', '.')),
+          tfj: parseFloat(match[4].replace('.', '').replace(',', '.')),
+          valorTotal: parseFloat(match[5].replace('.', '').replace(',', '.')),
+          descricao: match[6],
+          quantidade: 1, // ou tente casar com quantidadesDescricoes, se necessário
+          pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
+          pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
+          pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
+          pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
+          depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
+          observacoes: '',
+        });
+      }
+    }
   }
   
   console.log('Atos extraídos:', atos);
