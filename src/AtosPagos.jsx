@@ -493,12 +493,7 @@ useEffect(() => {
   }, [searchTerm]);
 
     const fechamentoDiario = async () => {
-    //const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
-   // const nomeUsuario = usuario?.nome || "Usuário não identificado";
-    
-    const dataAtual = dataSelecionada; // Usa a data selecionada pelo usuário
-
-    // Verifica se já existe um ato 0001 para o dia e usuário
+    const dataAtual = dataSelecionada;
     const existeFechamento = atos.some(
       (ato) =>
         ato.codigo === "0001" &&
@@ -516,7 +511,6 @@ useEffect(() => {
     const hora = new Date().toLocaleTimeString("pt-BR", { hour12: false });
     const valorFinalCalculado = calcularValorFinalCaixa();
 
-    // Validações antes de enviar
     if (isNaN(valorFinalCalculado)) {
       alert("Erro no cálculo do valor final do caixa. Verifique os dados e tente novamente.");
       return;
@@ -527,24 +521,20 @@ useEffect(() => {
       return acc;
     }, {});
 
-    // Criar apenas o ato de fechamento (código 0001) com o valor final do caixa
     const atoFechamento = {
       data: dataAtual,
       hora: hora,
       codigo: '0001',
       descricao: 'VALOR FINAL DO CAIXA',
       quantidade: 1,
-      valor_unitario: Number(valorFinalCalculado.toFixed(2)), // Garantir que é um número válido
+      valor_unitario: Number(valorFinalCalculado.toFixed(2)),
       pagamentos: pagamentosZerados,
       usuario: nomeUsuario,
     };
 
-    console.log("Dados do fechamento a serem enviados:", atoFechamento);
-    console.log("Valor unitário (tipo):", typeof atoFechamento.valor_unitario, atoFechamento.valor_unitario);
-
     try {
       const token = localStorage.getItem('token');
-
+      console.log('Enviando fechamento ao backend:', atoFechamento);
       const res = await fetch(
         `${apiURL}/atos-pagos`,
         {
@@ -556,54 +546,27 @@ useEffect(() => {
           body: JSON.stringify(atoFechamento),
         }
       );
+      const resText = await res.text();
+      console.log('Resposta do backend ao salvar fechamento:', res.status, resText);
 
       if (!res.ok) {
-        const json = await res.json();
-        alert('Erro ao salvar fechamento no banco: ' + (json.message || JSON.stringify(json)));
+        alert('Erro ao salvar fechamento no banco: ' + resText);
         return;
       }
 
-      // Aguarde carregar os atos atualizados do backend
       await carregarDadosDaData();
-
-      // Busque os atos atualizados diretamente do backend
-      const resAtos = await fetch(
-        `${apiURL}/atos-pagos?data=${dataSelecionada}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const dataAtos = await resAtos.json();
-      const atosAtualizados = dataAtos.atosPagos || [];
-
-      gerarRelatorioPDFatosPagos({
-        dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
-        atos: atosAtualizados,
-        valorFinalCaixa: valorFinalCalculado,
-        depositosCaixa: atosAtualizados.filter(ato => ato.codigo === '0003'),
-        saidasCaixa: atosAtualizados.filter(ato => ato.codigo === '0004'),
-        responsavel: nomeUsuario,
-        ISS: percentualISS,
-      });
-
-      console.log({
-        dataRelatorio: dataSelecionada.split('-').reverse().join('/'),
-        atos: atosAtualizados,
-        valorFinalCaixa: valorFinalCalculado,
-        depositosCaixa: atosAtualizados.filter(ato => ato.codigo === '0003'),
-        saidasCaixa: atosAtualizados.filter(ato => ato.codigo === '0004'),
-        responsavel: nomeUsuario,
-        ISS: percentualISS,
-      });
-
       alert('Fechamento diário realizado com sucesso!');
     } catch (e) {
       alert('Erro ao realizar fechamento diário: ' + e.message);
+      console.error('Erro ao realizar fechamento diário:', e);
     }
   };
 
   const salvarValorInicialCaixa = async () => {
-    if (!valorInicialCaixa || valorInicialCaixa <= 0) return;
+    if (!valorInicialCaixa || valorInicialCaixa <= 0) {
+      console.warn('Valor inicial do caixa inválido:', valorInicialCaixa);
+      return;
+    }
 
     // Verifica se já existe um ato 0005 para o dia e usuário
     const existe = atos.find(
@@ -614,19 +577,23 @@ useEffect(() => {
     );
 
     // Se já existe e o valor não mudou, não faz nada
-    if (existe && existe.valor_unitario === valorInicialCaixa) return;
+    if (existe && existe.valor_unitario === valorInicialCaixa) {
+      console.info('Valor inicial já existe e não mudou:', existe);
+      return;
+    }
 
     // Se já existe, remove do backend
     if (existe && existe.id) {
       try {
         const token = localStorage.getItem('token');
-        await fetch(
+        const resDel = await fetch(
           `${apiURL}/atos-pagos/${existe.id}`,
           {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+        console.log('Remoção do valor inicial antigo:', resDel.status, await resDel.text());
       } catch (e) {
         console.error('Erro ao remover valor inicial antigo:', e);
       }
@@ -646,6 +613,7 @@ useEffect(() => {
 
     try {
       const token = localStorage.getItem('token');
+      console.log('Enviando valor inicial ao backend:', novoAto);
       const res = await fetch(
         `${apiURL}/atos-pagos`,
         {
@@ -657,8 +625,9 @@ useEffect(() => {
           body: JSON.stringify(novoAto),
         }
       );
+      const resText = await res.text();
+      console.log('Resposta do backend ao salvar valor inicial:', res.status, resText);
       if (res.ok) {
-        // Após salvar, recarregue os atos do backend para garantir sincronização
         await carregarDadosDaData();
       } else {
         alert('Erro ao salvar valor inicial do caixa.');
