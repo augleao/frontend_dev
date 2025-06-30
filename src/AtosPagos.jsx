@@ -603,11 +603,6 @@ useEffect(() => {
   };
 
   const salvarValorInicialCaixa = async () => {
-    // Remove qualquer ato 0005 já existente para o dia
-    //const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-   // const nomeUsuario = usuario?.nome || 'Usuário não identificado';
-
-    // Se não digitou nada, não salva
     if (!valorInicialCaixa || valorInicialCaixa <= 0) return;
 
     // Verifica se já existe um ato 0005 para o dia e usuário
@@ -621,7 +616,7 @@ useEffect(() => {
     // Se já existe e o valor não mudou, não faz nada
     if (existe && existe.valor_unitario === valorInicialCaixa) return;
 
-    // Se já existe, remove do backend e da lista local
+    // Se já existe, remove do backend
     if (existe && existe.id) {
       try {
         const token = localStorage.getItem('token');
@@ -636,12 +631,6 @@ useEffect(() => {
         console.error('Erro ao remover valor inicial antigo:', e);
       }
     }
-
-    // Remove localmente
-    setAtos((prev) => prev.filter(
-      (ato) =>
-        !(ato.codigo === '0005' && ato.data === dataSelecionada && ato.usuario === nomeUsuario)
-    ));
 
     // Salva novo valor inicial no backend
     const novoAto = {
@@ -669,8 +658,8 @@ useEffect(() => {
         }
       );
       if (res.ok) {
-        const salvo = await res.json();
-        setAtos((prev) => [...prev, { ...novoAto, id: salvo.id }]);
+        // Após salvar, recarregue os atos do backend para garantir sincronização
+        await carregarDadosDaData();
       } else {
         alert('Erro ao salvar valor inicial do caixa.');
       }
