@@ -532,7 +532,7 @@ useEffect(() => {
       data: dataAtual,
       hora: hora,
       codigo: '0001',
-      descricao: 'Valor Final do Caixa',
+      descricao: 'VALOR FINAL DO CAIXA',
       quantidade: 1,
       valor_unitario: Number(valorFinalCalculado.toFixed(2)), // Garantir que é um número válido
       pagamentos: pagamentosZerados,
@@ -637,7 +637,7 @@ useEffect(() => {
       data: dataSelecionada,
       hora: new Date().toLocaleTimeString(),
       codigo: '0005',
-      descricao: 'Valor Inicial do Caixa',
+      descricao: 'VALOR INICIAL DO CAIXA',
       quantidade: 1,
       valor_unitario: Number(valorInicialCaixa),
       pagamentos: {},
