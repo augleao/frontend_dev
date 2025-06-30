@@ -47,6 +47,7 @@ function MeusFechamentos() {
             <tr style={{ background: '#f8f9fa' }}>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>Data</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>Hora</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>Valor Inicial</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>Valor Final</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>Descrição</th>
             </tr>
@@ -58,6 +59,11 @@ function MeusFechamentos() {
                   {f.data ? new Date(f.data).toLocaleDateString('pt-BR') : ''}
                 </td>
                 <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>{f.hora || ''}</td>
+                <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>
+                  {f.valor_inicial
+                    ? Number(f.valor_inicial).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                    : '-'}
+                </td>
                 <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>
                   {Number(f.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </td>
