@@ -52,12 +52,14 @@ function MeusFechamentos() {
             </tr>
           </thead>
           <tbody>
-            {fechamentos.map((f) => (
-              <tr key={f.id}>
-                <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>{f.data?.split('T')[0] || ''}</td>
-                <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>{f.hora}</td>
+            {fechamentos.map((f, idx) => (
+              <tr key={f.data + f.hora + f.codigo + idx}>
                 <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>
-                  {f.valor_unitario?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  {f.data ? new Date(f.data).toLocaleDateString('pt-BR') : ''}
+                </td>
+                <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>{f.hora || ''}</td>
+                <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>
+                  {Number(f.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </td>
                 <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>{f.descricao}</td>
               </tr>
