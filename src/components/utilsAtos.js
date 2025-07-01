@@ -80,176 +80,55 @@ export function extrairDadosAntigo(texto) {
 // Extração para layout novo
 export function extrairDadosNovo(texto) {
   console.log('Texto recebido para extração:', texto.substring(0, 500));
-  
+
   const atos = [];
   let dataRelatorio = null;
-  
+
   // Extrair data do relatório
   const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
   if (matchData) {
     dataRelatorio = matchData[1];
     console.log('Data do relatório encontrada:', dataRelatorio);
   }
-  
-  // Extrair quantidades e descrições da primeira seção
-  const quantidadesDescricoes = {};
-  const linhas = texto.split('\n');
-  let capturandoDescricoes = false;
-  let numeroAto = 1;
-  
-  for (let i = 0; i < linhas.length; i++) {
-    const linha = linhas[i].trim();
-    
-    // Detectar início da seção de descrições
-    if (linha.includes('QTDE. DESCRIÇÃO DO EMOLUMENTO')) {
-      capturandoDescricoes = true;
-      continue;
-    }
-    
-    // Parar quando chegar na seção de totais
-    if (linha.includes('TOTAL EMOLUMENTO LÍQUIDO') || linha.includes('CÓDIGO')) {
-      capturandoDescricoes = false;
-      break;
-    }
-    
-    if (capturandoDescricoes && linha) {
-      // Se a linha é apenas um número, é a quantidade
-      if (/^\d+$/.test(linha)) {
-        const quantidade = parseInt(linha);
-        // A próxima linha deve ser a descrição
-        if (i + 1 < linhas.length) {
-          const descricao = linhas[i + 1].trim();
-          // Filtrar linhas que não são descrições válidas
-          if (descricao && 
-              !(/^\d+$/.test(descricao)) && 
-              !descricao.includes('QTDE. SELOS') &&
-              !descricao.includes('TOTAL EMOLUMENTO') &&
-              !descricao.includes('R$') &&
-              descricao.includes(' - ')) {
-            quantidadesDescricoes[numeroAto] = {
-              quantidade: quantidade,
-              descricao: descricao
-            };
-            console.log(`Ato ${numeroAto}: Qtd=${quantidade}, Desc=${descricao}`);
-            numeroAto++;
-            i++; // Pular a próxima linha já processada
-          }
-        }
-      }
+
+  // Extrair linhas da tabela de atos
+  const linhas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+  // Encontrar o início da tabela (linha com "CÓDIGO")
+  let idxTabela = linhas.findIndex(l => l.toUpperCase().includes('CÓDIGO'));
+  if (idxTabela === -1) {
+    console.warn('Cabeçalho da tabela não encontrado!');
+    return { dataRelatorio, atos };
+  }
+
+  // Percorrer linhas após o cabeçalho até encontrar "TOTAL" ou "ASSINATURA"
+  for (let i = idxTabela + 1; i < linhas.length; i++) {
+    const linha = linhas[i];
+    if (/TOTAL|ASSINATURA/i.test(linha)) break;
+
+    // Regex para linha de ato: código, emolumento, recompe, tfj, total, descrição
+    // Exemplo: 1001   R$ 100,00   R$ 10,00   R$ 5,00   R$ 115,00   Descrição do ato
+    const match = linha.match(/^(\d{4,5})\s+R\$ ?([\d,.]+)\s+R\$ ?([\d,.]+)\s+R\$ ?([\d,.]+)\s+R\$ ?([\d,.]+)\s+(.+)$/);
+    if (match) {
+      atos.push({
+        id: atos.length,
+        quantidade: 1, // Se houver campo de quantidade, ajuste aqui
+        codigo: match[1],
+        emolumento: parseFloat(match[2].replace('.', '').replace(',', '.')),
+        recompe: parseFloat(match[3].replace('.', '').replace(',', '.')),
+        tfj: parseFloat(match[4].replace('.', '').replace(',', '.')),
+        valorTotal: parseFloat(match[5].replace('.', '').replace(',', '.')),
+        descricao: match[6],
+        pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
+        depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
+        observacoes: '',
+      });
     }
   }
-  
-  // Extrair códigos e valores da tabela
-  const tabelaMatch = texto.match(/CÓDIGO[\s\S]*?TOTAL[\s\S]*?ASSINATURA/);
-  if (tabelaMatch) {
-    const tabelaTexto = tabelaMatch[0];
-    console.log('Texto da tabela encontrado:', tabelaTexto);
-    
-    // Extrair códigos
-    const codigosMatch = tabelaTexto.match(/CÓDIGO\s+((?:\d{4}\s*)+)/);
-    const codigos = codigosMatch ? codigosMatch[1].trim().split(/\s+/) : [];
-    console.log('Códigos encontrados:', codigos);
-    
-    // Extrair emolumentos
-    const emolumentosMatch = tabelaTexto.match(/EMOLUMENTO\s+((?:R\$\s*[\d,]+\s*)+)/);
-    const emolumentos = emolumentosMatch ? 
-      emolumentosMatch[1].match(/R\$\s*([\d,]+)/g)?.map(v => 
-        parseFloat(v.replace('R$', '').replace(',', '.').trim())
-      ) || [] : [];
-    console.log('Emolumentos encontrados:', emolumentos);
-    
-    // Extrair RECOMPE
-    const recompeMatch = tabelaTexto.match(/RECOMPE\s+((?:R\$\s*[\d,]+\s*)+)/);
-    const recompes = recompeMatch ? 
-      recompeMatch[1].match(/R\$\s*([\d,]+)/g)?.map(v => 
-        parseFloat(v.replace('R$', '').replace(',', '.').trim())
-      ) || [] : [];
-    console.log('RECOMPE encontrados:', recompes);
-    
-    // Extrair TFJ
-    const tfjs = [];
-    const tfjMatch = tabelaTexto.match(/TFJ\s+((?:R\$\s*[\d,]+\s*)+)/);
-    if (tfjMatch) {
-      const tfjValues = tfjMatch[1].match(/R\$\s*([\d,]+)/g);
-      if (tfjValues) {
-        tfjValues.forEach(v => {
-          tfjs.push(parseFloat(v.replace('R$', '').replace(',', '.').trim()));
-        });
-      }
-    }
-    console.log('TFJ encontrados:', tfjs);
-    
-    // Extrair totais
-    const totaisMatch = tabelaTexto.match(/TOTAL\s+((?:R\$\s*[\d,]+\s*)+)/);
-    const totais = totaisMatch ? 
-      totaisMatch[1].match(/R\$\s*([\d,]+)/g)?.map(v => 
-        parseFloat(v.replace('R$', '').replace(',', '.').trim())
-      ) || [] : [];
-    console.log('Totais encontrados:', totais);
-    
-    // Combinar todos os dados
-    const maxLength = Math.max(codigos.length, emolumentos.length, recompes.length, tfjs.length, totais.length);
-    
-    for (let i = 0; i < maxLength; i++) {
-      const codigo = codigos[i] || '';
-      const emolumento = emolumentos[i] || 0;
-      const recompe = recompes[i] || 0;
-      const tfj = tfjs[i] || 0;
-      const valorTotal = totais[i] || 0;
-      
-      // Buscar quantidade e descrição correspondente
-      const dadosAto = quantidadesDescricoes[i + 1] || { quantidade: 1, descricao: 'Descrição não encontrada' };
-      
-      if (codigo) {
-        atos.push({
-          id: i,
-          quantidade: dadosAto.quantidade,
-          codigo: codigo,
-          emolumento: emolumento,
-          recompe: recompe,
-          tfj: tfj,
-          valorTotal: valorTotal,
-          descricao: dadosAto.descricao,
-          pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
-          depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
-          observacoes: '',
-        });
-      }
-    }
-    
-    const linhasTabela = tabelaTexto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-    for (const linha of linhasTabela) {
-      // Regex para linha de ato
-      const match = linha.match(/^(\d{5})R\$ ?([\d,.]+)R\$ ?([\d,.]+)R\$ ?([\d,.]+)R\$ ?([\d,.]+)\s*-\s*(.+)$/);
-      if (match) {
-        // Separar quantidade e código
-        const quantidade = parseInt(match[1][0], 10);
-        const codigo = match[1].slice(1);
-
-        atos.push({
-          id: atos.length,
-          quantidade: quantidade,
-          codigo: codigo,
-          emolumento: parseFloat(match[2].replace('.', '').replace(',', '.')),
-          recompe: parseFloat(match[3].replace('.', '').replace(',', '.')),
-          tfj: parseFloat(match[4].replace('.', '').replace(',', '.')),
-          valorTotal: parseFloat(match[5].replace('.', '').replace(',', '.')),
-          descricao: match[6],
-          pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
-          depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
-          observacoes: '',
-        });
-      }
-    }
-  }
-  
   console.log('Atos extraídos:', atos);
   return { dataRelatorio, atos };
 }
