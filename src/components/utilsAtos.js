@@ -79,7 +79,7 @@ export function extrairDadosAntigo(texto) {
 
 // Extração para layout novo
 export function extrairDadosNovo(texto) {
-  console.log('Texto recebido para extração:', texto.substring(0, 500));
+  console.log("Texto recebido para extração:", texto.substring(0, 500) + "...");
   
   const atos = [];
   let dataRelatorio = null;
@@ -88,169 +88,187 @@ export function extrairDadosNovo(texto) {
   const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
   if (matchData) {
     dataRelatorio = matchData[1];
-    console.log('Data do relatório encontrada:', dataRelatorio);
+    console.log("Data do relatório encontrada:", dataRelatorio);
   }
   
-  // Extrair quantidades e descrições da primeira seção
-  const quantidadesDescricoes = {};
-  const linhas = texto.split('\n');
+  // Extrair descrições dos atos (antes da tabela)
+  const descricoes = {};
+  const linhas = texto.split("\n");
   let capturandoDescricoes = false;
-  let numeroAto = 1;
+  const listaDescricoes = []; // Array para manter ordem das descrições
   
   for (let i = 0; i < linhas.length; i++) {
     const linha = linhas[i].trim();
     
-    // Detectar início da seção de descrições
-    if (linha.includes('QTDE. DESCRIÇÃO DO EMOLUMENTO')) {
+    if (linha.includes("QTDE. DESCRIÇÃO DO EMOLUMENTO")) {
       capturandoDescricoes = true;
       continue;
     }
     
-    // Parar quando chegar na seção de totais
-    if (linha.includes('TOTAL EMOLUMENTO LÍQUIDO') || linha.includes('CÓDIGO')) {
+    if (linha.includes("QTDE. SELOS ELETRÔNICO")) {
       capturandoDescricoes = false;
       break;
     }
     
     if (capturandoDescricoes && linha) {
-      // Se a linha é apenas um número, é a quantidade
-      if (/^\d+$/.test(linha)) {
-        const quantidade = parseInt(linha);
-        // A próxima linha deve ser a descrição
-        if (i + 1 < linhas.length) {
-          const descricao = linhas[i + 1].trim();
-          // Filtrar linhas que não são descrições válidas
-          if (descricao && 
-              !(/^\d+$/.test(descricao)) && 
-              !descricao.includes('QTDE. SELOS') &&
-              !descricao.includes('TOTAL EMOLUMENTO') &&
-              !descricao.includes('R$') &&
-              descricao.includes(' - ')) {
-            quantidadesDescricoes[numeroAto] = {
-              quantidade: quantidade,
-              descricao: descricao
-            };
-            console.log(`Ato ${numeroAto}: Qtd=${quantidade}, Desc=${descricao}`);
-            numeroAto++;
-            i++; // Pular a próxima linha já processada
+      // Procurar por padrão: número seguido de descrição
+      const matchDescricao = linha.match(/^(\d+)$/);
+      if (matchDescricao && i + 1 < linhas.length) {
+        const qtde = parseInt(matchDescricao[1]);
+        
+        // Coletar todas as linhas de descrição até encontrar um código
+        let desc = "";
+        let j = i + 1;
+        
+        while (j < linhas.length) {
+          const linhaDesc = linhas[j].trim();
+          
+          // Se encontrou um código de 4 dígitos, para de coletar descrição
+          if (linhaDesc.match(/^\d{4}$/)) {
+            // Associar a descrição ao código encontrado
+            const codigo = linhaDesc;
+            descricoes[codigo] = { quantidade: qtde, descricao: desc.trim() };
+            console.log(`Descrição encontrada - Código: ${codigo}, Qtde: ${qtde}, Desc: ${desc.trim()}`);
+            break;
           }
+          // Se encontrou outro número (próxima quantidade), para
+          else if (linhaDesc.match(/^\d+$/) && linhaDesc !== qtde.toString()) {
+            break;
+          }
+          // Se encontrou "QTDE. SELOS ELETRÔNICO", para
+          else if (linhaDesc.includes("QTDE. SELOS ELETRÔNICO")) {
+            break;
+          }
+          // Senão, adiciona à descrição
+          else if (linhaDesc) {
+            desc += (desc ? " " : "") + linhaDesc;
+          }
+          
+          j++;
         }
       }
     }
   }
   
-  // Extrair códigos e valores da tabela
-  const tabelaMatch = texto.match(/CÓDIGO[\s\S]*?TOTAL[\s\S]*?ASSINATURA/);
-  if (tabelaMatch) {
-    const tabelaTexto = tabelaMatch[0];
-    console.log('Texto da tabela encontrado:', tabelaTexto);
-    
+  // Extrair dados da tabela de valores
+  // Primeiro, vamos encontrar onde começam os códigos
+  let indiceCodigo = -1;
+  let indiceEmolumento = -1;
+  let indiceRecompe = -1;
+  let indiceTfj = -1;
+  let indiceTotal = -1;
+  
+  for (let i = 0; i < linhas.length; i++) {
+    const linha = linhas[i].trim();
+    if (linha === "CÓDIGO") indiceCodigo = i;
+    if (linha === "EMOLUMENTO") indiceEmolumento = i;
+    if (linha === "RECOMPE") indiceRecompe = i;
+    if (linha === "TFJ") indiceTfj = i;
+    if (linha === "TOTAL") indiceTotal = i;
+  }
+  
+  console.log("Índices encontrados:", { indiceCodigo, indiceEmolumento, indiceRecompe, indiceTfj, indiceTotal });
+  
+  if (indiceCodigo !== -1 && indiceEmolumento !== -1) {
     // Extrair códigos
-    const codigosMatch = tabelaTexto.match(/CÓDIGO\s+((?:\d{4}\s*)+)/);
-    const codigos = codigosMatch ? codigosMatch[1].trim().split(/\s+/) : [];
-    console.log('Códigos encontrados:', codigos);
+    const codigos = [];
+    for (let i = indiceCodigo + 1; i < linhas.length; i++) {
+      const linha = linhas[i].trim();
+      if (linha.match(/^\d{4}$/)) {
+        codigos.push(linha);
+      } else if (linha === "EMOLUMENTO" || linha.includes("QTDE. SELOS ELETRÔNICO")) {
+        break;
+      }
+    }
     
     // Extrair emolumentos
-    const emolumentosMatch = tabelaTexto.match(/EMOLUMENTO\s+((?:R\$\s*[\d,]+\s*)+)/);
-    const emolumentos = emolumentosMatch ? 
-      emolumentosMatch[1].match(/R\$\s*([\d,]+)/g)?.map(v => 
-        parseFloat(v.replace('R$', '').replace(',', '.').trim())
-      ) || [] : [];
-    console.log('Emolumentos encontrados:', emolumentos);
+    const emolumentos = [];
+    for (let i = indiceEmolumento + 1; i < linhas.length; i++) {
+      const linha = linhas[i].trim();
+      if (linha.match(/^R\$\s*[\d.,]+$/)) {
+        const valor = linha.replace("R$", "").trim();
+        emolumentos.push(parseFloat(valor.replace(/\./g, "").replace(",", ".")));
+      } else if (linha === "RECOMPE" || linha.includes("QTDE. SELOS ELETRÔNICO")) {
+        break;
+      }
+    }
     
     // Extrair RECOMPE
-    const recompeMatch = tabelaTexto.match(/RECOMPE\s+((?:R\$\s*[\d,]+\s*)+)/);
-    const recompes = recompeMatch ? 
-      recompeMatch[1].match(/R\$\s*([\d,]+)/g)?.map(v => 
-        parseFloat(v.replace('R$', '').replace(',', '.').trim())
-      ) || [] : [];
-    console.log('RECOMPE encontrados:', recompes);
+    const recompes = [];
+    if (indiceRecompe !== -1) {
+      for (let i = indiceRecompe + 1; i < linhas.length; i++) {
+        const linha = linhas[i].trim();
+        if (linha.match(/^R\$\s*[\d.,]+$/)) {
+          const valor = linha.replace("R$", "").trim();
+          recompes.push(parseFloat(valor.replace(/\./g, "").replace(",", ".")));
+        } else if (linha === "TFJ" || linha.includes("QTDE. SELOS ELETRÔNICO")) {
+          break;
+        }
+      }
+    }
     
     // Extrair TFJ
     const tfjs = [];
-    const tfjMatch = tabelaTexto.match(/TFJ\s+((?:R\$\s*[\d,]+\s*)+)/);
-    if (tfjMatch) {
-      const tfjValues = tfjMatch[1].match(/R\$\s*([\d,]+)/g);
-      if (tfjValues) {
-        tfjValues.forEach(v => {
-          tfjs.push(parseFloat(v.replace('R$', '').replace(',', '.').trim()));
-        });
-      }
-    }
-    console.log('TFJ encontrados:', tfjs);
-    
-    // Extrair totais
-    const totaisMatch = tabelaTexto.match(/TOTAL\s+((?:R\$\s*[\d,]+\s*)+)/);
-    const totais = totaisMatch ? 
-      totaisMatch[1].match(/R\$\s*([\d,]+)/g)?.map(v => 
-        parseFloat(v.replace('R$', '').replace(',', '.').trim())
-      ) || [] : [];
-    console.log('Totais encontrados:', totais);
-    
-    // Combinar todos os dados
-    const maxLength = Math.max(codigos.length, emolumentos.length, recompes.length, tfjs.length, totais.length);
-    
-    for (let i = 0; i < maxLength; i++) {
-      const codigo = codigos[i] || '';
-      const emolumento = emolumentos[i] || 0;
-      const recompe = recompes[i] || 0;
-      const tfj = tfjs[i] || 0;
-      const valorTotal = totais[i] || 0;
-      
-      // Buscar quantidade e descrição correspondente
-      const dadosAto = quantidadesDescricoes[i + 1] || { quantidade: 1, descricao: 'Descrição não encontrada' };
-      
-      if (codigo) {
-        atos.push({
-          id: i,
-          quantidade: dadosAto.quantidade,
-          codigo: codigo,
-          emolumento: emolumento,
-          recompe: recompe,
-          tfj: tfj,
-          valorTotal: valorTotal,
-          descricao: dadosAto.descricao,
-          pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
-          depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
-          observacoes: '',
-        });
+    if (indiceTfj !== -1) {
+      for (let i = indiceTfj + 1; i < linhas.length; i++) {
+        const linha = linhas[i].trim();
+        if (linha.match(/^R\$\s*[\d.,]+$/)) {
+          const valor = linha.replace("R$", "").trim();
+          tfjs.push(parseFloat(valor.replace(/\./g, "").replace(",", ".")));
+        } else if (linha === "TOTAL" || linha.includes("QTDE. SELOS ELETRÔNICO")) {
+          break;
+        }
       }
     }
     
-    const linhasTabela = tabelaTexto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-
-    for (const linha of linhasTabela) {
-      // Regex para linha de ato
-      const match = linha.match(/^(\d{5})R\$ ?([\d,.]+)R\$ ?([\d,.]+)R\$ ?([\d,.]+)R\$ ?([\d,.]+)\s*-\s*(.+)$/);
-      if (match) {
-        // Separar quantidade e código
-        const quantidade = parseInt(match[1][0], 10);
-        const codigo = match[1].slice(1);
-
-        atos.push({
-          id: atos.length,
-          quantidade: quantidade,
-          codigo: codigo,
-          emolumento: parseFloat(match[2].replace('.', '').replace(',', '.')),
-          recompe: parseFloat(match[3].replace('.', '').replace(',', '.')),
-          tfj: parseFloat(match[4].replace('.', '').replace(',', '.')),
-          valorTotal: parseFloat(match[5].replace('.', '').replace(',', '.')),
-          descricao: match[6],
-          pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
-          pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
-          depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
-          observacoes: '',
-        });
+    // Extrair TOTAL
+    const totais = [];
+    if (indiceTotal !== -1) {
+      for (let i = indiceTotal + 1; i < linhas.length; i++) {
+        const linha = linhas[i].trim();
+        if (linha.match(/^R\$\s*[\d.,]+$/)) {
+          const valor = linha.replace("R$", "").trim();
+          totais.push(parseFloat(valor.replace(/\./g, "").replace(",", ".")));
+        } else if (linha.includes("ASSINATURA") || linha.includes("QTDE. SELOS ELETRÔNICO")) {
+          break;
+        }
       }
+    }
+    
+    console.log("Dados extraídos:", { codigos, emolumentos, recompes, tfjs, totais });
+    console.log("Lista de descrições:", listaDescricoes);
+    
+    // Combinar os dados
+    const minLength = Math.min(codigos.length, emolumentos.length, recompes.length, tfjs.length, totais.length);
+    
+    for (let i = 0; i < minLength; i++) {
+      const codigo = codigos[i];
+      
+      // Usar descrição da lista por ordem (primeira descrição para primeiro código, etc.)
+      const dadosDescricao = listaDescricoes[i] || { quantidade: 1, descricao: `Ato ${codigo}` };
+      
+      console.log(`Ato extraído - Código: ${codigo}, Emol: ${emolumentos[i]}, RECOMPE: ${recompes[i]}, TFJ: ${tfjs[i]}, Total: ${totais[i]}`);
+      
+      atos.push({
+        id: i,
+        quantidade: dadosDescricao.quantidade,
+        codigo: codigo,
+        descricao: dadosDescricao.descricao,
+        emolumento: emolumentos[i],
+        recompe: recompes[i],
+        tfj: tfjs[i],
+        valorTotal: totais[i],
+        pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
+        depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
+        observacoes: "",
+      });
     }
   }
   
-  console.log('Atos extraídos:', atos);
+  console.log(`Total de atos extraídos: ${atos.length}`);
   return { dataRelatorio, atos };
 }
 
