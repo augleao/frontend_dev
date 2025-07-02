@@ -292,6 +292,54 @@ export function extrairDadosNovo(texto) {
     }
   }
   
+  // MÉTODO 3: Se ainda não encontrou atos, tentar extração direta das linhas de dados
+  if (atos.length === 0) {
+    console.log("Método 2 falhou. Tentando método 3: extração direta das linhas de dados...");
+    
+    for (let i = 0; i < linhas.length; i++) {
+      const linha = linhas[i].trim();
+      
+      // Regex para capturar dados diretamente das linhas
+      // Formato: QTDE + CÓDIGO + R$ valor + R$ valor + descrição
+      const matchDados = linha.match(/^(\d+)(\d{4})R\$\s*([\d.,]+)R\$\s*([\d.,]+)(.*)$/);
+      if (matchDados) {
+        const quantidade = parseInt(matchDados[1]);
+        const codigo = matchDados[2];
+        const emolumento = parseFloat(matchDados[3].replace(/\./g, "").replace(",", "."));
+        const recompe = parseFloat(matchDados[4].replace(/\./g, "").replace(",", "."));
+        let descricao = matchDados[5].trim();
+        
+        // Remover hífen inicial se existir
+        if (descricao.startsWith("- ")) {
+          descricao = descricao.substring(2);
+        }
+        
+        // Calcular total (assumindo TFJ = 0 se não informado)
+        const tfj = 0;
+        const valorTotal = emolumento + recompe + tfj;
+        
+        console.log(`Ato extraído (método 3) - Qtde: ${quantidade}, Código: ${codigo}, Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Total: ${valorTotal}, Desc: ${descricao}`);
+        
+        atos.push({
+          id: id++,
+          quantidade: quantidade,
+          codigo: codigo,
+          descricao: descricao,
+          emolumento: emolumento,
+          recompe: recompe,
+          tfj: tfj,
+          valorTotal: valorTotal,
+          pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
+          pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
+          pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
+          pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
+          depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
+          observacoes: "",
+        });
+      }
+    }
+  }
+  
   console.log(`Total de atos extraídos: ${atos.length}`);
   return { dataRelatorio, atos };
 }
