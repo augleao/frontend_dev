@@ -13,6 +13,7 @@ import AtosTable from './AtosTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
 import dayjs from 'dayjs';
 import { apiURL } from './config';
+import { gerarRelatorioPDF } from './components/RelatorioPDF';
 
 function AtosPagos() {
   // Estados
