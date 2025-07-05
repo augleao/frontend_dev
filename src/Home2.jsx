@@ -134,7 +134,7 @@ function Home() {
           fontWeight: '600',
           letterSpacing: '0.5px'
         }}>
-          Sistema Auxiliar do RCPN
+          Sistema Auxiliar do RCPN v1.0
         </h1>
         <div style={{
           display: 'flex',
