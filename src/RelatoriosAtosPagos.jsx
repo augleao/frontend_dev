@@ -47,17 +47,16 @@ function MeusFechamentos() {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15 }}>
           <thead>
             <tr style={{ background: '#f8f9fa' }}>
-              <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>Data</th>
-              <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>Hora</th>
-              <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>Valor Inicial</th>
-              <th style={{ padding: 8, borderBottom: '1px solid #ddd' }}>Valor Final</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Data</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Hora</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Valor Inicial</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Valor Final</th>
             </tr>
           </thead>
           <tbody>
             {fechamentos
               .filter(f => f.codigo === '0001')
               .map((f, idx) => {
-                // Busca o valor inicial (0005) para a mesma data e usuário
                 const valorInicial = fechamentos.find(
                   fi =>
                     fi.codigo === '0005' &&
@@ -66,25 +65,25 @@ function MeusFechamentos() {
                 );
                 return (
                   <tr key={f.data + f.hora + f.codigo + idx}>
-                    <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
                       {f.data ? new Date(f.data).toLocaleDateString('pt-BR') : ''}
                     </td>
-                    <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>{f.hora || ''}</td>
-                    <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>{f.hora || ''}</td>
+                    <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
                       {valorInicial && (valorInicial.valor_unitario || valorInicial.total_valor)
                         ? Number(valorInicial.valor_unitario || valorInicial.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                         : '-'}
                     </td>
-                    <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>
-                      {Number(f.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
+                      {Number(f.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}currency', currency: 'BRL' })}
                     </td>
                   </tr>
                 );
               })}
-          </tbody>
+          </tbody>>
         </table>
       )}
-    </div>
+    </div>v>
   );
 }
 
