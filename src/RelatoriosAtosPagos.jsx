@@ -71,8 +71,8 @@ function MeusFechamentos() {
                     </td>
                     <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>{f.hora || ''}</td>
                     <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>
-                      {valorInicial && valorInicial.valor_unitario
-                        ? Number(valorInicial.valor_unitario).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                      {valorInicial && (valorInicial.valor_unitario || valorInicial.total_valor)
+                        ? Number(valorInicial.valor_unitario || valorInicial.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                         : '-'}
                     </td>
                     <td style={{ padding: 8, borderBottom: '1px solid #eee' }}>
