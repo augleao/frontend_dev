@@ -828,7 +828,7 @@ useEffect(() => {
       type="number"
       min="0"
       step="0.01"
-      value={formatarMoeda(valorInicialCaixa)}
+      value={valorInicialCaixa}
       onChange={e => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
       onBlur={salvarValorInicialCaixa}
       style={{
