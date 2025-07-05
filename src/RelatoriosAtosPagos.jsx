@@ -75,15 +75,15 @@ function MeusFechamentos() {
                         : '-'}
                     </td>
                     <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
-                      {Number(f.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}currency', currency: 'BRL' })}
+                      {Number(f.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </td>
                   </tr>
                 );
               })}
-          </tbody>>
+          </tbody>
         </table>
       )}
-    </div>v>
+    </div>
   );
 }
 
