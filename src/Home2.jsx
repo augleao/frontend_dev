@@ -45,8 +45,8 @@ function Home() {
       id: 'relatorios',
       title: 'CAIXAS CONCILIADOS',
       description: 'Visualize relatórios e histórico de caixas fechados',
-      icon: '📋',
-      color: '#9b59b6',
+      icon: '⚖️',
+      color: '#3498db',
       route: '/meus-relatorios'
     },
     {
