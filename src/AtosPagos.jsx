@@ -556,6 +556,25 @@ useEffect(() => {
 
       await carregarDadosDaData();
       alert('Fechamento diário realizado com sucesso!');
+
+      // Chamar geração do PDF
+      try {
+        const pdfRes = await fetch(
+          `${apiURL}/fechamento-pdf?data=${dataAtual}&usuario=${encodeURIComponent(nomeUsuario)}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (pdfRes.ok) {
+          const blob = await pdfRes.blob();
+          const url = window.URL.createObjectURL(blob);
+          window.open(url, '_blank');
+        } else {
+          alert('Fechamento salvo, mas erro ao gerar PDF.');
+        }
+      } catch (e) {
+        alert('Fechamento salvo, mas erro ao gerar PDF: ' + e.message);
+      }
     } catch (e) {
       alert('Erro ao realizar fechamento diário: ' + e.message);
       console.error('Erro ao realizar fechamento diário:', e);
@@ -784,12 +803,12 @@ useEffect(() => {
         width: '150px',
         padding: '12px',
         borderRadius: '8px',
-        border: '2px solidrgb(0, 0, 0)',
-        backgroundColor: '#e3f2fd', // azul claro
+        border: '2px solid #e3f2fd',
+        backgroundColor: '#e3f2fd',
         fontSize: '16px',
         fontWeight: '600',
-        color: '#000', // azul escuro para contraste
-        pointerEvents: 'none', // impede clique/foco via mouse
+        color: '#1565c0',
+        pointerEvents: 'none'
       }}
     />
   </div>
