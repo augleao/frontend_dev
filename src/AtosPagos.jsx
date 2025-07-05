@@ -558,24 +558,17 @@ useEffect(() => {
       await carregarDadosDaData();
       alert('Fechamento diário realizado com sucesso!');
 
-      // Chamar geração do PDF
-      try {
-        const pdfRes = await fetch(
-          `${apiURL}/fechamento-pdf?data=${dataAtual}&usuario=${encodeURIComponent(nomeUsuario)}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        if (pdfRes.ok) {
-          const blob = await pdfRes.blob();
-          const url = window.URL.createObjectURL(blob);
-          window.open(url, '_blank');
-        } else {
-          alert('Fechamento salvo, mas erro ao gerar PDF.');
-        }
-      } catch (e) {
-        alert('Fechamento salvo, mas erro ao gerar PDF: ' + e.message);
-      }
+      // Gere o PDF no frontend:
+      gerarRelatorioPDF({
+        dataRelatorio: dataSelecionada,
+        atos,
+        valorInicialCaixa,
+        depositosCaixa: atos.filter(a => a.codigo === '0003'), // entradas manuais
+        saidasCaixa: atos.filter(a => a.codigo === '0002'),    // saídas manuais
+        responsavel: nomeUsuario,
+        ISS: percentualISS,
+        observacoesGerais: '' // ou outro campo se desejar
+      });
     } catch (e) {
       alert('Erro ao realizar fechamento diário: ' + e.message);
       console.error('Erro ao realizar fechamento diário:', e);
