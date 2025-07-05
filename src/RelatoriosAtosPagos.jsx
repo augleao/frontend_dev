@@ -28,6 +28,8 @@ function MeusFechamentos() {
     fetchFechamentos();
   }, [nomeUsuario]);
 
+  console.log(fechamentos);
+
   return (
     <div style={{
       background: 'white',
