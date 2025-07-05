@@ -792,7 +792,7 @@ useEffect(() => {
       📊 Percentual de ISS (%):
     </label>
     <input
-      type="number"
+      type="text"
       min="0"
       max="100"
       step="0.1"
@@ -828,7 +828,7 @@ useEffect(() => {
       type="number"
       min="0"
       step="0.01"
-      value={valorInicialCaixa}
+      value={formatarMoeda(valorInicialCaixa)}
       onChange={e => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
       onBlur={salvarValorInicialCaixa}
       style={{
