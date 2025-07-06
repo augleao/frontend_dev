@@ -90,7 +90,7 @@ function AtosPraticados() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${apiURL}/atos-pagos`,
+        `${apiURL}/atos-praticados`,
         {
           method: 'POST',
           headers: {
@@ -143,7 +143,7 @@ function AtosPraticados() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${apiURL}/atos-pagos`,
+        `${apiURL}/atos-praticados`,
         {
           method: 'POST',
           headers: {
@@ -355,7 +355,7 @@ function AtosPraticados() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${apiURL}/atos-pagos`,
+        `${apiURL}/atos-praticados`,
         {
           method: 'POST',
           headers: {
@@ -883,6 +883,7 @@ useEffect(() => {
 
       {/* Tabela de Atos */}
       <div style={{
+        
         background: 'white',
         borderRadius: '12px',
         padding: '25px',
