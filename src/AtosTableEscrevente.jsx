@@ -1,9 +1,9 @@
-// AtosTable.jsx
+
 import React from 'react';
 import { formasPagamento, formatarDataBR, formatarValor } from './utils';
 
 export default function AtosTableEscrevente({ atos, onRemover }) {
-  console.log("Atos recebidos na tabela:", atos);
+  console.log("Atos recebidos na tabela atos-table:", atos);
 
   return (
     <div style={{ overflowX: 'auto' }}>
@@ -13,6 +13,7 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Data</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Hora</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Código</th>
+            <th style={{ border: '1px solid #ddd', padding: 8 }}>Tributação</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Descrição</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Quantidade</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Valor Unitário</th>
