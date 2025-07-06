@@ -741,6 +741,11 @@ useEffect(() => {
                 fontSize: '16px'
               }}
             />
+            {/* Elemento de busca do código tributário logo abaixo da quantidade */}
+            <TributacaoSearch
+              tributacaoSelecionada={tributacao}
+              setTributacaoSelecionada={setTributacao}
+            />
           </div>
 
           <div style={{ marginBottom: '20px' }}>
