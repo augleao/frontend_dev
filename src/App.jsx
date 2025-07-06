@@ -52,13 +52,20 @@ function App() {
         <Route
   // path="/atos-pagos"
   path="/caixa-diario"
- //path="/CaixaDiario"
   element={
     <PrivateRoute>
       <CaixaDiario />
     </PrivateRoute>
   }
 />
+        <Route
+         path="/atos-praticados"
+         element={
+           <PrivateRoute>
+             <AtosPraticados />
+           </PrivateRoute>
+         }
+        />
         <Route
           path="/relatorio-cnj"
           element={
