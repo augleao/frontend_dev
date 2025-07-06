@@ -11,10 +11,10 @@ import Home2 from './Home2';
 import MeusRelatorios from './components/MeusRelatorios';
 import AdminDashboard from './AdminDashboard';
 import AdminRoute from './AdminRoute';
-import AtosPagos from './AtosPagos'; // ajuste o caminho se necessário
+import CaixaDiario from './CaixaDiario'; // ajuste o caminho se necessário
 import ImportarAtos from './ImportarAtos'; // ajuste o caminho se necessário
 import RelatorioCNJ from './RelatorioCNJ';
-import MeusFechamentos from './RelatoriosAtosPagos'; // ajuste o caminho se necessário
+import MeusFechamentos from './RelatoriosCaixaDiario'; // ajuste o caminho se necessário
 
 
 function App() {
@@ -51,10 +51,10 @@ function App() {
         />
         <Route
    path="/atos-pagos"
- //path="/AtosPagos"
+ //path="/CaixaDiario"
   element={
     <PrivateRoute>
-      <AtosPagos />
+      <CaixaDiario />
     </PrivateRoute>
   }
 />

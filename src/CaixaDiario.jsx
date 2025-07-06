@@ -3,7 +3,7 @@ import {
   formasPagamento,
   formatarMoeda,
   formatarDataBR,
-  gerarRelatorioPDFatosPagos,
+  gerarRelatorioPDFCaixaDiario,
 } from './utils';
 import DataSelector from './DataSelector';
 import CaixaInputs from './CaixaInputs';
@@ -15,7 +15,7 @@ import dayjs from 'dayjs';
 import { apiURL } from './config';
 import { gerarRelatorioPDF } from './components/RelatorioPDF';
 
-function AtosPagos() {
+function CaixaDiario() {
   // Estados
   const [dataSelecionada, setDataSelecionada] = useState(() => {
     const hoje = new Date();
@@ -433,7 +433,7 @@ function AtosPagos() {
       );
       if (resAtos.ok) {
         const dataAtos = await resAtos.json();
-        setAtos(dataAtos.atosPagos || []);
+        setAtos(dataAtos.CaixaDiario || []);
       }
     } catch (e) {
       console.error('Erro ao carregar dados da data:', e);
@@ -1217,5 +1217,5 @@ useEffect(() => {
   );
 }
 
-export default AtosPagos;
+export default CaixaDiario;
 
