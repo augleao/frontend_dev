@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiURL } from './config';
 
 export default function TributacaoSearch({ tributacaoSelecionada, setTributacaoSelecionada }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -11,7 +12,7 @@ export default function TributacaoSearch({ tributacaoSelecionada, setTributacaoS
       return;
     }
     setLoading(true);
-    fetch(`/api/codigos-gratuitos?search=${encodeURIComponent(searchTerm)}`)
+    fetch(`${apiURL}/codigos-gratuitos?search=${encodeURIComponent(searchTerm)}`)
       .then(res => res.json())
       .then(data => {
         setSuggestions(data.codigos || []);
