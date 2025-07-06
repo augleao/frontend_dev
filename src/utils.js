@@ -35,7 +35,7 @@ export function formatarValor(valor) {
 
 
 
-export function gerarRelatorioPDFCAixaDiario({
+export function gerarRelatorioPDFCaixaDiario({
   dataRelatorio,
   atos,
   valorInicialCaixa,

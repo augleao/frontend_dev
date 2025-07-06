@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { gerarRelatorioPDF } from './RelatorioPDF';
+import { gerarRelatorioPDFCaixaDiario } from './RelatorioPDFCaixaDiario';
 import CaixaInfo from './CaixaInfo';
 import AtosGrid from './AtosGrid';
 import MensagemStatus from './MensagemStatus';

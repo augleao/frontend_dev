@@ -3,7 +3,7 @@ import {
   formasPagamento,
   formatarMoeda,
   formatarDataBR,
-  gerarRelatorioPDFCaixaDiario,
+  gerarRelatorioPDFAtosPraticados,
 } from './utils';
 import DataSelector from './DataSelector';
 import CaixaInputs from './CaixaInputs';
@@ -13,7 +13,7 @@ import AtosTable from './CaixaTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
 import dayjs from 'dayjs';
 import { apiURL } from './config';
-import { gerarRelatorioPDF } from './components/RelatorioPDF';
+import { gerarRelatorioPDFAtosPraticados } from './components/RelatorioPDF';
 
 function AtosPraticados() {
   // Estados
@@ -559,7 +559,7 @@ useEffect(() => {
       alert('Fechamento diário realizado com sucesso!');
 
       // Gere o PDF no frontend:
-      gerarRelatorioPDF({
+      gerarRelatorioPDFAtosPraticados({
         dataRelatorio: dataSelecionada,
         atos,
         valorInicialCaixa,
