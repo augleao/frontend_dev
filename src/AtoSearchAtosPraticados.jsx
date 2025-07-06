@@ -58,10 +58,12 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
 
   // Função para selecionar código tributário
   const handleSelectCodigoTributario = (codigo) => {
+    console.log('🏛️ SELECIONANDO CÓDIGO TRIBUTÁRIO:', codigo);
     setSelectedCodigoTributario(codigo);
     setCodigoTributarioTerm(codigo.codigo); // Mostrar apenas o código no campo
     setCodigoTributarioSuggestions([]);
-    console.log('Código tributário selecionado:', codigo);
+    console.log('✅ CÓDIGO TRIBUTÁRIO SELECIONADO COM SUCESSO');
+    console.log('📋 Estado atualizado - selectedCodigoTributario:', codigo);
   };
 
   // Função para buscar atos da tabela atos_tabela
@@ -93,6 +95,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
 
   // Função para selecionar ato
   const handleSelectAto = (ato) => {
+    console.log('🎯 SELECIONANDO ATO:', ato);
     setSelectedAto(ato);
     setSearchTerm('');
     
@@ -103,6 +106,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         return acc;
       }, {})
     );
+    console.log('✅ ATO SELECIONADO COM SUCESSO');
   };
 
   // Função para calcular valor total dos pagamentos
@@ -114,39 +118,48 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
 
   // Função para adicionar ato à tabela atos_tabela
   const adicionarAto = async () => {
+    console.log('🚀 INICIANDO FUNÇÃO ADICIONAR ATO');
+    console.log('📊 Estado atual das variáveis:');
     console.log('=== DEBUG ADICIONAR ATO ===');
     console.log('selectedAto:', selectedAto);
     console.log('dataSelecionada:', dataSelecionada);
     console.log('selectedCodigoTributario:', selectedCodigoTributario);
+    console.log('quantidade:', quantidade);
     
     if (!selectedAto || !dataSelecionada || !selectedCodigoTributario) {
-      console.log('Validação falhou:');
-      console.log('- selectedAto:', !!selectedAto);
-      console.log('- dataSelecionada:', !!dataSelecionada);
-      console.log('- selectedCodigoTributario:', !!selectedCodigoTributario);
+      console.log('❌ VALIDAÇÃO FALHOU:');
+      console.log('- selectedAto:', !!selectedAto, selectedAto);
+      console.log('- dataSelecionada:', !!dataSelecionada, dataSelecionada);
+      console.log('- selectedCodigoTributario:', !!selectedCodigoTributario, selectedCodigoTributario);
       alert('Selecione um ato, uma data válida e um código tributário');
       return;
     }
+
+    console.log('✅ VALIDAÇÃO PASSOU - Prosseguindo...');
 
     try {
       const agora = new Date();
       const valorTotalPagamentos = calcularValorTotalPagamentos();
       
-      console.log('valorTotalPagamentos:', valorTotalPagamentos);
-      console.log('selectedCodigoTributario.codigo:', selectedCodigoTributario.codigo);
+      console.log('💰 valorTotalPagamentos:', valorTotalPagamentos);
+      console.log('🏛️ selectedCodigoTributario.codigo:', selectedCodigoTributario.codigo);
       
       // Determinar valor dos pagamentos baseado no código tributário
       let valorPagamentos;
       if (selectedCodigoTributario.codigo === '01') {
+        console.log('💳 Ato PAGO detectado - verificando pagamentos...');
         // Ato Pago - usar valor total dos pagamentos
         if (valorTotalPagamentos === 0) {
+          console.log('❌ Valor de pagamentos é zero para ato pago');
           alert('Para atos pagos, é necessário informar pelo menos uma forma de pagamento');
           return;
         }
         valorPagamentos = valorTotalPagamentos;
+        console.log('✅ Valor de pagamentos definido:', valorPagamentos);
       } else {
         // Outros códigos - ISENTO
         valorPagamentos = 'ISENTO';
+        console.log('🆓 Ato ISENTO detectado - valor:', valorPagamentos);
       }
 
       const atoParaAdicionar = {
@@ -161,9 +174,12 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         detalhes_pagamentos: selectedCodigoTributario.codigo === '01' ? JSON.stringify(pagamentos) : null
       };
 
-      console.log('Dados a serem enviados:', atoParaAdicionar);
+      console.log('📦 Dados a serem enviados para o backend:', atoParaAdicionar);
 
       const token = localStorage.getItem('token');
+      console.log('🔑 Token obtido:', token ? 'SIM' : 'NÃO');
+      
+      console.log('🌐 Fazendo requisição para o backend...');
       const res = await fetch(
         `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela`,
         {
@@ -176,10 +192,12 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         }
       );
 
+      console.log('📡 Status da resposta:', res.status);
       const data = await res.json();
-      console.log('Resposta do servidor:', data);
+      console.log('📥 Resposta do servidor:', data);
       
       if (res.ok) {
+        console.log('🎉 ATO ADICIONADO COM SUCESSO!');
         // Limpar formulário
         setSelectedAto(null);
         setQuantidade(1);
@@ -193,15 +211,16 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         );
         
         // Recarregar tabela de atos
+        console.log('🔄 Recarregando tabela de atos...');
         buscarAtosTabela();
         
         alert('Ato adicionado com sucesso!');
       } else {
-        console.error('Erro do servidor:', data);
+        console.error('❌ Erro do servidor:', data);
         alert(`Erro ao adicionar ato: ${data.message}`);
       }
     } catch (error) {
-      console.error('Erro ao adicionar ato:', error);
+      console.error('💥 Erro ao adicionar ato:', error);
       alert('Erro ao adicionar ato');
     }
   };
@@ -271,8 +290,27 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
 
   // useEffect para buscar atos da tabela quando a data mudar
   useEffect(() => {
+    console.log('📅 useEffect - Data mudou:', dataSelecionada);
     buscarAtosTabela();
   }, [dataSelecionada]);
+
+  // useEffect para monitorar mudanças no selectedAto
+  useEffect(() => {
+    console.log('🎯 useEffect - selectedAto mudou:', selectedAto);
+  }, [selectedAto]);
+
+  // useEffect para monitorar mudanças no selectedCodigoTributario
+  useEffect(() => {
+    console.log('🏛️ useEffect - selectedCodigoTributario mudou:', selectedCodigoTributario);
+  }, [selectedCodigoTributario]);
+
+  // Log inicial do componente
+  useEffect(() => {
+    console.log('🚀 COMPONENTE AtoSearchAtosPraticados MONTADO');
+    console.log('📊 Props recebidas:');
+    console.log('- dataSelecionada:', dataSelecionada);
+    console.log('- nomeUsuario:', nomeUsuario);
+  }, []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -482,7 +520,14 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
               fontWeight: 'bold',
               fontSize: '16px'
             }}
-            onClick={adicionarAto}
+            onClick={() => {
+              console.log('🖱️ BOTÃO ADICIONAR ATO CLICADO');
+              console.log('📊 Estado no momento do clique:');
+              console.log('- selectedAto:', selectedAto);
+              console.log('- selectedCodigoTributario:', selectedCodigoTributario);
+              console.log('- dataSelecionada:', dataSelecionada);
+              adicionarAto();
+            }}
             disabled={!selectedAto || !selectedCodigoTributario}
           >
             ➕ Adicionar Ato
