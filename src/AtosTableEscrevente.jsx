@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { formasPagamento, formatarDataBR, formatarValor } from './utils';
 
@@ -13,7 +12,7 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Data</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Hora</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Código</th>
-            <th style={{ border: '1px solid #ddd', padding: 8 }}>Tributação</th>
+            <th style={{ border: '1px solid #ddd', padding: 8 }}>Tributação</th> {/* NOVA COLUNA */}
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Descrição</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Quantidade</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Valor Unitário</th>
@@ -24,7 +23,7 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
         <tbody>
           {atos.length === 0 && (
             <tr>
-              <td colSpan={8} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
+              <td colSpan={9} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
                 Nenhum ato cadastrado para esta data.
               </td>
             </tr>
@@ -34,6 +33,7 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
               <td>{formatarDataBR(ato.data)}</td>
               <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.hora}</td>
               <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
+              <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.tributacao || '-'}</td> {/* NOVA COLUNA */}
               <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.descricao}</td>
               <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.quantidade}</td>
               <td style={{ border: '1px solid #ddd', padding: 8 }}>R$ {formatarValor(ato.valor_unitario)}</td>
