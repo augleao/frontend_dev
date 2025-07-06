@@ -15,18 +15,53 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     }, {})
   );
   const [quantidade, setQuantidade] = useState(1);
-  const [codigoTributario, setCodigoTributario] = useState('01'); // Padrão: Ato Pago
+  
+  // Estados para busca de código tributário
+  const [codigoTributarioTerm, setCodigoTributarioTerm] = useState('');
+  const [codigoTributarioSuggestions, setCodigoTributarioSuggestions] = useState([]);
+  const [loadingCodigoTributario, setLoadingCodigoTributario] = useState(false);
+  const [selectedCodigoTributario, setSelectedCodigoTributario] = useState(null);
+  
   const [atosTabela, setAtosTabela] = useState([]);
   const [loadingAtosTabela, setLoadingAtosTabela] = useState(false);
   const debounceTimeout = useRef(null);
+  const codigoTributarioDebounceTimeout = useRef(null);
 
-  // Opções de código tributário
-  const codigosTributarios = [
-    { value: '01', label: '01 - Ato Pago' },
-    { value: '02', label: '02 - Ato Gratuito' },
-    { value: '03', label: '03 - Ato Isento' },
-    { value: '04', label: '04 - Ato com Isenção Parcial' },
-  ];
+  // Função para buscar códigos tributários
+  const buscarCodigosTributarios = async (term) => {
+    if (term.trim() === '') {
+      setCodigoTributarioSuggestions([]);
+      return;
+    }
+    
+    setLoadingCodigoTributario(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/codigos-gratuitos?search=${encodeURIComponent(term)}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setCodigoTributarioSuggestions(data.codigos || []);
+      } else {
+        setCodigoTributarioSuggestions([]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar códigos tributários:', error);
+      setCodigoTributarioSuggestions([]);
+    }
+    setLoadingCodigoTributario(false);
+  };
+
+  // Função para selecionar código tributário
+  const handleSelectCodigoTributario = (codigo) => {
+    setSelectedCodigoTributario(codigo);
+    setCodigoTributarioTerm(`${codigo.codigo} - ${codigo.descricao}`);
+    setCodigoTributarioSuggestions([]);
+  };
 
   // Função para buscar atos da tabela atos_tabela
   const buscarAtosTabela = async () => {
@@ -78,8 +113,8 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
 
   // Função para adicionar ato à tabela atos_tabela
   const adicionarAto = async () => {
-    if (!selectedAto || !dataSelecionada) {
-      alert('Selecione um ato e uma data válida');
+    if (!selectedAto || !dataSelecionada || !selectedCodigoTributario) {
+      alert('Selecione um ato, uma data válida e um código tributário');
       return;
     }
 
@@ -89,7 +124,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
       
       // Determinar valor dos pagamentos baseado no código tributário
       let valorPagamentos;
-      if (codigoTributario === '01') {
+      if (selectedCodigoTributario.codigo === '01') {
         // Ato Pago - usar valor total dos pagamentos
         if (valorTotalPagamentos === 0) {
           alert('Para atos pagos, é necessário informar pelo menos uma forma de pagamento');
@@ -105,12 +140,12 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         data: dataSelecionada,
         hora: agora.toTimeString().split(' ')[0], // HH:MM:SS
         codigo: selectedAto.codigo,
-        tributacao: codigosTributarios.find(ct => ct.value === codigoTributario)?.label || codigoTributario,
+        tributacao: `${selectedCodigoTributario.codigo} - ${selectedCodigoTributario.descricao}`,
         descricao: selectedAto.descricao,
         quantidade: quantidade,
         valor_unitario: selectedAto.valor_final,
         pagamentos: valorPagamentos,
-        detalhes_pagamentos: codigoTributario === '01' ? JSON.stringify(pagamentos) : null
+        detalhes_pagamentos: selectedCodigoTributario.codigo === '01' ? JSON.stringify(pagamentos) : null
       };
 
       const token = localStorage.getItem('token');
@@ -131,7 +166,8 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         // Limpar formulário
         setSelectedAto(null);
         setQuantidade(1);
-        setCodigoTributario('01');
+        setSelectedCodigoTributario(null);
+        setCodigoTributarioTerm('');
         setPagamentos(
           formasPagamento.reduce((acc, fp) => {
             acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
@@ -168,7 +204,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     }));
   };
 
-  // useEffect para buscar sugestões com debounce
+  // useEffect para buscar sugestões de atos com debounce
   useEffect(() => {
     if (searchTerm.trim() === '') {
       setSuggestions([]);
@@ -201,6 +237,19 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     }, 300);
     return () => clearTimeout(debounceTimeout.current);
   }, [searchTerm]);
+
+  // useEffect para buscar códigos tributários com debounce
+  useEffect(() => {
+    if (codigoTributarioDebounceTimeout.current) {
+      clearTimeout(codigoTributarioDebounceTimeout.current);
+    }
+    
+    codigoTributarioDebounceTimeout.current = setTimeout(() => {
+      buscarCodigosTributarios(codigoTributarioTerm);
+    }, 300);
+    
+    return () => clearTimeout(codigoTributarioDebounceTimeout.current);
+  }, [codigoTributarioTerm]);
 
   // useEffect para buscar atos da tabela quando a data mudar
   useEffect(() => {
@@ -262,7 +311,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
           </div>
           
           {/* Código Tributário */}
-          <div style={{ minWidth: 200 }}>
+          <div style={{ minWidth: 200, position: 'relative' }}>
             <label style={{ 
               display: 'block', 
               marginBottom: '8px', 
@@ -271,25 +320,86 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
             }}>
               Código Tributário:
             </label>
-            <select
-              value={codigoTributario}
-              onChange={(e) => setCodigoTributario(e.target.value)}
+            <input
+              type="text"
+              value={codigoTributarioTerm}
+              onChange={(e) => setCodigoTributarioTerm(e.target.value)}
+              placeholder="Digite código ou descrição"
               style={{
                 width: '100%',
                 padding: '12px',
                 borderRadius: '8px',
                 border: '2px solid #e3f2fd',
                 fontSize: '16px',
-                boxSizing: 'border-box',
-                backgroundColor: '#fff'
+                boxSizing: 'border-box'
               }}
-            >
-              {codigosTributarios.map(codigo => (
-                <option key={codigo.value} value={codigo.value}>
-                  {codigo.label}
-                </option>
-              ))}
-            </select>
+            />
+
+            {loadingCodigoTributario && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  background: '#fff',
+                  border: '2px solid #e3f2fd',
+                  borderTop: 'none',
+                  borderRadius: '0 0 8px 8px',
+                  zIndex: 1000,
+                  padding: '12px',
+                  fontSize: '14px',
+                  color: '#666'
+                }}
+              >
+                Carregando códigos...
+              </div>
+            )}
+
+            {!loadingCodigoTributario && codigoTributarioSuggestions.length > 0 && (
+              <ul
+                style={{
+                  listStyle: 'none',
+                  margin: 0,
+                  padding: 0,
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  maxHeight: '200px',
+                  overflowY: 'auto',
+                  background: '#fff',
+                  border: '2px solid #e3f2fd',
+                  borderTop: 'none',
+                  borderRadius: '0 0 8px 8px',
+                  zIndex: 1000,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                }}
+              >
+                {codigoTributarioSuggestions.map((codigo) => (
+                  <li
+                    key={codigo.id}
+                    onClick={() => handleSelectCodigoTributario(codigo)}
+                    style={{ 
+                      padding: '12px 16px', 
+                      cursor: 'pointer', 
+                      borderBottom: '1px solid #f0f0f0',
+                      fontSize: '14px',
+                      transition: 'background-color 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  >
+                    <div style={{ fontWeight: '600', color: '#2c3e50', marginBottom: '4px' }}>
+                      {codigo.codigo}
+                    </div>
+                    <div style={{ color: '#666', fontSize: '13px' }}>
+                      {codigo.descricao}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
@@ -312,7 +422,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         )}
 
         {/* Formas de Pagamento - só aparece para código tributário "01" */}
-        {codigoTributario === '01' && selectedAto && (
+        {selectedCodigoTributario && selectedCodigoTributario.codigo === '01' && selectedAto && (
           <div>
             <h4 style={{ margin: '0 0 16px 0', color: '#2c3e50' }}>💳 Formas de Pagamento</h4>
             <FormasPagamento
@@ -331,16 +441,16 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
           <button
             style={{
               padding: '12px 24px',
-              background: selectedAto ? '#388e3c' : '#ccc',
+              background: (selectedAto && selectedCodigoTributario) ? '#388e3c' : '#ccc',
               color: '#fff',
               border: 'none',
               borderRadius: 8,
-              cursor: selectedAto ? 'pointer' : 'not-allowed',
+              cursor: (selectedAto && selectedCodigoTributario) ? 'pointer' : 'not-allowed',
               fontWeight: 'bold',
               fontSize: '16px'
             }}
             onClick={adicionarAto}
-            disabled={!selectedAto}
+            disabled={!selectedAto || !selectedCodigoTributario}
           >
             ➕ Adicionar Ato
           </button>
@@ -402,4 +512,3 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     </div>
   );
 }
-
