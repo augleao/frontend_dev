@@ -26,8 +26,7 @@ function AtosPraticados() {
     return `${ano}-${mes}-${dia}`;
   });
 
-  const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
-  const [valorFinalCaixa, ValorFinalCaixa] = useState(0); // Deixe só esta!
+
   const [percentualISS, setPercentualISS] = useState(0); // Estado para ISS
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -43,7 +42,6 @@ function AtosPraticados() {
 
   const [quantidade, setQuantidade] = useState(1);
   const [atos, setAtos] = useState([]);
-  const [fechamentos, setFechamentos] = useState([]);
   const debounceTimeout = useRef(null);
 
   const [nomeUsuario, setNomeUsuario] = useState(() => {
