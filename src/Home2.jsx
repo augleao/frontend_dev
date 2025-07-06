@@ -18,12 +18,12 @@ function Home() {
 
   const featureCards = [
     {
-      id: 'atos-pagos',
+      id: 'caixa-diario',
       title: 'CAIXA DIÁRIO',
       description: 'Registre atos e pagamentos do movimento diário do caixa',
       icon: '💰',
       color: '#27ae60',
-      route: '/atos-pagos'
+      route: '/caixa-diario'
     },
         {
       id: 'meus-fechamentos',
