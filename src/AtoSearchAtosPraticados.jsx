@@ -59,8 +59,9 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
   // Função para selecionar código tributário
   const handleSelectCodigoTributario = (codigo) => {
     setSelectedCodigoTributario(codigo);
-    setCodigoTributarioTerm(`${codigo.codigo} - ${codigo.descricao}`);
+    setCodigoTributarioTerm(codigo.codigo); // Mostrar apenas o código no campo
     setCodigoTributarioSuggestions([]);
+    console.log('Código tributário selecionado:', codigo);
   };
 
   // Função para buscar atos da tabela atos_tabela
@@ -113,7 +114,16 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
 
   // Função para adicionar ato à tabela atos_tabela
   const adicionarAto = async () => {
+    console.log('=== DEBUG ADICIONAR ATO ===');
+    console.log('selectedAto:', selectedAto);
+    console.log('dataSelecionada:', dataSelecionada);
+    console.log('selectedCodigoTributario:', selectedCodigoTributario);
+    
     if (!selectedAto || !dataSelecionada || !selectedCodigoTributario) {
+      console.log('Validação falhou:');
+      console.log('- selectedAto:', !!selectedAto);
+      console.log('- dataSelecionada:', !!dataSelecionada);
+      console.log('- selectedCodigoTributario:', !!selectedCodigoTributario);
       alert('Selecione um ato, uma data válida e um código tributário');
       return;
     }
@@ -121,6 +131,9 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     try {
       const agora = new Date();
       const valorTotalPagamentos = calcularValorTotalPagamentos();
+      
+      console.log('valorTotalPagamentos:', valorTotalPagamentos);
+      console.log('selectedCodigoTributario.codigo:', selectedCodigoTributario.codigo);
       
       // Determinar valor dos pagamentos baseado no código tributário
       let valorPagamentos;
@@ -148,6 +161,8 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         detalhes_pagamentos: selectedCodigoTributario.codigo === '01' ? JSON.stringify(pagamentos) : null
       };
 
+      console.log('Dados a serem enviados:', atoParaAdicionar);
+
       const token = localStorage.getItem('token');
       const res = await fetch(
         `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela`,
@@ -162,6 +177,8 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
       );
 
       const data = await res.json();
+      console.log('Resposta do servidor:', data);
+      
       if (res.ok) {
         // Limpar formulário
         setSelectedAto(null);
@@ -180,6 +197,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         
         alert('Ato adicionado com sucesso!');
       } else {
+        console.error('Erro do servidor:', data);
         alert(`Erro ao adicionar ato: ${data.message}`);
       }
     } catch (error) {
@@ -403,6 +421,21 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
           </div>
         </div>
 
+        {/* Código Tributário Selecionado */}
+        {selectedCodigoTributario && (
+          <div style={{
+            backgroundColor: '#e3f2fd',
+            padding: 16,
+            borderRadius: 8,
+            border: '2px solid #2196f3'
+          }}>
+            <h4 style={{ margin: '0 0 8px 0', color: '#1976d2' }}>Código Tributário Selecionado:</h4>
+            <p style={{ margin: 0, fontWeight: 'bold' }}>
+              {selectedCodigoTributario.codigo} - {selectedCodigoTributario.descricao}
+            </p>
+          </div>
+        )}
+
         {/* Ato Selecionado */}
         {selectedAto && (
           <div style={{
@@ -512,3 +545,4 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     </div>
   );
 }
+
