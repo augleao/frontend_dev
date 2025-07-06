@@ -13,7 +13,7 @@ import AtosTable from './CaixaTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
 import dayjs from 'dayjs';
 import { apiURL } from './config';
-import { gerarRelatorioPDFAtosPraticados } from './components/RelatorioPDF';
+//import { gerarRelatorioPDFAtosPraticados } from './components/RelatorioPDF';
 
 function AtosPraticados() {
   // Estados

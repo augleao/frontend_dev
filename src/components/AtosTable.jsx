@@ -177,7 +177,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
     totalValorPago = parseFloat(totalValorPago.toFixed(2));
     const totalValorAtos = parseFloat(atosComISS.reduce((acc, ato) => acc + ato.valorTotalComISS, 0).toFixed(2));
     if (Math.abs(totalValorPago - totalValorAtos) < 0.01) {
-      gerarRelatorioPDF({
+      gerarRelatorioPDFCaixaDiario({
         dataRelatorio,
         atos: atosComISS,
         valorInicialCaixa,
