@@ -1,14 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { formatarValor } from './utils';
-import { apiURL } from './config';
 
 export default function AtoSearchAtosPraticados({
   searchTerm,
   setSearchTerm,
   suggestions,
-  setSuggestions,
   loadingSuggestions,
-  setLoadingSuggestions,
   onSelectAto,
 }) {
   const handleSelect = (ato) => {
@@ -16,21 +13,6 @@ export default function AtoSearchAtosPraticados({
     onSelectAto(ato);
     setSearchTerm(''); // Limpa o campo de busca
   };
-
-  useEffect(() => {
-    if (!searchTerm) {
-      setSuggestions([]);
-      return;
-    }
-    setLoadingSuggestions(true);
-    fetch(`${apiURL}/atos?search=${encodeURIComponent(searchTerm)}`)
-      .then(res => res.json())
-      .then(data => {
-        setSuggestions(data.atos || []);
-        setLoadingSuggestions(false);
-      })
-      .catch(() => setLoadingSuggestions(false));
-  }, [searchTerm]);
 
   return (
     <div style={{ marginBottom: 20 }}>
