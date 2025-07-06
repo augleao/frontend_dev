@@ -2,7 +2,7 @@
 import React from 'react';
 import { formasPagamento, formatarDataBR, formatarValor } from './utils';
 
-export default function CaixaTableEscrevente({ atos, onRemover }) {
+export default function AtosTableEscrevente({ atos, onRemover }) {
   console.log("Atos recebidos na tabela:", atos);
 
   return (
