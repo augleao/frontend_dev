@@ -9,6 +9,7 @@ export default function AtoSearchAtosPraticados({
   onSelectAto,
 }) {
   const handleSelect = (ato) => {
+    console.log('[AtoSearchAtosPraticados] handleSelect chamado para:', ato); // LOG ADICIONADO
     onSelectAto(ato);
     setSearchTerm(''); // Limpa o campo de busca
   };
