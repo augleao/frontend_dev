@@ -742,12 +742,12 @@ useEffect(() => {
               }}
             />
             {/* Elemento de busca do código tributário logo abaixo da quantidade */}
-            <div style={{ marginTop: '20px' }}></div>
-            <TributacaoSearch
-              tributacaoSelecionada={tributacao}
-              setTributacaoSelecionada={setTributacao}
-            />
-             </div>
+            <div style={{ marginTop: '20px' }}>
+              <TributacaoSearch
+                tributacaoSelecionada={tributacao}
+                setTributacaoSelecionada={setTributacao}
+              />
+            </div>
           </div>
 
           <div style={{ marginBottom: '20px' }}>
