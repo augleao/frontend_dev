@@ -13,6 +13,7 @@ import AtosTable from './AtosTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
 import dayjs from 'dayjs';
 import { apiURL } from './config';
+import TributacaoSearch from './TributacaoSearch'; // Adicione esta linha no topo
 //import { gerarRelatorioPDFAtosPraticados } from './components/RelatorioPDF';
 
 function AtosPraticados() {
@@ -32,6 +33,7 @@ function AtosPraticados() {
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [selectedAto, setSelectedAto] = useState(null);
+  const [tributacao, setTributacao] = useState(''); // Adicione este estado
 
   const [pagamentos, setPagamentos] = useState(
     formasPagamento.reduce((acc, fp) => {

@@ -3,7 +3,7 @@ import React from 'react';
 import { formasPagamento, formatarDataBR, formatarValor } from './utils';
 
 export default function CaixaTableEscrevente({ atos, onRemover }) {
-  console.log("Atos recebidos na tabela:", atos);
+  console.log("Atos recebidos na tabela caixa-table:", atos);
 
   return (
     <div style={{ overflowX: 'auto' }}>
