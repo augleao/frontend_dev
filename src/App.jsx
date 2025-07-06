@@ -16,7 +16,7 @@ import ImportarAtos from './ImportarAtos'; // ajuste o caminho se necessário
 import RelatorioCNJ from './RelatorioCNJ';
 import MeusFechamentos from './RelatoriosCaixaDiario'; // ajuste o caminho se necessário
 import AtosPraticados from './AtosPraticados'; // ajuste o caminho se necessário
-import CaixaDiario from './AtosPraticados'; // ajuste o caminho se necessário
+
 
 
 function App() {
