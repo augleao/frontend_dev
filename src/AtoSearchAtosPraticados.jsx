@@ -306,7 +306,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
               {selectedAto.codigo} - {selectedAto.descricao}
             </p>
             <p style={{ margin: '4px 0 0 0', color: '#666' }}>
-              Valor Unitário: R$ {selectedAto.valor_final?.toFixed(2)}
+              Valor Unitário: R$ {(parseFloat(selectedAto.valor_final) || 0).toFixed(2)}
             </p>
           </div>
         )}
