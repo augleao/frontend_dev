@@ -50,14 +50,6 @@ function App() {
          }
         />
         <Route
-         // path="/atos-pagos"
-          element={
-            <PrivateRoute>
-              <AtosPagos />
-            </PrivateRoute>
-          }
-        />
-        <Route
           path="/caixa-diario"
           element={
             <PrivateRoute>
