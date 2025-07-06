@@ -34,6 +34,14 @@ function Home() {
       route: '/meus-fechamentos'
     },
     {
+      id: 'atos-praticados',
+      title: 'ATOS PRATICADOS',
+      description: 'Gerencie os atos praticados no dia (atos selados)',
+      icon: '🔗',
+      color: '#27ae60',
+      route: '/atos-praticados'
+    },
+    {
       id: 'conciliacao',
       title: 'CONCILIAÇÃO DO CAIXA',
       description: 'Realize a conciliação e fechamento do caixa diário',
