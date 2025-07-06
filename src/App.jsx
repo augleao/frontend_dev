@@ -50,7 +50,8 @@ function App() {
          }
         />
         <Route
-   path="/atos-pagos"
+  // path="/atos-pagos"
+  path="/caixa-diario"
  //path="/CaixaDiario"
   element={
     <PrivateRoute>
