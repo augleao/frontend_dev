@@ -470,7 +470,7 @@ useEffect(() => {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${apiURL}/atos?search=${encodeURIComponent(
+          `/api/codigos-gratuitos?search=${encodeURIComponent(
             searchTerm
           )}`,
           {
