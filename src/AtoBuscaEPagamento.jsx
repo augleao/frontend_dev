@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { formasPagamento } from './utils';
 import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
-import { apiURL } from './config';
 
 export default function AtoBuscaEPagamento({ dataSelecionada, atos, setAtos, nomeUsuario }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,7 +43,7 @@ export default function AtoBuscaEPagamento({ dataSelecionada, atos, setAtos, nom
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL || apiURL}/api/atos?search=${encodeURIComponent(
+          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos?search=${encodeURIComponent(
             searchTerm
           )}`,
           {
@@ -94,7 +93,7 @@ export default function AtoBuscaEPagamento({ dataSelecionada, atos, setAtos, nom
             setSearchTerm={setSearchTerm}
             suggestions={suggestions}
             loadingSuggestions={loadingSuggestions}
-            onSelect={handleSelectAto}
+            onSelectAto={handleSelectAto}
             quantidade={quantidade}
             onQuantidadeChange={setQuantidade}
           />
