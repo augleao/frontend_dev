@@ -1207,7 +1207,7 @@ useEffect(() => {
           borderBottom: '2px solid #9b59b6',
           paddingBottom: '10px'
         }}>
-          📋 Atos do Dia
+          📋 Movimentos do Dia
         </h3>
         <AtosTable atos={atos} onRemover={removerAto} />
       </div>

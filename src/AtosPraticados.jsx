@@ -879,17 +879,7 @@ useEffect(() => {
         
       </div>
 
-      {/* Botão de Fechamento */}
-      <div style={{
-        background: 'white',
-        borderRadius: '12px',
-        padding: '25px',
-        marginBottom: '20px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-        textAlign: 'center'
-      }}>
-        <FechamentoDiarioButton onClick={fechamentoDiario} />
-      </div>
+      
 
       {/* Tabela de Atos */}
       <div style={{
