@@ -7,7 +7,7 @@ import {
 } from './utils';
 import DataSelector from './DataSelector';
 import CaixaInputs from './CaixaInputs';
-import AtoSearch from './AtoSearch';
+import AtoSearchAtosPraticados from './AtoSearchAtosPraticados';
 import FormasPagamento from './FormasPagamento';
 import AtosTable from './AtosTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
