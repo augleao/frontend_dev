@@ -766,7 +766,7 @@ useEffect(() => {
           </h3>
           
           <div style={{ marginBottom: '20px' }}>
-            <AtoSearch
+            <AtoSearchAtosPraticados
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
               suggestions={suggestions}
