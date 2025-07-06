@@ -9,7 +9,7 @@ import DataSelector from './DataSelector';
 import CaixaInputs from './CaixaInputs';
 import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
-import AtosTable from './AtosTableEscrevente';
+import AtosTable from './CaixaTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
 import dayjs from 'dayjs';
 import { apiURL } from './config';
