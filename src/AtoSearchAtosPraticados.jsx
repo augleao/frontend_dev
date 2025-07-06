@@ -590,4 +590,3 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     </div>
   );
 }
-
