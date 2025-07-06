@@ -31,7 +31,7 @@ export default function TributacaoSearchAtosPraticados({
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Digite código ou descrição do ato"
+          placeholder="Digite o código ou tributação do ato"
           style={{
             width: '100%',
             padding: '12px',
