@@ -395,7 +395,7 @@ function AtosPraticados() {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${apiURL}/atos-pagos/${atoParaRemover.id}`,
+          `${apiURL}/atos-praticados/${atoParaRemover.id}`,
           {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
@@ -426,7 +426,7 @@ function AtosPraticados() {
     try {
       const token = localStorage.getItem('token');
       const resAtos = await fetch(
-        `${apiURL}/atos-pagos?data=${dataSelecionada}`,
+        `${apiURL}/atos-praticados?data=${dataSelecionada}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -531,7 +531,7 @@ useEffect(() => {
       const token = localStorage.getItem('token');
       console.log('Enviando fechamento ao backend:', atoFechamento);
       const res = await fetch(
-        `${apiURL}/atos-pagos`,
+        `${apiURL}/atos-praticados`,
         {
           method: 'POST',
           headers: {
