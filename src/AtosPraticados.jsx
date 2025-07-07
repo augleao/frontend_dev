@@ -235,7 +235,7 @@ function AtosPraticados() {
   };
 
   // Função para carregar atos do backend
-  const carregarDadosDaData = async () => {
+  const carregarDadosPraticadosDaData = async () => {
     try {
       const token = localStorage.getItem('token');
       const resAtos = await fetch(
@@ -255,13 +255,13 @@ function AtosPraticados() {
 
 // Adicione este useEffect:
 useEffect(() => {
-  carregarDadosDaData();
+  carregarDadosPraticadosDaData();
 }, []);
 
   // useEffect para carregar atos ao mudar a data
   useEffect(() => {
     let isMounted = true;
-    carregarDadosDaData();
+    carregarDadosPraticadosDaData();
     return () => { isMounted = false; };
   }, [dataSelecionada]);
 
@@ -362,7 +362,7 @@ useEffect(() => {
         return;
       }
 
-      await carregarDadosDaData();
+      await carregarDadosPraticadosDaData();
       alert('Fechamento diário realizado com sucesso!');
 
       // Gere o PDF no frontend:
