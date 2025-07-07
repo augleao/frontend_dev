@@ -697,26 +697,28 @@ useEffect(() => {
       
 
       {/* Tabela de Atos */}
-      <div style={{
-        
-        background: 'white',
-        borderRadius: '12px',
-        padding: '25px',
-        marginBottom: '20px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-      }}>
-        <h3 style={{ 
-          margin: '0 0 20px 0', 
-          color: '#2c3e50',
-          fontSize: '18px',
-          fontWeight: '600',
-          borderBottom: '2px solid #9b59b6',
-          paddingBottom: '10px'
-        }}>
-          📋 Atos do Dia
-        </h3>
-        <AtosTable atos={atos} onRemover={removerAto} />
-      </div>
+{/* 
+<div style={{
+  background: 'white',
+  borderRadius: '12px',
+  padding: '25px',
+  marginBottom: '20px',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+}}>
+  <h3 style={{ 
+    margin: '0 0 20px 0', 
+    color: '#2c3e50',
+    fontSize: '18px',
+    fontWeight: '600',
+    borderBottom: '2px solid #9b59b6',
+    paddingBottom: '10px'
+  }}>
+    📋 Atos do Dia
+  </h3>
+  <AtosTable atos={atos} onRemover={removerAto} />
+</div>
+*/}
+
       
       </div> {/* Fim do Container Principal */}
     </div> 
