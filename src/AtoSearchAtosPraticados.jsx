@@ -74,7 +74,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela?data=${dataSelecionada}`,
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/atos-tabela?data=${dataSelecionada}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -544,7 +544,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         }}
       >
-        <h3 style={{ margin: '0 0 16px 0', color: '#2c3e50' }}>📋 Atos Praticados - {dataSelecionada}</h3>
+        <h3 style={{ margin: '0 0 16px 0', color: '#2c3e50' }}>📋 Atos Praticados neste dia:</h3>
         
         {loadingAtosTabela ? (
           <p>Carregando atos...</p>
