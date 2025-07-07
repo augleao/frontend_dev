@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useRef } from 'react';
 import { formasPagamento } from './utils';
 import AtoSearch from './AtoSearch';
@@ -65,6 +66,69 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     console.log('✅ CÓDIGO TRIBUTÁRIO SELECIONADO COM SUCESSO');
     console.log('📋 Estado atualizado - selectedCodigoTributario:', codigo);
   };
+=======
+import React, { useEffect } from 'react';
+import { formatarValor } from './utils';
+import { apiURL } from './config';
+
+export default function AtoSearchAtosPraticados({
+  searchTerm,
+  setSearchTerm,
+  suggestions,
+  setSuggestions,
+  loadingSuggestions,
+  setLoadingSuggestions,
+  onSelectAto,
+}) {
+  const handleSelect = (ato) => {
+    console.log('[AtoSearchAtosPraticados] handleSelect chamado para:', ato); // LOG ADICIONADO
+    onSelectAto(ato);
+    setSearchTerm(''); // Limpa o campo de busca
+  };
+
+  useEffect(() => {
+    if (!searchTerm) {
+      setSuggestions([]);
+      return;
+    }
+    setLoadingSuggestions(true);
+    fetch(`${apiURL}/atos?search=${encodeURIComponent(searchTerm)}`)
+      .then(res => res.json())
+      .then(data => {
+        setSuggestions(data.atos || []);
+        setLoadingSuggestions(false);
+      })
+      .catch(() => setLoadingSuggestions(false));
+  }, [searchTerm]);
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <label style={{ 
+        display: 'block', 
+        marginBottom: '8px', 
+        fontWeight: '600',
+        color: '#2c3e50'
+      }}>
+        Buscar ato por código ou descrição:
+      </label>
+      
+      {/* Container do input com position relative para dropdown */}
+      <div style={{ position: 'relative', width: '100%' }}>
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Digite código ou descrição do ato"
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: '8px',
+            border: '2px solid #e3f2fd',
+            fontSize: '16px',
+            boxSizing: 'border-box'
+          }}
+        />
+>>>>>>> parent of 67aa757 (Update AtoSearchAtosPraticados.jsx)
 
   // Função para buscar atos da tabela atos_tabela
   const buscarAtosTabela = async () => {
