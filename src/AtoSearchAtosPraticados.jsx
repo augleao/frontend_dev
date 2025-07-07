@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { formasPagamento } from './utils';
 import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
+import { apiURL } from './config'; // ADICIONE ESTA LINHA
 
 export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,12 +34,11 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
       setCodigoTributarioSuggestions([]);
       return;
     }
-    
     setLoadingCodigoTributario(true);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/codigos-gratuitos?search=${encodeURIComponent(term)}`,
+        `${apiURL}/codigos-gratuitos?search=${encodeURIComponent(term)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -74,7 +74,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/atos-tabela?data=${dataSelecionada}`,
+        `${apiURL}/atos-tabela?data=${dataSelecionada}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -174,14 +174,9 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         detalhes_pagamentos: selectedCodigoTributario.codigo === '01' ? JSON.stringify(pagamentos) : null
       };
 
-      console.log('📦 Dados a serem enviados para o backend:', atoParaAdicionar);
-
       const token = localStorage.getItem('token');
-      console.log('🔑 Token obtido:', token ? 'SIM' : 'NÃO');
-      
-      console.log('🌐 Fazendo requisição para o backend...');
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela`,
+        `${apiURL}/atos-tabela`,
         {
           method: 'POST',
           headers: {
@@ -253,9 +248,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos?search=${encodeURIComponent(
-            searchTerm
-          )}`,
+          `${apiURL}/atos?search=${encodeURIComponent(searchTerm)}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
