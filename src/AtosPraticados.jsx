@@ -6,7 +6,6 @@ import {
   gerarRelatorioPDFAtosPraticados,
 } from './utils';
 import DataSelector from './DataSelector';
-import CaixaInputs from './CaixaInputs';
 import AtoSearchAtosPraticados from './AtoSearchAtosPraticados';
 import FormasPagamento from './FormasPagamento';
 import AtosTable from './AtosTableEscrevente';
@@ -62,112 +61,6 @@ function AtosPraticados() {
     const numStr = valorStr.replace(/[^\d,.-]/g, '').replace(',', '.');
     const num = parseFloat(numStr);
     return isNaN(num) ? 0 : num;
-  };
-
-  // Função para adicionar entrada no caixa
-  const adicionarEntrada = async () => {
-    const valor = parseValorMoeda(entradaValor);
-    if (valor <= 0) {
-      alert('Informe um valor válido para a entrada.');
-      return;
-    }
-   // const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-   //
-   //  const nomeUsuario = usuario?.nome || 'Usuário não identificado';
-    const agora = new Date();
-
-    const novaEntrada = {
-      data: dataSelecionada, // Usar a data selecionada
-      hora: agora.toLocaleTimeString('pt-BR', { hour12: false }),
-      codigo: '0003',
-      descricao: `ENTRADA: ${entradaObs || ''}`.trim(),
-      quantidade: 1,
-      valor_unitario: valor,
-      pagamentos: {}, // vazio conforme solicitado
-      usuario: nomeUsuario,
-      };
-    console.log('entrada enviada para o backend:', novaEntrada);
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(
-        `${apiURL}/atos-praticados`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(novaEntrada),
-        }
-      );
-
-      if (res.ok) {
-        setEntradaValor('');
-        setEntradaObs('');
-        // Em vez de setAtos([...]), recarregue do backend:
-        await carregarDadosDaData();
-        console.log('Entrada manual salva com sucesso:', novaEntrada);
-      } else {
-        const errorData = await res.json();
-        console.error('Erro ao salvar entrada:', errorData);
-        alert('Erro ao salvar entrada: ' + (errorData.message || 'Erro desconhecido'));
-      }
-    } catch (e) {
-      console.error('Erro ao salvar entrada:', e);
-      alert('Erro ao salvar entrada: ' + e.message);
-    }
-  };
-
-  // Função para adicionar saída no caixa
-  const adicionarSaida = async () => {
-    const valor = parseValorMoeda(saidaValor);
-    if (valor <= 0) {
-      alert('Informe um valor válido para a saída.');
-      return;
-    }
-    //const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    //const nomeUsuario = usuario?.nome || 'Usuário não identificado';
-    const agora = new Date();
-
-    const novaSaida = {
-      data: dataSelecionada, // Usar a data selecionada
-      hora: agora.toLocaleTimeString('pt-BR', { hour12: false }),
-      codigo: '0002',
-      descricao: `SAÍDA: ${saidaObs || ''}`.trim(),
-      quantidade: 1,
-      valor_unitario: valor,
-      pagamentos: {}, // vazio conforme solicitado
-      usuario: nomeUsuario,
-    };
-
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(
-        `${apiURL}/atos-praticados`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(novaSaida),
-        }
-      );
-
-      if (res.ok) {
-        setAtos((prev) => [...prev, novaSaida]);
-        setSaidaValor('');
-        setSaidaObs('');
-        console.log('Saída manual salva com sucesso:', novaSaida);
-      } else {
-        const errorData = await res.json();
-        console.error('Erro ao salvar saída:', errorData);
-        alert('Erro ao salvar saída: ' + (errorData.message || 'Erro desconhecido'));
-      }
-    } catch (e) {
-      console.error('Erro ao salvar saída:', e);
-      alert('Erro ao salvar saída: ' + e.message);
-    }
   };
 
   // Funções auxiliares
