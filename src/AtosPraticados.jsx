@@ -31,7 +31,6 @@ function AtosPraticados() {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-  const [selectedAto, setSelectedAto] = useState(null);
   const [tributacao, setTributacao] = useState(''); // Adicione este estado
 
   const [pagamentos, setPagamentos] = useState(
@@ -140,7 +139,8 @@ function AtosPraticados() {
   );
 
   // Aplicar ISS no valor total
-  const valorTotal = selectedAto ? calcularValorComISS((selectedAto.valor_final ?? 0) * quantidade) : 0;
+  const valorTotal = 0; // Removido o uso de selectedAto
+  // const valorTotal = selectedAto ? calcularValorComISS((selectedAto.valor_final ?? 0) * quantidade) : 0;
 
   const corFundoPagamentos = (key) => {
     const metodosParaValidar = ['dinheiro', 'cartao', 'pix', 'crc', 'depositoPrevio'];
@@ -156,7 +156,8 @@ function AtosPraticados() {
       const novo = { ...prev };
       novo[key].quantidade = qtd;
 
-      const valorUnitarioComISS = selectedAto ? calcularValorComISS(selectedAto.valor_final ?? 0) : 0;
+      const valorUnitarioComISS = 0; // Removido o uso de selectedAto
+      // const valorUnitarioComISS = selectedAto ? calcularValorComISS(selectedAto.valor_final ?? 0) : 0;
 
       if (!novo[key].manual) {
         novo[key].valor = valorUnitarioComISS * qtd;
@@ -183,7 +184,8 @@ function AtosPraticados() {
 
     setPagamentos((prev) => {
       const novo = { ...prev };
-      const valorUnitarioComISS = selectedAto ? calcularValorComISS(selectedAto.valor_final ?? 0) : 0;
+      const valorUnitarioComISS = 0; // Removido o uso de selectedAto
+      // const valorUnitarioComISS = selectedAto ? calcularValorComISS(selectedAto.valor_final ?? 0) : 0;
 
       formasPagamento.forEach((fp) => {
         if (!novo[fp.key].manual) {
@@ -193,11 +195,6 @@ function AtosPraticados() {
 
       return novo;
     });
-  };
-
-  const handleSelectAto = (ato) => {
-    setSelectedAto(ato);
-    setSearchTerm(''); // Limpa o campo de busca
   };
 
   const adicionarAto = async () => {
