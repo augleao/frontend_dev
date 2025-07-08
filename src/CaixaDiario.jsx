@@ -33,6 +33,10 @@ function CaixaDiario() {
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [selectedAto, setSelectedAto] = useState(null);
+  const [selectedCodigoTributario, setSelectedCodigoTributario] = useState({
+    codigo: '01',
+    descricao: 'Tributação Normal',
+  });
 
   const [pagamentos, setPagamentos] = useState(
     formasPagamento.reduce((acc, fp) => {
@@ -328,6 +332,21 @@ function CaixaDiario() {
 
     // Calcular valor unitário com ISS
     const valorUnitarioComISS = calcularValorComISS(selectedAto.valor_final ?? 0);
+
+    const codigoGratuito = selectedCodigoTributario.codigo.toString().slice(0, 2);
+
+    const atoParaAdicionar = {
+      data: dataSelecionada,
+      hora: agora.toTimeString().split(' ')[0],
+      codigo: selectedAto.codigo,
+      codigo_gratuito: codigoGratuito, // <-- só os dois primeiros dígitos
+      tributacao: `${selectedCodigoTributario.codigo} - ${selectedCodigoTributario.descricao}`,
+      descricao: selectedAto.descricao,
+      quantidade: quantidade,
+      valor_unitario: selectedAto.valor_final,
+      pagamentos: valorPagamentos,
+      detalhes_pagamentos: selectedCodigoTributario.codigo === '01' ? JSON.stringify(pagamentos) : null
+    };
 
     const novoAto = {
       data: dataSelecionada,
