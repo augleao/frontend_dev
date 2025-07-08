@@ -166,15 +166,16 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
 
       const atoParaAdicionar = {
         data: dataSelecionada,
-        hora: agora.toTimeString().split(' ')[0], // HH:MM:SS
+        hora: agora.toTimeString().split(' ')[0],
         codigo: selectedAto.codigo,
-        codigo_gratuito: codigoGratuito, // <-- só os dois primeiros dígitos
+        codigo_gratuito: codigoGratuito,
         tributacao: selectedCodigoTributario.codigo,
         descricao: selectedAto.descricao,
         quantidade: quantidade,
         valor_unitario: selectedAto.valor_final,
         pagamentos: valorPagamentos,
-        detalhes_pagamentos: selectedCodigoTributario.codigo === '01' ? JSON.stringify(pagamentos) : null
+        detalhes_pagamentos: selectedCodigoTributario.codigo === '01' ? JSON.stringify(pagamentos) : null,
+        usuario: nomeUsuario // <-- ADICIONE ESTA LINHA
       };
 
       const token = localStorage.getItem('token');
