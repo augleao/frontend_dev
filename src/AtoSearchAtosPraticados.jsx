@@ -169,7 +169,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         hora: agora.toTimeString().split(' ')[0], // HH:MM:SS
         codigo: selectedAto.codigo,
         codigo_gratuito: codigoGratuito, // <-- só os dois primeiros dígitos
-        tributacao: `${selectedCodigoTributario.codigo} - ${selectedCodigoTributario.descricao}`,
+        tributacao: selectedCodigoTributario.codigo,
         descricao: selectedAto.descricao,
         quantidade: quantidade,
         valor_unitario: selectedAto.valor_final,
