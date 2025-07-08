@@ -162,10 +162,13 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         console.log('🆓 Ato ISENTO detectado - valor:', valorPagamentos);
       }
 
+      const codigoGratuito = selectedCodigoTributario.codigo.toString().slice(0, 2);
+
       const atoParaAdicionar = {
         data: dataSelecionada,
         hora: agora.toTimeString().split(' ')[0], // HH:MM:SS
         codigo: selectedAto.codigo,
+        codigo_gratuito: codigoGratuito, // <-- só os dois primeiros dígitos
         tributacao: `${selectedCodigoTributario.codigo} - ${selectedCodigoTributario.descricao}`,
         descricao: selectedAto.descricao,
         quantidade: quantidade,
