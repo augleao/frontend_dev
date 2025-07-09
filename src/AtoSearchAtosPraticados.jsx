@@ -178,6 +178,9 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         usuario: nomeUsuario // <-- ADICIONE ESTA LINHA
       };
 
+      console.log('🟢 nomeUsuario no momento do envio:', nomeUsuario);
+      console.log('🟢 atoParaAdicionar:', atoParaAdicionar);
+
       const token = localStorage.getItem('token');
       const res = await fetch(
         `${apiURL}/atos-tabela`,
