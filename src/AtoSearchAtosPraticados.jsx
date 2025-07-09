@@ -492,9 +492,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
               {selectedAto.codigo} - {selectedAto.descricao}
             </p>
             <p style={{ margin: '4px 0 0 0', color: '#666' }}>
-              Valor Unitário: {selectedCodigoTributario && selectedCodigoTributario.codigo !== '01' 
-                ? 'ISENTO' 
-                : `R$ ${(parseFloat(selectedAto.valor_final) || 0).toFixed(2)}`}
+              Valor Unitário: R$ {(parseFloat(selectedAto.valor_final) || 0).toFixed(2)}
             </p>
           </div>
         )}
@@ -584,17 +582,17 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
                     <td style={{ padding: '12px' }}>{ato.descricao}</td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>{ato.quantidade}</td>
                     <td style={{ padding: '12px', textAlign: 'right' }}>
-                      {ato.tributacao_codigo === '01' ? (
-                        `R$ ${parseFloat(ato.valor_unitario || 0).toFixed(2)}`
-                      ) : (
+                      {parseFloat(ato.valor_unitario || 0) === 0 ? (
                         'ISENTO'
+                      ) : (
+                        `R$ ${parseFloat(ato.valor_unitario || 0).toFixed(2)}`
                       )}
                     </td>
                     <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>
-                      {ato.tributacao_codigo === '01' ? (
-                        `R$ ${parseFloat(ato.detalhes_pagamentos?.valor_total || 0).toFixed(2)}`
-                      ) : (
+                      {parseFloat(ato.valor_unitario || 0) === 0 ? (
                         'ISENTO'
+                      ) : (
+                        `R$ ${parseFloat(ato.detalhes_pagamentos?.valor_total || ato.valor_unitario || 0).toFixed(2)}`
                       )}
                     </td>
                   </tr>
