@@ -48,6 +48,7 @@ function CaixaDiario() {
 
   const [nomeUsuario, setNomeUsuario] = useState(() => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    console.log('🧑 nomeUsuario recebido:', usuario);
     return usuario?.nome || 'Usuário não identificado';
   });
   const [entradaValor, setEntradaValor] = useState('');

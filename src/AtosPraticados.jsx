@@ -44,7 +44,10 @@ function AtosPraticados() {
   const [atos, setAtos] = useState([]);
   const debounceTimeout = useRef(null);
 
-  const [nomeUsuario, setNomeUsuario] = useState('NOME_DO_USUARIO');
+  const [nomeUsuario, setNomeUsuario] = useState(() => {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    return usuario?.nome || 'Usuário não identificado';
+  });
   const [entradaValor, setEntradaValor] = useState('');
   const [entradaObs, setEntradaObs] = useState('');
   const [saidaValor, setSaidaValor] = useState('');
@@ -497,7 +500,7 @@ useEffect(() => {
           {/* Integração do AtoSearchAtosPraticados */}
           <AtoSearchAtosPraticados 
             dataSelecionada={dataSelecionada} 
-            nomeUsuario={nomeUsuario} // <-- isso precisa ter valor!
+            nomeUsuario={nomeUsuario} 
           />
         </div>
 
