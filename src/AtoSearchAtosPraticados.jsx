@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { formasPagamento } from './utils';
 import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
-import { apiURL } from './config'; // ADICIONE ESTA LINHA
 
 export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -34,11 +33,12 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
       setCodigoTributarioSuggestions([]);
       return;
     }
+    
     setLoadingCodigoTributario(true);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${apiURL}/codigos-gratuitos?search=${encodeURIComponent(term)}`,
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/codigos-gratuitos?search=${encodeURIComponent(term)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -74,7 +74,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${apiURL}/atos-tabela?data=${dataSelecionada}`,
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela?data=${dataSelecionada}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -162,28 +162,31 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         console.log('🆓 Ato ISENTO detectado - valor:', valorPagamentos);
       }
 
-      const codigoGratuito = selectedCodigoTributario.codigo.toString().slice(0, 2);
-
       const atoParaAdicionar = {
         data: dataSelecionada,
-        hora: agora.toTimeString().split(' ')[0],
+        hora: agora.toTimeString().split(' ')[0], // HH:MM:SS
         codigo: selectedAto.codigo,
-        codigo_gratuito: codigoGratuito,
-        tributacao: selectedCodigoTributario.codigo,
+        tributacao_codigo: selectedCodigoTributario.codigo, // Enviar apenas o código
         descricao: selectedAto.descricao,
         quantidade: quantidade,
-        valor_unitario: selectedAto.valor_final,
-        pagamentos: valorPagamentos,
-        detalhes_pagamentos: selectedCodigoTributario.codigo === '01' ? JSON.stringify(pagamentos) : null,
-        usuario: nomeUsuario // <-- ADICIONE ESTA LINHA
+        valor_unitario: parseFloat(selectedAto.valor_final) || 0,
+        pagamentos: selectedCodigoTributario.codigo === '01' ? pagamentos : {}, // JSON vazio para isentos
+        detalhes_pagamentos: selectedCodigoTributario.codigo === '01' ? {
+          valor_total: valorTotalPagamentos,
+          formas_utilizadas: Object.keys(pagamentos).filter(key => pagamentos[key].valor > 0),
+          data_pagamento: dataSelecionada
+        } : {}, // JSON vazio para isentos
+        usuario: nomeUsuario
       };
 
-      console.log('🟢 nomeUsuario no momento do envio:', nomeUsuario);
-      console.log('🟢 atoParaAdicionar:', atoParaAdicionar);
+      console.log('📦 Dados a serem enviados para o backend:', atoParaAdicionar);
 
       const token = localStorage.getItem('token');
+      console.log('🔑 Token obtido:', token ? 'SIM' : 'NÃO');
+      
+      console.log('🌐 Fazendo requisição para o backend...');
       const res = await fetch(
-        `${apiURL}/atos-tabela`,
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela`,
         {
           method: 'POST',
           headers: {
@@ -255,7 +258,9 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${apiURL}/atos?search=${encodeURIComponent(searchTerm)}`,
+          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos?search=${encodeURIComponent(
+            searchTerm
+          )}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -544,7 +549,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         }}
       >
-        <h3 style={{ margin: '0 0 16px 0', color: '#2c3e50' }}>📋 Atos Praticados neste dia:</h3>
+        <h3 style={{ margin: '0 0 16px 0', color: '#2c3e50' }}>📋 Atos Praticados - {dataSelecionada}</h3>
         
         {loadingAtosTabela ? (
           <p>Carregando atos...</p>
@@ -571,14 +576,20 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
                     <td style={{ padding: '12px' }}>{ato.data}</td>
                     <td style={{ padding: '12px' }}>{ato.hora}</td>
                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{ato.codigo}</td>
-                    <td style={{ padding: '12px' }}>{ato.tributacao}</td>
+                    <td style={{ padding: '12px' }}>
+                      {ato.tributacao_codigo} - {ato.tributacao_descricao || 'N/A'}
+                    </td>
                     <td style={{ padding: '12px' }}>{ato.descricao}</td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>{ato.quantidade}</td>
                     <td style={{ padding: '12px', textAlign: 'right' }}>
                       R$ {parseFloat(ato.valor_unitario || 0).toFixed(2)}
                     </td>
                     <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>
-                      {typeof ato.pagamentos === 'string' ? ato.pagamentos : `R$ ${parseFloat(ato.pagamentos || 0).toFixed(2)}`}
+                      {ato.tributacao_codigo === '01' ? (
+                        `R$ ${parseFloat(ato.detalhes_pagamentos?.valor_total || 0).toFixed(2)}`
+                      ) : (
+                        'ISENTO'
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -590,3 +601,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     </div>
   );
 }
+
+
+
+
