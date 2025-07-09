@@ -46,6 +46,7 @@ function AtosPraticados() {
 
   const [nomeUsuario, setNomeUsuario] = useState(() => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    console.log('🧑 nomeUsuario recebido atosPraticados:', usuario);
     return usuario?.nome || 'Usuário não identificado';
   });
   const [entradaValor, setEntradaValor] = useState('');
