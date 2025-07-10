@@ -568,6 +568,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
                   <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd' }}>Qtd</th>
                   <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>Valor Unit.</th>
                   <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>Pagamentos</th>
+                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd' }}>Ações</th> {/* NOVA COLUNA */}
                 </tr>
               </thead>
               <tbody>
@@ -594,6 +595,41 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
                       ) : (
                         `R$ ${parseFloat(ato.detalhes_pagamentos?.valor_total || ato.valor_unitario || 0).toFixed(2)}`
                       )}
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                      <button
+                        style={{
+                          background: '#d32f2f',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 6,
+                          padding: '6px 12px',
+                          cursor: 'pointer',
+                          fontWeight: 'bold'
+                        }}
+                        onClick={async () => {
+                          if (window.confirm('Tem certeza que deseja remover este ato?')) {
+                            // Chame sua API de remoção aqui
+                            const token = localStorage.getItem('token');
+                            const res = await fetch(
+                              `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela/${ato.id}`,
+                              {
+                                method: 'DELETE',
+                                headers: { Authorization: `Bearer ${token}` },
+                              }
+                            );
+                            if (res.ok) {
+                              alert('Ato removido com sucesso!');
+                              // Atualize a tabela após remover
+                              buscarAtosTabela();
+                            } else {
+                              alert('Erro ao remover ato.');
+                            }
+                          }
+                        }}
+                      >
+                        Excluir
+                      </button>
                     </td>
                   </tr>
                 ))}
