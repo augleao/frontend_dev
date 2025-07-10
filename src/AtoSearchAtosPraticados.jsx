@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { formasPagamento } from './utils';
 import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
-import AtosTableEscrevente from './AtosTableEscrevente';
 
 export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -610,6 +609,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
                         }}
                         onClick={async () => {
                           if (window.confirm('Tem certeza que deseja remover este ato?')) {
+                            // Chame sua API de remoção aqui
                             const token = localStorage.getItem('token');
                             const res = await fetch(
                               `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela/${ato.id}`,
@@ -620,7 +620,8 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
                             );
                             if (res.ok) {
                               alert('Ato removido com sucesso!');
-                              buscarAtosTabela(); // Atualiza a tabela após remover
+                              // Atualize a tabela após remover
+                              buscarAtosTabela();
                             } else {
                               alert('Erro ao remover ato.');
                             }

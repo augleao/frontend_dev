@@ -100,6 +100,3 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
   );
 }
 
-// Uso do componente AtosTableEscrevente
-<AtosTableEscrevente atos={atos} onRemover={handleRemoverAto} />
-
