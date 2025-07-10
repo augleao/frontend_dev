@@ -7,10 +7,19 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
   // Função para formatar data no padrão brasileiro (DD/MM/AAAA)
   const formatarDataBR = (dataStr) => {
     if (!dataStr) return '-';
-    // Espera formato "YYYY-MM-DD" ou "YYYY-MM-DDTHH:mm:ss.sssZ"
-    const match = dataStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (!match) return dataStr;
-    return `${match[3]}/${match[2]}/${match[1]}`;
+    // Se for objeto Date
+    if (dataStr instanceof Date) {
+      return dataStr.toLocaleDateString('pt-BR');
+    }
+    // Se for string no formato ISO
+    const match = String(dataStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+    // Se for timestamp ou outro formato, tente converter
+    try {
+      const d = new Date(dataStr);
+      if (!isNaN(d)) return d.toLocaleDateString('pt-BR');
+    } catch {}
+    return dataStr;
   };
 
   return (
