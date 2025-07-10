@@ -7,21 +7,25 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
   // Função para formatar data no padrão brasileiro (DD/MM/AAAA)
   const formatarDataBR = (dataStr) => {
     if (!dataStr) return '-';
-    // Extrai apenas a parte da data (YYYY-MM-DD)
     const match = String(dataStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (match) {
       return `${match[3]}/${match[2]}/${match[1]}`;
     }
-    // Se for objeto Date
     if (dataStr instanceof Date) {
       return dataStr.toLocaleDateString('pt-BR');
     }
-    // Tenta converter para Date
     try {
       const d = new Date(dataStr);
       if (!isNaN(d)) return d.toLocaleDateString('pt-BR');
     } catch {}
     return dataStr;
+  };
+
+  // Função para remover ato pelo id
+  const handleRemover = (id) => {
+    if (window.confirm('Tem certeza que deseja remover este ato?')) {
+      onRemover(id);
+    }
   };
 
   return (
@@ -32,7 +36,7 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Data</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Hora</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Código</th>
-            <th style={{ border: '1px solid #ddd', padding: 8 }}>Tributação</th> {/* NOVA COLUNA */}
+            <th style={{ border: '1px solid #ddd', padding: 8 }}>Tributação</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Descrição</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Quantidade</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Valor Unitário</th>
@@ -49,13 +53,12 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
             </tr>
           )}
           {atos.map((ato, idx) => {
-            console.log('DEBUG DATA:', ato.data, typeof ato.data);
             return (
-              <tr key={idx}>
+              <tr key={ato.id || idx}>
                 <td>{formatarDataBR(ato.data)}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.hora}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
-                <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.tributacao || '-'}</td> {/* NOVA COLUNA */}
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.tributacao || '-'}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.descricao}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.quantidade}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>R$ {formatarValor(ato.valor_unitario)}</td>
@@ -83,7 +86,7 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
                       padding: '6px 12px',
                       cursor: 'pointer',
                     }}
-                    onClick={() => onRemover(idx)}
+                    onClick={() => handleRemover(ato.id)}
                   >
                     Excluir
                   </button>
