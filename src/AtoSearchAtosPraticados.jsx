@@ -691,7 +691,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
                   <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd' }}>Qtd</th>
                   <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>Valor Unit.</th>
                   <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>Pagamentos</th>
-                </tr>
+                  <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>Ações</th>                </tr>
               </thead>
               <tbody>
                 {atosTabela.map((ato, index) => (
