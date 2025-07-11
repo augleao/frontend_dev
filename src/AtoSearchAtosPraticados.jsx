@@ -540,6 +540,91 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         </div>
       </div>
 
+      {/* Container de Atos Agrupados */}
+      <div
+        style={{
+          backgroundColor: '#f8f9fa',
+          borderRadius: 8,
+          padding: 16,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        }}
+      >
+        <h3 style={{ margin: '0 0 16px 0', color: '#2c3e50' }}>📊 Resumo de Atos Agrupados - {dataSelecionada}</h3>
+        
+        {loadingAtosTabela ? (
+          <p>Carregando resumo...</p>
+        ) : atosTabela.length === 0 ? (
+          <p style={{ color: '#666', fontStyle: 'italic' }}>Nenhum ato para agrupar.</p>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#e9ecef' }}>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Código</th>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Tributação</th>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Descrição</th>
+                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd' }}>Qtd Total</th>
+                  <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>Valor Unit.</th>
+                  <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>Valor Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  // Função para agrupar atos por código e tributação
+                  const atosAgrupados = atosTabela.reduce((grupos, ato) => {
+                    const chave = `${ato.codigo}-${ato.tributacao_codigo}`;
+                    
+                    if (!grupos[chave]) {
+                      grupos[chave] = {
+                        codigo: ato.codigo,
+                        tributacao_codigo: ato.tributacao_codigo,
+                        tributacao_descricao: ato.tributacao_descricao,
+                        descricao: ato.descricao,
+                        quantidade_total: 0,
+                        valor_unitario: parseFloat(ato.valor_unitario || 0),
+                        valor_total: 0
+                      };
+                    }
+                    
+                    grupos[chave].quantidade_total += parseInt(ato.quantidade || 0);
+                    grupos[chave].valor_total += parseFloat(ato.valor_unitario || 0) * parseInt(ato.quantidade || 0);
+                    
+                    return grupos;
+                  }, {});
+
+                  return Object.values(atosAgrupados).map((grupo, index) => (
+                    <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '12px', fontWeight: 'bold' }}>{grupo.codigo}</td>
+                      <td style={{ padding: '12px' }}>
+                        {grupo.tributacao_codigo} - {grupo.tributacao_descricao || 'N/A'}
+                      </td>
+                      <td style={{ padding: '12px' }}>{grupo.descricao}</td>
+                      <td style={{ padding: '12px', textAlign: 'center', fontWeight: 'bold', color: '#2196f3' }}>
+                        {grupo.quantidade_total.toString().padStart(2, '0')}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'right' }}>
+                        {grupo.valor_unitario === 0 ? (
+                          'ISENTO'
+                        ) : (
+                          `R$ ${grupo.valor_unitario.toFixed(2)}`
+                        )}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>
+                        {grupo.valor_total === 0 ? (
+                          'ISENTO'
+                        ) : (
+                          `R$ ${grupo.valor_total.toFixed(2)}`
+                        )}
+                      </td>
+                    </tr>
+                  ));
+                })()}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* Tabela de Atos Praticados */}
       <div
         style={{
@@ -568,7 +653,6 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
                   <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd' }}>Qtd</th>
                   <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>Valor Unit.</th>
                   <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>Pagamentos</th>
-                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd' }}>Ações</th> {/* NOVA COLUNA */}
                 </tr>
               </thead>
               <tbody>
@@ -595,41 +679,6 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
                       ) : (
                         `R$ ${parseFloat(ato.detalhes_pagamentos?.valor_total || ato.valor_unitario || 0).toFixed(2)}`
                       )}
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
-                      <button
-                        style={{
-                          background: '#d32f2f',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 6,
-                          padding: '6px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 'bold'
-                        }}
-                        onClick={async () => {
-                          if (window.confirm('Tem certeza que deseja remover este ato?')) {
-                            // Chame sua API de remoção aqui
-                            const token = localStorage.getItem('token');
-                            const res = await fetch(
-                              `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela/${ato.id}`,
-                              {
-                                method: 'DELETE',
-                                headers: { Authorization: `Bearer ${token}` },
-                              }
-                            );
-                            if (res.ok) {
-                              alert('Ato removido com sucesso!');
-                              // Atualize a tabela após remover
-                              buscarAtosTabela();
-                            } else {
-                              alert('Erro ao remover ato.');
-                            }
-                          }
-                        }}
-                      >
-                        Excluir
-                      </button>
                     </td>
                   </tr>
                 ))}
