@@ -93,6 +93,43 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     setLoadingAtosTabela(false);
   };
 
+  // Função para excluir ato da tabela atos_tabela
+  const excluirAto = async (atoId) => {
+    if (!atoId) {
+      alert('ID do ato não encontrado');
+      return;
+    }
+
+    if (!window.confirm('Tem certeza que deseja excluir este ato?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela/${atoId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.ok) {
+        alert('Ato excluído com sucesso!');
+        // Recarregar tabela de atos
+        buscarAtosTabela();
+      } else {
+        const data = await res.json();
+        alert(`Erro ao excluir ato: ${data.message}`);
+      }
+    } catch (error) {
+      console.error('Erro ao excluir ato:', error);
+      alert('Erro ao excluir ato');
+    }
+  };
+
   // Função para selecionar ato
   const handleSelectAto = (ato) => {
     console.log('🎯 SELECIONANDO ATO:', ato);
