@@ -4,6 +4,13 @@ import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
 import config from './config'; // ajuste o caminho se necessário
 
+const formatarDataBR = (dataStr) => {
+  if (!dataStr) return '-';
+  const match = String(dataStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+  return dataStr;
+};
+
 export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -696,7 +703,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
               <tbody>
                 {atosTabela.map((ato, index) => (
                   <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '12px' }}>{ato.data}</td>
+                    <td style={{ padding: '12px' }}>{formatarDataBR(ato.data)}</td>
                     <td style={{ padding: '12px' }}>{ato.hora}</td>
                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{ato.codigo}</td>
                     <td style={{ padding: '12px' }}>
@@ -717,6 +724,22 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
                       ) : (
                         `R$ ${parseFloat(ato.detalhes_pagamentos?.valor_total || ato.valor_unitario || 0).toFixed(2)}`
                       )}
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                      <button
+                        style={{
+                          background: '#d32f2f',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 6,
+                          padding: '6px 12px',
+                          cursor: 'pointer',
+                          fontWeight: 'bold'
+                        }}
+                        onClick={() => excluirAto(ato.id)}
+                      >
+                        Excluir
+                      </button>
                     </td>
                   </tr>
                 ))}
