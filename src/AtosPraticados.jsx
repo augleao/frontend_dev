@@ -6,6 +6,7 @@ import {
   gerarRelatorioPDFAtosPraticados,
 } from './utils';
 import DataSelector from './DataSelector';
+import CaixaInputs from './CaixaInputs';
 import AtoSearchAtosPraticados from './AtoSearchAtosPraticados';
 import FormasPagamento from './FormasPagamento';
 import AtosTable from './AtosTableEscrevente';
@@ -31,6 +32,7 @@ function AtosPraticados() {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [selectedAto, setSelectedAto] = useState(null);
   const [tributacao, setTributacao] = useState(''); // Adicione este estado
 
   const [pagamentos, setPagamentos] = useState(
@@ -46,7 +48,6 @@ function AtosPraticados() {
 
   const [nomeUsuario, setNomeUsuario] = useState(() => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    console.log('🧑 nomeUsuario recebido atosPraticados:', usuario);
     return usuario?.nome || 'Usuário não identificado';
   });
   const [entradaValor, setEntradaValor] = useState('');
@@ -61,6 +62,112 @@ function AtosPraticados() {
     const numStr = valorStr.replace(/[^\d,.-]/g, '').replace(',', '.');
     const num = parseFloat(numStr);
     return isNaN(num) ? 0 : num;
+  };
+
+  // Função para adicionar entrada no caixa
+  const adicionarEntrada = async () => {
+    const valor = parseValorMoeda(entradaValor);
+    if (valor <= 0) {
+      alert('Informe um valor válido para a entrada.');
+      return;
+    }
+   // const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+   //
+   //  const nomeUsuario = usuario?.nome || 'Usuário não identificado';
+    const agora = new Date();
+
+    const novaEntrada = {
+      data: dataSelecionada, // Usar a data selecionada
+      hora: agora.toLocaleTimeString('pt-BR', { hour12: false }),
+      codigo: '0003',
+      descricao: `ENTRADA: ${entradaObs || ''}`.trim(),
+      quantidade: 1,
+      valor_unitario: valor,
+      pagamentos: {}, // vazio conforme solicitado
+      usuario: nomeUsuario,
+      };
+    console.log('entrada enviada para o backend:', novaEntrada);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${apiURL}/atos-praticados`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(novaEntrada),
+        }
+      );
+
+      if (res.ok) {
+        setEntradaValor('');
+        setEntradaObs('');
+        // Em vez de setAtos([...]), recarregue do backend:
+        await carregarDadosDaData();
+        console.log('Entrada manual salva com sucesso:', novaEntrada);
+      } else {
+        const errorData = await res.json();
+        console.error('Erro ao salvar entrada:', errorData);
+        alert('Erro ao salvar entrada: ' + (errorData.message || 'Erro desconhecido'));
+      }
+    } catch (e) {
+      console.error('Erro ao salvar entrada:', e);
+      alert('Erro ao salvar entrada: ' + e.message);
+    }
+  };
+
+  // Função para adicionar saída no caixa
+  const adicionarSaida = async () => {
+    const valor = parseValorMoeda(saidaValor);
+    if (valor <= 0) {
+      alert('Informe um valor válido para a saída.');
+      return;
+    }
+    //const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    //const nomeUsuario = usuario?.nome || 'Usuário não identificado';
+    const agora = new Date();
+
+    const novaSaida = {
+      data: dataSelecionada, // Usar a data selecionada
+      hora: agora.toLocaleTimeString('pt-BR', { hour12: false }),
+      codigo: '0002',
+      descricao: `SAÍDA: ${saidaObs || ''}`.trim(),
+      quantidade: 1,
+      valor_unitario: valor,
+      pagamentos: {}, // vazio conforme solicitado
+      usuario: nomeUsuario,
+    };
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${apiURL}/atos-praticados`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(novaSaida),
+        }
+      );
+
+      if (res.ok) {
+        setAtos((prev) => [...prev, novaSaida]);
+        setSaidaValor('');
+        setSaidaObs('');
+        console.log('Saída manual salva com sucesso:', novaSaida);
+      } else {
+        const errorData = await res.json();
+        console.error('Erro ao salvar saída:', errorData);
+        alert('Erro ao salvar saída: ' + (errorData.message || 'Erro desconhecido'));
+      }
+    } catch (e) {
+      console.error('Erro ao salvar saída:', e);
+      alert('Erro ao salvar saída: ' + e.message);
+    }
   };
 
   // Funções auxiliares
@@ -140,8 +247,7 @@ function AtosPraticados() {
   );
 
   // Aplicar ISS no valor total
-  const valorTotal = 0; // Removido o uso de selectedAto
-  // const valorTotal = selectedAto ? calcularValorComISS((selectedAto.valor_final ?? 0) * quantidade) : 0;
+  const valorTotal = selectedAto ? calcularValorComISS((selectedAto.valor_final ?? 0) * quantidade) : 0;
 
   const corFundoPagamentos = (key) => {
     const metodosParaValidar = ['dinheiro', 'cartao', 'pix', 'crc', 'depositoPrevio'];
@@ -157,8 +263,7 @@ function AtosPraticados() {
       const novo = { ...prev };
       novo[key].quantidade = qtd;
 
-      const valorUnitarioComISS = 0; // Removido o uso de selectedAto
-      // const valorUnitarioComISS = selectedAto ? calcularValorComISS(selectedAto.valor_final ?? 0) : 0;
+      const valorUnitarioComISS = selectedAto ? calcularValorComISS(selectedAto.valor_final ?? 0) : 0;
 
       if (!novo[key].manual) {
         novo[key].valor = valorUnitarioComISS * qtd;
@@ -185,8 +290,7 @@ function AtosPraticados() {
 
     setPagamentos((prev) => {
       const novo = { ...prev };
-      const valorUnitarioComISS = 0; // Removido o uso de selectedAto
-      // const valorUnitarioComISS = selectedAto ? calcularValorComISS(selectedAto.valor_final ?? 0) : 0;
+      const valorUnitarioComISS = selectedAto ? calcularValorComISS(selectedAto.valor_final ?? 0) : 0;
 
       formasPagamento.forEach((fp) => {
         if (!novo[fp.key].manual) {
@@ -198,10 +302,112 @@ function AtosPraticados() {
     });
   };
 
+  const handleSelectAto = (ato) => {
+    setSelectedAto(ato);
+    setSearchTerm(''); // Limpa o campo de busca
+  };
 
+  const adicionarAto = async () => {
+    if (!selectedAto) {
+      alert('Selecione um ato válido.');
+      return;
+    }
+    const algumPagamento = Object.values(pagamentos).some((p) => p.valor > 0);
+    if (quantidade < 1 || !algumPagamento) {
+      alert('Informe quantidade válida e pelo menos um valor de pagamento.');
+      return;
+    }
 
-  const removerAto = async (index) => {
-    const atoParaRemover = atos[index];
+    if (!valoresIguais(somaPagamentos, valorTotal)) {
+      alert('A soma dos pagamentos deve ser igual ao Valor Total do ato.');
+      return;
+    }
+
+    //const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    //const nomeUsuario = usuario?.nome || 'Usuário não identificado';
+
+    // Calcular valor unitário com ISS
+    const valorUnitarioComISS = calcularValorComISS(selectedAto.valor_final ?? 0);
+
+    const novoAto = {
+      data: dataSelecionada,
+      hora: new Date().toLocaleTimeString(),
+      codigo: selectedAto.codigo,
+      descricao: selectedAto.descricao,
+      quantidade,
+      valor_unitario: valorUnitarioComISS, // Salvar valor com ISS
+      valor_original: selectedAto.valor_final, // Manter valor original para referência
+      percentual_iss: percentualISS, // Salvar percentual aplicado
+      pagamentos: Object.fromEntries(
+        Object.entries(pagamentos).map(([key, value]) => [
+          key,
+          { quantidade: value.quantidade, valor: value.valor },
+        ])
+      ),
+      usuario: nomeUsuario,
+    };
+
+    console.log('Ato a ser salvo:', novoAto);
+    console.log('Valor original:', selectedAto.valor_final);
+    console.log('Valor com ISS:', valorUnitarioComISS);
+    console.log('Percentual ISS aplicado:', percentualISS);
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `${apiURL}/atos-praticados`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(novoAto),
+        }
+      );
+      if (res.ok) {
+        setAtos((prev) => [...prev, novoAto]);
+        setSelectedAto(null);
+        setSearchTerm('');
+        setQuantidade(1);
+        setPagamentos(
+          formasPagamento.reduce((acc, fp) => {
+            acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
+            return acc;
+          }, {})
+        );
+        setSuggestions([]);
+      } else {
+        alert('Erro ao salvar ato.');
+      }
+    } catch (e) {
+      console.error('Erro ao salvar ato:', e);
+      alert('Erro ao salvar ato.');
+    }
+  };
+
+  const removerAto = async (idOuIndex) => {
+    let atoParaRemover;
+    let indexParaRemover;
+    
+    // Verificar se é um ID (número) ou índice
+    if (typeof idOuIndex === 'number' && idOuIndex < atos.length) {
+      // É um índice
+      indexParaRemover = idOuIndex;
+      atoParaRemover = atos[idOuIndex];
+    } else {
+      // É um ID, procurar o ato correspondente
+      indexParaRemover = atos.findIndex(ato => ato.id === idOuIndex);
+      if (indexParaRemover === -1) {
+        alert('Ato não encontrado');
+        return;
+      }
+      atoParaRemover = atos[indexParaRemover];
+    }
+    
+    if (!window.confirm('Tem certeza que deseja excluir este ato?')) {
+      return;
+    }
     
     // Verificar se o ato tem ID (foi salvo no backend)
     if (atoParaRemover.id) {
@@ -209,7 +415,7 @@ function AtosPraticados() {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${apiURL}/atos-praticados/${atoParaRemover.id}`,
+          `${apiURL}/atos-pagos/${atoParaRemover.id}`,
           {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
@@ -217,7 +423,7 @@ function AtosPraticados() {
         );
         
         if (res.ok) {
-          setAtos(atos.filter((_, i) => i !== index));
+          setAtos(atos.filter((_, i) => i !== indexParaRemover));
           console.log('Ato removido do backend e da lista local:', atoParaRemover);
         } else {
           const errorData = await res.json();
@@ -230,17 +436,17 @@ function AtosPraticados() {
       }
     } else {
       // Ato só existe localmente, remover apenas da lista
-      setAtos(atos.filter((_, i) => i !== index));
+      setAtos(atos.filter((_, i) => i !== indexParaRemover));
       console.log('Ato removido apenas da lista local (não tinha ID):', atoParaRemover);
     }
   };
 
   // Função para carregar atos do backend
-  const carregarDadosPraticadosDaData = async () => {
+  const carregarDadosDaData = async () => {
     try {
       const token = localStorage.getItem('token');
       const resAtos = await fetch(
-        `${apiURL}/atos-praticados?data=${dataSelecionada}`,
+        `${apiURL}/atos-pagos?data=${dataSelecionada}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -256,13 +462,13 @@ function AtosPraticados() {
 
 // Adicione este useEffect:
 useEffect(() => {
-  carregarDadosPraticadosDaData();
+  carregarDadosDaData();
 }, []);
 
   // useEffect para carregar atos ao mudar a data
   useEffect(() => {
     let isMounted = true;
-    carregarDadosPraticadosDaData();
+    carregarDadosDaData();
     return () => { isMounted = false; };
   }, [dataSelecionada]);
 
@@ -345,7 +551,7 @@ useEffect(() => {
       const token = localStorage.getItem('token');
       console.log('Enviando fechamento ao backend:', atoFechamento);
       const res = await fetch(
-        `${apiURL}/atos-praticados`,
+        `${apiURL}/atos-pagos`,
         {
           method: 'POST',
           headers: {
@@ -363,7 +569,7 @@ useEffect(() => {
         return;
       }
 
-      await carregarDadosPraticadosDaData();
+      await carregarDadosDaData();
       alert('Fechamento diário realizado com sucesso!');
 
       // Gere o PDF no frontend:
@@ -510,8 +716,27 @@ useEffect(() => {
 
       
 
- 
-
+      {/* Tabela de Atos */}
+      <div style={{
+        
+        background: 'white',
+        borderRadius: '12px',
+        padding: '25px',
+        marginBottom: '20px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+      }}>
+        <h3 style={{ 
+          margin: '0 0 20px 0', 
+          color: '#2c3e50',
+          fontSize: '18px',
+          fontWeight: '600',
+          borderBottom: '2px solid #9b59b6',
+          paddingBottom: '10px'
+        }}>
+          📋 Atos do Dia
+        </h3>
+        <AtosTable atos={atos} onRemover={removerAto} />
+      </div>
       
       </div> {/* Fim do Container Principal */}
     </div> 
@@ -519,4 +744,3 @@ useEffect(() => {
 }
 
 export default AtosPraticados;
-
