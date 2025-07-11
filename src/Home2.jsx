@@ -42,6 +42,14 @@ function Home() {
       route: '/atos-praticados'
     },
     {
+      id: 'pesquisa-atos',
+      title: 'PESQUISA DE ATOS PRATICADOS',
+      description: 'Pesquise e consulte atos praticados por período, escrevente e tipo',
+      icon: '🔍',
+      color: '#f39c12',
+      route: '/pesquisa-atos-praticados'
+    },
+    {
       id: 'conciliacao',
       title: 'CONCILIAÇÃO DO CAIXA',
       description: 'Realize a conciliação e fechamento do caixa diário',
