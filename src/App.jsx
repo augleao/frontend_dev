@@ -50,7 +50,15 @@ function App() {
              <MeusRelatorios />
            </PrivateRoute>
          }
-        />
+          />
+        <Route
+         path="//pesquisa-atos-praticados"
+         element={
+           <PrivateRoute>
+             <pesquisaAtosPraticados />
+           </PrivateRoute>
+         }
+         />
         <Route
           path="/caixa-diario"
           element={
