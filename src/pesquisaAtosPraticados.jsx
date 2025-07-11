@@ -189,7 +189,7 @@ export default function PesquisaAtosPraticados() {
         }}
       >
         <h2 style={{ margin: '0 0 24px 0', color: '#2c3e50', fontSize: '24px' }}>
-          🔍 Pesquisa de Atos Praticados
+          🔍 Pesquisa de Atos Praticados TESTE
         </h2>
         
         {/* Linha 1: Período de Datas */}
