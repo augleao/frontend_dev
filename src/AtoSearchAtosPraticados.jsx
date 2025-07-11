@@ -129,7 +129,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
       console.error('Erro ao excluir ato:', error);
       alert('Erro ao excluir ato');
     }
-  };x
+  };
 
   // Função para selecionar ato
   const handleSelectAto = (ato) => {
