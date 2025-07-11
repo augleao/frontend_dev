@@ -52,10 +52,10 @@ function App() {
          }
           />
         <Route
-         path="//pesquisa-atos-praticados"
+         path="/pesquisa-atos-praticados"
          element={
            <PrivateRoute>
-             <pesquisaAtosPraticados />
+             <PesquisaAtosPraticados />
            </PrivateRoute>
          }
          />
