@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { formasPagamento } from './utils';
 import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
+import config from './config'; // ajuste o caminho se necessário
 
 export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,7 +39,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/codigos-gratuitos?search=${encodeURIComponent(term)}`,
+  `${config.apiURL}/api/codigos-gratuitos?search=${encodeURIComponent(term)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -74,7 +75,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela?data=${dataSelecionada}`,
+  `${config.apiURL}/api/atos-tabela?data=${dataSelecionada}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -107,7 +108,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela/${atoId}`,
+  `${config.apiURL}/api/atos-tabela/${atoId}`,
         {
           method: 'DELETE',
           headers: {
@@ -128,7 +129,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
       console.error('Erro ao excluir ato:', error);
       alert('Erro ao excluir ato');
     }
-  };
+  };x
 
   // Função para selecionar ato
   const handleSelectAto = (ato) => {
@@ -223,7 +224,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
       
       console.log('🌐 Fazendo requisição para o backend...');
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela`,
+        `${config.apiURL}/api/atos-tabela`,
         {
           method: 'POST',
           headers: {
@@ -295,7 +296,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos?search=${encodeURIComponent(
+  `${config.apiURL}/api/atos?search=${encodeURIComponent(
             searchTerm
           )}`,
           {
