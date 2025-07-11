@@ -39,7 +39,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-  `${config.apiURL}/api/codigos-gratuitos?search=${encodeURIComponent(term)}`,
+  `${config.apiURL}/codigos-gratuitos?search=${encodeURIComponent(term)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -75,7 +75,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-  `${config.apiURL}/api/atos-tabela?data=${dataSelecionada}`,
+  `${config.apiURL}/atos-tabela?data=${dataSelecionada}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -108,7 +108,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-  `${config.apiURL}/api/atos-tabela/${atoId}`,
+  `${config.apiURL}/atos-tabela/${atoId}`,
         {
           method: 'DELETE',
           headers: {
@@ -224,7 +224,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
       
       console.log('🌐 Fazendo requisição para o backend...');
       const res = await fetch(
-        `${config.apiURL}/api/atos-tabela`,
+        `${config.apiURL}/atos-tabela`,
         {
           method: 'POST',
           headers: {
@@ -296,7 +296,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-  `${config.apiURL}/api/atos?search=${encodeURIComponent(
+  `${config.apiURL}/atos?search=${encodeURIComponent(
             searchTerm
           )}`,
           {
