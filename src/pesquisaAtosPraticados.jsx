@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiURL } from './config';
 
 export default function PesquisaAtosPraticados() {
   // Estados para os filtros de busca
