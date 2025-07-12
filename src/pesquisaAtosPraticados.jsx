@@ -40,7 +40,7 @@ export default function PesquisaAtosPraticados() {
       console.log('🔍 Buscando atos com parâmetros:', params.toString());
       
       const res = await fetch(
-        `${apiURL}/atos-tabela/pesquisa?${params.toString()}`,
+        `${apiURL}/busca-atos/pesquisa?${params.toString()}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
