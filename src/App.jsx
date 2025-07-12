@@ -16,7 +16,7 @@ import ImportarAtos from './ImportarAtos'; // ajuste o caminho se necessário
 import RelatorioCNJ from './RelatorioCNJ';
 import MeusFechamentos from './RelatoriosCaixaDiario'; // ajuste o caminho se necessário
 import AtosPraticados from './AtosPraticados'; // ajuste o caminho se necessário
-import PesquisaAtosPraticados from './AtoSearchAtosPraticados'; // ajuste o caminho se necessário
+import PesquisaAtosPraticados from './pesquisaAtosPraticados'; // ajuste o caminho se necessário
 
 
 
