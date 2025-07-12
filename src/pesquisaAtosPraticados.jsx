@@ -39,7 +39,7 @@ export default function PesquisaAtosPraticados() {
       console.log('🔍 Buscando atos com parâmetros:', params.toString());
       
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL || 'https://backend-dev-ypsu.onrender.com'}/api/atos-tabela/pesquisa?${params.toString()}`,
+        `${apiURL}/atos-tabela/pesquisa?${params.toString()}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
