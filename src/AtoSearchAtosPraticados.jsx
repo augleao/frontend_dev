@@ -89,7 +89,11 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
       );
       const data = await res.json();
       if (res.ok) {
-        setAtosTabela(data.atos || []);
+        // Filtra os atos pelo nomeUsuario (usuário logado)
+        const atosFiltrados = (data.atos || []).filter(
+          ato => ato.usuario === nomeUsuario
+        );
+        setAtosTabela(atosFiltrados);
       } else {
         console.error('Erro ao buscar atos da tabela:', data.message);
         setAtosTabela([]);
