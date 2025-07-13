@@ -152,37 +152,6 @@ function Home() {
         }}>
           Sistema Auxiliar do RCPN v1.0
         </h1>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px'
-        }}>
-          <span style={{
-            color: 'white',
-            fontSize: '14px',
-            opacity: 0.9
-          }}>
-            👤 {nomeUsuario}
-          </span>
-          <button
-            onClick={handleLogout}
-            style={{
-              background: 'rgba(231, 76, 60, 0.8)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '8px 16px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => e.target.style.background = 'rgba(231, 76, 60, 1)'}
-            onMouseLeave={(e) => e.target.style.background = 'rgba(231, 76, 60, 0.8)'}
-          >
-            Sair
-          </button>
-        </div>
       </header>
 
       {/* Main Content */}
