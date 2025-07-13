@@ -62,6 +62,22 @@ export default function PesquisaAtosPraticados() {
     ) {
       setNomeEscrevente(usuarioLogado.nome || usuarioLogado.email);
     }
+    // Se for Substituto, filtra os usuários pela serventia
+    if (
+      usuarioLogado &&
+      usuarioLogado.cargo === 'Substituto'
+    ) {
+      setUsuarios((prev) =>
+        prev.filter((u) => u.serventia === usuarioLogado.serventia)
+      );
+      // Se o escrevente selecionado não for da mesma serventia, limpa seleção
+      setNomeEscrevente((prevNome) => {
+        const found = prev.find((u) =>
+          (u.nome || u.email) === prevNome && u.serventia === usuarioLogado.serventia
+        );
+        return found ? prevNome : '';
+      });
+    }
   }, [usuarioLogado]);
 
   // Função principal para buscar atos praticados
@@ -403,11 +419,18 @@ export default function PesquisaAtosPraticados() {
                 }
               >
                 <option value="">Selecione um escrevente</option>
-                {usuarios.map((u) => (
-                  <option key={u.id} value={u.nome || u.email}>
-                    {u.nome || u.email}
-                  </option>
-                ))}
+                {usuarios
+                  // Se for Substituto, só mostra escreventes da mesma serventia
+                  .filter(u =>
+                    !usuarioLogado || usuarioLogado.cargo !== 'Substituto'
+                      ? true
+                      : u.serventia === usuarioLogado.serventia
+                  )
+                  .map((u) => (
+                    <option key={u.id} value={u.nome || u.email}>
+                      {u.nome || u.email}
+                    </option>
+                  ))}
               </select>
             </div>
             
