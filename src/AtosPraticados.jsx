@@ -177,6 +177,9 @@ function AtosPraticados() {
   const carregarDadosPraticadosDaData = async () => {
     try {
       const token = localStorage.getItem('token');
+      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      const nomeLogado = usuario?.nome || usuario?.email;
+
       const resAtos = await fetch(
         `${apiURL}/atos-praticados?data=${dataSelecionada}`,
         {
@@ -185,7 +188,11 @@ function AtosPraticados() {
       );
       if (resAtos.ok) {
         const dataAtos = await resAtos.json();
-        setAtos(dataAtos.CaixaDiario || []);
+        // Filtra os atos pelo usuário logado
+        const atosFiltrados = (dataAtos.CaixaDiario || []).filter(
+          ato => ato.usuario === nomeLogado
+        );
+        setAtos(atosFiltrados);
       }
     } catch (e) {
       console.error('Erro ao carregar dados da data:', e);
