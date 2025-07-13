@@ -68,69 +68,7 @@ function AtosPraticados() {
     setDataSelecionada(e.target.value);
   };
 
-  const calcularValorFinalCaixa = () => {
-    // Busca o valor inicial do caixa (código 0005) da tabela de atos
-    
 
-    // Soma todos os valores em dinheiro dos atos normais (exceto entradas/saídas/valor inicial)
-    const totalDinheiro = atos.reduce((acc, ato) => {
-      if (
-        ato.codigo !== '0003' && // não entrada manual
-        ato.codigo !== '0002' && // não saída manual
-        ato.codigo !== '0005'    // não valor inicial
-      ) {
-        const valorDinheiro = parseFloat(ato.pagamentos?.dinheiro?.valor) || 0;
-        return acc + valorDinheiro;
-      }
-      return acc;
-    }, 0);
-
-    // Soma as entradas manuais (código 0003)
-    const totalEntradas = atos.reduce((acc, ato) => {
-      if (ato.codigo === '0003') {
-        const valorEntrada = parseFloat(ato.valor_unitario) || 0;
-        return acc + valorEntrada;
-      }
-      return acc;
-    }, 0);
-
-        // Soma as entradas manuais (código 0005)
-    const valorInicial = atos.reduce((acc, ato) => {
-      if (ato.codigo === '0005') {
-        const valorInicial = parseFloat(ato.valor_unitario) || 0;
-        return acc + valorInicial;
-      }
-      return acc;
-    }, 0);
-
-    // Subtrai as saídas manuais (código 0002)
-    const totalSaidas = atos.reduce((acc, ato) => {
-      if (ato.codigo === '0002') {
-        const valorSaida = parseFloat(ato.valor_unitario) || 0;
-        return acc + valorSaida;
-      }
-      return acc;
-    }, 0);
-
-    const valorFinal = valorInicial + totalDinheiro + totalEntradas - totalSaidas;
-
-    console.log("Cálculo do Valor Final do Caixa:");
-    console.log("- Valor Inicial (tabela):", valorInicial);
-    console.log("- Total Dinheiro (atos):", totalDinheiro);
-    console.log("- Total Entradas (0003):", totalEntradas);
-    console.log("- Total Saídas (0002):", totalSaidas);
-    console.log("- Valor Final Calculado:", valorFinal);
-
-    return isNaN(valorFinal) ? 0 : valorFinal;
-  };
-
-  // Função para calcular valor com ISS
-  const calcularValorComISS = (valorBase) => {
-    if (!valorBase || percentualISS === 0) return valorBase;
-    const valorComISS = valorBase * (1 + percentualISS / 100);
-    console.log(`Valor base: ${valorBase}, ISS: ${percentualISS}%, Valor final: ${valorComISS}`);
-    return valorComISS;
-  };
 
   const valoresIguais = (a, b, tolerancia = 0.01) => Math.abs(a - b) < tolerancia;
 
