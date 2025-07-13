@@ -14,10 +14,10 @@ export default function AtoSearch({
   };
 
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: 10 /* reduzido de 20 */ }}>
       <label style={{ 
         display: 'block', 
-        marginBottom: '8px', 
+        marginBottom: '4px', // reduzido de 8px
         fontWeight: '600',
         color: '#2c3e50'
       }}>
@@ -33,10 +33,10 @@ export default function AtoSearch({
           placeholder="Digite código ou descrição do ato"
           style={{
             width: '100%',
-            padding: '12px',
+            padding: '8px', // reduzido de 12px
             borderRadius: '8px',
             border: '2px solid #e3f2fd',
-            fontSize: '16px',
+            fontSize: '15px', // reduzido de 16px
             boxSizing: 'border-box'
           }}
         />
@@ -53,8 +53,8 @@ export default function AtoSearch({
               borderTop: 'none',
               borderRadius: '0 0 8px 8px',
               zIndex: 1000,
-              padding: '12px',
-              fontSize: '14px',
+              padding: '8px', // reduzido de 12px
+              fontSize: '13px', // reduzido de 14px
               color: '#666'
             }}
           >
@@ -72,7 +72,7 @@ export default function AtoSearch({
               top: '100%',
               left: 0,
               right: 0,
-              maxHeight: '300px',
+              maxHeight: '220px', // reduzido de 300px
               overflowY: 'auto',
               background: '#fff',
               border: '2px solid #e3f2fd',
@@ -87,22 +87,19 @@ export default function AtoSearch({
                 key={ato.id}
                 onClick={() => handleSelect(ato)}
                 style={{ 
-                  padding: '12px 16px', 
+                  padding: '8px 12px', // reduzido de 12px 16px
                   cursor: 'pointer', 
                   borderBottom: '1px solid #f0f0f0',
-                  fontSize: '14px',
+                  fontSize: '13px', // reduzido de 14px
                   transition: 'background-color 0.2s ease',
-                  ':hover': {
-                    backgroundColor: '#f8f9fa'
-                  }
                 }}
                 onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
                 onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               >
-                <div style={{ fontWeight: '600', color: '#2c3e50', marginBottom: '4px' }}>
+                <div style={{ fontWeight: '600', color: '#2c3e50', marginBottom: '2px' /* reduzido de 4px */ }}>
                   {ato.codigo} - R$ {formatarValor(ato.valor_final)}
                 </div>
-                <div style={{ color: '#666', fontSize: '13px' }}>
+                <div style={{ color: '#666', fontSize: '12px' /* reduzido de 13px */ }}>
                   {ato.descricao}
                 </div>
               </li>
