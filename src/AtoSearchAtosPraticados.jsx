@@ -4,12 +4,14 @@ import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
 import config from './config'; // ajuste o caminho se necessário
 
-const formatarDataBR = (dataStr) => {
-  if (!dataStr) return '-';
-  const match = String(dataStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (match) return `${match[3]}/${match[2]}/${match[1]}`;
-  return dataStr;
-};
+  // Funções de formatação
+  const formatarDataBR = (data) => {
+    if (!data) return '';
+    // Trata datas no formato ISO (ex: 2025-07-13T00:00:00.000Z)
+    const soData = data.split('T')[0];
+    const [ano, mes, dia] = soData.split('-');
+    return `${dia}-${mes}-${ano}`;
+  };
 
 export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }) {
   const [searchTerm, setSearchTerm] = useState('');

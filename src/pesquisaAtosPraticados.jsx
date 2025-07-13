@@ -205,8 +205,10 @@ export default function PesquisaAtosPraticados() {
   // Funções de formatação
   const formatarDataBR = (data) => {
     if (!data) return '';
-    const [ano, mes, dia] = data.split('-');
-    return `${dia}/${mes}/${ano}`;
+    // Trata datas no formato ISO (ex: 2025-07-13T00:00:00.000Z)
+    const soData = data.split('T')[0];
+    const [ano, mes, dia] = soData.split('-');
+    return `${dia}-${mes}-${ano}`;
   };
 
   const formatarValor = (valor) => {
@@ -284,7 +286,8 @@ export default function PesquisaAtosPraticados() {
             fontWeight: '600'
           }}>
             📋 Filtros de Busca
-          </h3>
+          </h3
+          >
           
           {/* Linha 1: Período de Datas */}
           <div style={{ marginBottom: '24px' }}>
