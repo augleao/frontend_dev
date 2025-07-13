@@ -62,13 +62,12 @@ export default function PesquisaAtosPraticados() {
     ) {
       setNomeEscrevente(usuarioLogado.nome || usuarioLogado.email);
     }
-    // Se for Substituto, filtra os usuários pela serventia
+    // Se for Substituto, só limpa se o escrevente não for da mesma serventia
     if (
       usuarioLogado &&
-      usuarioLogado.cargo === 'Substituto'
+      usuarioLogado.cargo === 'Substituto' &&
+      usuarios.length > 0
     ) {
-      // Não altere o estado de usuarios aqui, apenas filtre no render!
-      // Corrija o setNomeEscrevente para usar o estado atual de usuarios:
       const escreventeValido = usuarios.find(
         (u) =>
           (u.nome || u.email) === nomeEscrevente &&
@@ -78,7 +77,7 @@ export default function PesquisaAtosPraticados() {
         setNomeEscrevente('');
       }
     }
-  }, [usuarioLogado]);
+  }, [usuarioLogado, usuarios, nomeEscrevente]);
 
   // Função principal para buscar atos praticados
   const buscarAtosPraticados = async () => {
@@ -420,12 +419,13 @@ export default function PesquisaAtosPraticados() {
               >
                 <option value="">Selecione um escrevente</option>
                 {usuarios
-                  // Se for Substituto, só mostra escreventes da mesma serventia
-                  .filter(u =>
-                    !usuarioLogado || usuarioLogado.cargo !== 'Substituto'
-                      ? true
-                      : u.serventia === usuarioLogado.serventia
-                  )
+                  .filter(u => {
+                    if (!usuarioLogado) return true;
+                    if (usuarioLogado.cargo === 'Substituto') {
+                      return u.serventia === usuarioLogado.serventia;
+                    }
+                    return true;
+                  })
                   .map((u) => (
                     <option key={u.id} value={u.nome || u.email}>
                       {u.nome || u.email}
