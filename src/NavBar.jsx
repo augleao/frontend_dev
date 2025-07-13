@@ -47,6 +47,14 @@ function NavBar() {
       )}
       {user ? (
         <>
+          <span style={{ 
+            fontWeight: 'bold', 
+            color: '#333', 
+            marginRight: '16px', 
+            fontSize: '1.1rem' 
+          }}>
+            👤 {user.nome || user.email}
+          </span>
           <button style={buttonStyle} onClick={handleVoltar}>
             Voltar
           </button>
