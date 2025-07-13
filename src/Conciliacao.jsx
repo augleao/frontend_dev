@@ -46,11 +46,10 @@ function Conciliacao() {
   return (
     <div
       style={{
-        //background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         background: '#667eea',
         borderRadius: '24px',
-        padding: '32px 24px',
-        margin: '32px 0 24px 0',
+        padding: '24px 12px', // diminui padding vertical
+        margin: '16px 0 12px 0', // diminui margin vertical
         width: '100%',
         maxWidth: '100vw',
         boxSizing: 'border-box',
@@ -63,12 +62,12 @@ function Conciliacao() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 18,
+        marginBottom: 10, // diminui espaço abaixo do header
         flexWrap: 'wrap'
       }}>
         <h2 style={{
           color: 'white',
-          fontSize: '22px',
+          fontSize: '20px', // diminui fonte
           fontWeight: 700,
           margin: 0,
           textShadow: '0 2px 4px rgba(0,0,0,0.18)',
@@ -78,8 +77,8 @@ function Conciliacao() {
           Controle de Caixa diário pra Cartosoft Web ou Desktop
           <Tooltip text={tooltipText}>
             <span className="info-icon" style={{
-              marginLeft: 12,
-              background: 'rgba(255,255,255,0.15)',
+              marginLeft: 8, // diminui espaço
+              background: 'rgba(244, 6, 6, 0.15)',
               color: 'white',
               borderRadius: '50%',
               width: 24,
@@ -95,17 +94,17 @@ function Conciliacao() {
           </Tooltip>
         </h2>
       </div>
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ marginBottom: 6 }}> {/* diminui espaço */}
         <UploadForm onUpload={handleUpload} />
         {uploadMsg && (
           <div style={{
-            marginTop: 10,
+            marginTop: 6, // diminui espaço
             color: '#27ae60',
             background: 'rgba(255,255,255,0.85)',
             borderRadius: 8,
-            padding: '8px 16px',
+            padding: '6px 12px', // diminui padding
             fontWeight: 600,
-            fontSize: 15,
+            fontSize: 14, // diminui fonte
             textAlign: 'center',
             boxShadow: '0 2px 8px rgba(39,174,96,0.08)'
           }}>
@@ -118,8 +117,8 @@ function Conciliacao() {
           background: 'white',
           borderRadius: '12px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-          padding: '16px 8px',
-          marginTop: 8,
+          padding: '8px 4px', // diminui padding
+          marginTop: 4, // diminui espaço
           marginBottom: 0,
           overflowX: 'auto'
         }}>
