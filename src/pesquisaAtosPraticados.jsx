@@ -67,16 +67,16 @@ export default function PesquisaAtosPraticados() {
       usuarioLogado &&
       usuarioLogado.cargo === 'Substituto'
     ) {
-      setUsuarios((prev) =>
-        prev.filter((u) => u.serventia === usuarioLogado.serventia)
+      // Não altere o estado de usuarios aqui, apenas filtre no render!
+      // Corrija o setNomeEscrevente para usar o estado atual de usuarios:
+      const escreventeValido = usuarios.find(
+        (u) =>
+          (u.nome || u.email) === nomeEscrevente &&
+          u.serventia === usuarioLogado.serventia
       );
-      // Se o escrevente selecionado não for da mesma serventia, limpa seleção
-      setNomeEscrevente((prevNome) => {
-        const found = prev.find((u) =>
-          (u.nome || u.email) === prevNome && u.serventia === usuarioLogado.serventia
-        );
-        return found ? prevNome : '';
-      });
+      if (!escreventeValido) {
+        setNomeEscrevente('');
+      }
     }
   }, [usuarioLogado]);
 
