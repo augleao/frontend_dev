@@ -54,6 +54,10 @@ export default function PesquisaAtosPraticados() {
 
   // Atualiza o filtro para o próprio usuário caso não seja Registrador/Substituto
   useEffect(() => {
+    console.log('👤 usuarioLogado:', usuarioLogado);
+    console.log('👥 usuarios:', usuarios);
+    console.log('✍️ nomeEscrevente:', nomeEscrevente);
+
     if (
       usuarioLogado &&
       usuarioLogado.cargo &&
@@ -61,6 +65,7 @@ export default function PesquisaAtosPraticados() {
       usuarioLogado.cargo !== 'Substituto'
     ) {
       setNomeEscrevente(usuarioLogado.nome || usuarioLogado.email);
+      console.log('🔒 Escrevente comum: setNomeEscrevente para', usuarioLogado.nome || usuarioLogado.email);
     }
     // Se for Substituto, só limpa se o escrevente não for da mesma serventia
     if (
@@ -73,8 +78,10 @@ export default function PesquisaAtosPraticados() {
           (u.nome || u.email) === nomeEscrevente &&
           u.serventia === usuarioLogado.serventia
       );
+      console.log('🔎 escreventeValido:', escreventeValido);
       if (!escreventeValido) {
         setNomeEscrevente('');
+        console.log('🧹 Limpando nomeEscrevente pois não pertence à serventia do Substituto');
       }
     }
   }, [usuarioLogado, usuarios, nomeEscrevente]);
@@ -397,7 +404,10 @@ export default function PesquisaAtosPraticados() {
               </label>
               <select
                 value={nomeEscrevente}
-                onChange={e => setNomeEscrevente(e.target.value)}
+                onChange={e => {
+                  setNomeEscrevente(e.target.value);
+                  console.log('✍️ Alterado nomeEscrevente para:', e.target.value);
+                }}
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -422,7 +432,12 @@ export default function PesquisaAtosPraticados() {
                   .filter(u => {
                     if (!usuarioLogado) return true;
                     if (usuarioLogado.cargo === 'Substituto') {
-                      return u.serventia === usuarioLogado.serventia;
+                      const result = u.serventia === usuarioLogado.serventia;
+                      console.log(
+                        `🔍 Substituto vê ${u.nome || u.email} (serventia: ${u.serventia})?`,
+                        result
+                      );
+                      return result;
                     }
                     return true;
                   })
