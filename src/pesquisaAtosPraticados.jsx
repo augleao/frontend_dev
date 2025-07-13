@@ -17,6 +17,19 @@ export default function PesquisaAtosPraticados() {
 
   // Novo estado para lista de usuários
   const [usuarios, setUsuarios] = useState([]);
+  const [usuarioLogado, setUsuarioLogado] = useState(null);
+
+  // Buscar usuário logado ao montar o componente
+  useEffect(() => {
+    const userStr = localStorage.getItem('usuario');
+    if (userStr) {
+      try {
+        setUsuarioLogado(JSON.parse(userStr));
+      } catch {
+        setUsuarioLogado(null);
+      }
+    }
+  }, []);
 
   // Buscar usuários cadastrados ao montar o componente
   useEffect(() => {
@@ -38,6 +51,18 @@ export default function PesquisaAtosPraticados() {
     };
     fetchUsuarios();
   }, []);
+
+  // Atualiza o filtro para o próprio usuário caso não seja Registrador/Substituto
+  useEffect(() => {
+    if (
+      usuarioLogado &&
+      usuarioLogado.cargo &&
+      usuarioLogado.cargo !== 'Registrador' &&
+      usuarioLogado.cargo !== 'Substituto'
+    ) {
+      setNomeEscrevente(usuarioLogado.nome || usuarioLogado.email);
+    }
+  }, [usuarioLogado]);
 
   // Função principal para buscar atos praticados
   const buscarAtosPraticados = async () => {
@@ -370,6 +395,12 @@ export default function PesquisaAtosPraticados() {
                 }}
                 onFocus={e => e.target.style.borderColor = '#2196f3'}
                 onBlur={e => e.target.style.borderColor = '#e3f2fd'}
+                disabled={
+                  usuarioLogado &&
+                  usuarioLogado.cargo &&
+                  usuarioLogado.cargo !== 'Registrador' &&
+                  usuarioLogado.cargo !== 'Substituto'
+                }
               >
                 <option value="">Selecione um escrevente</option>
                 {usuarios.map((u) => (
