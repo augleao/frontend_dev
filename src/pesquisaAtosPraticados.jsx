@@ -122,13 +122,31 @@ export default function PesquisaAtosPraticados() {
       console.log('📊 Resposta da API:', data);
       
       if (res.ok) {
-        setAtosPraticados(data.atos || []);
-        setTotalRegistros(data.total || 0);
-        
-        if (data.total === 0) {
+        let atos = data.atos || [];
+        let total = data.total || 0;
+
+        // Se for Substituto e nenhum escrevente foi selecionado, filtra só os atos da sua serventia
+        if (
+          usuarioLogado &&
+          usuarioLogado.cargo === 'Substituto' &&
+          !nomeEscrevente // nenhum escrevente selecionado
+        ) {
+          // Pegue os nomes dos escreventes da mesma serventia
+          const escreventesDaServentia = usuarios
+            .filter(u => u.serventia === usuarioLogado.serventia)
+            .map(u => u.nome || u.email);
+
+          atos = atos.filter(ato => escreventesDaServentia.includes(ato.usuario));
+          total = atos.length;
+        }
+
+        setAtosPraticados(atos);
+        setTotalRegistros(total);
+
+        if (total === 0) {
           setMensagem('Nenhum ato encontrado com os filtros aplicados.');
         } else {
-          setMensagem(`${data.total} ato(s) encontrado(s).`);
+          setMensagem(`${total} ato(s) encontrado(s).`);
         }
       } else {
         console.error('❌ Erro ao buscar atos:', data.message);
