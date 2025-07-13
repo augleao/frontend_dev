@@ -46,7 +46,7 @@ export default function CaixaInfo({
     fontSize: '15px',
     backgroundColor: 'transparent',
     color: '#2c3e50',
-    fontWeight: '600',
+    fontWeight: 'bold',
     marginBottom: '4px',
     minHeight: '32px',
     lineHeight: '1.4'

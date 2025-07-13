@@ -281,8 +281,8 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           onClick={() => {
             conferirCaixa();
           }}
-          onMouseEnter={e => (e.target.style.background = '#219150')}
-          onMouseLeave={e => (e.target.style.background = '#27ae60')}
+          onMouseEnter={e => (e.target.style.background = '#19d272')}
+          onMouseLeave={e => (e.target.style.background = '#19d272')}
           disabled={salvando}
         >
           {salvando ? 'Salvando...' : 'Gerar Relatório'}

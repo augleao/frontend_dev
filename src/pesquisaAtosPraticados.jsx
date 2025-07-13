@@ -15,6 +15,30 @@ export default function PesquisaAtosPraticados() {
   const [totalRegistros, setTotalRegistros] = useState(0);
   const [mensagem, setMensagem] = useState('');
 
+  // Novo estado para lista de usuários
+  const [usuarios, setUsuarios] = useState([]);
+
+  // Buscar usuários cadastrados ao montar o componente
+  useEffect(() => {
+    const fetchUsuarios = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${apiURL}/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUsuarios(data.usuarios || []);
+        } else {
+          setUsuarios([]);
+        }
+      } catch {
+        setUsuarios([]);
+      }
+    };
+    fetchUsuarios();
+  }, []);
+
   // Função principal para buscar atos praticados
   const buscarAtosPraticados = async () => {
     // Validação básica
@@ -331,11 +355,9 @@ export default function PesquisaAtosPraticados() {
               }}>
                 👤 Nome do Escrevente:
               </label>
-              <input
-                type="text"
+              <select
                 value={nomeEscrevente}
-                onChange={(e) => setNomeEscrevente(e.target.value)}
-                placeholder="Digite o nome do escrevente"
+                onChange={e => setNomeEscrevente(e.target.value)}
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -343,11 +365,19 @@ export default function PesquisaAtosPraticados() {
                   border: '2px solid #e3f2fd',
                   fontSize: '16px',
                   boxSizing: 'border-box',
-                  transition: 'border-color 0.2s ease'
+                  transition: 'border-color 0.2s ease',
+                  background: '#fff'
                 }}
-                onFocus={(e) => e.target.style.borderColor = '#2196f3'}
-                onBlur={(e) => e.target.style.borderColor = '#e3f2fd'}
-              />
+                onFocus={e => e.target.style.borderColor = '#2196f3'}
+                onBlur={e => e.target.style.borderColor = '#e3f2fd'}
+              >
+                <option value="">Selecione um escrevente</option>
+                {usuarios.map((u) => (
+                  <option key={u.id} value={u.nome || u.email}>
+                    {u.nome ? `${u.nome} (${u.email})` : u.email}
+                  </option>
+                ))}
+              </select>
             </div>
             
             <div>
