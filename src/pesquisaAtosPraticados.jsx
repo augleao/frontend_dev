@@ -374,7 +374,7 @@ export default function PesquisaAtosPraticados() {
                 <option value="">Selecione um escrevente</option>
                 {usuarios.map((u) => (
                   <option key={u.id} value={u.nome || u.email}>
-                    {u.nome ? `${u.nome} (${u.email})` : u.email}
+                    {u.nome || u.email}
                   </option>
                 ))}
               </select>
