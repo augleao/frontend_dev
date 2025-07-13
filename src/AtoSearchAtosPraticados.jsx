@@ -380,7 +380,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         
         {/* Busca de Ato */}
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-          <div style={{ flex: '1 1 350px', minWidth: 250 /* reduzido de 350 */ }}>
+          <div style={{ flex: '1 1 350px', minWidth: 250 }}>
             <AtoSearch
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
@@ -391,10 +391,10 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
           </div>
           
           {/* Quantidade */}
-          <div style={{ minWidth: 80 /* reduzido de 100 */ }}>
+          <div style={{ minWidth: 80, marginTop: '-8px' /* sobe 8px */ }}>
             <label style={{ 
               display: 'block', 
-              marginBottom: '4px', // reduzido de 8px
+              marginBottom: '4px',
               fontWeight: '600',
               color: '#2c3e50'
             }}>
@@ -407,20 +407,20 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
               onChange={(e) => setQuantidade(parseInt(e.target.value) || 1)}
               style={{
                 width: '100%',
-                padding: '8px', // reduzido de 12px
+                padding: '8px',
                 borderRadius: '8px',
                 border: '2px solid #e3f2fd',
-                fontSize: '15px', // reduzido de 16px
+                fontSize: '15px',
                 boxSizing: 'border-box'
               }}
             />
           </div>
           
           {/* Código Tributário */}
-          <div style={{ minWidth: 140 /* reduzido de 200 */, position: 'relative' }}>
+          <div style={{ minWidth: 140, position: 'relative', marginTop: '-8px' /* sobe 8px */ }}>
             <label style={{ 
               display: 'block', 
-              marginBottom: '4px', // reduzido de 8px
+              marginBottom: '4px',
               fontWeight: '600',
               color: '#2c3e50'
             }}>
@@ -433,10 +433,10 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
               placeholder="Digite código ou descrição"
               style={{
                 width: '100%',
-                padding: '8px', // reduzido de 12px
+                padding: '8px',
                 borderRadius: '8px',
                 border: '2px solid #e3f2fd',
-                fontSize: '15px', // reduzido de 16px
+                fontSize: '15px',
                 boxSizing: 'border-box'
               }}
             />
