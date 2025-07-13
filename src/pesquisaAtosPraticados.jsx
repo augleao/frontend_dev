@@ -41,6 +41,7 @@ export default function PesquisaAtosPraticados() {
         });
         if (res.ok) {
           const data = await res.json();
+          console.log('🛑 Dados brutos dos usuários:', data.usuarios);
           setUsuarios(data.usuarios || []);
         } else {
           setUsuarios([]);
