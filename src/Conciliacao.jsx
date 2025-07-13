@@ -78,7 +78,7 @@ function Conciliacao() {
           <Tooltip text={tooltipText}>
             <span className="info-icon" style={{
               marginLeft: 8, // diminui espaço
-              background: 'rgba(244, 6, 6, 0.15)',
+              background: '#e53935', // fundo vermelho
               color: 'white',
               borderRadius: '50%',
               width: 24,

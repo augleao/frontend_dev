@@ -223,13 +223,13 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           background: azulFundo
         }}
       >
-        Atos Extraídos
+        Atos Extraídos:
       </h2>
 
       <div
         style={{
-          marginBottom: 32,
-          padding: '32px 0',
+          marginBottom: 12, // reduzido de 32
+          padding: '16px 0', // reduzido de 32px 0
           width: '100%',
           boxSizing: 'border-box',
           background: azulFundo
@@ -254,9 +254,9 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
 
       <div
         style={{
-          marginTop: 20,
+          marginTop: 10, // reduzido de 20
           display: 'flex',
-          gap: 10,
+          gap: 8, // reduzido de 10
           justifyContent: 'left',
           padding: 0,
           width: '100%',
@@ -271,8 +271,8 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
             color: 'white',
             border: 'none',
             borderRadius: '8px',
-            padding: '12px 28px',
-            fontSize: '16px',
+            padding: '8px 18px', // reduzido de 12px 28px
+            fontSize: '15px', // reduzido de 16px
             fontWeight: '600',
             cursor: 'pointer',
             boxShadow: '0 2px 8px rgba(39,174,96,0.15)',
@@ -293,11 +293,11 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
 
       <div
         style={{
-          marginTop: 32,
+          marginTop: 16, // reduzido de 32
           background: azulFundo,
           borderRadius: '16px',
           boxShadow: '0 4px 16px rgba(0,0,0,0.07)',
-          padding: '24px 0',
+          padding: '12px 0', // reduzido de 24px 0
           width: '100%',
           minWidth: 0,
           maxWidth: '100%',

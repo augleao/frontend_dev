@@ -80,63 +80,72 @@ export default function CaixaInfo({
   }, [atos, setDepositosCaixa]);
 
   return (
-    <div className="atos-table-caixa-container" style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+    <div
+      className="atos-table-caixa-container"
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 8, // reduzido de 16
+        rowGap: 4, // adiciona gap vertical menor
+        alignItems: 'flex-start'
+      }}
+    >
       <div style={{ flex: '1 1 140px', minWidth: 120, maxWidth: 200 }}>
-        <label style={{ fontSize: 15, color: '#fff' }}>Responsável:</label>
-        <div style={infoStyle}>{responsavel}</div>
+        <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block', fontWeight: 'bold' }}>Responsável:</label>
+        <div style={{ ...infoStyle, marginBottom: 2 }}>{responsavel}</div>
       </div>
       <div style={{ flex: '1 1 80px', minWidth: 80, maxWidth: 120 }}>
-        <label style={{ fontSize: 15, color: '#fff' }}>ISS (%):</label>
-        <div style={infoStyle}>{ISS}</div>
+        <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block', fontWeight: 'bold' }}>ISS (%):</label>
+        <div style={{ ...infoStyle, marginBottom: 2 }}>{ISS}</div>
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 15, color: '#fff' }}></label>
-        <div style={infoStyle}>{}</div>
+        <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block' }}></label>
+        <div style={{ ...infoStyle, marginBottom: 2 }}>{}</div>
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 15, color: '#fff' }}>Valor Inicial do Caixa:</label>
+        <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block', fontWeight: 'bold' }}>Valor Inicial do Caixa:</label>
         <input
           type="number"
           step="0.01"
           value={valorInicialCaixa}
           onChange={e => setValorInicialCaixa(Number(e.target.value))}
           placeholder="0.00"
-          style={inputStyle}
+          style={{ ...inputStyle, marginBottom: 2 }}
         />
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 15, color: '#fff' }}>Entradas do Caixa:</label>
+        <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block', fontWeight: 'bold' }}>Entradas do Caixa:</label>
         <input
           type="number"
           step="0.01"
           value={depositosCaixa}
           onChange={e => setDepositosCaixa(Number(e.target.value))}
           placeholder="0.00"
-          style={inputStyle}
+          style={{ ...inputStyle, marginBottom: 2 }}
         />
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 15, color: '#fff' }}>Saídas do Caixa:</label>
+        <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block', fontWeight: 'bold' }}>Saídas do Caixa:</label>
         <input
           type="number"
           step="0.01"
           value={saidasCaixa}
           onChange={e => setSaidasCaixa(Number(e.target.value))}
           placeholder="0.00"
-          style={inputStyle}
+          style={{ ...inputStyle, marginBottom: 2 }}
         />
       </div>
       <div style={{ flex: '1 1 100%', minWidth: 180 }}>
-        <label style={{ fontSize: 15, color: '#fff', verticalAlign: 'top' }}>OBS:</label>
+        <label style={{ fontSize: 14, color: '#fff', verticalAlign: 'top', marginBottom: 2, display: 'block', fontWeight: 'bold' }}>OBS:</label>
         <textarea
           value={observacoesGerais}
           onChange={e => setObservacoesGerais(e.target.value)}
           placeholder="Observações gerais do relatório"
           style={{
             width: '100%',
-            height: '60px',
+            height: '48px', // reduzido de 60px
             resize: 'vertical',
-            marginTop: 4,
+            marginTop: 2, // reduzido de 4
             background: '#f0f0f0',
             borderRadius: '6px',
             border: '1.5px solid #e3f2fd',
