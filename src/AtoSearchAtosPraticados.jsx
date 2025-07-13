@@ -363,24 +363,24 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
   }, []);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 /* reduzido de 24 */ }}>
       {/* Formulário de Adição de Atos */}
       <div
         style={{
           backgroundColor: '#f0f0f0',
           borderRadius: 8,
-          padding: 16,
+          padding: 10, // reduzido de 16
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
           display: 'flex',
           flexDirection: 'column',
-          gap: 24,
+          gap: 12, // reduzido de 24
         }}
       >
-        <h3 style={{ margin: 0, color: '#2c3e50' }}>🔍 Adicionar Ato Praticado</h3>
+        <h3 style={{ margin: 0, color: '#2c3e50', fontSize: 18 /* reduzido de 20 */ }}>🔍 Adicionar Ato Praticado</h3>
         
         {/* Busca de Ato */}
-        <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-          <div style={{ flex: '1 1 350px', minWidth: 350 }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 350px', minWidth: 250 /* reduzido de 350 */ }}>
             <AtoSearch
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
@@ -391,10 +391,10 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
           </div>
           
           {/* Quantidade */}
-          <div style={{ minWidth: 100 }}>
+          <div style={{ minWidth: 80 /* reduzido de 100 */ }}>
             <label style={{ 
               display: 'block', 
-              marginBottom: '8px', 
+              marginBottom: '4px', // reduzido de 8px
               fontWeight: '600',
               color: '#2c3e50'
             }}>
@@ -407,20 +407,20 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
               onChange={(e) => setQuantidade(parseInt(e.target.value) || 1)}
               style={{
                 width: '100%',
-                padding: '12px',
+                padding: '8px', // reduzido de 12px
                 borderRadius: '8px',
                 border: '2px solid #e3f2fd',
-                fontSize: '16px',
+                fontSize: '15px', // reduzido de 16px
                 boxSizing: 'border-box'
               }}
             />
           </div>
           
           {/* Código Tributário */}
-          <div style={{ minWidth: 200, position: 'relative' }}>
+          <div style={{ minWidth: 140 /* reduzido de 200 */, position: 'relative' }}>
             <label style={{ 
               display: 'block', 
-              marginBottom: '8px', 
+              marginBottom: '4px', // reduzido de 8px
               fontWeight: '600',
               color: '#2c3e50'
             }}>
@@ -433,10 +433,10 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
               placeholder="Digite código ou descrição"
               style={{
                 width: '100%',
-                padding: '12px',
+                padding: '8px', // reduzido de 12px
                 borderRadius: '8px',
                 border: '2px solid #e3f2fd',
-                fontSize: '16px',
+                fontSize: '15px', // reduzido de 16px
                 boxSizing: 'border-box'
               }}
             />
@@ -453,8 +453,8 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
                   borderTop: 'none',
                   borderRadius: '0 0 8px 8px',
                   zIndex: 1000,
-                  padding: '12px',
-                  fontSize: '14px',
+                  padding: '8px', // reduzido de 12px
+                  fontSize: '13px', // reduzido de 14px
                   color: '#666'
                 }}
               >
@@ -472,7 +472,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
                   top: '100%',
                   left: 0,
                   right: 0,
-                  maxHeight: '200px',
+                  maxHeight: '160px', // reduzido de 200px
                   overflowY: 'auto',
                   background: '#fff',
                   border: '2px solid #e3f2fd',
@@ -487,19 +487,19 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
                     key={codigo.id}
                     onClick={() => handleSelectCodigoTributario(codigo)}
                     style={{ 
-                      padding: '12px 16px', 
+                      padding: '8px 12px', // reduzido de 12px 16px
                       cursor: 'pointer', 
                       borderBottom: '1px solid #f0f0f0',
-                      fontSize: '14px',
+                      fontSize: '13px', // reduzido de 14px
                       transition: 'background-color 0.2s ease',
                     }}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                   >
-                    <div style={{ fontWeight: '600', color: '#2c3e50', marginBottom: '4px' }}>
+                    <div style={{ fontWeight: '600', color: '#2c3e50', marginBottom: '2px' /* reduzido de 4px */ }}>
                       {codigo.codigo}
                     </div>
-                    <div style={{ color: '#666', fontSize: '13px' }}>
+                    <div style={{ color: '#666', fontSize: '12px' /* reduzido de 13px */ }}>
                       {codigo.descricao}
                     </div>
                   </li>
@@ -513,12 +513,13 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         {selectedCodigoTributario && (
           <div style={{
             backgroundColor: '#e3f2fd',
-            padding: 16,
+            padding: 10, // reduzido de 16
             borderRadius: 8,
-            border: '2px solid #2196f3'
+            border: '2px solid #2196f3',
+            marginTop: 4 // reduzido de 8
           }}>
-            <h4 style={{ margin: '0 0 8px 0', color: '#1976d2' }}>Código Tributário Selecionado:</h4>
-            <p style={{ margin: 0, fontWeight: 'bold' }}>
+            <h4 style={{ margin: '0 0 4px 0', color: '#1976d2', fontSize: 15 /* reduzido de 16 */ }}>Código Tributário Selecionado:</h4>
+            <p style={{ margin: 0, fontWeight: 'bold', fontSize: 14 }}>
               {selectedCodigoTributario.codigo} - {selectedCodigoTributario.descricao}
             </p>
           </div>
@@ -528,15 +529,16 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         {selectedAto && (
           <div style={{
             backgroundColor: '#e8f5e8',
-            padding: 16,
+            padding: 10, // reduzido de 16
             borderRadius: 8,
-            border: '2px solid #4caf50'
+            border: '2px solid #4caf50',
+            marginTop: 4 // reduzido de 8
           }}>
-            <h4 style={{ margin: '0 0 8px 0', color: '#2e7d32' }}>Ato Selecionado:</h4>
-            <p style={{ margin: 0, fontWeight: 'bold' }}>
+            <h4 style={{ margin: '0 0 4px 0', color: '#2e7d32', fontSize: 15 }}>Ato Selecionado:</h4>
+            <p style={{ margin: 0, fontWeight: 'bold', fontSize: 14 }}>
               {selectedAto.codigo} - {selectedAto.descricao}
             </p>
-            <p style={{ margin: '4px 0 0 0', color: '#666' }}>
+            <p style={{ margin: '2px 0 0 0', color: '#666', fontSize: 13 }}>
               Valor Unitário: R$ {(parseFloat(selectedAto.valor_final) || 0).toFixed(2)}
             </p>
           </div>
@@ -545,7 +547,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         {/* Formas de Pagamento - só aparece para código tributário "01" */}
         {selectedCodigoTributario && selectedCodigoTributario.codigo === '01' && selectedAto && (
           <div>
-            <h4 style={{ margin: '0 0 16px 0', color: '#2c3e50' }}>💳 Formas de Pagamento</h4>
+            <h4 style={{ margin: '0 0 8px 0', color: '#2c3e50', fontSize: 15 }}>💳 Formas de Pagamento</h4>
             <FormasPagamento
               formasPagamento={formasPagamento}
               pagamentos={pagamentos}
@@ -558,26 +560,19 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         )}
 
         {/* Botão Adicionar */}
-        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: 4 /* reduzido de 12 */ }}>
           <button
             style={{
-              padding: '12px 24px',
+              padding: '8px 16px', // reduzido de 12px 24px
               background: (selectedAto && selectedCodigoTributario) ? '#388e3c' : '#ccc',
               color: '#fff',
               border: 'none',
               borderRadius: 8,
               cursor: (selectedAto && selectedCodigoTributario) ? 'pointer' : 'not-allowed',
               fontWeight: 'bold',
-              fontSize: '16px'
+              fontSize: '15px' // reduzido de 16px
             }}
-            onClick={() => {
-              console.log('🖱️ BOTÃO ADICIONAR ATO CLICADO');
-              console.log('📊 Estado no momento do clique:');
-              console.log('- selectedAto:', selectedAto);
-              console.log('- selectedCodigoTributario:', selectedCodigoTributario);
-              console.log('- dataSelecionada:', dataSelecionada);
-              adicionarAto();
-            }}
+            onClick={adicionarAto}
             disabled={!selectedAto || !selectedCodigoTributario}
           >
             ➕ Adicionar Ato
@@ -590,11 +585,12 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         style={{
           backgroundColor: '#f8f9fa',
           borderRadius: 8,
-          padding: 16,
+          padding: 10, // reduzido de 16
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          marginTop: 8 // reduzido de 16
         }}
       >
-        <h3 style={{ margin: '0 0 16px 0', color: '#2c3e50' }}>📊 Resumo de Atos Agrupados - {dataSelecionada}</h3>
+        <h3 style={{ margin: '0 0 8px 0', color: '#2c3e50', fontSize: 16 /* reduzido de 18 */ }}>📊 Resumo de Atos Agrupados - {dataSelecionada}</h3>
         
         {loadingAtosTabela ? (
           <p>Carregando resumo...</p>
