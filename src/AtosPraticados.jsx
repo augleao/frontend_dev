@@ -188,8 +188,14 @@ function AtosPraticados() {
       );
       if (resAtos.ok) {
         const dataAtos = await resAtos.json();
+        // Suporte para diferentes formatos de retorno
+        const listaAtos = Array.isArray(dataAtos)
+          ? dataAtos
+          : Array.isArray(dataAtos.CaixaDiario)
+            ? dataAtos.CaixaDiario
+            : [];
         // Filtra os atos pelo usuário logado
-        const atosFiltrados = (dataAtos.CaixaDiario || []).filter(
+        const atosFiltrados = listaAtos.filter(
           ato => ato.usuario === nomeLogado
         );
         setAtos(atosFiltrados);
