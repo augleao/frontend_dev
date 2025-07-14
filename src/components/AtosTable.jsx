@@ -207,18 +207,24 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
         dataPesquisa = `${ano}-${mes}-${dia}`;
       }
 
+      console.log('[AtosTable] 🔎 Buscando atos pagos para data:', dataPesquisa, 'serventia:', usuario.serventia);
+
       const res = await fetch(
         `${config.apiURL}/atos-tabela?data=${dataPesquisa}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (!res.ok) return;
+      if (!res.ok) {
+        console.log('[AtosTable] ❌ Falha ao buscar atos-tabela');
+        return;
+      }
       const data = await res.json();
+      console.log('[AtosTable] 📥 Dados recebidos da API atos-tabela:', data);
 
       // Filtra atos pagos (tributação === '01') e da serventia
-      // Agora, filtra pelo campo 'serventia' do ato
       const atosPagos = (data.atos || []).filter(
         ato => ato.tributacao === '01' && ato.serventia === usuario.serventia
       );
+      console.log('[AtosTable] ✅ Atos pagos filtrados:', atosPagos);
 
       // Agrupa por código
       const agrupados = {};
@@ -239,6 +245,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           agrupados[ato.codigo].pagamentos.deposito += ato.pagamentos.deposito || 0;
         }
       });
+      console.log('[AtosTable] 📊 Atos agrupados por código:', agrupados);
 
       // Preenche as linhas da tabela com os valores apurados
       setAtos(prevAtos =>
