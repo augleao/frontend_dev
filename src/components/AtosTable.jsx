@@ -225,7 +225,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       >
         Atos Extraídos para a data 
         {dataRelatorio && (
-          <span style={{ fontWeight: 400, fontSize: '18px', marginLeft: 12 }}>
+          <span style={{ fontWeight: 700, fontSize: '22px', textShadow: '0 2px 4px rgba(0,0,0,0.18)', marginLeft: 12 }}>
             {(() => {
               const str = String(dataRelatorio);
               if (str.includes('T')) {
