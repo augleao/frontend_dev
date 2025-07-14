@@ -4,30 +4,22 @@
 export function detectarLayoutPDF(texto) {
   console.log("Detectando layout do PDF...");
   console.log("Primeiros 500 caracteres:", texto.substring(0, 500));
-
-  // Layout 3: Formato tabular específico do RELATORIO2.pdf
-  // Detecta pela presença de indicadores do formato tabular
-  const indicadoresLayout3 = [
-    'QTDE. DESCRIÇÃO DO EMOLUMENTO CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO TOTAL',
-    'DESCRIÇÃO DO EMOLUMENTO CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO',
-    'CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO TOTAL'
-  ];
   
-  for (const indicador of indicadoresLayout3) {
-    if (texto.includes(indicador)) {
-      console.log("Layout 3 detectado (formato tabular) - indicador:", indicador);
-      return 'layout3';
-    }
+  // Layout 3: Formato tabular específico do RELATORIO2.pdf
+  // Detecta pela presença de indicadores específicos do formato tabular
+  if (texto.includes('QTDE.DESCRIÇÃO DO EMOLUMENTO') && 
+      texto.includes('CÓDIGO') && 
+      texto.includes('EMOLUMENTORECOMPETOTAL') &&
+      texto.includes('TFJ') &&
+      texto.includes('FUNDO')) {
+    console.log("Layout 3 detectado (formato tabular) - por padrão de colunas");
+    return 'layout3';
   }
   
-  // Verificação adicional: procurar por padrão específico do layout 3
-  // Formato: QTDE + NÚMERO - DESCRIÇÃO + CÓDIGO + múltiplos R$ valores
-  if (texto.includes('QTDE. DESCRIÇÃO DO EMOLUMENTO') && 
-      texto.includes('CÓDIGO') && 
-      texto.includes('EMOLUMENTO') && 
-      texto.includes('RECOMPE') && 
-      texto.includes('TFJ')) {
-    console.log("Layout 3 detectado (formato tabular) - por padrão de colunas");
+  // Verificação adicional para Layout 3: padrão de dados específico
+  // Formato: QTDE + CÓDIGO + R$ valores múltiplos + descrição + R$ 0,00
+  if (/\d+\s+\d{4}R\$\s*[\d.,]+R\$\s*[\d.,]+R\$\s*[\d.,]+R\$\s*[\d.,]+.*?R\$\s*0,00/.test(texto)) {
+    console.log("Layout 3 detectado (formato tabular) - por padrão de dados");
     return 'layout3';
   }
   
@@ -113,6 +105,63 @@ export function extrairDadosAntigo(texto) {
       i = j;
     }
   }
+  return { dataRelatorio, atos };
+}
+
+// Extração para layout 3 (formato tabular)
+export function extrairDadosLayout3(texto) {
+  console.log("Iniciando extração para Layout 3 (formato tabular)");
+  console.log("Texto completo:", texto);
+  
+  const atos = [];
+  let dataRelatorio = null;
+  
+  // Extrair data do relatório
+  const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
+  if (matchData) {
+    dataRelatorio = matchData[1];
+    console.log("Data do relatório encontrada:", dataRelatorio);
+  }
+  
+  // Regex para capturar o padrão específico do Layout 3
+  // Formato: QTDE CÓDIGO R$ EMOL R$ RECOMPE R$ TFJ R$ TOTAL DESCRIÇÃO R$ FUNDO
+  const regexLayout3 = /(\d+)\s+(\d{4})R\$\s*([\d.,]+)R\$\s*([\d.,]+)R\$\s*([\d.,]+)R\$\s*([\d.,]+)\s+(.+?)\s+R\$\s*([\d.,]+)/g;
+  
+  let match;
+  let id = 0;
+  
+  while ((match = regexLayout3.exec(texto)) !== null) {
+    const quantidade = parseInt(match[1]);
+    const codigo = match[2];
+    const emolumento = parseFloat(match[3].replace(/\./g, '').replace(',', '.'));
+    const recompe = parseFloat(match[4].replace(/\./g, '').replace(',', '.'));
+    const tfj = parseFloat(match[5].replace(/\./g, '').replace(',', '.'));
+    const valorTotal = parseFloat(match[6].replace(/\./g, '').replace(',', '.'));
+    const descricao = match[7].trim();
+    const fundo = parseFloat(match[8].replace(/\./g, '').replace(',', '.'));
+    
+    console.log(`✅ Ato extraído (Layout 3) - Qtde: ${quantidade}, Código: ${codigo}, Desc: "${descricao}", Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Total: ${valorTotal}, Fundo: ${fundo}`);
+    
+    atos.push({
+      id: id++,
+      quantidade: quantidade,
+      codigo: codigo,
+      descricao: descricao,
+      emolumento: emolumento,
+      recompe: recompe,
+      tfj: tfj,
+      fundo: fundo,
+      valorTotal: valorTotal,
+      pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
+      pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
+      pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
+      pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
+      depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
+      observacoes: '',
+    });
+  }
+  
+  console.log(`✅ Total de atos extraídos (Layout 3): ${atos.length}`);
   return { dataRelatorio, atos };
 }
 
@@ -386,6 +435,9 @@ export function extrairDadosNovo(texto) {
 // Função principal de extração
 export function extrairDadosDoTexto(texto) {
   const tipo = detectarLayoutPDF(texto);
+  console.log("Tipo de layout detectado:", tipo);
+  
+  if (tipo === 'layout3') return extrairDadosLayout3(texto);
   if (tipo === 'novo') return extrairDadosNovo(texto);
   return extrairDadosAntigo(texto);
 }
