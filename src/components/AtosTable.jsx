@@ -214,14 +214,9 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       const data = await res.json();
 
       // Filtra atos pagos (tributação === '01') e da serventia
-      // Se cada ato tem campo 'serventia', use: ato.serventia === usuario.serventia
-      // Se não, filtre pelo usuário (precisa garantir que só pegue usuários da serventia)
-      const escreventesDaServentia = usuarios
-        .filter(u => u.serventia === usuario.serventia)
-        .map(u => u.nome || u.email);
-
+      // Agora, filtra pelo campo 'serventia' do ato
       const atosPagos = (data.atos || []).filter(
-        ato => ato.tributacao === '01' && escreventesDaServentia.includes(ato.usuario)
+        ato => ato.tributacao === '01' && ato.serventia === usuario.serventia
       );
 
       // Agrupa por código
