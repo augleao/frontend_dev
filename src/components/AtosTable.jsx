@@ -20,6 +20,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
   const [salvando, setSalvando] = useState(false);
   const [mensagemSalvar, setMensagemSalvar] = useState('');
   const [observacoesGerais, setObservacoesGerais] = useState('');
+  const [usuarios, setUsuarios] = useState([]);
 
   useEffect(() => {
     if (texto) {
@@ -259,6 +260,20 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
     }
     consultarAtosPagos();
   }, [dataRelatorio, usuario?.serventia, usuarios]);
+
+  useEffect(() => {
+    async function fetchUsuarios() {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${config.apiURL}/users`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsuarios(data.usuarios || []);
+      }
+    }
+    fetchUsuarios();
+  }, []);
 
   if (!atos.length) return null;
 
