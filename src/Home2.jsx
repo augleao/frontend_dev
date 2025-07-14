@@ -51,16 +51,16 @@ function Home() {
     },
     {
       id: 'conciliacao',
-      title: 'CONCILIAÇÃO DO CAIXA',
-      description: 'Realize a conciliação e fechamento do caixa diário',
+      title: 'CONCILIAÇÃO ATOS PAGOS',
+      description: 'Realize a conciliação e fechamento dos atos pagos',
       icon: '⚖️',
       color: '#3498db',
       route: '/conciliacao'
     },
     {
       id: 'relatorios',
-      title: 'CAIXAS CONCILIADOS',
-      description: 'Visualize relatórios e histórico de caixas fechados',
+      title: 'ATOS CONCILIADOS',
+      description: 'Visualize relatórios e histórico de atos conciliados',
       icon: '⚖️',
       color: '#3498db',
       route: '/meus-relatorios'
