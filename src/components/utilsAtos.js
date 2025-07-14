@@ -2,8 +2,16 @@
 
 // Detecta o layout do PDF
 export function detectarLayoutPDF(texto) {
+  // Layout 3: Novo formato tabular com colunas bem definidas
+  if (texto.includes('QTDE. DESCRIÇÃO DO EMOLUMENTO CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO TOTAL')) {
+    return 'layout3';
+  }
+  
+  // Layout 2: Formato com dados concatenados
   if (/^\d{5}R\$/.test(texto.replace(/\n/g, ''))) return 'novo';
   if (texto.split('\n').some(l => /^\d{5}R\$/.test(l))) return 'novo';
+  
+  // Layout 1: Formato antigo
   return 'antigo';
 }
 
@@ -37,20 +45,10 @@ export function extrairDadosAntigo(texto) {
       }
       if (j < linhas.length) {
         codigo = linhas[j];
-        let k = j + 1;
-        while (k < linhas.length) {
-          // Interrompe se encontrar início de novo ato ou linha de totalização
+        for (let k = j + 1; k < linhas.length; k++) {
           if (linhas[k].match(regexInicioAto)) break;
-          if (/Qtde. Selo/i.test(linhas[k])) break;
-          // Só coleta se for valor
           const matchValor = linhas[k].match(regexValor);
-          if (matchValor) {
-            valores.push(matchValor[1]);
-            k++;
-          } else {
-            // Se não for valor, para de coletar
-            break;
-          }
+          if (matchValor) valores.push(matchValor[1]);
         }
       }
       let valorTotal = 0;
@@ -74,6 +72,126 @@ export function extrairDadosAntigo(texto) {
       i = j;
     }
   }
+  return { dataRelatorio, atos };
+}
+
+// Extração para layout 3 (formato tabular)
+export function extrairDadosLayout3(texto) {
+  console.log("Iniciando extração para Layout 3 (formato tabular)");
+  
+  const atos = [];
+  let dataRelatorio = null;
+  
+  // Extrair data do relatório
+  const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
+  if (matchData) {
+    dataRelatorio = matchData[1];
+    console.log("Data do relatório encontrada:", dataRelatorio);
+  }
+  
+  const linhas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  
+  // Encontrar o início da tabela de dados
+  let inicioTabela = -1;
+  for (let i = 0; i < linhas.length; i++) {
+    if (linhas[i].includes('QTDE. DESCRIÇÃO DO EMOLUMENTO CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO TOTAL')) {
+      inicioTabela = i + 1;
+      break;
+    }
+  }
+  
+  if (inicioTabela === -1) {
+    console.log("Cabeçalho da tabela não encontrado");
+    return { dataRelatorio, atos };
+  }
+  
+  console.log("Início da tabela encontrado na linha:", inicioTabela);
+  
+  // Processar cada linha de dados
+  for (let i = inicioTabela; i < linhas.length; i++) {
+    const linha = linhas[i];
+    
+    // Parar quando encontrar "QTDE. SELOS ELETRÔNICO"
+    if (linha.includes('QTDE. SELOS ELETRÔNICO')) {
+      console.log("Fim da tabela encontrado");
+      break;
+    }
+    
+    // Regex para capturar os dados da linha tabular
+    // Formato: QTDE DESCRIÇÃO CÓDIGO R$ VALOR R$ VALOR R$ VALOR R$ VALOR R$ VALOR
+    const regexTabular = /^(\d+)\s+(.+?)\s+(\d{4})\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)$/;
+    
+    const match = linha.match(regexTabular);
+    if (match) {
+      const quantidade = parseInt(match[1]);
+      const descricao = match[2].trim();
+      const codigo = match[3];
+      const emolumento = parseFloat(match[4].replace(/\./g, '').replace(',', '.'));
+      const recompe = parseFloat(match[5].replace(/\./g, '').replace(',', '.'));
+      const tfj = parseFloat(match[6].replace(/\./g, '').replace(',', '.'));
+      const fundo = parseFloat(match[7].replace(/\./g, '').replace(',', '.'));
+      const valorTotal = parseFloat(match[8].replace(/\./g, '').replace(',', '.'));
+      
+      console.log(`Ato extraído (Layout 3) - Qtde: ${quantidade}, Código: ${codigo}, Desc: ${descricao}, Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Fundo: ${fundo}, Total: ${valorTotal}`);
+      
+      atos.push({
+        id: atos.length,
+        quantidade: quantidade,
+        codigo: codigo,
+        descricao: descricao,
+        emolumento: emolumento,
+        recompe: recompe,
+        tfj: tfj,
+        fundo: fundo,
+        valorTotal: valorTotal,
+        pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
+        pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
+        depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
+        observacoes: '',
+      });
+    } else {
+      // Tentar regex alternativa para casos onde a descrição pode ter espaços extras
+      const regexAlternativa = /^(\d+)\s+(.+?)\s+(\d{4})\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+).*$/;
+      const matchAlt = linha.match(regexAlternativa);
+      
+      if (matchAlt) {
+        const quantidade = parseInt(matchAlt[1]);
+        const descricao = matchAlt[2].trim();
+        const codigo = matchAlt[3];
+        const emolumento = parseFloat(matchAlt[4].replace(/\./g, '').replace(',', '.'));
+        const recompe = parseFloat(matchAlt[5].replace(/\./g, '').replace(',', '.'));
+        const tfj = parseFloat(matchAlt[6].replace(/\./g, '').replace(',', '.'));
+        const fundo = parseFloat(matchAlt[7].replace(/\./g, '').replace(',', '.'));
+        const valorTotal = parseFloat(matchAlt[8].replace(/\./g, '').replace(',', '.'));
+        
+        console.log(`Ato extraído (Layout 3 - Alt) - Qtde: ${quantidade}, Código: ${codigo}, Desc: ${descricao}, Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Fundo: ${fundo}, Total: ${valorTotal}`);
+        
+        atos.push({
+          id: atos.length,
+          quantidade: quantidade,
+          codigo: codigo,
+          descricao: descricao,
+          emolumento: emolumento,
+          recompe: recompe,
+          tfj: tfj,
+          fundo: fundo,
+          valorTotal: valorTotal,
+          pagamentoDinheiro: { quantidade: 0, valor: 0, valorManual: false },
+          pagamentoCartao: { quantidade: 0, valor: 0, valorManual: false },
+          pagamentoPix: { quantidade: 0, valor: 0, valorManual: false },
+          pagamentoCRC: { quantidade: 0, valor: 0, valorManual: false },
+          depositoPrevio: { quantidade: 0, valor: 0, valorManual: false },
+          observacoes: '',
+        });
+      } else {
+        console.log("Linha não reconhecida:", linha);
+      }
+    }
+  }
+  
+  console.log(`Total de atos extraídos (Layout 3): ${atos.length}`);
   return { dataRelatorio, atos };
 }
 
@@ -347,6 +465,9 @@ export function extrairDadosNovo(texto) {
 // Função principal de extração
 export function extrairDadosDoTexto(texto) {
   const tipo = detectarLayoutPDF(texto);
+  console.log("Tipo de layout detectado:", tipo);
+  
+  if (tipo === 'layout3') return extrairDadosLayout3(texto);
   if (tipo === 'novo') return extrairDadosNovo(texto);
   return extrairDadosAntigo(texto);
 }
@@ -396,3 +517,5 @@ export function calcularValorTotalComISS(valorTotal, percentualISS) {
   const resultado = valorTotal * (1 + perc / 100);
   return parseFloat(resultado.toFixed(2));
 }
+
+
