@@ -3,11 +3,31 @@
 // Detecta o layout do PDF
 export function detectarLayoutPDF(texto) {
   console.log("Detectando layout do PDF...");
+  console.log("Primeiros 300 caracteres:", texto.substring(0, 300));
   
   // Layout 3: Formato tabular específico do RELATORIO2.pdf
-  // Detecta pela presença da linha de cabeçalho específica
-  if (texto.includes('QTDE. DESCRIÇÃO DO EMOLUMENTO CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO TOTAL')) {
-    console.log("Layout 3 detectado (formato tabular)");
+  // Detecta pela presença de indicadores do formato tabular
+  const indicadoresLayout3 = [
+    'QTDE. DESCRIÇÃO DO EMOLUMENTO CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO TOTAL',
+    'DESCRIÇÃO DO EMOLUMENTO CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO',
+    'CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO TOTAL'
+  ];
+  
+  for (const indicador of indicadoresLayout3) {
+    if (texto.includes(indicador)) {
+      console.log("Layout 3 detectado (formato tabular) - indicador:", indicador);
+      return 'layout3';
+    }
+  }
+  
+  // Verificação adicional: procurar por padrão específico do layout 3
+  // Formato: QTDE + NÚMERO - DESCRIÇÃO + CÓDIGO + múltiplos R$ valores
+  if (texto.includes('QTDE. DESCRIÇÃO DO EMOLUMENTO') && 
+      texto.includes('CÓDIGO') && 
+      texto.includes('EMOLUMENTO') && 
+      texto.includes('RECOMPE') && 
+      texto.includes('TFJ')) {
+    console.log("Layout 3 detectado (formato tabular) - por padrão de colunas");
     return 'layout3';
   }
   
