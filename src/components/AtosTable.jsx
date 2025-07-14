@@ -208,7 +208,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       }
 
       const res = await fetch(
-        `${apiURL}/atos-tabela?data=${dataPesquisa}`,
+        `${config.apiURL}/atos-tabela?data=${dataPesquisa}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) return;
