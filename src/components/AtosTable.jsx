@@ -227,10 +227,22 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
         {dataRelatorio && (
           <span style={{ fontWeight: 400, fontSize: '18px', marginLeft: 12 }}>
             {(() => {
-              // Formata dataRelatorio para DD-MM-AAAA
-              const soData = String(dataRelatorio).split('T')[0];
-              const [ano, mes, dia] = soData.split('-');
-              return ` ${dia}-${mes}-${ano}`;
+              const str = String(dataRelatorio);
+              if (str.includes('T')) {
+                // Formato ISO: 2025-07-10T00:00:00.000Z
+                const soData = str.split('T')[0];
+                const [ano, mes, dia] = soData.split('-');
+                return ` ${dia}-${mes}-${ano}`;
+              } else if (str.includes('/')) {
+                // Formato BR: 10/07/2025
+                const [dia, mes, ano] = str.split('/');
+                return ` ${dia}-${mes}-${ano}`;
+              } else if (str.includes('-')) {
+                // Formato ISO sem T: 2025-07-10
+                const [ano, mes, dia] = str.split('-');
+                return ` ${dia}-${mes}-${ano}`;
+              }
+              return ` ${str}`;
             })()}
           </span>
         )}
