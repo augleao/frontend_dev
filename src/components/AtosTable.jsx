@@ -3,7 +3,7 @@ import { gerarRelatorioPDFCaixaDiario } from './RelatorioPDFCaixaDiario';
 import CaixaInfo from './CaixaInfo';
 import AtosGrid from './AtosGrid';
 import MensagemStatus from './MensagemStatus';
-import config from '../config';
+import config from '../config'; 
 import { extrairDadosDoTexto, calcularValorTotalComISS, moedaParaNumero, formatarMoeda } from './utilsAtos';
 
 export default function AtosTable({ texto, usuario: usuarioProp }) {
@@ -194,6 +194,76 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       );
     }
   };
+
+  useEffect(() => {
+    async function consultarAtosPagos() {
+      if (!dataRelatorio || !usuario?.serventia) return;
+      const token = localStorage.getItem('token');
+      let dataPesquisa = String(dataRelatorio);
+      if (dataPesquisa.includes('T')) dataPesquisa = dataPesquisa.split('T')[0];
+      else if (dataPesquisa.includes('/')) {
+        const [dia, mes, ano] = dataPesquisa.split('/');
+        dataPesquisa = `${ano}-${mes}-${dia}`;
+      }
+
+      const res = await fetch(
+        `/api/atos-tabela?data=${dataPesquisa}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+
+      // Filtra atos pagos (tributação === '01') e da serventia
+      // Se cada ato tem campo 'serventia', use: ato.serventia === usuario.serventia
+      // Se não, filtre pelo usuário (precisa garantir que só pegue usuários da serventia)
+      const escreventesDaServentia = usuarios
+        .filter(u => u.serventia === usuario.serventia)
+        .map(u => u.nome || u.email);
+
+      const atosPagos = (data.atos || []).filter(
+        ato => ato.tributacao === '01' && escreventesDaServentia.includes(ato.usuario)
+      );
+
+      // Agrupa por código
+      const agrupados = {};
+      atosPagos.forEach(ato => {
+        if (!agrupados[ato.codigo]) {
+          agrupados[ato.codigo] = {
+            quantidade: 0,
+            pagamentos: { dinheiro: 0, cartao: 0, pix: 0, crc: 0, deposito: 0 }
+          };
+        }
+        agrupados[ato.codigo].quantidade += ato.quantidade || 1;
+        // Somatório dos pagamentos por tipo
+        if (ato.pagamentos) {
+          agrupados[ato.codigo].pagamentos.dinheiro += ato.pagamentos.dinheiro || 0;
+          agrupados[ato.codigo].pagamentos.cartao += ato.pagamentos.cartao || 0;
+          agrupados[ato.codigo].pagamentos.pix += ato.pagamentos.pix || 0;
+          agrupados[ato.codigo].pagamentos.crc += ato.pagamentos.crc || 0;
+          agrupados[ato.codigo].pagamentos.deposito += ato.pagamentos.deposito || 0;
+        }
+      });
+
+      // Preenche as linhas da tabela com os valores apurados
+      setAtos(prevAtos =>
+        prevAtos.map(ato => {
+          if (agrupados[ato.codigo]) {
+            return {
+              ...ato,
+              quantidade: agrupados[ato.codigo].quantidade,
+              pagamentoDinheiro: { ...ato.pagamentoDinheiro, valor: agrupados[ato.codigo].pagamentos.dinheiro },
+              pagamentoCartao: { ...ato.pagamentoCartao, valor: agrupados[ato.codigo].pagamentos.cartao },
+              pagamentoPix: { ...ato.pagamentoPix, valor: agrupados[ato.codigo].pagamentos.pix },
+              pagamentoCRC: { ...ato.pagamentoCRC, valor: agrupados[ato.codigo].pagamentos.crc },
+              depositoPrevio: { ...ato.depositoPrevio, valor: agrupados[ato.codigo].pagamentos.deposito }
+            };
+          }
+          return ato;
+        })
+      );
+    }
+    consultarAtosPagos();
+  }, [dataRelatorio, usuario?.serventia, usuarios]);
 
   if (!atos.length) return null;
 
