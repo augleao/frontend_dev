@@ -2,8 +2,27 @@
 
 // Detecta o layout do PDF
 export function detectarLayoutPDF(texto) {
-  if (/^\d{5}R\$/.test(texto.replace(/\n/g, ''))) return 'novo';
-  if (texto.split('\n').some(l => /^\d{5}R\$/.test(l))) return 'novo';
+  console.log("Detectando layout do PDF...");
+  
+  // Layout 3: Formato tabular específico do RELATORIO2.pdf
+  // Detecta pela presença da linha de cabeçalho específica
+  if (texto.includes('QTDE. DESCRIÇÃO DO EMOLUMENTO CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO TOTAL')) {
+    console.log("Layout 3 detectado (formato tabular)");
+    return 'layout3';
+  }
+  
+  // Layout 2: Formato com dados concatenados (mantido inalterado)
+  if (/^\d{5}R\$/.test(texto.replace(/\n/g, ''))) {
+    console.log("Layout 2 detectado (dados concatenados)");
+    return 'novo';
+  }
+  if (texto.split('\n').some(l => /^\d{5}R\$/.test(l))) {
+    console.log("Layout 2 detectado (dados concatenados - método 2)");
+    return 'novo';
+  }
+  
+  // Layout 1: Formato antigo (mantido inalterado)
+  console.log("Layout 1 detectado (formato antigo)");
   return 'antigo';
 }
 
