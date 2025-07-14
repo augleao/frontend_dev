@@ -223,7 +223,17 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           background: azulFundo
         }}
       >
-        Atos Extraídos:
+        Atos Extraídos para a data 
+        {dataRelatorio && (
+          <span style={{ fontWeight: 400, fontSize: '18px', marginLeft: 12 }}>
+            {(() => {
+              // Formata dataRelatorio para DD-MM-AAAA
+              const soData = String(dataRelatorio).split('T')[0];
+              const [ano, mes, dia] = soData.split('-');
+              return ` ${dia}-${mes}-${ano}`;
+            })()}
+          </span>
+        )}
       </h2>
 
       <div
