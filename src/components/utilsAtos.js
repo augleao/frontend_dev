@@ -3,8 +3,8 @@
 // Detecta o layout do PDF
 export function detectarLayoutPDF(texto) {
   console.log("Detectando layout do PDF...");
-  console.log("Primeiros 300 caracteres:", texto.substring(0, 300));
-  
+  console.log("Primeiros 500 caracteres:", texto.substring(0, 500));
+
   // Layout 3: Formato tabular específico do RELATORIO2.pdf
   // Detecta pela presença de indicadores do formato tabular
   const indicadoresLayout3 = [
