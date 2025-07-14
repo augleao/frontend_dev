@@ -2,16 +2,45 @@
 
 // Detecta o layout do PDF
 export function detectarLayoutPDF(texto) {
+  console.log("Detectando layout do PDF...");
+  console.log("Primeiros 500 caracteres:", texto.substring(0, 500));
+  
   // Layout 3: Novo formato tabular com colunas bem definidas
-  if (texto.includes('QTDE. DESCRIÇÃO DO EMOLUMENTO CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO TOTAL')) {
+  // Verificar múltiplas variações do cabeçalho
+  const indicadoresLayout3 = [
+    'QTDE. DESCRIÇÃO DO EMOLUMENTO CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO TOTAL',
+    'QTDE. DESCRIÇÃO DO EMOLUMENTO CÓDIGO EMOLUMENTO RECOMPE TFJ',
+    'DESCRIÇÃO DO EMOLUMENTO CÓDIGO EMOLUMENTO RECOMPE TFJ',
+    'CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO TOTAL'
+  ];
+  
+  for (const indicador of indicadoresLayout3) {
+    if (texto.includes(indicador)) {
+      console.log("Layout 3 detectado pelo indicador:", indicador);
+      return 'layout3';
+    }
+  }
+  
+  // Verificação adicional: procurar por padrão de dados tabulares
+  // Formato: NÚMERO DESCRIÇÃO CÓDIGO R$ VALOR R$ VALOR...
+  const regexTabular = /\d+\s+\d+\s*-\s*.+?\s+\d{4}\s+R\$\s*[\d.,]+\s+R\$\s*[\d.,]+/;
+  if (regexTabular.test(texto)) {
+    console.log("Layout 3 detectado por padrão tabular");
     return 'layout3';
   }
   
   // Layout 2: Formato com dados concatenados
-  if (/^\d{5}R\$/.test(texto.replace(/\n/g, ''))) return 'novo';
-  if (texto.split('\n').some(l => /^\d{5}R\$/.test(l))) return 'novo';
+  if (/^\d{5}R\$/.test(texto.replace(/\n/g, ''))) {
+    console.log("Layout 2 detectado (dados concatenados - método 1)");
+    return 'novo';
+  }
+  if (texto.split('\n').some(l => /^\d{5}R\$/.test(l))) {
+    console.log("Layout 2 detectado (dados concatenados - método 2)");
+    return 'novo';
+  }
   
   // Layout 1: Formato antigo
+  console.log("Layout 1 detectado (formato antigo)");
   return 'antigo';
 }
 
@@ -78,6 +107,7 @@ export function extrairDadosAntigo(texto) {
 // Extração para layout 3 (formato tabular)
 export function extrairDadosLayout3(texto) {
   console.log("Iniciando extração para Layout 3 (formato tabular)");
+  console.log("Texto completo recebido:", texto);
   
   const atos = [];
   let dataRelatorio = null;
@@ -90,12 +120,15 @@ export function extrairDadosLayout3(texto) {
   }
   
   const linhas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  console.log("Total de linhas:", linhas.length);
   
   // Encontrar o início da tabela de dados
   let inicioTabela = -1;
   for (let i = 0; i < linhas.length; i++) {
-    if (linhas[i].includes('QTDE. DESCRIÇÃO DO EMOLUMENTO CÓDIGO EMOLUMENTO RECOMPE TFJ FUNDO TOTAL')) {
+    const linha = linhas[i];
+    if (linha.includes('QTDE.') && linha.includes('DESCRIÇÃO') && linha.includes('CÓDIGO')) {
       inicioTabela = i + 1;
+      console.log("Cabeçalho da tabela encontrado na linha", i, ":", linha);
       break;
     }
   }
@@ -110,6 +143,7 @@ export function extrairDadosLayout3(texto) {
   // Processar cada linha de dados
   for (let i = inicioTabela; i < linhas.length; i++) {
     const linha = linhas[i];
+    console.log(`Processando linha ${i}:`, linha);
     
     // Parar quando encontrar "QTDE. SELOS ELETRÔNICO"
     if (linha.includes('QTDE. SELOS ELETRÔNICO')) {
@@ -117,22 +151,23 @@ export function extrairDadosLayout3(texto) {
       break;
     }
     
-    // Regex para capturar os dados da linha tabular
-    // Formato: QTDE DESCRIÇÃO CÓDIGO R$ VALOR R$ VALOR R$ VALOR R$ VALOR R$ VALOR
-    const regexTabular = /^(\d+)\s+(.+?)\s+(\d{4})\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)$/;
+    // Regex mais flexível para capturar os dados
+    // Formato observado: QTDE NÚMERO - DESCRIÇÃO CÓDIGO R$ VALOR R$ VALOR R$ VALOR R$ VALOR R$ VALOR
+    const regexFlexivel = /^(\d+)\s+(\d+)\s*-\s*(.+?)\s+(\d{4})\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)$/;
     
-    const match = linha.match(regexTabular);
+    const match = linha.match(regexFlexivel);
     if (match) {
       const quantidade = parseInt(match[1]);
-      const descricao = match[2].trim();
-      const codigo = match[3];
-      const emolumento = parseFloat(match[4].replace(/\./g, '').replace(',', '.'));
-      const recompe = parseFloat(match[5].replace(/\./g, '').replace(',', '.'));
-      const tfj = parseFloat(match[6].replace(/\./g, '').replace(',', '.'));
-      const fundo = parseFloat(match[7].replace(/\./g, '').replace(',', '.'));
-      const valorTotal = parseFloat(match[8].replace(/\./g, '').replace(',', '.'));
+      const numeroAto = match[2]; // Número do ato (ex: 4, 1, 13, etc.)
+      const descricao = `${numeroAto} - ${match[3].trim()}`;
+      const codigo = match[4];
+      const emolumento = parseFloat(match[5].replace(/\./g, '').replace(',', '.'));
+      const recompe = parseFloat(match[6].replace(/\./g, '').replace(',', '.'));
+      const tfj = parseFloat(match[7].replace(/\./g, '').replace(',', '.'));
+      const fundo = parseFloat(match[8].replace(/\./g, '').replace(',', '.'));
+      const valorTotal = parseFloat(match[9].replace(/\./g, '').replace(',', '.'));
       
-      console.log(`Ato extraído (Layout 3) - Qtde: ${quantidade}, Código: ${codigo}, Desc: ${descricao}, Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Fundo: ${fundo}, Total: ${valorTotal}`);
+      console.log(`✅ Ato extraído (Layout 3) - Qtde: ${quantidade}, Código: ${codigo}, Desc: ${descricao}, Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Fundo: ${fundo}, Total: ${valorTotal}`);
       
       atos.push({
         id: atos.length,
@@ -152,21 +187,27 @@ export function extrairDadosLayout3(texto) {
         observacoes: '',
       });
     } else {
-      // Tentar regex alternativa para casos onde a descrição pode ter espaços extras
-      const regexAlternativa = /^(\d+)\s+(.+?)\s+(\d{4})\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+).*$/;
-      const matchAlt = linha.match(regexAlternativa);
+      // Tentar regex alternativa mais simples
+      const regexSimples = /^(\d+)\s+(.+?)\s+(\d{4})\s+R\$\s*([\d.,]+)/;
+      const matchSimples = linha.match(regexSimples);
       
-      if (matchAlt) {
-        const quantidade = parseInt(matchAlt[1]);
-        const descricao = matchAlt[2].trim();
-        const codigo = matchAlt[3];
-        const emolumento = parseFloat(matchAlt[4].replace(/\./g, '').replace(',', '.'));
-        const recompe = parseFloat(matchAlt[5].replace(/\./g, '').replace(',', '.'));
-        const tfj = parseFloat(matchAlt[6].replace(/\./g, '').replace(',', '.'));
-        const fundo = parseFloat(matchAlt[7].replace(/\./g, '').replace(',', '.'));
-        const valorTotal = parseFloat(matchAlt[8].replace(/\./g, '').replace(',', '.'));
+      if (matchSimples) {
+        console.log("⚠️ Usando regex simplificada para linha:", linha);
         
-        console.log(`Ato extraído (Layout 3 - Alt) - Qtde: ${quantidade}, Código: ${codigo}, Desc: ${descricao}, Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Fundo: ${fundo}, Total: ${valorTotal}`);
+        // Extrair todos os valores R$ da linha
+        const valoresR = linha.match(/R\$\s*([\d.,]+)/g) || [];
+        const valores = valoresR.map(v => parseFloat(v.replace('R$', '').replace(/\./g, '').replace(',', '.').trim()));
+        
+        const quantidade = parseInt(matchSimples[1]);
+        const descricao = matchSimples[2].trim();
+        const codigo = matchSimples[3];
+        const emolumento = valores[0] || 0;
+        const recompe = valores[1] || 0;
+        const tfj = valores[2] || 0;
+        const fundo = valores[3] || 0;
+        const valorTotal = valores[4] || valores[valores.length - 1] || 0;
+        
+        console.log(`⚠️ Ato extraído (Layout 3 - Simples) - Qtde: ${quantidade}, Código: ${codigo}, Desc: ${descricao}, Valores: [${valores.join(', ')}]`);
         
         atos.push({
           id: atos.length,
@@ -186,12 +227,12 @@ export function extrairDadosLayout3(texto) {
           observacoes: '',
         });
       } else {
-        console.log("Linha não reconhecida:", linha);
+        console.log("❌ Linha não reconhecida:", linha);
       }
     }
   }
   
-  console.log(`Total de atos extraídos (Layout 3): ${atos.length}`);
+  console.log(`✅ Total de atos extraídos (Layout 3): ${atos.length}`);
   return { dataRelatorio, atos };
 }
 
@@ -517,5 +558,3 @@ export function calcularValorTotalComISS(valorTotal, percentualISS) {
   const resultado = valorTotal * (1 + perc / 100);
   return parseFloat(resultado.toFixed(2));
 }
-
-
