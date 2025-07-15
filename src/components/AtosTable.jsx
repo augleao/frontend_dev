@@ -245,16 +245,16 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           };
         }
         agrupados[ato.codigo].quantidade += Number(ato.quantidade) || 0;
-        agrupados[ato.codigo].pagamentos.dinheiro.quantidade += Number(ato.pagamentoDinheiro?.quantidade) || 0;
-        agrupados[ato.codigo].pagamentos.dinheiro.valor      += Number(ato.pagamentoDinheiro?.valor) || 0;
-        agrupados[ato.codigo].pagamentos.cartao.quantidade   += Number(ato.pagamentoCartao?.quantidade) || 0;
-        agrupados[ato.codigo].pagamentos.cartao.valor        += Number(ato.pagamentoCartao?.valor) || 0;
-        agrupados[ato.codigo].pagamentos.pix.quantidade      += Number(ato.pagamentoPix?.quantidade) || 0;
-        agrupados[ato.codigo].pagamentos.pix.valor           += Number(ato.pagamentoPix?.valor) || 0;
-        agrupados[ato.codigo].pagamentos.crc.quantidade      += Number(ato.pagamentoCRC?.quantidade) || 0;
-        agrupados[ato.codigo].pagamentos.crc.valor           += Number(ato.pagamentoCRC?.valor) || 0;
-        agrupados[ato.codigo].pagamentos.deposito.quantidade += Number(ato.depositoPrevio?.quantidade) || 0;
-        agrupados[ato.codigo].pagamentos.deposito.valor      += Number(ato.depositoPrevio?.valor) || 0;
+        agrupados[ato.codigo].pagamentos.dinheiro.quantidade += Number(ato.pagamentos?.dinheiro?.quantidade) || 0;
+        agrupados[ato.codigo].pagamentos.dinheiro.valor      += Number(ato.pagamentos?.dinheiro?.valor) || 0;
+        agrupados[ato.codigo].pagamentos.cartao.quantidade   += Number(ato.pagamentos?.cartao?.quantidade) || 0;
+        agrupados[ato.codigo].pagamentos.cartao.valor        += Number(ato.pagamentos?.cartao?.valor) || 0;
+        agrupados[ato.codigo].pagamentos.pix.quantidade      += Number(ato.pagamentos?.pix?.quantidade) || 0;
+        agrupados[ato.codigo].pagamentos.pix.valor           += Number(ato.pagamentos?.pix?.valor) || 0;
+        agrupados[ato.codigo].pagamentos.crc.quantidade      += Number(ato.pagamentos?.crc?.quantidade) || 0;
+        agrupados[ato.codigo].pagamentos.crc.valor           += Number(ato.pagamentos?.crc?.valor) || 0;
+        agrupados[ato.codigo].pagamentos.deposito.quantidade += Number(ato.pagamentos?.depositoPrevio?.quantidade) || 0;
+        agrupados[ato.codigo].pagamentos.deposito.valor      += Number(ato.pagamentos?.depositoPrevio?.valor) || 0;
       });
       console.log('[AtosTable] 📊 Atos agrupados por código:', agrupados);
 
