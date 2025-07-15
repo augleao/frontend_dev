@@ -72,6 +72,9 @@ export default function AtosGrid({ atos, agrupados, handleAtoChange }) {
 
             // Dados agrupados para o código deste ato
             const agrupado = agrupados?.[ato.codigo];
+            console.log('[AtosGrid] Renderizando ato:', ato);
+            console.log('[AtosGrid] agrupados:', agrupados);
+            console.log('[AtosGrid] agrupado para código', ato.codigo, ':', agrupado);
 
             return (
               <React.Fragment key={ato.id}>
@@ -94,50 +97,53 @@ export default function AtosGrid({ atos, agrupados, handleAtoChange }) {
                     />
                   </td>
                 </tr>
-                {agrupado && (
-                  <tr
-                    style={{
-                      background: '#fff9c4',
-                      borderBottom: '1px solid #222'
-                    }}
-                  >
-                    <td style={{ textAlign: 'center', fontWeight: 500 }}>{agrupado.quantidade}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 500 }}>{ato.codigo}</td>
-                    <td style={{ fontStyle: 'italic', color: '#888' }}>Totais do dia (atos praticados)</td>
-                    <td colSpan={2}></td>
-                    <td>
-                      <div style={{ color: '#888' }}>
-                        qnt. {agrupado.pagamentos.dinheiro} <br />
-                        valor {formatarMoeda(agrupado.pagamentos.dinheiro)}
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ color: '#888' }}>
-                        qnt. {agrupado.pagamentos.cartao} <br />
-                        valor {formatarMoeda(agrupado.pagamentos.cartao)}
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ color: '#888' }}>
-                        qnt. {agrupado.pagamentos.pix} <br />
-                        valor {formatarMoeda(agrupado.pagamentos.pix)}
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ color: '#888' }}>
-                        qnt. {agrupado.pagamentos.crc} <br />
-                        valor {formatarMoeda(agrupado.pagamentos.crc)}
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ color: '#888' }}>
-                        qnt. {agrupado.pagamentos.deposito} <br />
-                        valor {formatarMoeda(agrupado.pagamentos.deposito)}
-                      </div>
-                    </td>
-                    <td></td>
-                  </tr>
-                )}
+                {(() => {
+                  console.log('[AtosGrid] agrupado dentro do render:', agrupado);
+                  return agrupado ? (
+                    <tr
+                      style={{
+                        background: '#fff9c4',
+                        borderBottom: '1px solid #222'
+                      }}
+                    >
+                      <td style={{ textAlign: 'center', fontWeight: 500 }}>{agrupado.quantidade}</td>
+                      <td style={{ textAlign: 'center', fontWeight: 500 }}>{ato.codigo}</td>
+                      <td style={{ fontStyle: 'italic', color: '#888' }}>Totais do dia (atos praticados)</td>
+                      <td colSpan={2}></td>
+                      <td>
+                        <div style={{ color: '#888' }}>
+                          qnt. {agrupado.pagamentos.dinheiro} <br />
+                          valor {formatarMoeda(agrupado.pagamentos.dinheiro)}
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ color: '#888' }}>
+                          qnt. {agrupado.pagamentos.cartao} <br />
+                          valor {formatarMoeda(agrupado.pagamentos.cartao)}
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ color: '#888' }}>
+                          qnt. {agrupado.pagamentos.pix} <br />
+                          valor {formatarMoeda(agrupado.pagamentos.pix)}
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ color: '#888' }}>
+                          qnt. {agrupado.pagamentos.crc} <br />
+                          valor {formatarMoeda(agrupado.pagamentos.crc)}
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ color: '#888' }}>
+                          qnt. {agrupado.pagamentos.deposito} <br />
+                          valor {formatarMoeda(agrupado.pagamentos.deposito)}
+                        </div>
+                      </td>
+                      <td></td>
+                    </tr>
+                  ) : null;
+                })()}
               </React.Fragment>
             );
           })}
