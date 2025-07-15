@@ -83,7 +83,19 @@ export default function AtosGrid({ atos, handleAtoChange }) {
                 <td style={{ padding: '10px 8px', minWidth: 180 }}>{ato.descricao}</td>
                 <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 500 }}>{formatarMoeda(ato.valorTotalComISS)}</td>
                 <td style={{ padding: '10px 8px', textAlign: 'right', color: valorFaltante === 0 ? '#388e3c' : '#d32f2f', fontWeight: 500 }}>{formatarMoeda(valorFaltante)}</td>
-                {renderPagamentoCell(ato, 'pagamentoDinheiro', handleAtoChange)}
+                <td>
+                  <input
+                    type="number"
+                    value={ato.pagamentoDinheiro.valor}
+                    onChange={e => handleAtoChange(ato.id, 'pagamentoDinheiro', 'valor', e.target.value)}
+                    style={{ width: 80 }}
+                  />
+                  {ato.pagamentoDinheiroSugerido !== undefined && (
+                    <span style={{ color: '#888', textDecoration: 'line-through', marginLeft: 6 }}>
+                      {ato.pagamentoDinheiroSugerido}
+                    </span>
+                  )}
+                </td>
                 {renderPagamentoCell(ato, 'pagamentoCartao', handleAtoChange)}
                 {renderPagamentoCell(ato, 'pagamentoPix', handleAtoChange)}
                 {renderPagamentoCell(ato, 'pagamentoCRC', handleAtoChange)}
