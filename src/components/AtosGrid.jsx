@@ -72,13 +72,8 @@ export default function AtosGrid({ atos, handleAtoChange }) {
             return (
               <tr key={ato.id} className={linhaClass}>
                 <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 500 }}>{ato.quantidade}</td>
-                <td style={{ padding: '10px 8px', textAlign: 'center' }}>
-                  <input
-                    type="text"
-                    value={ato.codigo}
-                    onChange={e => handleAtoChange(ato.id, 'codigo', null, e.target.value)}
-                    style={{ width: '60px', textAlign: 'right', fontWeight: 500 }}
-                  />
+                <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 500 }}>
+                  {ato.codigo}
                 </td>
                 <td style={{ padding: '10px 8px', minWidth: 180 }}>{ato.descricao}</td>
                 <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 500 }}>{formatarMoeda(ato.valorTotalComISS)}</td>
