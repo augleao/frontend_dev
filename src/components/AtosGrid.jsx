@@ -34,7 +34,7 @@ function renderPagamentoCell(ato, campo, handleAtoChange) {
   );
 }
 
-export default function AtosGrid({ atos, handleAtoChange }) {
+export default function AtosGrid({ atos, agrupados, handleAtoChange }) {
   return (
     <div className="atos-table-container">
       <table className="atos-table">
@@ -54,7 +54,7 @@ export default function AtosGrid({ atos, handleAtoChange }) {
           </tr>
         </thead>
         <tbody>
-          {atos.map(ato => {
+          {atos.map((ato, idx) => {
             const somaPagamentos = parseFloat((
               ato.pagamentoDinheiro.valor +
               ato.pagamentoCartao.valor +
@@ -69,28 +69,76 @@ export default function AtosGrid({ atos, handleAtoChange }) {
             } else {
               linhaClass = 'error-row';
             }
+
+            // Dados agrupados para o código deste ato
+            const agrupado = agrupados?.[ato.codigo];
+
             return (
-              <tr key={ato.id} className={linhaClass}>
-                <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 500 }}>{ato.quantidade}</td>
-                <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 500 }}>
-                  {ato.codigo}
-                </td>
-                <td style={{ padding: '10px 8px', minWidth: 180 }}>{ato.descricao}</td>
-                <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 500 }}>{formatarMoeda(ato.valorTotalComISS)}</td>
-                <td style={{ padding: '10px 8px', textAlign: 'right', color: valorFaltante === 0 ? '#388e3c' : '#d32f2f', fontWeight: 500 }}>{formatarMoeda(valorFaltante)}</td>
-                {renderPagamentoCell(ato, 'pagamentoDinheiro', handleAtoChange)}
-                {renderPagamentoCell(ato, 'pagamentoCartao', handleAtoChange)}
-                {renderPagamentoCell(ato, 'pagamentoPix', handleAtoChange)}
-                {renderPagamentoCell(ato, 'pagamentoCRC', handleAtoChange)}
-                {renderPagamentoCell(ato, 'depositoPrevio', handleAtoChange)}
-                <td>
-                  <textarea
-                    value={ato.observacoes}
-                    onChange={e => handleAtoChange(ato.id, 'observacoes', null, e.target.value)}
-                    placeholder="Observações"
-                  />
-                </td>
-              </tr>
+              <React.Fragment key={ato.id}>
+                <tr className={linhaClass}>
+                  <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 500 }}>{ato.quantidade}</td>
+                  <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 500 }}>{ato.codigo}</td>
+                  <td style={{ padding: '10px 8px', minWidth: 180 }}>{ato.descricao}</td>
+                  <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 500 }}>{formatarMoeda(ato.valorTotalComISS)}</td>
+                  <td style={{ padding: '10px 8px', textAlign: 'right', color: valorFaltante === 0 ? '#388e3c' : '#d32f2f', fontWeight: 500 }}>{formatarMoeda(valorFaltante)}</td>
+                  {renderPagamentoCell(ato, 'pagamentoDinheiro', handleAtoChange)}
+                  {renderPagamentoCell(ato, 'pagamentoCartao', handleAtoChange)}
+                  {renderPagamentoCell(ato, 'pagamentoPix', handleAtoChange)}
+                  {renderPagamentoCell(ato, 'pagamentoCRC', handleAtoChange)}
+                  {renderPagamentoCell(ato, 'depositoPrevio', handleAtoChange)}
+                  <td>
+                    <textarea
+                      value={ato.observacoes}
+                      onChange={e => handleAtoChange(ato.id, 'observacoes', null, e.target.value)}
+                      placeholder="Observações"
+                    />
+                  </td>
+                </tr>
+                {agrupado && (
+                  <tr
+                    style={{
+                      background: '#fff9c4',
+                      borderBottom: '1px solid #222'
+                    }}
+                  >
+                    <td style={{ textAlign: 'center', fontWeight: 500 }}>{agrupado.quantidade}</td>
+                    <td style={{ textAlign: 'center', fontWeight: 500 }}>{ato.codigo}</td>
+                    <td style={{ fontStyle: 'italic', color: '#888' }}>Totais do dia (atos praticados)</td>
+                    <td colSpan={2}></td>
+                    <td>
+                      <div style={{ color: '#888' }}>
+                        qnt. {agrupado.pagamentos.dinheiro} <br />
+                        valor {formatarMoeda(agrupado.pagamentos.dinheiro)}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ color: '#888' }}>
+                        qnt. {agrupado.pagamentos.cartao} <br />
+                        valor {formatarMoeda(agrupado.pagamentos.cartao)}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ color: '#888' }}>
+                        qnt. {agrupado.pagamentos.pix} <br />
+                        valor {formatarMoeda(agrupado.pagamentos.pix)}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ color: '#888' }}>
+                        qnt. {agrupado.pagamentos.crc} <br />
+                        valor {formatarMoeda(agrupado.pagamentos.crc)}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ color: '#888' }}>
+                        qnt. {agrupado.pagamentos.deposito} <br />
+                        valor {formatarMoeda(agrupado.pagamentos.deposito)}
+                      </div>
+                    </td>
+                    <td></td>
+                  </tr>
+                )}
+              </React.Fragment>
             );
           })}
         </tbody>
