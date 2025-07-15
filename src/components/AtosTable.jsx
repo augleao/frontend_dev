@@ -264,6 +264,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           if (agrupados[ato.codigo]) {
             return {
               ...ato,
+              valorTotalComISS: ato.valorTotalComISS ?? ato.valorTotal ?? 0, // <-- GARANTE O CAMPO
               pagamentoDinheiroSugerido: agrupados[ato.codigo].pagamentos.dinheiro,
               pagamentoCartaoSugerido: agrupados[ato.codigo].pagamentos.cartao,
               pagamentoPixSugerido: agrupados[ato.codigo].pagamentos.pix,
