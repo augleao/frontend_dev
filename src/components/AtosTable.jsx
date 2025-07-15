@@ -233,18 +233,28 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
         if (!agrupados[ato.codigo]) {
           agrupados[ato.codigo] = {
             quantidade: 0,
-            pagamentos: { dinheiro: 0, cartao: 0, pix: 0, crc: 0, deposito: 0 }
+            pagamentos: {
+              dinheiro:   { quantidade: 0, valor: 0 },
+              cartao:     { quantidade: 0, valor: 0 },
+              pix:        { quantidade: 0, valor: 0 },
+              crc:        { quantidade: 0, valor: 0 },
+              deposito:   { quantidade: 0, valor: 0 }
+            }
           };
         }
         agrupados[ato.codigo].quantidade += ato.quantidade || 1;
         // Somatório dos pagamentos por tipo
         if (ato.pagamentos) {
-          agrupados[ato.codigo].pagamentos.dinheiro += Number(ato.pagamentos.dinheiro) || 0;
+          agrupados[ato.codigo].pagamentos.dinheiro.valor   += Number(ato.pagamentos.dinheiro) || 0;
           agrupados[ato.codigo].pagamentos.dinheiro.quantidade += Number(ato.pagamentos.dinheiro_quantidade) || 0;
-          agrupados[ato.codigo].pagamentos.cartao += Number(ato.pagamentos.cartao) || 0;
-          agrupados[ato.codigo].pagamentos.pix += Number(ato.pagamentos.pix) || 0;
-          agrupados[ato.codigo].pagamentos.crc += Number(ato.pagamentos.crc) || 0;
-          agrupados[ato.codigo].pagamentos.deposito += Number(ato.pagamentos.deposito) || 0;
+          agrupados[ato.codigo].pagamentos.cartao.valor     += Number(ato.pagamentos.cartao) || 0;
+          agrupados[ato.codigo].pagamentos.cartao.quantidade += Number(ato.pagamentos.cartao_quantidade) || 0;
+          agrupados[ato.codigo].pagamentos.pix.valor        += Number(ato.pagamentos.pix) || 0;
+          agrupados[ato.codigo].pagamentos.pix.quantidade   += Number(ato.pagamentos.pix_quantidade) || 0;
+          agrupados[ato.codigo].pagamentos.crc.valor        += Number(ato.pagamentos.crc) || 0;
+          agrupados[ato.codigo].pagamentos.crc.quantidade   += Number(ato.pagamentos.crc_quantidade) || 0;
+          agrupados[ato.codigo].pagamentos.deposito.valor   += Number(ato.pagamentos.deposito) || 0;
+          agrupados[ato.codigo].pagamentos.deposito.quantidade += Number(ato.pagamentos.deposito_quantidade) || 0;
         }
       });
       console.log('[AtosTable] 📊 Atos agrupados por código:', agrupados);
