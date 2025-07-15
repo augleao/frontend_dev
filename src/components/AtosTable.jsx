@@ -222,7 +222,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
 
       // Filtra atos pagos (tributação === '01') e da serventia
       const atosPagos = (data.atos || []).filter(
-        ato => ato.tributacao === '01' && ato.serventia === usuario.serventia
+        ato => ato.tributacao === '01' && ato.usuario_serventia === usuario.serventia
       );
       console.log('[AtosTable] ✅ Atos pagos filtrados:', atosPagos);
 
