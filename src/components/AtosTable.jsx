@@ -21,6 +21,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
   const [mensagemSalvar, setMensagemSalvar] = useState('');
   const [observacoesGerais, setObservacoesGerais] = useState('');
   const [usuarios, setUsuarios] = useState([]);
+  const [agrupados, setAgrupados] = useState({}); // <-- ADICIONE ESTA LINHA
 
   useEffect(() => {
     if (texto) {
@@ -264,6 +265,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           return ato;
         })
       );
+      setAgrupados(agrupados); // <-- ADICIONE ESTA LINHA
     }
     consultarAtosPagos();
   }, [dataRelatorio, usuario?.serventia, usuarios]);
@@ -423,7 +425,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
         >
           <AtosGrid
             atos={atos}
-            agrupados={agrupados} // <-- garanta que está passando aqui!
+            agrupados={agrupados} // <-- agora agrupados está definido!
             handleAtoChange={handleAtoChange}
           />
         </div>
