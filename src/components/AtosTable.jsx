@@ -253,12 +253,12 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           if (agrupados[ato.codigo]) {
             return {
               ...ato,
-              quantidade: agrupados[ato.codigo].quantidade,
-              pagamentoDinheiro: { quantidade: agrupados[ato.codigo].quantidade, valor: agrupados[ato.codigo].pagamentos.dinheiro },
-              pagamentoCartao: { quantidade: agrupados[ato.codigo].quantidade, valor: agrupados[ato.codigo].pagamentos.cartao },
-              pagamentoPix: { quantidade: agrupados[ato.codigo].quantidade, valor: agrupados[ato.codigo].pagamentos.pix },
-              pagamentoCRC: { quantidade: agrupados[ato.codigo].quantidade, valor: agrupados[ato.codigo].pagamentos.crc },
-              depositoPrevio: { quantidade: agrupados[ato.codigo].quantidade, valor: agrupados[ato.codigo].pagamentos.deposito }
+              pagamentoDinheiroSugerido: agrupados[ato.codigo].pagamentos.dinheiro,
+              pagamentoCartaoSugerido: agrupados[ato.codigo].pagamentos.cartao,
+              pagamentoPixSugerido: agrupados[ato.codigo].pagamentos.pix,
+              pagamentoCRCSugerido: agrupados[ato.codigo].pagamentos.crc,
+              depositoPrevioSugerido: agrupados[ato.codigo].pagamentos.deposito,
+              quantidadeSugerida: agrupados[ato.codigo].quantidade
             };
           }
           return ato;
