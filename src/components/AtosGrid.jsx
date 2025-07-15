@@ -55,14 +55,18 @@ export default function AtosGrid({ atos, agrupados, handleAtoChange }) {
         </thead>
         <tbody>
           {atos.map((ato, idx) => {
-            const somaPagamentos = parseFloat((
-              ato.pagamentoDinheiro.valor +
-              ato.pagamentoCartao.valor +
-              ato.pagamentoPix.valor +
-              ato.pagamentoCRC.valor +
-              ato.depositoPrevio.valor
-            ).toFixed(2));
-            const valorFaltante = parseFloat((ato.valorTotalComISS - somaPagamentos).toFixed(2));
+            // Valor Total
+            const valorTotal = ato.valorTotalComISS ?? ato.valorTotal ?? 0;
+
+            // Valor Faltante
+            const somaPagamentos = 
+              (ato.pagamentoDinheiro?.valor || 0) +
+              (ato.pagamentoCartao?.valor || 0) +
+              (ato.pagamentoPix?.valor || 0) +
+              (ato.pagamentoCRC?.valor || 0) +
+              (ato.depositoPrevio?.valor || 0);
+
+            const valorFaltante = valorTotal - somaPagamentos;
             let linhaClass = '';
             if (Math.abs(somaPagamentos - ato.valorTotalComISS) < 0.01) {
               linhaClass = 'success-row';
