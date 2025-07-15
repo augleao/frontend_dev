@@ -553,7 +553,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         {/* Formas de Pagamento - só aparece para código tributário "01" */}
         {selectedCodigoTributario && selectedCodigoTributario.codigo === '01' && selectedAto && (
           <div>
-            <h4 style={{ margin: '0 0 8px 0', color: '#2c3e50', fontSize: 15 }}>💳 Formas de Pagamento</h4>
+            <h4 style={{ margin: '0 0 8px 0', color: '#2c3e50', fontSize: 15 }}>💳 Formas de Pagamento2</h4>
             <FormasPagamento
               formasPagamento={formasPagamento}
               pagamentos={pagamentos}

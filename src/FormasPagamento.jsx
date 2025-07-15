@@ -13,7 +13,7 @@ export default function FormasPagamento({ formasPagamento, pagamentos, onQuantid
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         }}
       >
-        <h4 style={{ marginBottom: 8 }}>Formas de Pagamento</h4>
+        <h4 style={{ marginBottom: 8 }}>Formas de Pagamento3</h4>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
           {formasPagamento.map((fp) => (
             <div
