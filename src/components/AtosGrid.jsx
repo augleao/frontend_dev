@@ -112,8 +112,8 @@ export default function AtosGrid({ atos, agrupados, handleAtoChange }) {
                       <td colSpan={2}></td>
                       <td>
                         <div style={{ color: '#888' }}>
-                          qnt. {agrupado.pagamentos.dinheiro} <br />
-                          valor {formatarMoeda(agrupado.pagamentos.dinheiro)}
+                          qnt. {agrupado.pagamentos.dinheiro.quantidade} <br />
+                          valor {formatarMoeda(agrupado.pagamentos.dinheiro.valor)}
                         </div>
                       </td>
                       <td>

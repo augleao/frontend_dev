@@ -240,6 +240,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
         // Somatório dos pagamentos por tipo
         if (ato.pagamentos) {
           agrupados[ato.codigo].pagamentos.dinheiro += Number(ato.pagamentos.dinheiro) || 0;
+          agrupados[ato.codigo].pagamentos.dinheiro.quantidade += Number(ato.pagamentos.dinheiro_quantidade) || 0;
           agrupados[ato.codigo].pagamentos.cartao += Number(ato.pagamentos.cartao) || 0;
           agrupados[ato.codigo].pagamentos.pix += Number(ato.pagamentos.pix) || 0;
           agrupados[ato.codigo].pagamentos.crc += Number(ato.pagamentos.crc) || 0;
