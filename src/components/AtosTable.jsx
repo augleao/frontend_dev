@@ -421,7 +421,11 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
             background: azulFundo
           }}
         >
-          <AtosGrid atos={atosComISS} handleAtoChange={handleAtoChange} />
+          <AtosGrid
+            atos={atos}
+            agrupados={agrupados} // <-- garanta que está passando aqui!
+            handleAtoChange={handleAtoChange}
+          />
         </div>
       </div>
     </div>
