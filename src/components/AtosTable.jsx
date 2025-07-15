@@ -238,11 +238,11 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
         agrupados[ato.codigo].quantidade += ato.quantidade || 1;
         // Somatório dos pagamentos por tipo
         if (ato.pagamentos) {
-          agrupados[ato.codigo].pagamentos.dinheiro += ato.pagamentos.dinheiro || 0;
-          agrupados[ato.codigo].pagamentos.cartao += ato.pagamentos.cartao || 0;
-          agrupados[ato.codigo].pagamentos.pix += ato.pagamentos.pix || 0;
-          agrupados[ato.codigo].pagamentos.crc += ato.pagamentos.crc || 0;
-          agrupados[ato.codigo].pagamentos.deposito += ato.pagamentos.deposito || 0;
+          agrupados[ato.codigo].pagamentos.dinheiro += Number(ato.pagamentos.dinheiro) || 0;
+          agrupados[ato.codigo].pagamentos.cartao += Number(ato.pagamentos.cartao) || 0;
+          agrupados[ato.codigo].pagamentos.pix += Number(ato.pagamentos.pix) || 0;
+          agrupados[ato.codigo].pagamentos.crc += Number(ato.pagamentos.crc) || 0;
+          agrupados[ato.codigo].pagamentos.deposito += Number(ato.pagamentos.deposito) || 0;
         }
       });
       console.log('[AtosTable] 📊 Atos agrupados por código:', agrupados);
