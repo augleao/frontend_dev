@@ -118,26 +118,26 @@ export default function AtosGrid({ atos, agrupados, handleAtoChange }) {
                       </td>
                       <td>
                         <div style={{ color: '#888' }}>
-                          qnt. {agrupado.pagamentos.cartao} <br />
-                          valor {formatarMoeda(agrupado.pagamentos.cartao)}
+                          qnt. {agrupado.pagamentos.cartao.quantidade} <br />
+                          valor {formatarMoeda(agrupado.pagamentos.cartao.valor)}
                         </div>
                       </td>
                       <td>
                         <div style={{ color: '#888' }}>
-                          qnt. {agrupado.pagamentos.pix} <br />
-                          valor {formatarMoeda(agrupado.pagamentos.pix)}
+                          qnt. {agrupado.pagamentos.pix.quantidade} <br />
+                          valor {formatarMoeda(agrupado.pagamentos.pix.valor)}
                         </div>
                       </td>
                       <td>
                         <div style={{ color: '#888' }}>
-                          qnt. {agrupado.pagamentos.crc} <br />
-                          valor {formatarMoeda(agrupado.pagamentos.crc)}
+                          qnt. {agrupado.pagamentos.crc.quantidade} <br />
+                          valor {formatarMoeda(agrupado.pagamentos.crc.valor)}
                         </div>
                       </td>
                       <td>
                         <div style={{ color: '#888' }}>
-                          qnt. {agrupado.pagamentos.deposito} <br />
-                          valor {formatarMoeda(agrupado.pagamentos.deposito)}
+                          qnt. {agrupado.pagamentos.deposito.quantidade} <br />
+                          valor {formatarMoeda(agrupado.pagamentos.deposito.valor)}
                         </div>
                       </td>
                       <td></td>
