@@ -435,8 +435,8 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           }}
         >
           <AtosGrid
-            atos={atos}
-            agrupados={agrupados} // <-- agora agrupados está definido!
+            atos={atosComISS}
+            agrupados={agrupados}
             handleAtoChange={handleAtoChange}
           />
         </div>
