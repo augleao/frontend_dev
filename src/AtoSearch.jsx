@@ -32,7 +32,7 @@ export default function AtoSearch({
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Digite código ou descrição do ato"
           style={{
-            width: '100%',
+            width: '90%',
             padding: '12px',
             borderRadius: '8px',
             border: '2px solid #e3f2fd',
