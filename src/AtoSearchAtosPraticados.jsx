@@ -297,6 +297,25 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     }));
   };
 
+  // Exemplo de handler no componente pai
+  function handleQuantidadeChange(forma, novaQtd) {
+    // Limite pela quantidade total de atos
+    const qtdMax = selectedAto?.quantidade || 0;
+    const quantidade = Math.min(Number(novaQtd), qtdMax);
+
+    // Valor unitário do ato
+    const valorUnitario = selectedAto?.valor_unitario || selectedAto?.valorTotalComISS || 0;
+
+    setPagamentos(prev => ({
+      ...prev,
+      [forma]: {
+        ...prev[forma],
+        quantidade,
+        valor: quantidade * valorUnitario
+      }
+    }));
+  }
+
   // useEffect para buscar sugestões de atos com debounce
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -553,11 +572,11 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
         {/* Formas de Pagamento - só aparece para código tributário "01" */}
         {selectedCodigoTributario && selectedCodigoTributario.codigo === '01' && selectedAto && (
           <div>
-            <h4 style={{ margin: '0 0 8px 0', color: '#2c3e50', fontSize: 15 }}>💳 Formas de Pagamento2</h4>
+            <h4 style={{ margin: '0 0 8px 0', color: '#2c3e50', fontSize: 15 }}>💳 Formas de Pagamento</h4>
             <FormasPagamento
               formasPagamento={formasPagamento}
               pagamentos={pagamentos}
-              onQuantidadeChange={handleQuantidadePagamentoChange}
+              onQuantidadeChange={handleQuantidadeChange}
               onValorChange={handleValorPagamentoChange}
               corFundoPagamentos={() => '#fff'}
               selectedAto={selectedAto}
