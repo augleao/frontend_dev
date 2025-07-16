@@ -564,11 +564,12 @@ useEffect(() => {
         dataRelatorio: dataSelecionada,
         atos,
         valorInicialCaixa,
-        depositosCaixa: atos.filter(a => a.codigo === '0003'), // entradas manuais
-        saidasCaixa: atos.filter(a => a.codigo === '0002'),    // saídas manuais
+        depositosCaixa: atos.filter(a => a.codigo === '0003'),
+        saidasCaixa: atos.filter(a => a.codigo === '0002'),
         responsavel: nomeUsuario,
         ISS: percentualISS,
-        observacoesGerais: '' // ou outro campo se desejar
+        observacoesGerais: '',
+        nomeArquivo: `FechamentoCaixa_${dataSelecionada}.pdf`
       });
     } catch (e) {
       alert('Erro ao realizar fechamento diário: ' + e.message);
