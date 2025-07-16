@@ -45,7 +45,7 @@ export function gerarRelatorioPDFCaixaDiario({
   responsavel,
   ISS,
   observacoesGerais,
-  nomeArquivo // <-- adicione aqui!
+  nomeArquivo
 }) {
   const doc = new jsPDF({
     orientation: 'landscape',
@@ -361,8 +361,18 @@ export function gerarRelatorioPDFCaixaDiario({
     y += lineHeight * 2;
   });
 
+  // Adicionando o valor final do caixa (código 0001) no relatório
+  const valorFinalCaixaRelatorio = atos.find(ato => ato.codigo === '0001');
+  if (valorFinalCaixaRelatorio) {
+    const valorFinal = valorFinalCaixaRelatorio.pagamentos?.dinheiro?.valor || 0;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text(`Valor Final do Caixa (código 0001): R$ ${valorFinal.toFixed(2)}`, marginLeft, y);
+    y += lineHeight + 5;
+  }
+
   const dataFormatada = formatarDataParaNomeArquivo(dataRelatorio);
-  doc.save(nomeArquivo || 'FechamentoCaixa.pdf');
+  doc.save(`${dataFormatada}_${nomeArquivo || 'FechamentoCaixa.pdf'}`);
 }
 
 export function gerarRelatorioPDFAtosPraticados({
@@ -691,5 +701,5 @@ export function gerarRelatorioPDFAtosPraticados({
   });
 
   const dataFormatada = formatarDataParaNomeArquivo(dataRelatorio);
-  doc.save(nomeArquivo || 'FechamentoCaixa.pdf');
+  doc.save(`${dataFormatada}_${nomeArquivo || 'FechamentoCaixa.pdf'}`);
 }
