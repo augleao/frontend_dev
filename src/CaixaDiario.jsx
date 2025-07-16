@@ -560,7 +560,7 @@ useEffect(() => {
       alert('Fechamento diário realizado com sucesso!');
 
       // Gere o PDF no frontend:
-      gerarRelatorioPDF({
+      gerarRelatorioPDFCaixaDiario({
         dataRelatorio: dataSelecionada,
         atos,
         valorInicialCaixa,
