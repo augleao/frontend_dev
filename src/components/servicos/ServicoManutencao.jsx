@@ -8,10 +8,36 @@ import ServicoLista from './ServicoLista';
 import ServicoAlertas from './ServicoAlertas';
 import ServicoDetalhes from './ServicoDetalhes';
 
-// ...mock data, status arrays, gerarProtocolo...
+// Mock e helpers
+const clientesMock = [/* ... */];
+const tiposServico = [/* ... */];
+const statusExecucao = [/* ... */];
+const statusPagamento = [/* ... */];
+function gerarProtocolo() { /* ... */ }
 
 export default function ServicoManutencao() {
-  // ...mesma lógica de estado e handlers do exemplo anterior...
+  // Estados e handlers
+  const [servicos, setServicos] = useState([]);
+  const [clientes, setClientes] = useState(clientesMock);
+  const [filtro, setFiltro] = useState({ status: '', protocolo: '', tipo: '', cliente: '' });
+  const [alertas, setAlertas] = useState([]);
+  const [form, setForm] = useState({
+    protocolo: gerarProtocolo(),
+    tipo: '',
+    descricao: '',
+    prazo: '',
+    clienteId: '',
+    novoCliente: false,
+    cliente: { nome: '', cpf: '', endereco: '', telefone: '', email: '' },
+    pagamento: { status: 'pendente', valorTotal: '', valorPago: '', data: '', forma: '' },
+    execucao: { status: 'em_andamento', observacoes: '', responsavel: '' },
+    entrega: { data: '', hora: '', retiradoPor: '', documentoRetirada: '', assinaturaDigital: false }
+  });
+  const [visualizando, setVisualizando] = useState(null);
+
+  // ...handlers como handleFormChange, handleClienteChange, etc...
+
+  // ...alertas e filtragem...
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: 32 }}>
