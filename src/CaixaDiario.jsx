@@ -950,7 +950,7 @@ useEffect(() => {
               value={quantidade}
               onChange={(e) => handleQuantidadeChange(e.target.value)}
               style={{
-                width: '100%',
+                width: '90%',
                 padding: '12px',
                 borderRadius: '8px',
                 border: '2px solid #e3f2fd',
@@ -1053,7 +1053,7 @@ useEffect(() => {
                 onChange={(e) => setEntradaValor(e.target.value)}
                 placeholder="R$ 0,00"
                 style={{
-                  width: '100%',
+                  width: '90%',
                   padding: '12px',
                   borderRadius: '8px',
                   border: '2px solid #e3f2fd',
@@ -1076,7 +1076,7 @@ useEffect(() => {
                 onChange={(e) => setEntradaObs(e.target.value)}
                 placeholder="Ex. Troco, abertura de caixa, outras entradas"
                 style={{
-                  width: '100%',
+                  width: '90%',
                   padding: '12px',
                   borderRadius: '8px',
                   border: '2px solid #e3f2fd',
@@ -1128,7 +1128,7 @@ useEffect(() => {
                 onChange={(e) => setSaidaValor(e.target.value)}
                 placeholder="R$ 0,00"
                 style={{
-                  width: '100%',
+                  width: '90%',
                   padding: '12px',
                   borderRadius: '8px',
                   border: '2px solid #e3f2fd',
@@ -1151,7 +1151,7 @@ useEffect(() => {
                 onChange={(e) => setSaidaObs(e.target.value)}
                 placeholder="Ex. Depósitos, retiradas, outras saídas."
                 style={{
-                  width: '100%',
+                  width: '90%',
                   padding: '12px',
                   borderRadius: '8px',
                   border: '2px solid #e3f2fd',
