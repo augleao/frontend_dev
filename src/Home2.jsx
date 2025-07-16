@@ -72,6 +72,14 @@ function Home() {
       icon: '📊',
       color: '#e67e22',
       route: '/relatorio-cnj'
+    },
+    {
+      id: 'manutencao-servicos',
+      title: 'MANUTENÇÃO DE SERVIÇOS',
+      description: 'Gerencie o ciclo completo de serviços: entrada, cliente, pagamento, execução e entrega',
+      icon: '📝',
+      color: '#8e44ad',
+      route: '/manutencao-servicos'
     }
   ];
 
