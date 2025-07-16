@@ -39,11 +39,13 @@ export function gerarRelatorioPDFCaixaDiario({
   dataRelatorio,
   atos,
   valorInicialCaixa,
+  valorFinalCaixa,
   depositosCaixa,
   saidasCaixa,
   responsavel,
   ISS,
-  observacoesGerais
+  observacoesGerais,
+  nomeArquivo // <-- adicione aqui!
 }) {
   const doc = new jsPDF({
     orientation: 'landscape',
