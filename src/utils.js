@@ -360,7 +360,7 @@ export function gerarRelatorioPDFCaixaDiario({
   });
 
   const dataFormatada = formatarDataParaNomeArquivo(dataRelatorio);
-  doc.save(`${dataFormatada}_relatorio_fechamento_caixa.pdf`);
+  doc.save(nomeArquivo || 'FechamentoCaixa.pdf');
 }
 
 export function gerarRelatorioPDFAtosPraticados({
@@ -688,5 +688,5 @@ export function gerarRelatorioPDFAtosPraticados({
   });
 
   const dataFormatada = formatarDataParaNomeArquivo(dataRelatorio);
-  doc.save(`${dataFormatada}_relatorio_fechamento_caixa.pdf`);
+  doc.save(nomeArquivo || 'FechamentoCaixa.pdf');
 }
