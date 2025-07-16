@@ -373,7 +373,8 @@ export function gerarRelatorioPDFAtosPraticados({
   saidasCaixa,
   responsavel,
   ISS,
-  observacoesGerais
+  observacoesGerais,
+  nomeArquivo // <-- adicione aqui!
 }) {
   const doc = new jsPDF({
     orientation: 'landscape',
