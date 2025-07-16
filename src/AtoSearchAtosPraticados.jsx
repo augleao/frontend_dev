@@ -299,19 +299,19 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
 
   // Exemplo de handler no componente pai
   function handleQuantidadeChange(forma, novaQtd) {
-    // Limite pela quantidade total de atos
-    const qtdMax = selectedAto?.quantidade || 0;
-    const quantidade = Math.min(Number(novaQtd), qtdMax);
+    // Limite pela quantidade informada no input principal do formulário
+    const qtdMax = quantidade; // <-- use o estado do input principal
+    const quantidadeForma = Math.min(Number(novaQtd), qtdMax);
 
     // Valor unitário do ato
-    const valorUnitario = selectedAto?.valor_unitario || selectedAto?.valorTotalComISS || 0;
+    const valorUnitario = selectedAto?.valor_unitario || selectedAto?.valor_final || 0;
 
     setPagamentos(prev => ({
       ...prev,
       [forma]: {
         ...prev[forma],
-        quantidade,
-        valor: quantidade * valorUnitario
+        quantidade: quantidadeForma,
+        valor: quantidadeForma * valorUnitario
       }
     }));
   }
