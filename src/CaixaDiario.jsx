@@ -564,6 +564,7 @@ useEffect(() => {
         dataRelatorio: dataSelecionada,
         atos,
         valorInicialCaixa,
+        valorFinalCaixa: atos.find(a => a.codigo === '0001')?.valor_unitario || calcularValorFinalCaixa(),
         depositosCaixa: atos.filter(a => a.codigo === '0003'),
         saidasCaixa: atos.filter(a => a.codigo === '0002'),
         responsavel: nomeUsuario,
