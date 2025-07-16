@@ -33,11 +33,10 @@ export default function AtoSearch({
           placeholder="Digite código ou descrição do ato"
           style={{
             width: '100%',
-            padding: '8px', // reduzido de 12px
+            padding: '12px',
             borderRadius: '8px',
             border: '2px solid #e3f2fd',
-            fontSize: '15px', // reduzido de 16px
-            boxSizing: 'border-box'
+            fontSize: '16px'
           }}
         />
 
