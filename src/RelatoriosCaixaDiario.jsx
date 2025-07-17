@@ -66,7 +66,7 @@ function MeusFechamentos() {
                 return (
                   <tr key={f.data + f.hora + f.codigo + idx}>
                     <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
-                      {f.data ? new Date(f.data).toLocaleDateString('pt-BR') : ''}
+                      {f.data ? f.data.slice(0, 10).split('-').reverse().join('/') : ''}
                     </td>
                     <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>{f.hora || ''}</td>
                     <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
