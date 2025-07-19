@@ -152,9 +152,6 @@ export default function EditarCombos() {
           />
         </div>
         <div style={{ marginBottom: 12 }}>
-          <label style={{ fontWeight: 600 }}>
-            Buscar ato por código ou descrição:
-          </label>
           <AtoSearch
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
