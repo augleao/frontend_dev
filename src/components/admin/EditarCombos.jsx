@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import config from '../../config';
-import AtoSearch from '../atos/AtoSearch'; // ajuste o caminho conforme sua estrutura
+import AtoSearch from '../../AtoSearch'; // ajuste o caminho conforme sua estrutura
 
 export default function EditarCombos() {
   const [atos, setAtos] = useState([]);
