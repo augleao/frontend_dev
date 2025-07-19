@@ -108,7 +108,7 @@ function App() {
           element={<MeusFechamentos />}
         />
         <Route
-          path="/Lista-servicos"
+          path="/lista-servicos"
           element={
             <PrivateRoute>
               <ListaServicos />
