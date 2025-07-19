@@ -36,7 +36,7 @@ export default function EditarCombos() {
     setLoadingSuggestions(true);
     const token = localStorage.getItem('token');
     fetch(
-      `${config.apiURL}/admin/atos?busca=${encodeURIComponent(searchTerm)}`,
+      `${config.apiURL}/atos?busca=${encodeURIComponent(searchTerm)}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -53,7 +53,7 @@ export default function EditarCombos() {
     if (!buscaAto.trim()) return;
     const token = localStorage.getItem('token');
     const res = await fetch(
-      `${config.apiURL}/admin/atos?busca=${encodeURIComponent(buscaAto)}`,
+      `${config.apiURL}/atos?busca=${encodeURIComponent(buscaAto)}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
