@@ -36,7 +36,7 @@ export default function EditarCombos() {
     setLoadingSuggestions(true);
     const token = localStorage.getItem('token');
     fetch(
-      `${config.apiURL}/atos?busca=${encodeURIComponent(searchTerm)}`,
+      `${config.apiURL}/atos?search=${encodeURIComponent(searchTerm)}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
