@@ -112,6 +112,21 @@ export default function EditarCombos() {
     }
   };
 
+  const handleExcluirCombo = async (id) => {
+    if (!window.confirm('Deseja realmente excluir este combo?')) return;
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${config.apiURL}/admin/combos/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      setMsg('Combo excluído com sucesso!');
+      fetchCombos();
+    } else {
+      setMsg('Erro ao excluir combo.');
+    }
+  };
+
   return (
     <div
       style={{
@@ -225,6 +240,7 @@ export default function EditarCombos() {
           <tr style={{ background: '#f0f0f0' }}>
             <th>Nome do Combo</th>
             <th>Atos</th>
+            <th>Ações</th> {/* Nova coluna */}
           </tr>
         </thead>
         <tbody>
@@ -235,6 +251,24 @@ export default function EditarCombos() {
                 {combo.atos && combo.atos.length > 0
                   ? combo.atos.map((a) => a.nome).join(', ')
                   : '-'}
+              </td>
+              <td>
+                <button
+                  type="button"
+                  onClick={() => handleExcluirCombo(combo.id)}
+                  style={{
+                    background: '#e74c3c',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '6px 16px',
+                    fontWeight: 'bold',
+                    fontSize: 14,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Excluir
+                </button>
               </td>
             </tr>
           ))}
