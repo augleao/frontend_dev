@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import config from '../../config';
-import AtoSearch from '../../AtoSearch'; // ajuste o caminho conforme sua estrutura
+import AtoSearch from '../../AtoSearch';
 
 export default function EditarCombos() {
   const [atos, setAtos] = useState([]);
@@ -10,6 +10,9 @@ export default function EditarCombos() {
   const [buscaAto, setBuscaAto] = useState('');
   const [atosBusca, setAtosBusca] = useState([]);
   const [atoSelecionado, setAtoSelecionado] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   useEffect(() => {
     fetchCombos();
@@ -23,6 +26,28 @@ export default function EditarCombos() {
     const data = await res.json();
     setCombos(data.combos || []);
   };
+
+  // Buscar sugestões ao digitar
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    setLoadingSuggestions(true);
+    const token = localStorage.getItem('token');
+    fetch(
+      `${config.apiURL}/admin/atos?busca=${encodeURIComponent(searchTerm)}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setSuggestions(data.atos || []);
+        setLoadingSuggestions(false);
+      })
+      .catch(() => setLoadingSuggestions(false));
+  }, [searchTerm]);
 
   const buscarAtos = async () => {
     if (!buscaAto.trim()) return;
