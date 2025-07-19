@@ -132,7 +132,7 @@ export default function EditarCombos() {
           </label>
           <AtoSearch onSelect={handleAtoSelecionado} />
         </div>
-        {novoCombo.atosDetalhes && novoCombo.atosDetalhes.length > 0 && (
+        {Array.isArray(novoCombo.atosDetalhes) && novoCombo.atosDetalhes.length > 0 && (
           <div style={{ marginBottom: 12 }}>
             <label style={{ fontWeight: 600 }}>Atos adicionados ao combo:</label>
             <ul
