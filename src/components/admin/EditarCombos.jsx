@@ -249,7 +249,7 @@ export default function EditarCombos() {
               <td>{combo.nome}</td>
               <td>
                 {combo.atos && combo.atos.length > 0
-                  ? combo.atos.map((a) => `${a.codigo} - ${a.nome}`).join(', ')
+                  ? combo.atos.map((a) => `${a.codigo}`).join(', ')
                   : '-'}
               </td>
               <td>
