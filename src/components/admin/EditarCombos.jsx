@@ -155,7 +155,13 @@ export default function EditarCombos() {
           <label style={{ fontWeight: 600 }}>
             Buscar ato por código ou descrição:
           </label>
-          <AtoSearch onSelect={handleAtoSelecionado} />
+          <AtoSearch
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            suggestions={suggestions}
+            loadingSuggestions={loadingSuggestions}
+            onSelectAto={handleAtoSelecionado}
+          />
         </div>
         {Array.isArray(novoCombo.atosDetalhes) && novoCombo.atosDetalhes.length > 0 && (
           <div style={{ marginBottom: 12 }}>
