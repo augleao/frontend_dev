@@ -118,12 +118,12 @@ export default function ServicoManutencao() {
       fontFamily: 'Arial, sans-serif'
     }}>
       <div style={{
-        maxWidth: 900,
+        maxWidth: "95%", // <-- alterado de 900 para 95%
         margin: '0 auto',
         padding: '48px 24px 0 24px'
       }}>
         <h2 style={{
-          marginBottom: 24,
+          marginBottom: 10,
           color: '#2c3e50',
           fontWeight: 700,
           fontSize: 28,
