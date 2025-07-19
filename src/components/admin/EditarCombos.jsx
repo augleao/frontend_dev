@@ -100,7 +100,7 @@ export default function EditarCombos() {
       },
       body: JSON.stringify({
         nome: novoCombo.nome,
-        atosIds: novoCombo.atosIds,
+        atos: novoCombo.atosIds,
       }),
     });
     if (res.ok) {
