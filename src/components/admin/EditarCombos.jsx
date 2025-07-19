@@ -196,7 +196,7 @@ export default function EditarCombos() {
                   }}
                 >
                   <span>
-                    {a.codigo} - {a.nome}
+                    {a.codigo} 
                   </span>
                   <button
                     type="button"
