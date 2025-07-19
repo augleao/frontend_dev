@@ -6,28 +6,34 @@ export default function EditarCombos() {
   const [combos, setCombos] = useState([]);
   const [novoCombo, setNovoCombo] = useState({ nome: '', atosIds: [] });
   const [msg, setMsg] = useState('');
+  const [buscaAto, setBuscaAto] = useState('');
+  const [atosBusca, setAtosBusca] = useState([]);
+  const [atoSelecionado, setAtoSelecionado] = useState(null);
 
   useEffect(() => {
-    fetchAtos();
     fetchCombos();
   }, []);
 
-  const fetchAtos = async () => {
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${config.apiURL}/admin/atos`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    setAtos(data.atos || []);
-  };
-
   const fetchCombos = async () => {
     const token = localStorage.getItem('token');
-    const res = await fetch(`${config.apiURL}/admin/combos`, {
+    const res = await fetch(`${config.apiURL}/admin/combos/listar`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
     setCombos(data.combos || []);
+  };
+
+  const buscarAtos = async () => {
+    if (!buscaAto.trim()) return;
+    const token = localStorage.getItem('token');
+    const res = await fetch(
+      `${config.apiURL}/admin/atos?busca=${encodeURIComponent(buscaAto)}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const data = await res.json();
+    setAtosBusca(data.atos || []);
   };
 
   const handleComboChange = (e) => {
@@ -35,18 +41,31 @@ export default function EditarCombos() {
     setNovoCombo((c) => ({ ...c, [name]: value }));
   };
 
-  const handleAtoSelect = (id) => {
-    setNovoCombo((c) =>
-      c.atosIds.includes(id)
-        ? { ...c, atosIds: c.atosIds.filter((aid) => aid !== id) }
-        : { ...c, atosIds: [...c.atosIds, id] }
-    );
+  const handleAdicionarAto = () => {
+    if (atoSelecionado && !novoCombo.atosIds.includes(atoSelecionado.id)) {
+      setNovoCombo((c) => ({
+        ...c,
+        atosIds: [...c.atosIds, atoSelecionado.id],
+        atosDetalhes: [...(c.atosDetalhes || []), atoSelecionado],
+      }));
+      setAtoSelecionado(null);
+      setAtosBusca([]);
+      setBuscaAto('');
+    }
+  };
+
+  const handleRemoverAto = (id) => {
+    setNovoCombo((c) => ({
+      ...c,
+      atosIds: c.atosIds.filter((aid) => aid !== id),
+      atosDetalhes: (c.atosDetalhes || []).filter((a) => a.id !== id),
+    }));
   };
 
   const handleSalvarCombo = async (e) => {
     e.preventDefault();
     if (!novoCombo.nome || novoCombo.atosIds.length === 0) {
-      setMsg('Preencha o nome e selecione ao menos um ato.');
+      setMsg('Preencha o nome e adicione ao menos um ato.');
       return;
     }
     const token = localStorage.getItem('token');
@@ -56,11 +75,14 @@ export default function EditarCombos() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(novoCombo),
+      body: JSON.stringify({
+        nome: novoCombo.nome,
+        atosIds: novoCombo.atosIds,
+      }),
     });
     if (res.ok) {
       setMsg('Combo criado com sucesso!');
-      setNovoCombo({ nome: '', atosIds: [] });
+      setNovoCombo({ nome: '', atosIds: [], atosDetalhes: [] });
       fetchCombos();
     } else {
       setMsg('Erro ao criar combo.');
@@ -68,20 +90,24 @@ export default function EditarCombos() {
   };
 
   return (
-    <div style={{
-      maxWidth: 800,
-      margin: '40px auto',
-      padding: 20,
-      border: '1px solid #ddd',
-      borderRadius: 8,
-      background: '#fff'
-    }}>
+    <div
+      style={{
+        maxWidth: 800,
+        margin: '40px auto',
+        padding: 20,
+        border: '1px solid #ddd',
+        borderRadius: 8,
+        background: '#fff',
+      }}
+    >
       <h2 style={{ marginBottom: 18 }}>Editar Combos de Atos</h2>
       {msg && (
-        <div style={{
-          color: msg.includes('Erro') ? 'red' : 'green',
-          marginBottom: 10,
-        }}>
+        <div
+          style={{
+            color: msg.includes('Erro') ? 'red' : 'green',
+            marginBottom: 10,
+          }}
+        >
           {msg}
         </div>
       )}
@@ -93,25 +119,147 @@ export default function EditarCombos() {
             value={novoCombo.nome}
             onChange={handleComboChange}
             required
-            style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ccc', marginTop: 4 }}
+            style={{
+              width: '100%',
+              padding: 8,
+              borderRadius: 6,
+              border: '1px solid #ccc',
+              marginTop: 4,
+            }}
           />
         </div>
-        <div style={{ marginBottom: 12 }}>
-          <label style={{ fontWeight: 600 }}>Selecione os Atos:</label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
-            {atos.map((ato) => (
-              <label key={ato.id} style={{ background: '#f8f8f8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={novoCombo.atosIds.includes(ato.id)}
-                  onChange={() => handleAtoSelect(ato.id)}
-                  style={{ marginRight: 6 }}
-                />
-                {ato.nome}
-              </label>
-            ))}
+        <div
+          style={{
+            marginBottom: 12,
+            display: 'flex',
+            alignItems: 'flex-end',
+            gap: 16,
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <label style={{ fontWeight: 600 }}>
+              Buscar Atos (código ou nome):
+            </label>
+            <input
+              type="text"
+              value={buscaAto}
+              onChange={(e) => setBuscaAto(e.target.value)}
+              style={{
+                width: '100%',
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid #ccc',
+                marginTop: 4,
+              }}
+              placeholder="Digite o código ou nome do ato"
+            />
           </div>
+          <button
+            type="button"
+            onClick={buscarAtos}
+            style={{
+              padding: '8px 18px',
+              background: '#3498db',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 'bold',
+              fontSize: 15,
+              cursor: 'pointer',
+            }}
+          >
+            Buscar
+          </button>
         </div>
+        {atosBusca.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ fontWeight: 600 }}>Selecione o ato:</label>
+            <select
+              value={atoSelecionado ? atoSelecionado.id : ''}
+              onChange={(e) => {
+                const ato = atosBusca.find(
+                  (a) => a.id === Number(e.target.value)
+                );
+                setAtoSelecionado(ato || null);
+              }}
+              style={{
+                width: '100%',
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid #ccc',
+                marginTop: 4,
+              }}
+            >
+              <option value="">Selecione...</option>
+              {atosBusca.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.codigo} - {a.nome}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={handleAdicionarAto}
+              style={{
+                marginLeft: 12,
+                padding: '8px 18px',
+                background: '#27ae60',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                fontWeight: 'bold',
+                fontSize: 15,
+                cursor: 'pointer',
+              }}
+              disabled={!atoSelecionado}
+            >
+              Adicionar
+            </button>
+          </div>
+        )}
+        {novoCombo.atosDetalhes && novoCombo.atosDetalhes.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ fontWeight: 600 }}>Atos adicionados ao combo:</label>
+            <ul
+              style={{
+                listStyle: 'none',
+                padding: 0,
+                marginTop: 6,
+              }}
+            >
+              {novoCombo.atosDetalhes.map((a) => (
+                <li
+                  key={a.id}
+                  style={{
+                    marginBottom: 4,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}
+                >
+                  <span>
+                    {a.codigo} - {a.nome}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoverAto(a.id)}
+                    style={{
+                      background: '#e74c3c',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 6,
+                      padding: '2px 10px',
+                      fontSize: 13,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Remover
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <button
           type="submit"
           style={{
@@ -122,7 +270,7 @@ export default function EditarCombos() {
             borderRadius: 8,
             fontWeight: 'bold',
             fontSize: 16,
-            cursor: 'pointer'
+            cursor: 'pointer',
           }}
         >
           Salvar Combo
