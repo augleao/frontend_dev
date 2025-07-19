@@ -19,6 +19,7 @@ import AtosPraticados from './AtosPraticados'; // ajuste o caminho se necessári
 import PesquisaAtosPraticados from './pesquisaAtosPraticados'; // ajuste o caminho se necessário
 import ServicoManutencao from './components/servicos/ServicoManutencao'; // ajuste o caminho se necessário
 import ListaServicos from './components/servicos/ListaServicos'; // adicione esta linha
+import EditarCombos from './components/admin/EditarCombos';
 
 
 
@@ -122,6 +123,14 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+  path="/admin/editar-combos"
+  element={
+    <AdminRoute>
+      <EditarCombos />
+    </AdminRoute>
+  }
+/>
       </Routes>
     </AuthProvider>
   );

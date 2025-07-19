@@ -122,21 +122,37 @@ export default function AdminDashboard() {
           marginBottom: 16,
         }}
       >
+        <div style={{ display: 'flex', gap: 12 }}>
+          <Link
+            to="/admin/editar-combos"
+            style={{
+              padding: '10px 20px',
+              background: '#8e44ad',
+              color: '#fff',
+              borderRadius: 8,
+              textDecoration: 'none',
+              fontWeight: 'bold',
+              fontSize: 16,
+            }}
+          >
+            Editar Combos
+          </Link>
+          <Link
+            to="/admin/importar-atos"
+            style={{
+              padding: '10px 20px',
+              background: '#1976d2',
+              color: '#fff',
+              borderRadius: 8,
+              textDecoration: 'none',
+              fontWeight: 'bold',
+              fontSize: 16,
+            }}
+          >
+            Editar Atos (Tabelas 07/08)
+          </Link>
+        </div>
         <h2 style={{ margin: 0 }}>Administração de Usuários</h2>
-        <Link
-          to="/admin/importar-atos"
-          style={{
-            padding: '10px 20px',
-            background: '#1976d2',
-            color: '#fff',
-            borderRadius: 8,
-            textDecoration: 'none',
-            fontWeight: 'bold',
-            fontSize: 16,
-          }}
-        >
-          Editar Atos (Tabelas 07/08)
-        </Link>
       </div>
       {msg && (
         <div
