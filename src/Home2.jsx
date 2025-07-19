@@ -75,11 +75,11 @@ function Home() {
     },
     {
       id: 'manutencao-servicos',
-      title: 'MANUTENÇÃO DE SERVIÇOS',
-      description: 'Gerencie o ciclo completo de serviços: entrada, cliente, pagamento, execução e entrega',
+      title: 'PEDIDOS',
+      description: 'Gerencie o ciclo completo de pedidos: entrada, cliente, pagamento, execução e entrega',
       icon: '📝',
       color: '#8e44ad',
-      route: '/manutencao-servicos'
+      route: '/lista-servicos' // <-- altere aqui!
     }
   ];
 

@@ -18,6 +18,7 @@ import MeusFechamentos from './RelatoriosCaixaDiario'; // ajuste o caminho se ne
 import AtosPraticados from './AtosPraticados'; // ajuste o caminho se necessário
 import PesquisaAtosPraticados from './pesquisaAtosPraticados'; // ajuste o caminho se necessário
 import ServicoManutencao from './components/servicos/ServicoManutencao'; // ajuste o caminho se necessário
+import ListaServicos from './components/servicos/ListaServicos'; // adicione esta linha
 
 
 
@@ -104,6 +105,14 @@ function App() {
         <Route
           path="/meus-fechamentos"
           element={<MeusFechamentos />}
+        />
+        <Route
+          path="/lista-servicos"
+          element={
+            <PrivateRoute>
+              <ListaServicos />
+            </PrivateRoute>
+          }
         />
         <Route
           path="/manutencao-servicos"
