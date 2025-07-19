@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import config from '../../config';
+import AtoSearch from '../atos/AtoSearch'; // ajuste o caminho conforme sua estrutura
 
 export default function EditarCombos() {
   const [atos, setAtos] = useState([]);
@@ -41,16 +42,13 @@ export default function EditarCombos() {
     setNovoCombo((c) => ({ ...c, [name]: value }));
   };
 
-  const handleAdicionarAto = () => {
-    if (atoSelecionado && !novoCombo.atosIds.includes(atoSelecionado.id)) {
+  const handleAtoSelecionado = (ato) => {
+    if (ato && !novoCombo.atosIds.includes(ato.id)) {
       setNovoCombo((c) => ({
         ...c,
-        atosIds: [...c.atosIds, atoSelecionado.id],
-        atosDetalhes: [...(c.atosDetalhes || []), atoSelecionado],
+        atosIds: [...c.atosIds, ato.id],
+        atosDetalhes: [...(c.atosDetalhes || []), ato],
       }));
-      setAtoSelecionado(null);
-      setAtosBusca([]);
-      setBuscaAto('');
     }
   };
 
@@ -128,95 +126,12 @@ export default function EditarCombos() {
             }}
           />
         </div>
-        <div
-          style={{
-            marginBottom: 12,
-            display: 'flex',
-            alignItems: 'flex-end',
-            gap: 16,
-          }}
-        >
-          <div style={{ flex: 1 }}>
-            <label style={{ fontWeight: 600 }}>
-              Buscar Atos (código ou nome):
-            </label>
-            <input
-              type="text"
-              value={buscaAto}
-              onChange={(e) => setBuscaAto(e.target.value)}
-              style={{
-                width: '100%',
-                padding: 8,
-                borderRadius: 6,
-                border: '1px solid #ccc',
-                marginTop: 4,
-              }}
-              placeholder="Digite o código ou nome do ato"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={buscarAtos}
-            style={{
-              padding: '8px 18px',
-              background: '#3498db',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              fontWeight: 'bold',
-              fontSize: 15,
-              cursor: 'pointer',
-            }}
-          >
-            Buscar
-          </button>
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ fontWeight: 600 }}>
+            Buscar ato por código ou descrição:
+          </label>
+          <AtoSearch onSelect={handleAtoSelecionado} />
         </div>
-        {atosBusca.length > 0 && (
-          <div style={{ marginBottom: 12 }}>
-            <label style={{ fontWeight: 600 }}>Selecione o ato:</label>
-            <select
-              value={atoSelecionado ? atoSelecionado.id : ''}
-              onChange={(e) => {
-                const ato = atosBusca.find(
-                  (a) => a.id === Number(e.target.value)
-                );
-                setAtoSelecionado(ato || null);
-              }}
-              style={{
-                width: '100%',
-                padding: 8,
-                borderRadius: 6,
-                border: '1px solid #ccc',
-                marginTop: 4,
-              }}
-            >
-              <option value="">Selecione...</option>
-              {atosBusca.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.codigo} - {a.nome}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={handleAdicionarAto}
-              style={{
-                marginLeft: 12,
-                padding: '8px 18px',
-                background: '#27ae60',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                fontWeight: 'bold',
-                fontSize: 15,
-                cursor: 'pointer',
-              }}
-              disabled={!atoSelecionado}
-            >
-              Adicionar
-            </button>
-          </div>
-        )}
         {novoCombo.atosDetalhes && novoCombo.atosDetalhes.length > 0 && (
           <div style={{ marginBottom: 12 }}>
             <label style={{ fontWeight: 600 }}>Atos adicionados ao combo:</label>
