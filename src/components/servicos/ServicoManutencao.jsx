@@ -5,6 +5,7 @@ import ServicoPagamento from './ServicoPagamento';
 import ServicoExecucao from './ServicoExecucao';
 import ServicoEntrega from './ServicoEntrega';
 import ServicoAlertas from './ServicoAlertas';
+import ServicoLista from './ServicoLista';
 import config from '../../config';
 
 const clientesMock = [
@@ -37,6 +38,7 @@ export default function ServicoManutencao() {
   const [clientes, setClientes] = useState(clientesMock);
   const [alertas, setAlertas] = useState([]);
   const [combosDisponiveis, setCombosDisponiveis] = useState([]);
+  const [pedidos, setPedidos] = useState([]);
   const [form, setForm] = useState({
     protocolo: gerarProtocolo(),
     tipo: '',
@@ -57,6 +59,22 @@ export default function ServicoManutencao() {
     })
       .then(res => res.json())
       .then(data => setCombosDisponiveis(data.combos || []));
+  }, []);
+
+  useEffect(() => {
+    async function fetchPedidos() {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`${config.apiURL}/pedidos`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setPedidos(data.pedidos || []);
+      } catch (err) {
+        console.error('Erro ao buscar pedidos:', err);
+      }
+    }
+    fetchPedidos();
   }, []);
 
   function handleFormChange(field, value) {
@@ -194,6 +212,16 @@ export default function ServicoManutencao() {
             </button>
           </div>
         </form>
+        {/* Renderiza a lista de pedidos abaixo do formulário */}
+        <ServicoLista
+          servicos={pedidos}
+          filtro={{ protocolo: '', cliente: '', tipo: '', status: '' }}
+          setFiltro={() => {}}
+          tiposServico={tiposServico}
+          statusExecucao={statusExecucao}
+          statusPagamento={statusPagamento}
+          onVerDetalhes={pedido => console.log('Detalhes do pedido:', pedido)}
+        />
       </div>
     </div>
   );
