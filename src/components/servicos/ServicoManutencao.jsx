@@ -90,28 +90,14 @@ export default function ServicoManutencao() {
     console.log('Protocolo na URL:', protocolo);
     if (protocolo) {
       const token = localStorage.getItem('token');
-      fetch(`${config.apiURL}/pedidos?protocolo=${encodeURIComponent(protocolo)}`, {
+      fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
         .then(data => {
           console.log('Resposta da API (pedido único):', data);
           if (data.pedido) {
-            console.log('Pedido carregado:', data.pedido);
-            setForm({
-              protocolo: data.pedido.protocolo,
-              tipo: data.pedido.tipo || '',
-              descricao: data.pedido.descricao || '',
-              prazo: data.pedido.prazo || '',
-              clienteId: data.pedido.cliente?.id || '',
-              novoCliente: false,
-              cliente: data.pedido.cliente || { nome: '', cpf: '', endereco: '', telefone: '', email: '' },
-              pagamento: data.pedido.pagamento || { status: 'pendente', valorTotal: '', valorPago: '', data: '', forma: '' },
-              execucao: data.pedido.execucao || { status: 'em_andamento', observacoes: '', responsavel: '' },
-              entrega: data.pedido.entrega || { data: '', hora: '', retiradoPor: '', documentoRetirada: '', assinaturaDigital: false }
-            });
-          } else {
-            console.log('Nenhum pedido encontrado para o protocolo informado.');
+            setForm({ ...form, ...data.pedido });
           }
         })
         .catch(err => {
