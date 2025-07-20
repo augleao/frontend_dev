@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react";
+import React, { useEffect, useState } from 'react';
 
 export default function ServicoLista({ servicos: initialServicos, filtro, setFiltro, tiposServico, statusExecucao, statusPagamento, onVerDetalhes }) {
   const [servicos, setServicos] = useState(initialServicos);
