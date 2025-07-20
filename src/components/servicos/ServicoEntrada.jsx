@@ -97,6 +97,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   // Função para envio do pedido
   const handleSubmit = async () => {
     const token = localStorage.getItem('token');
+    // Supondo que o nome do usuário está em localStorage ou contexto
+    const usuario = localStorage.getItem('usuario'); // ou use o contexto de autenticação
+
     try {
       const res = await fetch(`${config.apiURL}/pedidos`, {
         method: 'POST',
@@ -105,8 +108,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           tipo: form.tipo,
           descricao: form.descricao,
           prazo: form.prazo,
-          clienteId: form.clienteId, // <-- Adicione esta linha
-          combos: atosAdicionados
+          clienteId: form.clienteId,
+          combos: atosAdicionados,
+          usuario // <-- adicione esta linha
         })
       });
       
