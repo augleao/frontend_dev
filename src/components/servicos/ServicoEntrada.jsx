@@ -94,6 +94,35 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     if (onChange) onChange('atosPedido', atosAdicionados);
   }, [atosAdicionados, onChange]);
 
+  // Função para envio do pedido
+  const handleSubmit = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${config.apiURL}/pedidos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          tipo: form.tipo,
+          descricao: form.descricao,
+          prazo: form.prazo,
+          combos: atosAdicionados // cada ato tem comboId, atoId, quantidade, codigoTributario
+        })
+      });
+      
+      if (res.ok) {
+        // Pedido enviado com sucesso
+        const data = await res.json();
+        console.log('Pedido enviado:', data);
+        // Aqui você pode adicionar um feedback para o usuário, como um alerta ou uma notificação
+      } else {
+        // Tratar erro no envio do pedido
+        console.error('Erro ao enviar pedido:', res.status, res.statusText);
+      }
+    } catch (error) {
+      console.error('Erro ao enviar pedido:', error);
+    }
+  };
+
   return (
     <div
       style={{
@@ -107,7 +136,13 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     >
       <h3>Entrada do Serviço</h3>
       <label>Número de Protocolo:</label>
-      <input type="text" value={form.protocolo} readOnly style={{ width: '100%', marginBottom: 8 }} />
+      <input
+        type="text"
+        value={form.protocolo || ''}
+        readOnly
+        disabled
+        style={{ width: '100%', marginBottom: 8, background: '#eee', color: '#333' }}
+      />
       <label>Prazo estimado para entrega:</label>
       <input
         type="date"
@@ -256,6 +291,23 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           </table>
         </div>
       )}
+
+      <button
+        onClick={handleSubmit}
+        style={{
+          marginTop: 12,
+          padding: '10px 20px',
+          background: '#2ecc71',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 6,
+          fontWeight: 'bold',
+          fontSize: 16,
+          cursor: 'pointer'
+        }}
+      >
+        Enviar Pedido
+      </button>
     </div>
   );
 }
