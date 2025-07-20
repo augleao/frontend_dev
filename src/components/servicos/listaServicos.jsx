@@ -1,30 +1,27 @@
-import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import config from '../../config';
 
-const pedidosMock = [
-  {
-    id: 1,
-    protocolo: 'PRT-123456',
-    cliente: 'João Silva',
-    tipo: 'Certidão de Nascimento',
-    status: 'Em andamento',
-    prazo: '2025-07-20',
-    valor: 120.0
-  },
-  {
-    id: 2,
-    protocolo: 'PRT-654321',
-    cliente: 'Maria Souza',
-    tipo: 'Reconhecimento de Firma',
-    status: 'Concluído',
-    prazo: '2025-07-18',
-    valor: 80.0
-  }
-];
 
 export default function ListaServicos() {
-  const [pedidos, setPedidos] = useState(pedidosMock);
+  const [pedidos, setPedidos] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    async function fetchPedidos() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${config.apiURL}/pedidos`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setPedidos(data.pedidos || []);
+      } catch (err) {
+        console.error('Erro ao buscar pedidos:', err);
+      }
+    }
+    fetchPedidos();
+  }, []);
 
   return (
     <div style={{ /* ...estilos... */ }}>
@@ -46,7 +43,38 @@ export default function ListaServicos() {
           + NOVO PEDIDO
         </button>
       </div>
-      {/* ...restante da tabela... */}
+      {/* Tabela de pedidos */}
+      <div style={{ marginTop: 24, borderRadius: 12, background: '#f4f6f8', padding: 16 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: '#e9ecef' }}>
+              <th style={{ padding: 8 }}>Protocolo</th>
+              <th style={{ padding: 8 }}>Tipo</th>
+              <th style={{ padding: 8 }}>Cliente</th>
+              <th style={{ padding: 8 }}>Prazo</th>
+              <th style={{ padding: 8 }}>Criado em</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pedidos.map((p, idx) => (
+              <tr key={p.protocolo} style={{ background: idx % 2 === 0 ? '#fff' : '#f8f9fa' }}>
+                <td style={{ padding: 8 }}>{p.protocolo}</td>
+                <td style={{ padding: 8 }}>{p.tipo}</td>
+                <td style={{ padding: 8 }}>{p.cliente_nome || '-'}</td>
+                <td style={{ padding: 8 }}>{p.prazo || '-'}</td>
+                <td style={{ padding: 8 }}>{p.criado_em ? new Date(p.criado_em).toLocaleString() : '-'}</td>
+              </tr>
+            ))}
+            {pedidos.length === 0 && (
+              <tr>
+                <td colSpan={5} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
+                  Nenhum pedido encontrado.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
