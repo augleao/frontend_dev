@@ -48,6 +48,7 @@ export default function ListaServicos() {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
+        console.log('Dados recebidos:', data.pedidos);
         // Mapeia os campos para o formato esperado pela tabela
         const pedidosFormatados = (data.pedidos || []).map(p => ({
           ...p,
@@ -104,7 +105,7 @@ export default function ListaServicos() {
                 <tr key={p.protocolo} style={{ background: idx % 2 === 0 ? '#fff' : '#f8f9fa' }}>
                   <td style={{ padding: 8 }}>{formatDateTime(p.criado_em)}</td>
                   <td style={{ padding: 8 }}>{p.protocolo}</td>
-                  <td style={{ padding: 8 }}>{p.cliente?.nome || '-'}</td>
+                  <td style={{ padding: 8 }}>{p.cliente_nome || '-'}</td>
                   <td style={{ padding: 8 }}>{formatDate(p.prazo)}</td>
                   <td style={{ padding: 8 }}>
                     <button
