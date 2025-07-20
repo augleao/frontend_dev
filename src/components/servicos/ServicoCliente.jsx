@@ -95,7 +95,16 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
   };
 
   return (
-    <div>
+    <div
+      style={{
+        border: '2px solid #3498db',
+        borderRadius: 12,
+        padding: 24,
+        background: '#fafcff',
+        boxShadow: '0 2px 8px rgba(52,152,219,0.08)',
+        marginBottom: 24
+      }}
+    >
       <h3>Informações do Cliente</h3>
       <label>Nome:</label>
       <input

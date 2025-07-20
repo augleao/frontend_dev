@@ -2,7 +2,16 @@ import React from 'react';
 
 export default function ServicoEntrega({ form, onChange }) {
   return (
-    <div>
+    <div
+      style={{
+        border: '2px solid #3498db',
+        borderRadius: 12,
+        padding: 24,
+        background: '#fafcff',
+        boxShadow: '0 2px 8px rgba(52,152,219,0.08)',
+        marginBottom: 24
+      }}
+    >
       <h3>Entrega do Serviço</h3>
       <label>Data da entrega:</label>
       <input type="date" value={form.entrega.data} onChange={e => onChange('data', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
