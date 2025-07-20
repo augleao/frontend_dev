@@ -248,16 +248,7 @@ export default function ServicoManutencao() {
             </button>
           </div>
         </form>
-        {/* Renderiza a lista de pedidos abaixo do formulário */}
-        <ServicoLista
-          servicos={pedidos}
-          filtro={{ protocolo: '', cliente: '', tipo: '', status: '' }}
-          setFiltro={() => {}}
-          tiposServico={tiposServico}
-          statusExecucao={statusExecucao}
-          statusPagamento={statusPagamento}
-          onVerDetalhes={pedido => console.log('Detalhes do pedido:', pedido)}
-        />
+        
       </div>
     </div>
   );
