@@ -23,11 +23,20 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
     setLoading(false);
   };
 
-  // Ao digitar no campo de busca
-  const handleSearchChange = (e) => {
+  // Ao digitar no campo Nome
+  const handleNomeChange = (e) => {
     const value = e.target.value;
-    setSearchTerm(value);
     onClienteChange('nome', value);
+    setSearchTerm(value);
+    if (value.length >= 2) buscarClientes(value);
+    else setSuggestions([]);
+  };
+
+  // Ao digitar no campo CPF/CNPJ
+  const handleCpfChange = (e) => {
+    const value = e.target.value;
+    onClienteChange('cpf', value);
+    setSearchTerm(value);
     if (value.length >= 2) buscarClientes(value);
     else setSuggestions([]);
   };
@@ -88,14 +97,23 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
   return (
     <div>
       <h3>Informações do Cliente</h3>
-      <label>Nome ou CPF/CNPJ:</label>
+      <label>Nome:</label>
       <input
         type="text"
-        value={searchTerm}
-        onChange={handleSearchChange}
+        value={form.cliente.nome}
+        onChange={handleNomeChange}
         style={{ width: '100%', marginBottom: 8 }}
         autoComplete="off"
       />
+      <label>CPF/CNPJ:</label>
+      <input
+        type="text"
+        value={form.cliente.cpf}
+        onChange={handleCpfChange}
+        style={{ width: '100%', marginBottom: 8 }}
+        autoComplete="off"
+      />
+      {/* Sugestões aparecem para ambos os campos */}
       {loading && <div>Buscando...</div>}
       {suggestions.length > 0 && (
         <ul style={{
@@ -120,10 +138,6 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
           ))}
         </ul>
       )}
-      <label>Nome:</label>
-      <input type="text" value={form.cliente.nome} onChange={e => onClienteChange('nome', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
-      <label>CPF/CNPJ:</label>
-      <input type="text" value={form.cliente.cpf} onChange={e => onClienteChange('cpf', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
       <label>Endereço:</label>
       <input type="text" value={form.cliente.endereco} onChange={e => onClienteChange('endereco', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
       <label>Telefone:</label>
