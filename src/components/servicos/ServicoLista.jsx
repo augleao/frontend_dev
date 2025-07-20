@@ -14,6 +14,18 @@ function formatDate(dateStr) {
 
 function formatDateTime(dateStr) {
   if (!dateStr) return '-';
+  // Se vier sem separadores, tenta formatar manualmente
+  if (/^\d{8,}/.test(dateStr)) {
+    // Exemplo: 20250720220810
+    const ano = dateStr.slice(0, 4);
+    const mes = dateStr.slice(4, 6);
+    const dia = dateStr.slice(6, 8);
+    const hora = dateStr.slice(8, 10) || '00';
+    const min = dateStr.slice(10, 12) || '00';
+    const seg = dateStr.slice(12, 14) || '00';
+    return `${dia}/${mes}/${ano} às ${hora}:${min}:${seg}`;
+  }
+  // Padrão ISO
   const d = new Date(dateStr);
   const dia = String(d.getDate()).padStart(2, '0');
   const mes = String(d.getMonth() + 1).padStart(2, '0');
