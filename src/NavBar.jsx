@@ -20,7 +20,7 @@ function NavBar() {
 
   // Função para o botão Voltar
   const handleVoltar = () => {
-    window.history.back();
+    navigate('/home2');
   };
 
   // Função para logout com redirecionamento para home.html
