@@ -100,7 +100,30 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       <label>Número de Protocolo:</label>
       <input type="text" value={form.protocolo} readOnly style={{ width: '100%', marginBottom: 8 }} />
       <label>Prazo estimado para entrega:</label>
-      <input type="date" value={form.prazo} onChange={e => onChange('prazo', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
+      <input
+        type="date"
+        value={form.prazo}
+        onChange={e => onChange('prazo', e.target.value)}
+        style={{ width: '100%', marginBottom: 8 }}
+      />
+
+      <label>Valor Adiantado pelo Usuário:</label>
+      <input
+        type="number"
+        min={0}
+        step="0.01"
+        value={form.valorAdiantado || ''}
+        onChange={e => onChange('valorAdiantado', e.target.value)}
+        style={{ width: '100%', marginBottom: 8 }}
+      />
+
+      <label>OBS.:</label>
+      <textarea
+        value={form.observacao || ''}
+        onChange={e => onChange('observacao', e.target.value)}
+        maxLength={150}
+        style={{ width: '100%', marginBottom: 8, resize: 'vertical', minHeight: 40 }}
+      />
 
       <hr style={{ margin: '18px 0' }} />
 
