@@ -3,6 +3,10 @@ import React, { useEffect, useState } from 'react';
 export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis }) {
   const [comboSelecionado, setComboSelecionado] = useState('');
   const [atosAdicionados, setAtosAdicionados] = useState([]);
+  const [codigoTributarioSuggestions, setCodigoTributarioSuggestions] = useState([]);
+  const [loadingCodigoTributario, setLoadingCodigoTributario] = useState(false);
+  const [codigoTributarioTerm, setCodigoTributarioTerm] = useState('');
+  const [codigoTributarioIdx, setCodigoTributarioIdx] = useState(null);
 
   // Adiciona todos os atos do combo ao pedido
   const handleAdicionarCombo = () => {
@@ -23,6 +27,51 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       }))
     ]);
     setComboSelecionado('');
+  };
+
+  const buscarCodigosTributarios = async (term) => {
+    if (term.trim() === '') {
+      setCodigoTributarioSuggestions([]);
+      return;
+    }
+    
+    setLoadingCodigoTributario(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+  `${config.apiURL}/codigos-gratuitos?search=${encodeURIComponent(term)}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setCodigoTributarioSuggestions(data.codigos || []);
+      } else {
+        setCodigoTributarioSuggestions([]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar códigos tributários:', error);
+      setCodigoTributarioSuggestions([]);
+    }
+    setLoadingCodigoTributario(false);
+  };
+
+  const handleCodigoTributarioInput = (idx, value) => {
+    setCodigoTributarioTerm(value);
+    setCodigoTributarioIdx(idx);
+    handleAtoChange(idx, 'codigoTributario', value);
+    buscarCodigosTributarios(value);
+  };
+
+  // Função para selecionar código tributário
+  const handleSelectCodigoTributario = (codigo) => {
+    if (codigoTributarioIdx !== null) {
+      handleAtoChange(codigoTributarioIdx, 'codigoTributario', codigo.codigo);
+      setCodigoTributarioTerm('');
+      setCodigoTributarioSuggestions([]);
+      setCodigoTributarioIdx(null);
+    }
   };
 
   // Altera quantidade ou código tributário de um ato
@@ -115,9 +164,37 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                     <input
                       type="text"
                       value={ato.codigoTributario}
-                      onChange={e => handleAtoChange(idx, 'codigoTributario', e.target.value)}
+                      onChange={e => handleCodigoTributarioInput(idx, e.target.value)}
                       style={{ width: 120 }}
+                      autoComplete="off"
                     />
+                    {/* Sugestões de autocomplete */}
+                    {codigoTributarioIdx === idx && codigoTributarioSuggestions.length > 0 && (
+                      <ul style={{
+                        position: 'absolute',
+                        background: '#fff',
+                        border: '1px solid #ccc',
+                        borderRadius: 4,
+                        margin: 0,
+                        padding: '4px 0',
+                        listStyle: 'none',
+                        zIndex: 10,
+                        width: 120
+                      }}>
+                        {codigoTributarioSuggestions.map(sug => (
+                          <li
+                            key={sug.codigo}
+                            style={{
+                              padding: '4px 8px',
+                              cursor: 'pointer'
+                            }}
+                            onClick={() => handleSelectCodigoTributario(sug)}
+                          >
+                            {sug.codigo} - {sug.descricao}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </td>
                   <td>
                     <button
