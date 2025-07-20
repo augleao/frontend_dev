@@ -14,7 +14,9 @@ export default function ListaServicos() {
         const res = await fetch(`${config.apiURL}/pedidos`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        console.log('Resposta da API:', res);
         const data = await res.json();
+        console.log('Dados recebidos:', data);
         setPedidos(data.pedidos || []);
       } catch (err) {
         console.error('Erro ao buscar pedidos:', err);
@@ -22,6 +24,10 @@ export default function ListaServicos() {
     }
     fetchPedidos();
   }, []);
+
+  useEffect(() => {
+    console.log('Pedidos no estado:', pedidos);
+  }, [pedidos]);
 
   return (
     <div style={{ /* ...estilos... */ }}>
@@ -56,15 +62,18 @@ export default function ListaServicos() {
             </tr>
           </thead>
           <tbody>
-            {pedidos.map((p, idx) => (
-              <tr key={p.protocolo} style={{ background: idx % 2 === 0 ? '#fff' : '#f8f9fa' }}>
-                <td style={{ padding: 8 }}>{p.protocolo}</td>
-                <td style={{ padding: 8 }}>{p.tipo}</td>
-                <td style={{ padding: 8 }}>{p.cliente_nome || '-'}</td>
-                <td style={{ padding: 8 }}>{p.prazo || '-'}</td>
-                <td style={{ padding: 8 }}>{p.criado_em ? new Date(p.criado_em).toLocaleString() : '-'}</td>
-              </tr>
-            ))}
+            {pedidos.map((p, idx) => {
+              console.log('Pedido linha:', p); // <-- log por linha
+              return (
+                <tr key={p.protocolo} style={{ background: idx % 2 === 0 ? '#fff' : '#f8f9fa' }}>
+                  <td style={{ padding: 8 }}>{p.protocolo}</td>
+                  <td style={{ padding: 8 }}>{p.tipo}</td>
+                  <td style={{ padding: 8 }}>{p.cliente_nome || '-'}</td>
+                  <td style={{ padding: 8 }}>{p.prazo || '-'}</td>
+                  <td style={{ padding: 8 }}>{p.criado_em ? new Date(p.criado_em).toLocaleString() : '-'}</td>
+                </tr>
+              );
+            })}
             {pedidos.length === 0 && (
               <tr>
                 <td colSpan={5} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
