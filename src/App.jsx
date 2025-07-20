@@ -18,7 +18,7 @@ import MeusFechamentos from './RelatoriosCaixaDiario'; // ajuste o caminho se ne
 import AtosPraticados from './AtosPraticados'; // ajuste o caminho se necessário
 import PesquisaAtosPraticados from './pesquisaAtosPraticados'; // ajuste o caminho se necessário
 import ServicoManutencao from './components/servicos/ServicoManutencao'; // ajuste o caminho se necessário
-import ListaServicos from './components/servicos/ListaServicos'; // adicione esta linha
+import ListaServicos from './components/servicos/ServicoLista'; // adicione esta linha
 import EditarCombos from './components/admin/EditarCombos';
 
 
