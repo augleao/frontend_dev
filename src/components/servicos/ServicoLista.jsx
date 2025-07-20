@@ -1,6 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react";
 
-export default function ServicoLista({ servicos, filtro, setFiltro, tiposServico, statusExecucao, statusPagamento, onVerDetalhes }) {
+export default function ServicoLista({ servicos: initialServicos, filtro, setFiltro, tiposServico, statusExecucao, statusPagamento, onVerDetalhes }) {
+  const [servicos, setServicos] = useState(initialServicos);
+
+  useEffect(() => {
+    async function fetchPedidos() {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${config.apiURL}/pedidos`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setServicos(data.pedidos || []);
+    }
+    fetchPedidos();
+  }, []);
+
   return (
     <div>
       <h3>Serviços Registrados</h3>
