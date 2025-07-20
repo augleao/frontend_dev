@@ -105,7 +105,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           tipo: form.tipo,
           descricao: form.descricao,
           prazo: form.prazo,
-          combos: atosAdicionados // cada ato tem comboId, atoId, quantidade, codigoTributario
+          clienteId: form.clienteId, // <-- Adicione esta linha
+          combos: atosAdicionados
         })
       });
       
