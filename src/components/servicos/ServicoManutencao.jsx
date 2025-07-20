@@ -5,7 +5,7 @@ import ServicoPagamento from './ServicoPagamento';
 import ServicoExecucao from './ServicoExecucao';
 import ServicoEntrega from './ServicoEntrega';
 import ServicoAlertas from './ServicoAlertas';
-import config from '../config';
+import config from '../../config';
 
 const clientesMock = [
   { id: 1, nome: 'João Silva', cpf: '123.456.789-00', endereco: 'Rua A, 123', telefone: '99999-9999', email: 'joao@email.com' },
