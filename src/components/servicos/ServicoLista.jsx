@@ -49,12 +49,7 @@ export default function ListaServicos() {
         });
         const data = await res.json();
         console.log('Dados recebidos:', data.pedidos);
-        // Mapeia os campos para o formato esperado pela tabela
-        const pedidosFormatados = (data.pedidos || []).map(p => ({
-          ...p,
-          cliente: { nome: p.cliente_nome }, // adapta cliente_nome para cliente.nome
-        }));
-        setPedidos(pedidosFormatados);
+        setPedidos(data.pedidos || []);
       } catch (err) {
         console.error('Erro ao buscar pedidos:', err);
       }
