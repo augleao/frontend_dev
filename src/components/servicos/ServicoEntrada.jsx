@@ -96,7 +96,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 <tr key={combo.id}>
                   <td>{combo.nome}</td>
                   <td>
-                    {combo.atos && combo.atos.length > 0
+                    {Array.isArray(combo.atos) && combo.atos.length > 0
                       ? combo.atos.map(a => a.codigo).join(', ')
                       : '-'}
                   </td>
