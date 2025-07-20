@@ -91,6 +91,7 @@ export default function ListaServicos() {
               <th style={{ padding: 8 }}>Protocolo</th>
               <th style={{ padding: 8 }}>Cliente</th>
               <th style={{ padding: 8 }}>Prazo</th>
+              <th style={{ padding: 8 }}>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -102,12 +103,29 @@ export default function ListaServicos() {
                   <td style={{ padding: 8 }}>{p.protocolo}</td>
                   <td style={{ padding: 8 }}>{p.cliente_nome || '-'}</td>
                   <td style={{ padding: 8 }}>{formatDate(p.prazo)}</td>
+                  <td style={{ padding: 8 }}>
+                    <button
+                      style={{
+                        background: '#3498db',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 6,
+                        padding: '6px 16px',
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => navigate(`/manutencao-servicos?protocolo=${encodeURIComponent(p.protocolo)}`)}
+                    >
+                      EDITAR
+                    </button>
+                  </td>
                 </tr>
               );
             })}
             {pedidos.length === 0 && (
               <tr>
-                <td colSpan={4} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
+                <td colSpan={5} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
                   Nenhum pedido encontrado.
                 </td>
               </tr>
