@@ -63,6 +63,28 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
     }
   };
 
+  // Função para excluir cliente
+  const handleExcluirCliente = async () => {
+    if (!form.clienteId) return;
+    if (!window.confirm('Deseja realmente excluir este cliente?')) return;
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${config.apiURL}/clientes/${form.clienteId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      // Limpa os campos do cliente após exclusão
+      onChange('clienteId', null);
+      onClienteChange('nome', '');
+      onClienteChange('cpf', '');
+      onClienteChange('endereco', '');
+      onClienteChange('telefone', '');
+      onClienteChange('email', '');
+      setSearchTerm('');
+      setSuggestions([]);
+    }
+  };
+
   return (
     <div>
       <h3>Informações do Cliente</h3>
@@ -126,6 +148,28 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
           }}
         >
           Salvar
+        </button>
+      )}
+
+      {/* Exibe botão excluir se existe clienteId */}
+      {form.clienteId && (
+        <button
+          type="button"
+          onClick={handleExcluirCliente}
+          style={{
+            background: '#e74c3c',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            padding: '8px 24px',
+            fontWeight: 'bold',
+            fontSize: 16,
+            cursor: 'pointer',
+            marginTop: 8,
+            marginLeft: 12
+          }}
+        >
+          Excluir
         </button>
       )}
     </div>
