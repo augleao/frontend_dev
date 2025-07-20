@@ -95,7 +95,16 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   }, [atosAdicionados, onChange]);
 
   return (
-    <div>
+    <div
+      style={{
+        border: '2px solid #3498db',
+        borderRadius: 12,
+        padding: 24,
+        background: '#fafcff',
+        boxShadow: '0 2px 8px rgba(52,152,219,0.08)',
+        marginBottom: 24
+      }}
+    >
       <h3>Entrada do Serviço</h3>
       <label>Número de Protocolo:</label>
       <input type="text" value={form.protocolo} readOnly style={{ width: '100%', marginBottom: 8 }} />
