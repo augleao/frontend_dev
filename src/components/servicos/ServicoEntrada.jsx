@@ -99,7 +99,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       <h3>Entrada do Serviço</h3>
       <label>Número de Protocolo:</label>
       <input type="text" value={form.protocolo} readOnly style={{ width: '100%', marginBottom: 8 }} />
-<label>Prazo estimado:</label>
+      <label>Prazo estimado para entrega:</label>
       <input type="date" value={form.prazo} onChange={e => onChange('prazo', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
 
       <hr style={{ margin: '18px 0' }} />
@@ -127,7 +127,15 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       {atosAdicionados.length > 0 && (
         <div style={{ marginTop: 18 }}>
           <h4>Atos adicionados ao pedido:</h4>
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 12 }}>
+          <table
+            style={{
+              width: '100%',
+              maxWidth: '100%',
+              borderCollapse: 'collapse',
+              marginBottom: 12,
+              tableLayout: 'fixed'
+            }}
+          >
             <thead>
               <tr style={{ background: '#f0f0f0' }}>
                 <th>Combo</th>
@@ -144,13 +152,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                   <td>{ato.comboNome}</td>
                   <td>{ato.atoCodigo}</td>
                   <td>
-                    <input
-                      type="text"
-                      value={ato.atoDescricao}
-                      maxLength={15}
-                      onChange={e => handleAtoChange(idx, 'atoDescricao', e.target.value)}
-                      style={{ width: 120 }}
-                    />
+                    {/* Exibe apenas o texto, limitado a 15 caracteres */}
+                    {ato.atoDescricao ? ato.atoDescricao.slice(0, 15) : ''}
                   </td>
                   <td>
                     <input
