@@ -98,7 +98,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const handleSubmit = async () => {
     const token = localStorage.getItem('token');
     // Supondo que o nome do usuário está em localStorage ou contexto
-    const usuario = form.usuario?.nome || form.usuario || '';
+    //const usuario = form.usuario?.nome || form.usuario || '';
     // ou, se estiver no localStorage:
     const usuarioObj = JSON.parse(localStorage.getItem('usuario') || '{}');
     const usuario = usuarioObj.nome || '';
