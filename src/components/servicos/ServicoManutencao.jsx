@@ -5,6 +5,7 @@ import ServicoPagamento from './ServicoPagamento';
 import ServicoExecucao from './ServicoExecucao';
 import ServicoEntrega from './ServicoEntrega';
 import ServicoAlertas from './ServicoAlertas';
+import config from '../config';
 
 const clientesMock = [
   { id: 1, nome: 'João Silva', cpf: '123.456.789-00', endereco: 'Rua A, 123', telefone: '99999-9999', email: 'joao@email.com' },
@@ -35,6 +36,7 @@ export default function ServicoManutencao() {
   const [servicos, setServicos] = useState([]);
   const [clientes, setClientes] = useState(clientesMock);
   const [alertas, setAlertas] = useState([]);
+  const [combosDisponiveis, setCombosDisponiveis] = useState([]);
   const [form, setForm] = useState({
     protocolo: gerarProtocolo(),
     tipo: '',
@@ -47,6 +49,15 @@ export default function ServicoManutencao() {
     execucao: { status: 'em_andamento', observacoes: '', responsavel: '' },
     entrega: { data: '', hora: '', retiradoPor: '', documentoRetirada: '', assinaturaDigital: false }
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    fetch(`${config.apiURL}/admin/combos/listar`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => setCombosDisponiveis(data.combos || []));
+  }, []);
 
   function handleFormChange(field, value) {
     setForm(f => ({ ...f, [field]: value }));
@@ -144,7 +155,12 @@ export default function ServicoManutencao() {
         >
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 18 }}>
             <div style={{ flex: 1, minWidth: 260 }}>
-              <ServicoEntrada form={form} tiposServico={tiposServico} onChange={handleFormChange} />
+              <ServicoEntrada
+                form={form}
+                tiposServico={tiposServico}
+                onChange={handleFormChange}
+                combosDisponiveis={combosDisponiveis}
+              />
             </div>
             <div style={{ flex: 1, minWidth: 260 }}>
               <ServicoCliente form={form} clientes={clientes} onChange={handleFormChange} onClienteChange={handleClienteChange} />
