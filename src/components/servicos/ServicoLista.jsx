@@ -47,10 +47,13 @@ export default function ListaServicos() {
         const res = await fetch(`${config.apiURL}/pedidos`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        console.log('Resposta da API:', res);
         const data = await res.json();
-        console.log('Dados recebidos:', data);
-        setPedidos(data.pedidos || []);
+        // Mapeia os campos para o formato esperado pela tabela
+        const pedidosFormatados = (data.pedidos || []).map(p => ({
+          ...p,
+          cliente: { nome: p.cliente_nome }, // adapta cliente_nome para cliente.nome
+        }));
+        setPedidos(pedidosFormatados);
       } catch (err) {
         console.error('Erro ao buscar pedidos:', err);
       }
