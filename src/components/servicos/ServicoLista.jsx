@@ -6,14 +6,25 @@ export default function ServicoLista({ servicos: initialServicos, filtro, setFil
   useEffect(() => {
     async function fetchPedidos() {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${config.apiURL}/pedidos`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setServicos(data.pedidos || []);
+      console.log('Buscando pedidos...');
+      try {
+        const res = await fetch(`${config.apiURL}/pedidos`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        console.log('Resposta da API:', res);
+        const data = await res.json();
+        console.log('Dados recebidos:', data);
+        setServicos(data.pedidos || []);
+      } catch (err) {
+        console.error('Erro ao buscar pedidos:', err);
+      }
     }
     fetchPedidos();
   }, []);
+
+  useEffect(() => {
+    console.log('Servicos no estado:', servicos);
+  }, [servicos]);
 
   return (
     <div>
