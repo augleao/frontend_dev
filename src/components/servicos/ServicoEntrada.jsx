@@ -49,9 +49,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       <h3>Entrada do Serviço</h3>
       <label>Número de Protocolo:</label>
       <input type="text" value={form.protocolo} readOnly style={{ width: '100%', marginBottom: 8 }} />
-      <label>Descrição:</label>
-      <input type="text" value={form.descricao} onChange={e => onChange('descricao', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
-      <label>Prazo estimado:</label>
+<label>Prazo estimado:</label>
       <input type="date" value={form.prazo} onChange={e => onChange('prazo', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
 
       <hr style={{ margin: '18px 0' }} />
@@ -95,7 +93,15 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 <tr key={`${ato.comboId}-${ato.atoId}-${idx}`}>
                   <td>{ato.comboNome}</td>
                   <td>{ato.atoCodigo}</td>
-                  <td>{ato.atoDescricao}</td>
+                  <td>
+                    <input
+                      type="text"
+                      value={ato.atoDescricao}
+                      maxLength={15}
+                      onChange={e => handleAtoChange(idx, 'atoDescricao', e.target.value)}
+                      style={{ width: 120 }}
+                    />
+                  </td>
                   <td>
                     <input
                       type="number"
