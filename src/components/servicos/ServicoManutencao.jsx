@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import ServicoEntrada from './ServicoEntrada';
 import ServicoCliente from './ServicoCliente';
 import ServicoPagamento from './ServicoPagamento';
@@ -51,6 +52,7 @@ export default function ServicoManutencao() {
     execucao: { status: 'em_andamento', observacoes: '', responsavel: '' },
     entrega: { data: '', hora: '', retiradoPor: '', documentoRetirada: '', assinaturaDigital: false }
   });
+  const location = useLocation();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -76,6 +78,40 @@ export default function ServicoManutencao() {
     }
     fetchPedidos();
   }, []);
+
+  // Função para extrair o protocolo da query string
+  function getProtocoloFromQuery() {
+    const params = new URLSearchParams(location.search);
+    return params.get('protocolo');
+  }
+
+  useEffect(() => {
+    const protocolo = getProtocoloFromQuery();
+    if (protocolo) {
+      const token = localStorage.getItem('token');
+      fetch(`${config.apiURL}/pedidos?protocolo=${encodeURIComponent(protocolo)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.pedido) {
+            // Preenche o formulário com os dados do pedido
+            setForm({
+              protocolo: data.pedido.protocolo,
+              tipo: data.pedido.tipo || '',
+              descricao: data.pedido.descricao || '',
+              prazo: data.pedido.prazo || '',
+              clienteId: data.pedido.cliente?.id || '',
+              novoCliente: false,
+              cliente: data.pedido.cliente || { nome: '', cpf: '', endereco: '', telefone: '', email: '' },
+              pagamento: data.pedido.pagamento || { status: 'pendente', valorTotal: '', valorPago: '', data: '', forma: '' },
+              execucao: data.pedido.execucao || { status: 'em_andamento', observacoes: '', responsavel: '' },
+              entrega: data.pedido.entrega || { data: '', hora: '', retiradoPor: '', documentoRetirada: '', assinaturaDigital: false }
+            });
+          }
+        });
+    }
+  }, [location.search]);
 
   function handleFormChange(field, value) {
     setForm(f => ({ ...f, [field]: value }));
