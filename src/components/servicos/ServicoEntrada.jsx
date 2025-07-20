@@ -144,3 +144,22 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     </div>
   );
 }
+
+// Em algum componente pai (ex: PedidoNovo.jsx)
+const [combosDisponiveis, setCombosDisponiveis] = useState([]);
+
+useEffect(() => {
+  const token = localStorage.getItem('token');
+  fetch(`${config.apiURL}/admin/combos/listar`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json())
+    .then(data => setCombosDisponiveis(data.combos || []));
+}, []);
+
+<ServicoEntrada
+  form={form}
+  tiposServico={tiposServico}
+  onChange={handleFormChange}
+  combosDisponiveis={combosDisponiveis}
+/>
