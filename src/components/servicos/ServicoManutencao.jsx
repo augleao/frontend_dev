@@ -87,6 +87,7 @@ export default function ServicoManutencao() {
 
   useEffect(() => {
     const protocolo = getProtocoloFromQuery();
+    console.log('Protocolo na URL:', protocolo);
     if (protocolo) {
       const token = localStorage.getItem('token');
       fetch(`${config.apiURL}/pedidos?protocolo=${encodeURIComponent(protocolo)}`, {
@@ -94,8 +95,9 @@ export default function ServicoManutencao() {
       })
         .then(res => res.json())
         .then(data => {
+          console.log('Resposta da API (pedido único):', data);
           if (data.pedido) {
-            // Preenche o formulário com os dados do pedido
+            console.log('Pedido carregado:', data.pedido);
             setForm({
               protocolo: data.pedido.protocolo,
               tipo: data.pedido.tipo || '',
@@ -108,10 +110,19 @@ export default function ServicoManutencao() {
               execucao: data.pedido.execucao || { status: 'em_andamento', observacoes: '', responsavel: '' },
               entrega: data.pedido.entrega || { data: '', hora: '', retiradoPor: '', documentoRetirada: '', assinaturaDigital: false }
             });
+          } else {
+            console.log('Nenhum pedido encontrado para o protocolo informado.');
           }
+        })
+        .catch(err => {
+          console.error('Erro ao buscar pedido por protocolo:', err);
         });
     }
   }, [location.search]);
+
+  useEffect(() => {
+    console.log('Form atualizado:', form);
+  }, [form]);
 
   function handleFormChange(field, value) {
     setForm(f => ({ ...f, [field]: value }));
