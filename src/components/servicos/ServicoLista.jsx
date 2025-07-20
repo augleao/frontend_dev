@@ -3,6 +3,27 @@ import React, { useEffect, useState } from 'react';
 import config from '../../config';
 
 
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  const dia = String(d.getDate()).padStart(2, '0');
+  const mes = String(d.getMonth() + 1).padStart(2, '0');
+  const ano = d.getFullYear();
+  return `${dia}/${mes}/${ano}`;
+}
+
+function formatDateTime(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  const dia = String(d.getDate()).padStart(2, '0');
+  const mes = String(d.getMonth() + 1).padStart(2, '0');
+  const ano = d.getFullYear();
+  const hora = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  const seg = String(d.getSeconds()).padStart(2, '0');
+  return `${dia}/${mes}/${ano} às ${hora}:${min}:${seg}`;
+}
+
 export default function ListaServicos() {
   const [pedidos, setPedidos] = useState([]);
   const navigate = useNavigate();
@@ -54,11 +75,10 @@ export default function ListaServicos() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#e9ecef' }}>
+              <th style={{ padding: 8 }}>Criado em</th>
               <th style={{ padding: 8 }}>Protocolo</th>
-              <th style={{ padding: 8 }}>Tipo</th>
               <th style={{ padding: 8 }}>Cliente</th>
               <th style={{ padding: 8 }}>Prazo</th>
-              <th style={{ padding: 8 }}>Criado em</th>
             </tr>
           </thead>
           <tbody>
@@ -66,17 +86,16 @@ export default function ListaServicos() {
               console.log('Pedido linha:', p); // <-- log por linha
               return (
                 <tr key={p.protocolo} style={{ background: idx % 2 === 0 ? '#fff' : '#f8f9fa' }}>
+                  <td style={{ padding: 8 }}>{formatDateTime(p.criado_em)}</td>
                   <td style={{ padding: 8 }}>{p.protocolo}</td>
-                  <td style={{ padding: 8 }}>{p.tipo}</td>
                   <td style={{ padding: 8 }}>{p.cliente_nome || '-'}</td>
-                  <td style={{ padding: 8 }}>{p.prazo || '-'}</td>
-                  <td style={{ padding: 8 }}>{p.criado_em ? new Date(p.criado_em).toLocaleString() : '-'}</td>
+                  <td style={{ padding: 8 }}>{formatDate(p.prazo)}</td>
                 </tr>
               );
             })}
             {pedidos.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
+                <td colSpan={4} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
                   Nenhum pedido encontrado.
                 </td>
               </tr>
