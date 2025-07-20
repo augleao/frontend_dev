@@ -1,53 +1,54 @@
 import React, { useEffect, useState } from 'react';
 
-
 export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis }) {
   const [comboSelecionado, setComboSelecionado] = useState('');
-  const [combosAdicionados, setCombosAdicionados] = useState([]);
+  const [atosAdicionados, setAtosAdicionados] = useState([]);
 
-  // Adiciona combo ao pedido
+  // Adiciona todos os atos do combo ao pedido
   const handleAdicionarCombo = () => {
     if (!comboSelecionado) return;
     const combo = combosDisponiveis.find(c => c.id === Number(comboSelecionado));
-    if (!combo) return;
-    setCombosAdicionados(prev => [
+    if (!combo || !Array.isArray(combo.atos)) return;
+    // Adiciona cada ato como uma linha separada
+    setAtosAdicionados(prev => [
       ...prev,
-      {
-        id: combo.id,
-        nome: combo.nome,
+      ...combo.atos.map(ato => ({
+        comboId: combo.id,
+        comboNome: combo.nome,
+        atoId: ato.id,
+        atoCodigo: ato.codigo,
+        atoDescricao: ato.descricao,
         quantidade: 1,
-        codigoTributario: '',
-        atos: combo.atos || []
-      }
+        codigoTributario: ''
+      }))
     ]);
     setComboSelecionado('');
   };
 
-  // Altera quantidade ou código tributário de um combo
-  const handleComboChange = (idx, field, value) => {
-    setCombosAdicionados(prev =>
-      prev.map((c, i) =>
-        i === idx ? { ...c, [field]: value } : c
+  // Altera quantidade ou código tributário de um ato
+  const handleAtoChange = (idx, field, value) => {
+    setAtosAdicionados(prev =>
+      prev.map((a, i) =>
+        i === idx ? { ...a, [field]: value } : a
       )
     );
   };
 
-  // Remove combo do pedido
-  const handleRemoverCombo = idx => {
-    setCombosAdicionados(prev => prev.filter((_, i) => i !== idx));
+  // Remove ato do pedido
+  const handleRemoverAto = idx => {
+    setAtosAdicionados(prev => prev.filter((_, i) => i !== idx));
   };
 
-  // Atualiza combos no form principal (se necessário)
+  // Atualiza atos no form principal (se necessário)
   useEffect(() => {
-    if (onChange) onChange('combos', combosAdicionados);
-  }, [combosAdicionados, onChange]);
+    if (onChange) onChange('atosPedido', atosAdicionados);
+  }, [atosAdicionados, onChange]);
 
   return (
     <div>
       <h3>Entrada do Serviço</h3>
       <label>Número de Protocolo:</label>
       <input type="text" value={form.protocolo} readOnly style={{ width: '100%', marginBottom: 8 }} />
-      {/* Removido o campo Tipo de Serviço */}
       <label>Descrição:</label>
       <input type="text" value={form.descricao} onChange={e => onChange('descricao', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
       <label>Prazo estimado:</label>
@@ -75,49 +76,47 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         Adicionar
       </button>
 
-      {combosAdicionados.length > 0 && (
+      {atosAdicionados.length > 0 && (
         <div style={{ marginTop: 18 }}>
-          <h4>Combos adicionados ao pedido:</h4>
+          <h4>Atos adicionados ao pedido:</h4>
           <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 12 }}>
             <thead>
               <tr style={{ background: '#f0f0f0' }}>
                 <th>Combo</th>
-                <th>Atos</th>
+                <th>Código do Ato</th>
+                <th>Descrição do Ato</th>
                 <th>Quantidade</th>
                 <th>Código Tributário</th>
                 <th>Ações</th>
               </tr>
             </thead>
             <tbody>
-              {combosAdicionados.map((combo, idx) => (
-                <tr key={combo.id}>
-                  <td>{combo.nome}</td>
-                  <td>
-                    {Array.isArray(combo.atos) && combo.atos.length > 0
-                      ? combo.atos.map(a => a.codigo).join(', ')
-                      : '-'}
-                  </td>
+              {atosAdicionados.map((ato, idx) => (
+                <tr key={`${ato.comboId}-${ato.atoId}-${idx}`}>
+                  <td>{ato.comboNome}</td>
+                  <td>{ato.atoCodigo}</td>
+                  <td>{ato.atoDescricao}</td>
                   <td>
                     <input
                       type="number"
                       min={1}
-                      value={combo.quantidade}
-                      onChange={e => handleComboChange(idx, 'quantidade', Number(e.target.value))}
+                      value={ato.quantidade}
+                      onChange={e => handleAtoChange(idx, 'quantidade', Number(e.target.value))}
                       style={{ width: 60 }}
                     />
                   </td>
                   <td>
                     <input
                       type="text"
-                      value={combo.codigoTributario}
-                      onChange={e => handleComboChange(idx, 'codigoTributario', e.target.value)}
+                      value={ato.codigoTributario}
+                      onChange={e => handleAtoChange(idx, 'codigoTributario', e.target.value)}
                       style={{ width: 120 }}
                     />
                   </td>
                   <td>
                     <button
                       type="button"
-                      onClick={() => handleRemoverCombo(idx)}
+                      onClick={() => handleRemoverAto(idx)}
                       style={{
                         background: '#e74c3c',
                         color: '#fff',
