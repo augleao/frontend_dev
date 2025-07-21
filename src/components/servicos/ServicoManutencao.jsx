@@ -35,8 +35,6 @@ function gerarProtocolo() {
 }
 
 export default function ServicoManutencao() {
-  console.log('Componente ServicoManutencao renderizou');
-
   const [servicos, setServicos] = useState([]);
   const [clientes, setClientes] = useState(clientesMock);
   const [alertas, setAlertas] = useState([]);
@@ -161,6 +159,8 @@ export default function ServicoManutencao() {
     const atrasados = servicos.filter(s => s.prazo && new Date(s.prazo) < hoje && s.execucao.status !== 'concluido');
     setAlertas(atrasados.map(s => `Serviço ${s.protocolo} está atrasado!`));
   }, [servicos]);
+
+
 
   return (
     <div style={{
