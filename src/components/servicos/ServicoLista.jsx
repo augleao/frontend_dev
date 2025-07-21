@@ -48,8 +48,9 @@ export default function ListaServicos() {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        console.log('Dados recebidos:', data.pedidos);
-        setPedidos(data.pedidos || []);
+        console.log('Dados recebidos:', data);
+        const pedidosList = Array.isArray(data.pedidos) ? data.pedidos : Array.isArray(data) ? data : [];
+        setPedidos(pedidosList);
       } catch (err) {
         console.error('Erro ao buscar pedidos:', err);
       }
@@ -62,8 +63,27 @@ export default function ListaServicos() {
   }, [pedidos]);
 
   return (
-    <div style={{ /* ...estilos... */ }}>
-      <div style={{ /* ...container... */ }}>
+    <div style={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: 24
+    }}>
+      <div style={{ 
+        maxWidth: 1200,
+        margin: '0 auto',
+        background: '#fff',
+        borderRadius: 16,
+        padding: 32,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+      }}>
+        <h2 style={{
+          color: '#2d3748',
+          fontSize: '28px',
+          fontWeight: '700',
+          marginBottom: 24,
+          textAlign: 'center'
+        }}>Lista de Pedidos de Serviços</h2>
+        
         <button
           onClick={() => navigate('/manutencao-servicos')}
           style={{
@@ -94,13 +114,18 @@ export default function ListaServicos() {
             </tr>
           </thead>
           <tbody>
-            {pedidos.map((p, idx) => {
+            {pedidos && pedidos.length > 0 ? pedidos.map((p, idx) => {
+              // Verificação de segurança para garantir que p é um objeto válido
+              if (!p || typeof p !== 'object') {
+                console.warn('Pedido inválido encontrado:', p);
+                return null;
+              }
               console.log('Pedido linha:', p); // <-- log por linha
               return (
-                <tr key={p.protocolo} style={{ background: idx % 2 === 0 ? '#fff' : '#f8f9fa' }}>
+                <tr key={p.id || p.protocolo || idx} style={{ background: idx % 2 === 0 ? '#fff' : '#f8f9fa' }}>
                   <td style={{ padding: 8 }}>{formatDateTime(p.criado_em)}</td>
-                  <td style={{ padding: 8 }}>{p.protocolo}</td>
-                  <td style={{ padding: 8 }}>{p.cliente?.nome || '-'}</td>
+                  <td style={{ padding: 8 }}>{p.protocolo || '-'}</td>
+                  <td style={{ padding: 8 }}>{p.cliente?.nome || p.nome_cliente || '-'}</td>
                   <td style={{ padding: 8 }}>{formatDate(p.prazo)}</td>
                   <td style={{ padding: 8 }}>
                     <button
@@ -121,7 +146,7 @@ export default function ListaServicos() {
                   </td>
                 </tr>
               );
-            })}
+            }) : null}
             {pedidos.length === 0 && (
               <tr>
                 <td colSpan={5} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
