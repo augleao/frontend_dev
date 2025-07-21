@@ -89,20 +89,34 @@ export default function ServicoManutencao() {
             ...f,
             ...data.pedido,
             prazo: prazoFormatado,
-            valorAdiantado: data.pedido.valor_adiantado || 0, // <-- garante que vem do backend
-            observacao: data.pedido.observacao ?? '',         // <-- garante que vem do backend
+            valorAdiantado: data.pedido.valor_adiantado || 0,
+            observacao: data.pedido.observacao ?? '',
             cliente: { ...f.cliente, ...data.pedido.cliente },
             pagamento: { ...f.pagamento, ...data.pedido.pagamento },
             execucao: { ...f.execucao, ...data.pedido.execucao },
             entrega: { ...f.entrega, ...data.pedido.entrega }
           }));
-          setAtosPedido(Array.isArray(data.pedido.combos) ? data.pedido.combos : []);
+          
+          // Mapeia os combos do backend para o formato esperado pelo frontend
+          const combosFormatados = Array.isArray(data.pedido.combos) 
+            ? data.pedido.combos.map(combo => ({
+                comboId: combo.combo_id,
+                comboNome: combo.combo_nome,
+                atoId: combo.ato_id,
+                atoCodigo: combo.ato_codigo,
+                atoDescricao: combo.ato_descricao,
+                quantidade: combo.quantidade || 1,
+                codigoTributario: combo.codigo_tributario || ''
+              }))
+            : [];
+          
+          setAtosPedido(combosFormatados);
           setPedidoCarregado(true);
         }
       })
       .catch(err => {
         console.error('Erro ao buscar pedido por protocolo:', err);
-        setPedidoCarregado(true); // evita novo fetch em caso de erro
+        setPedidoCarregado(true);
       });
   }, [location.search, pedidoCarregado]);
 
