@@ -194,7 +194,7 @@ export default function ServicoManutencao() {
       return;
     }
 
-    const confirmacao = confirm(`Tem certeza que deseja excluir o pedido ${form.protocolo}? Esta ação não pode ser desfeita.`);
+    const confirmacao = window.confirm(`Tem certeza que deseja excluir o pedido ${form.protocolo}? Esta ação não pode ser desfeita.`);
     if (!confirmacao) return;
 
     try {
