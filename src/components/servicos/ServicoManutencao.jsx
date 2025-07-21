@@ -63,21 +63,7 @@ export default function ServicoManutencao() {
       .then(data => setCombosDisponiveis(data.combos || []));
   }, []);
 
-  useEffect(() => {
-    async function fetchPedidos() {
-      const token = localStorage.getItem('token');
-      try {
-        const res = await fetch(`${config.apiURL}/pedidos`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        setPedidos(data.pedidos || []);
-      } catch (err) {
-        console.error('Erro ao buscar pedidos:', err);
-      }
-    }
-    fetchPedidos();
-  }, []);
+
 
   // Função para extrair o protocolo da query string
   function getProtocoloFromQuery() {
