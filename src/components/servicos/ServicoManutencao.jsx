@@ -54,6 +54,7 @@ export default function ServicoManutencao() {
     execucao: { status: 'em_andamento', observacoes: '', responsavel: '' },
     entrega: { data: '', hora: '', retiradoPor: '', documentoRetirada: '', assinaturaDigital: false }
   });
+  const [pedidoCarregado, setPedidoCarregado] = useState(false);
   const location = useLocation();
 
   // Função para extrair o protocolo da query string
@@ -70,7 +71,7 @@ export default function ServicoManutencao() {
     console.log('useEffect [location.search] disparado');
     const protocolo = getProtocoloFromQuery();
     console.log('Protocolo extraído:', protocolo);
-    if (!protocolo) return;
+    if (!protocolo || pedidoCarregado) return;
 
     const token = localStorage.getItem('token');
     fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`, {
@@ -80,26 +81,22 @@ export default function ServicoManutencao() {
       .then(data => {
         console.log('Dados recebidos do backend:', data);
         if (data.pedido) {
-          setForm(f => {
-            // Só atualiza se o protocolo for diferente
-            if (f.protocolo === data.pedido.protocolo) return f;
-            console.log('setForm chamado. Estado anterior:', f, 'Novo pedido:', data.pedido);
-            // Faz merge para garantir todos os campos
-            return {
-              ...f,
-              ...data.pedido,
-              cliente: { ...f.cliente, ...data.pedido.cliente },
-              pagamento: { ...f.pagamento, ...data.pedido.pagamento },
-              execucao: { ...f.execucao, ...data.pedido.execucao },
-              entrega: { ...f.entrega, ...data.pedido.entrega }
-            };
-          });
+          setForm(f => ({
+            ...f,
+            ...data.pedido,
+            cliente: { ...f.cliente, ...data.pedido.cliente },
+            pagamento: { ...f.pagamento, ...data.pedido.pagamento },
+            execucao: { ...f.execucao, ...data.pedido.execucao },
+            entrega: { ...f.entrega, ...data.pedido.entrega }
+          }));
+          setPedidoCarregado(true);
         }
       })
       .catch(err => {
         console.error('Erro ao buscar pedido por protocolo:', err);
+        setPedidoCarregado(true); // evita novo fetch em caso de erro
       });
-  }, [location.search]);
+  }, [location.search, pedidoCarregado]);
 
   useEffect(() => {
     console.log('Form atualizado:', form);
