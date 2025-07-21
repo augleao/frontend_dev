@@ -66,7 +66,7 @@ export default function ServicoManutencao() {
   useEffect(() => {
     const protocolo = getProtocoloFromQuery();
     if (!protocolo) return;
-    if (form.protocolo === protocolo) return; // já carregado, não faz nada
+    
 
     const token = localStorage.getItem('token');
     fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`, {
