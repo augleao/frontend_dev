@@ -106,8 +106,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           descricao: form.descricao,
           prazo: form.prazo,
           clienteId: form.clienteId,
+          valorAdiantado: form.valorAdiantado, // <-- adicionado
+          observacao: form.observacao,         // <-- adicionado (caso queira salvar OBS também)
           combos: atosPedido,
-          usuario // <-- adicione esta linha
+          usuario
         })
       });
       
