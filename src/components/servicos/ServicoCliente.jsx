@@ -97,23 +97,46 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
   return (
     <div
       style={{
-        border: '2px solid #3498db',
-        borderRadius: 12,
-        padding: 24,
-        background: '#fafcff',
-        boxShadow: '0 2px 8px rgba(52,152,219,0.08)',
-        marginBottom: 24
+        background: '#f8fafc',
+        borderRadius: 16,
+        padding: 28,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+        marginBottom: 24,
+        border: '1px solid #e2e8f0'
       }}
     >
-      <h3>Informações do Cliente</h3>
-      <label>Nome:</label>
-      <input
-        type="text"
-        value={form.cliente.nome}
-        onChange={handleNomeChange}
-        style={{ width: '100%', marginBottom: 8 }}
-        autoComplete="off"
-      />
+      <h3 style={{
+        color: '#2d3748',
+        fontSize: '20px',
+        fontWeight: '700',
+        marginBottom: 20,
+        borderBottom: '2px solid #667eea',
+        paddingBottom: 8
+      }}>Dados do Cliente</h3>
+      
+      <div style={{ marginBottom: 16 }}>
+        <label style={{ 
+          fontWeight: '600', 
+          color: '#4a5568',
+          fontSize: '14px',
+          display: 'block',
+          marginBottom: 6
+        }}>Nome:</label>
+        <input
+          type="text"
+          value={form.cliente.nome}
+          onChange={handleNomeChange}
+          style={{ 
+            width: '100%', 
+            padding: '12px 16px',
+            borderRadius: 8,
+            border: '1px solid #cbd5e0',
+            fontSize: '14px',
+            backgroundColor: 'white',
+            transition: 'border-color 0.2s ease'
+          }}
+          autoComplete="off"
+        />
       <label>CPF/CNPJ:</label>
       <input
         type="text"
