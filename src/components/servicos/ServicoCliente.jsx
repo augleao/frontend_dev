@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 import React, { useState } from 'react';
 import config from '../../config';
 
@@ -200,4 +198,3 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
     </div>
   );
 }
->>>>>>> parent of ecba94d (aparencia)
