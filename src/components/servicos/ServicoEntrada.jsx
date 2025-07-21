@@ -10,6 +10,24 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const [codigoTributarioIdx, setCodigoTributarioIdx] = useState(null);
   const navigate = useNavigate();
 
+  // Função para calcular o valor previsto dos atos pagos (código tributário "01")
+  const calcularValorPrevisto = () => {
+    return atosPedido
+      .filter(ato => ato.codigoTributario === '01')
+      .reduce((total, ato) => {
+        // Busca o ato correspondente no combo para obter o valor
+        const combo = combosDisponiveis.find(c => c.id === ato.comboId);
+        if (combo && combo.atos) {
+          const atoDoCombo = combo.atos.find(a => a.id === ato.atoId);
+          if (atoDoCombo) {
+            const valorUnitario = parseFloat(atoDoCombo.valor_final || atoDoCombo.valor_unitario || 0);
+            return total + (valorUnitario * (ato.quantidade || 1));
+          }
+        }
+        return total;
+      }, 0);
+  };
+
   // Adiciona todos os atos do combo ao pedido
   const handleAdicionarCombo = () => {
     if (!comboSelecionado) return;
@@ -205,6 +223,22 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         onChange={e => onChange('prazo', e.target.value)}
         style={{ width: '100%', marginBottom: 8 }}
       />
+
+      <label>Valor previsto para o serviço:</label>
+      <div style={{
+        background: '#f8f9fa',
+        borderRadius: 6,
+        padding: '12px',
+        marginBottom: 8,
+        border: '2px solid #e9ecef',
+        fontFamily: 'monospace',
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#28a745',
+        textAlign: 'right'
+      }}>
+        R$ {calcularValorPrevisto().toFixed(2)}
+      </div>
 
       <label>Valor Adiantado pelo Usuário:</label>
       <input
