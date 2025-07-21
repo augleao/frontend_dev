@@ -67,36 +67,6 @@ export default function ServicoManutencao() {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
   }
 
-  useEffect(() => {
-    console.log('useEffect [location.search] disparado');
-    const protocolo = getProtocoloFromQuery();
-    console.log('Protocolo extraído:', protocolo);
-    if (!protocolo || pedidoCarregado) return;
-
-    const token = localStorage.getItem('token');
-    fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        console.log('Dados recebidos do backend:', data);
-        if (data.pedido) {
-          setForm(f => ({
-            ...f,
-            ...data.pedido,
-            cliente: { ...f.cliente, ...data.pedido.cliente },
-            pagamento: { ...f.pagamento, ...data.pedido.pagamento },
-            execucao: { ...f.execucao, ...data.pedido.execucao },
-            entrega: { ...f.entrega, ...data.pedido.entrega }
-          }));
-          setPedidoCarregado(true);
-        }
-      })
-      .catch(err => {
-        console.error('Erro ao buscar pedido por protocolo:', err);
-        setPedidoCarregado(true); // evita novo fetch em caso de erro
-      });
-  }, [location.search, pedidoCarregado]);
 
   useEffect(() => {
     console.log('Form atualizado:', form);
