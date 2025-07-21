@@ -107,7 +107,25 @@ export default function ServicoManutencao() {
       });
   }, [location.search, pedidoCarregado]);
 
-
+  useEffect(() => {
+    async function fetchCombos() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${config.apiURL}/combos`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setCombosDisponiveis(data.combos || []);
+        } else {
+          setCombosDisponiveis([]);
+        }
+      } catch (error) {
+        setCombosDisponiveis([]);
+      }
+    }
+    fetchCombos();
+  }, []);
 
   const handleFormChange = useCallback((field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
