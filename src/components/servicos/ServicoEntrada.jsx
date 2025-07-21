@@ -143,14 +143,22 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       }}
     >
       <h3>Entrada do Serviço</h3>
-      <label>Número de Protocolo:</label>
-      <input
-        type="text"
-        value={form.protocolo || ''}
-        readOnly
-        disabled
-        style={{ width: '100%', marginBottom: 8, background: '#eee', color: '#333' }}
-      />
+      {/* Exibe o protocolo apenas se existir */}
+      {form.protocolo && (
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ fontWeight: 600, color: '#555' }}>Número de Protocolo:</label>
+          <div style={{
+            background: '#f4f4f4',
+            borderRadius: 6,
+            padding: '8px 12px',
+            fontFamily: 'monospace',
+            fontSize: 16,
+            color: '#333'
+          }}>
+            {form.protocolo}
+          </div>
+        </div>
+      )}
       <label>Prazo estimado para entrega:</label>
       <input
         type="date"

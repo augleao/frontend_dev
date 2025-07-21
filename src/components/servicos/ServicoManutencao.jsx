@@ -41,7 +41,7 @@ export default function ServicoManutencao() {
   const [combosDisponiveis, setCombosDisponiveis] = useState([]);
   const [pedidos, setPedidos] = useState([]);
   const [form, setForm] = useState({
-    protocolo: gerarProtocolo(),
+    protocolo: '', // começa vazio
     tipo: '',
     descricao: '',
     prazo: '',
