@@ -80,24 +80,23 @@ export default function ServicoManutencao() {
       .then(data => {
         console.log('Dados recebidos do backend:', data);
         if (data.pedido) {
-          // Converte o prazo para yyyy-MM-dd se existir
           let prazoFormatado = '';
           if (data.pedido.prazo) {
             const d = new Date(data.pedido.prazo);
-            prazoFormatado = d.toISOString().slice(0, 10); // yyyy-MM-dd
+            prazoFormatado = d.toISOString().slice(0, 10);
           }
           setForm(f => ({
             ...f,
             ...data.pedido,
             prazo: prazoFormatado,
-            valorAdiantado: data.pedido.valorAdiantado || '', // <-- valor adiantado
-            observacao: data.pedido.observacao || '',         // <-- observação
+            valorAdiantado: data.pedido.valorAdiantado ?? '', // <-- garante que vem do backend
+            observacao: data.pedido.observacao ?? '',         // <-- garante que vem do backend
             cliente: { ...f.cliente, ...data.pedido.cliente },
             pagamento: { ...f.pagamento, ...data.pedido.pagamento },
             execucao: { ...f.execucao, ...data.pedido.execucao },
             entrega: { ...f.entrega, ...data.pedido.entrega }
           }));
-          setAtosPedido(Array.isArray(data.pedido.combos) ? data.pedido.combos : []); // <-- combos/atos
+          setAtosPedido(Array.isArray(data.pedido.combos) ? data.pedido.combos : []);
           setPedidoCarregado(true);
         }
       })
