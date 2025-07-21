@@ -36,6 +36,21 @@ function formatDateTime(dateStr) {
   return `${dia}/${mes}/${ano} às ${hora}:${min}:${seg}`;
 }
 
+// Função para garantir que retornamos sempre uma string renderizável
+function safeString(value) {
+  if (value === null || value === undefined) return '-';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return String(value);
+  if (typeof value === 'object') {
+    // Se for um objeto, tenta extrair propriedades conhecidas
+    if (value.nome) return value.nome;
+    if (value.protocolo) return value.protocolo;
+    if (value.id) return String(value.id);
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
 export default function ListaServicos() {
   const [pedidos, setPedidos] = useState([]);
   const navigate = useNavigate();
@@ -49,6 +64,8 @@ export default function ListaServicos() {
         });
         const data = await res.json();
         console.log('Dados recebidos:', data);
+        console.log('Tipo de data:', typeof data);
+        console.log('data.pedidos:', data.pedidos);
         const pedidosList = Array.isArray(data.pedidos) ? data.pedidos : Array.isArray(data) ? data : [];
         setPedidos(pedidosList);
       } catch (err) {
@@ -121,11 +138,13 @@ export default function ListaServicos() {
                 return null;
               }
               console.log('Pedido linha:', p); // <-- log por linha
+              console.log('Tipo do pedido:', typeof p);
+              console.log('Protocolo:', p.protocolo, 'Tipo:', typeof p.protocolo);
               return (
                 <tr key={p.id || p.protocolo || idx} style={{ background: idx % 2 === 0 ? '#fff' : '#f8f9fa' }}>
                   <td style={{ padding: 8 }}>{formatDateTime(p.criado_em)}</td>
-                  <td style={{ padding: 8 }}>{p.protocolo || '-'}</td>
-                  <td style={{ padding: 8 }}>{p.cliente?.nome || p.nome_cliente || '-'}</td>
+                  <td style={{ padding: 8 }}>{safeString(p.protocolo)}</td>
+                  <td style={{ padding: 8 }}>{safeString(p.cliente?.nome || p.nome_cliente)}</td>
                   <td style={{ padding: 8 }}>{formatDate(p.prazo)}</td>
                   <td style={{ padding: 8 }}>
                     <button
@@ -139,7 +158,12 @@ export default function ListaServicos() {
                         fontSize: 14,
                         cursor: 'pointer'
                       }}
-                      onClick={() => navigate(`/manutencao-servicos?protocolo=${encodeURIComponent(p.protocolo)}`)}
+                      onClick={() => {
+                        const protocoloValue = typeof p.protocolo === 'object' ? 
+                          (p.protocolo.protocolo || p.protocolo.id || JSON.stringify(p.protocolo)) : 
+                          p.protocolo;
+                        navigate(`/manutencao-servicos?protocolo=${encodeURIComponent(protocoloValue)}`);
+                      }}
                     >
                       EDITAR
                     </button>
