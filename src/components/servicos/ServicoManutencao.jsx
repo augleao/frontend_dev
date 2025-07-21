@@ -62,6 +62,10 @@ export default function ServicoManutencao() {
     return params.get('protocolo');
   }
 
+  function deepEqual(obj1, obj2) {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+  }
+
   useEffect(() => {
     console.log('useEffect [location.search] disparado');
     const protocolo = getProtocoloFromQuery();
@@ -77,8 +81,8 @@ export default function ServicoManutencao() {
         console.log('Dados recebidos do backend:', data);
         if (data.pedido) {
           setForm(f => {
-            // Só atualiza se o protocolo for diferente
-            if (f.protocolo === data.pedido.protocolo) return f;
+            // Só atualiza se o objeto realmente mudou
+            if (deepEqual(f, data.pedido)) return f;
             console.log('setForm chamado. Estado anterior:', f, 'Novo pedido:', data.pedido);
             return { ...f, ...data.pedido };
           });
