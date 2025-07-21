@@ -35,6 +35,8 @@ function gerarProtocolo() {
 }
 
 export default function ServicoManutencao() {
+  console.log('Componente ServicoManutencao renderizou');
+
   const [servicos, setServicos] = useState([]);
   const [clientes, setClientes] = useState(clientesMock);
   const [alertas, setAlertas] = useState([]);
@@ -54,9 +56,6 @@ export default function ServicoManutencao() {
   });
   const location = useLocation();
 
-
-
-
   // Função para extrair o protocolo da query string
   function getProtocoloFromQuery() {
     const params = new URLSearchParams(location.search);
@@ -64,9 +63,10 @@ export default function ServicoManutencao() {
   }
 
   useEffect(() => {
+    console.log('useEffect [location.search] disparado');
     const protocolo = getProtocoloFromQuery();
+    console.log('Protocolo extraído:', protocolo);
     if (!protocolo) return;
-    
 
     const token = localStorage.getItem('token');
     fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`, {
@@ -74,19 +74,42 @@ export default function ServicoManutencao() {
     })
       .then(res => res.json())
       .then(data => {
+        console.log('Dados recebidos do backend:', data);
         if (data.pedido) {
-          setForm(f => ({ ...f, ...data.pedido }));
+          setForm(f => {
+            console.log('setForm chamado. Estado anterior:', f, 'Novo pedido:', data.pedido);
+            return { ...f, ...data.pedido };
+          });
         }
       })
       .catch(err => {
         console.error('Erro ao buscar pedido por protocolo:', err);
       });
-    // eslint-disable-next-line
   }, [location.search]);
 
   useEffect(() => {
     console.log('Form atualizado:', form);
   }, [form]);
+
+  useEffect(() => {
+    console.log('Servicos atualizado:', servicos);
+  }, [servicos]);
+
+  useEffect(() => {
+    console.log('Clientes atualizado:', clientes);
+  }, [clientes]);
+
+  useEffect(() => {
+    console.log('Alertas atualizado:', alertas);
+  }, [alertas]);
+
+  useEffect(() => {
+    console.log('CombosDisponiveis atualizado:', combosDisponiveis);
+  }, [combosDisponiveis]);
+
+  useEffect(() => {
+    console.log('Pedidos atualizado:', pedidos);
+  }, [pedidos]);
 
   function handleFormChange(field, value) {
     setForm(f => ({ ...f, [field]: value }));
