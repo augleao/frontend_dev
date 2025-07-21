@@ -120,17 +120,13 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
     // Detecta se é atualização (protocolo existe) ou criação (novo pedido)
     const isUpdate = form.protocolo && form.protocolo.trim() !== '';
-    const method = isUpdate ? 'PUT' : 'POST';
-    const url = isUpdate 
-      ? `${config.apiURL}/pedidos/${encodeURIComponent(form.protocolo)}`
-      : `${config.apiURL}/pedidos`;
-
-    console.log(`Operação: ${isUpdate ? 'ATUALIZAÇÃO' : 'CRIAÇÃO'} - Método: ${method}`);
-    console.log(`URL: ${url}`);
+    
+    console.log(`Operação: ${isUpdate ? 'ATUALIZAÇÃO' : 'CRIAÇÃO'} - Método: POST`);
+    console.log(`URL: ${config.apiURL}/pedidos`);
 
     try {
-      const res = await fetch(url, {
-        method: method,
+      const res = await fetch(`${config.apiURL}/pedidos`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(dadosParaEnvio)
       });
