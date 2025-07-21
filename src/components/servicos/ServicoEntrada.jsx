@@ -118,9 +118,19 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     console.log('Dados formatados para envio:', dadosParaEnvio);
     console.log('=== FIM DOS DADOS ===');
 
+    // Detecta se é atualização (protocolo existe) ou criação (novo pedido)
+    const isUpdate = form.protocolo && form.protocolo.trim() !== '';
+    const method = isUpdate ? 'PUT' : 'POST';
+    const url = isUpdate 
+      ? `${config.apiURL}/pedidos/${encodeURIComponent(form.protocolo)}`
+      : `${config.apiURL}/pedidos`;
+
+    console.log(`Operação: ${isUpdate ? 'ATUALIZAÇÃO' : 'CRIAÇÃO'} - Método: ${method}`);
+    console.log(`URL: ${url}`);
+
     try {
-      const res = await fetch(`${config.apiURL}/pedidos`, {
-        method: 'POST',
+      const res = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(dadosParaEnvio)
       });
@@ -128,11 +138,28 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       if (res.ok) {
         // Pedido enviado com sucesso
         const data = await res.json();
-        console.log('Pedido enviado:', data);
-        // Aqui você pode adicionar um feedback para o usuário, como um alerta ou uma notificação
+        console.log('Operação realizada com sucesso:', data);
+        
+        const mensagem = isUpdate 
+          ? `Pedido ${form.protocolo} atualizado com sucesso!`
+          : 'Novo pedido criado com sucesso!';
+        
+        alert(mensagem);
+        
+        // Se foi criação de novo pedido, poderia redirecionar ou limpar o formulário
+        // if (!isUpdate) {
+        //   // Reset do formulário ou redirecionamento
+        // }
       } else {
         // Tratar erro no envio do pedido
-        console.error('Erro ao enviar pedido:', res.status, res.statusText);
+        const errorText = await res.text();
+        console.error('Erro ao enviar pedido:', res.status, res.statusText, errorText);
+        
+        const mensagem = isUpdate 
+          ? `Erro ao atualizar pedido: ${res.status}`
+          : `Erro ao criar pedido: ${res.status}`;
+        
+        alert(mensagem);
       }
     } catch (error) {
       console.error('Erro ao enviar pedido:', error);
@@ -330,7 +357,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           cursor: 'pointer'
         }}
       >
-        Salvar Pedido
+        {form.protocolo && form.protocolo.trim() !== '' ? 'Atualizar Pedido' : 'Salvar Pedido'}
       </button>
     </div>
   );
