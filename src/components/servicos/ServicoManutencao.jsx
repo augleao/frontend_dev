@@ -77,6 +77,8 @@ export default function ServicoManutencao() {
         console.log('Dados recebidos do backend:', data);
         if (data.pedido) {
           setForm(f => {
+            // Só atualiza se o protocolo for diferente
+            if (f.protocolo === data.pedido.protocolo) return f;
             console.log('setForm chamado. Estado anterior:', f, 'Novo pedido:', data.pedido);
             return { ...f, ...data.pedido };
           });
