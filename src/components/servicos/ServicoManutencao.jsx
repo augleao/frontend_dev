@@ -89,7 +89,7 @@ export default function ServicoManutencao() {
             ...f,
             ...data.pedido,
             prazo: prazoFormatado,
-            valorAdiantado: data.pedido.valorAdiantado ?? '', // <-- garante que vem do backend
+            valorAdiantado: data.pedido.valor_adiantado || 0, // <-- garante que vem do backend
             observacao: data.pedido.observacao ?? '',         // <-- garante que vem do backend
             cliente: { ...f.cliente, ...data.pedido.cliente },
             pagamento: { ...f.pagamento, ...data.pedido.pagamento },
