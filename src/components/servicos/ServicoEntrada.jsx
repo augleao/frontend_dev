@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 
 export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
@@ -7,6 +8,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const [loadingCodigoTributario, setLoadingCodigoTributario] = useState(false);
   const [codigoTributarioTerm, setCodigoTributarioTerm] = useState('');
   const [codigoTributarioIdx, setCodigoTributarioIdx] = useState(null);
+  const navigate = useNavigate();
 
   // Adiciona todos os atos do combo ao pedido
   const handleAdicionarCombo = () => {
@@ -142,10 +144,14 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         
         alert(mensagem);
         
-        // Se foi criação de novo pedido, poderia redirecionar ou limpar o formulário
-        // if (!isUpdate) {
-        //   // Reset do formulário ou redirecionamento
-        // }
+        // Se foi uma atualização, recarrega a página para mostrar os dados atualizados
+        if (isUpdate) {
+          // Force reload by navigating to the same URL
+          window.location.reload();
+        } else if (data.protocolo) {
+          // Se foi criação e retornou protocolo, navega para a página de edição
+          navigate(`/manutencao-servicos?protocolo=${encodeURIComponent(data.protocolo)}`);
+        }
       } else {
         // Tratar erro no envio do pedido
         const errorText = await res.text();
