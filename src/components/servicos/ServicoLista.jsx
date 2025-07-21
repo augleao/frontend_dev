@@ -40,37 +40,21 @@ export default function ListaServicos() {
   const [pedidos, setPedidos] = useState([]);
   const navigate = useNavigate();
 
-  const fetchPedidos = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${config.apiURL}/pedidos`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      console.log('Dados recebidos:', data.pedidos);
-      setPedidos(data.pedidos || []);
-    } catch (err) {
-      console.error('Erro ao buscar pedidos:', err);
+  useEffect(() => {
+    async function fetchPedidos() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${config.apiURL}/pedidos`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        console.log('Dados recebidos:', data.pedidos);
+        setPedidos(data.pedidos || []);
+      } catch (err) {
+        console.error('Erro ao buscar pedidos:', err);
+      }
     }
-  };
-
-  useEffect(() => {
     fetchPedidos();
-  }, []);
-
-  // Recarrega dados quando a página ganha foco
-  useEffect(() => {
-    const handleFocus = () => {
-      console.log('Página ganhou foco, recarregando pedidos...');
-      fetchPedidos();
-    };
-
-    window.addEventListener('focus', handleFocus);
-    
-    // Também recarrega quando o componente é montado
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-    };
   }, []);
 
   useEffect(() => {
@@ -79,12 +63,7 @@ export default function ListaServicos() {
 
   return (
     <div style={{ /* ...estilos... */ }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: 16 
-      }}>
+      <div style={{ /* ...container... */ }}>
         <button
           onClick={() => navigate('/manutencao-servicos')}
           style={{
@@ -100,23 +79,6 @@ export default function ListaServicos() {
           }}
         >
           + NOVO PEDIDO
-        </button>
-        
-        <button
-          onClick={fetchPedidos}
-          style={{
-            background: '#3498db',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            padding: '12px 24px',
-            fontSize: 16,
-            fontWeight: 600,
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
-          }}
-        >
-          🔄 Atualizar
         </button>
       </div>
       {/* Tabela de pedidos */}
