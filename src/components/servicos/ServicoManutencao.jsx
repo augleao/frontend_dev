@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ServicoEntrada from './ServicoEntrada';
 import ServicoCliente from './ServicoCliente';
 import ServicoPagamento from './ServicoPagamento';
@@ -55,6 +55,7 @@ export default function ServicoManutencao() {
   });
   const [pedidoCarregado, setPedidoCarregado] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Função para extrair o protocolo da query string
   function getProtocoloFromQuery() {
@@ -221,8 +222,8 @@ export default function ServicoManutencao() {
         });
         setAtosPedido([]);
         setPedidoCarregado(false);
-        // Remove o protocolo da URL
-        window.history.pushState({}, '', window.location.pathname);
+        // Redireciona para a lista de pedidos
+        navigate('/servicos');
       } else {
         const errorText = await res.text();
         console.error('Erro ao excluir pedido:', res.status, errorText);
