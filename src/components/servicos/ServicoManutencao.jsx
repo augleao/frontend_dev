@@ -97,7 +97,7 @@ export default function ServicoManutencao() {
         .then(data => {
           console.log('Resposta da API (pedido único):', data);
           if (data.pedido) {
-            setForm({ ...form, ...data.pedido });
+            setForm(f => ({ ...f, ...data.pedido }));
           }
         })
         .catch(err => {
