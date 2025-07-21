@@ -70,7 +70,17 @@ export default function ServicoManutencao() {
     console.log('useEffect [location.search] disparado');
     const protocolo = getProtocoloFromQuery();
     console.log('Protocolo extraído:', protocolo);
-    if (!protocolo || pedidoCarregado) return;
+    
+    // Se não há protocolo ou já carregou este protocolo, não faz nada
+    if (!protocolo) {
+      setPedidoCarregado(false);
+      return;
+    }
+    
+    // Se já carregou um pedido e o protocolo é o mesmo, não recarrega
+    if (pedidoCarregado && form.protocolo === protocolo) {
+      return;
+    }
 
     const token = localStorage.getItem('token');
     fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`, {
@@ -118,7 +128,7 @@ export default function ServicoManutencao() {
         console.error('Erro ao buscar pedido por protocolo:', err);
         setPedidoCarregado(true);
       });
-  }, [location.search, pedidoCarregado]);
+  }, [location.search]); // Remove pedidoCarregado das dependências
 
   useEffect(() => {
     async function fetchCombos() {
