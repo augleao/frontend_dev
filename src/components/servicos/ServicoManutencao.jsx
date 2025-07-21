@@ -80,9 +80,16 @@ export default function ServicoManutencao() {
       .then(data => {
         console.log('Dados recebidos do backend:', data);
         if (data.pedido) {
+          // Converte o prazo para yyyy-MM-dd se existir
+          let prazoFormatado = '';
+          if (data.pedido.prazo) {
+            const d = new Date(data.pedido.prazo);
+            prazoFormatado = d.toISOString().slice(0, 10); // yyyy-MM-dd
+          }
           setForm(f => ({
             ...f,
             ...data.pedido,
+            prazo: prazoFormatado,
             cliente: { ...f.cliente, ...data.pedido.cliente },
             pagamento: { ...f.pagamento, ...data.pedido.pagamento },
             execucao: { ...f.execucao, ...data.pedido.execucao },
