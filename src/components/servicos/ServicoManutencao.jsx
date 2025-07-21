@@ -274,22 +274,21 @@ export default function ServicoManutencao() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#667eea',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       padding: '0 0 60px 0',
       fontFamily: 'Arial, sans-serif'
     }}>
       <div style={{
         maxWidth: "98%",
         margin: '0 auto',
-        padding: '24px'
+        padding: '12px 24px 0 24px' // <-- alterado de '48px 24px 0 24px' para diminuir o espaçamento superior
       }}>
         <h2 style={{
-          color: 'white',
-          fontSize: '28px',
+          marginBottom: 10,
+          color: '#2c3e50',
           fontWeight: 700,
-          marginBottom: 24,
-          letterSpacing: '0.5px',
-          textAlign: 'center'
+          fontSize: 28,
+          letterSpacing: 1
         }}>
           Cadastro de Pedido de Serviço
         </h2>
@@ -299,7 +298,7 @@ export default function ServicoManutencao() {
           style={{
             background: 'white',
             borderRadius: 16,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+            boxShadow: '0 4px 24px rgba(44,62,80,0.08)',
             padding: 32,
             marginBottom: 32
           }}
@@ -335,27 +334,15 @@ export default function ServicoManutencao() {
                 type="button"
                 onClick={excluirPedido}
                 style={{
-                  padding: '14px 28px',
-                  background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+                  padding: '12px 32px',
+                  background: '#e74c3c',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '12px',
+                  borderRadius: '8px',
                   fontSize: '16px',
                   fontWeight: '600',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 16px rgba(231,76,60,0.3)',
-                  transition: 'all 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 6px 20px rgba(231,76,60,0.4)';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 16px rgba(231,76,60,0.3)';
+                  boxShadow: '0 2px 8px rgba(231,76,60,0.3)'
                 }}
               >
                 🗑️ Excluir Registro
