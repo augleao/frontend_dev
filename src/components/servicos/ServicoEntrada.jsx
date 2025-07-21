@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import config from '../../config';
 
-export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis }) {
+export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
   const [comboSelecionado, setComboSelecionado] = useState('');
-  const [atosAdicionados, setAtosAdicionados] = useState([]);
   const [codigoTributarioSuggestions, setCodigoTributarioSuggestions] = useState([]);
   const [loadingCodigoTributario, setLoadingCodigoTributario] = useState(false);
   const [codigoTributarioTerm, setCodigoTributarioTerm] = useState('');
@@ -15,7 +14,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     const combo = combosDisponiveis.find(c => c.id === Number(comboSelecionado));
     if (!combo || !Array.isArray(combo.atos)) return;
     // Adiciona cada ato como uma linha separada
-    setAtosAdicionados(prev => [
+    setAtosPedido(prev => [
       ...prev,
       ...combo.atos.map(ato => ({
         comboId: combo.id,
@@ -77,7 +76,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
   // Altera quantidade ou código tributário de um ato
   const handleAtoChange = (idx, field, value) => {
-    setAtosAdicionados(prev =>
+    setAtosPedido(prev =>
       prev.map((a, i) =>
         i === idx ? { ...a, [field]: value } : a
       )
@@ -86,13 +85,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
   // Remove ato do pedido
   const handleRemoverAto = idx => {
-    setAtosAdicionados(prev => prev.filter((_, i) => i !== idx));
+    setAtosPedido(prev => prev.filter((_, i) => i !== idx));
   };
-
-  // Atualiza atos no form principal (se necessário)
-  useEffect(() => {
-    if (onChange) onChange('atosPedido', atosAdicionados);
-  }, [atosAdicionados, onChange]);
 
   // Função para envio do pedido
   const handleSubmit = async () => {
@@ -112,7 +106,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           descricao: form.descricao,
           prazo: form.prazo,
           clienteId: form.clienteId,
-          combos: atosAdicionados,
+          combos: atosPedido,
           usuario // <-- adicione esta linha
         })
       });
@@ -207,7 +201,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         Adicionar
       </button>
 
-      {atosAdicionados.length > 0 && (
+      {atosPedido.length > 0 && (
         <div style={{ marginTop: 18 }}>
           <h4>Atos adicionados ao pedido:</h4>
           <table
@@ -230,7 +224,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               </tr>
             </thead>
             <tbody>
-              {atosAdicionados.map((ato, idx) => (
+              {atosPedido.map((ato, idx) => (
                 <tr key={`${ato.comboId}-${ato.atoId}-${idx}`}>
                   <td>{ato.comboNome}</td>
                   <td>{ato.atoCodigo}</td>

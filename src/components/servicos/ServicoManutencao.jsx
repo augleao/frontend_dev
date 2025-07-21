@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import ServicoEntrada from './ServicoEntrada';
 import ServicoCliente from './ServicoCliente';
@@ -40,6 +40,7 @@ export default function ServicoManutencao() {
   const [alertas, setAlertas] = useState([]);
   const [combosDisponiveis, setCombosDisponiveis] = useState([]);
   const [pedidos, setPedidos] = useState([]);
+  const [atosPedido, setAtosPedido] = useState([]);
   const [form, setForm] = useState({
     protocolo: '', // começa vazio
     tipo: '',
@@ -98,9 +99,10 @@ export default function ServicoManutencao() {
 
 
 
-  function handleFormChange(field, value) {
-    setForm(f => ({ ...f, [field]: value }));
-  }
+  const handleFormChange = useCallback((field, value) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+  }, []);
+  
   function handleClienteChange(field, value) {
     setForm(f => ({
       ...f,
@@ -201,6 +203,8 @@ export default function ServicoManutencao() {
                 tiposServico={tiposServico}
                 onChange={handleFormChange}
                 combosDisponiveis={combosDisponiveis}
+                atosPedido={atosPedido}
+                setAtosPedido={setAtosPedido}
               />
             </div>
             <div style={{ flex: 1, minWidth: 260 }}>
