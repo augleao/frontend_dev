@@ -90,11 +90,14 @@ export default function ServicoManutencao() {
             ...f,
             ...data.pedido,
             prazo: prazoFormatado,
+            valorAdiantado: data.pedido.valorAdiantado || '', // <-- valor adiantado
+            observacao: data.pedido.observacao || '',         // <-- observação
             cliente: { ...f.cliente, ...data.pedido.cliente },
             pagamento: { ...f.pagamento, ...data.pedido.pagamento },
             execucao: { ...f.execucao, ...data.pedido.execucao },
             entrega: { ...f.entrega, ...data.pedido.entrega }
           }));
+          setAtosPedido(Array.isArray(data.pedido.combos) ? data.pedido.combos : []); // <-- combos/atos
           setPedidoCarregado(true);
         }
       })

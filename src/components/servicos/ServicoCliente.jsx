@@ -192,7 +192,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             marginLeft: 12
           }}
         >
-          Excluir
+          Excluir Cadastro do Cliente
         </button>
       )}
     </div>
