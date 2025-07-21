@@ -316,7 +316,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           cursor: 'pointer'
         }}
       >
-        Enviar Pedido
+        Salvar Pedido
       </button>
     </div>
   );
