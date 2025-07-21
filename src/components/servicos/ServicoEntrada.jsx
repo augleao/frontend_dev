@@ -150,7 +150,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           window.location.reload();
         } else if (data.protocolo) {
           // Se foi criação e retornou protocolo, navega para a página de edição
-          navigate(`/manutencao-servicos?protocolo=${encodeURIComponent(data.protocolo)}`);
+          // Use a mesma rota atual com o novo protocolo
+          const currentPath = window.location.pathname;
+          navigate(`${currentPath}?protocolo=${encodeURIComponent(data.protocolo)}`);
         }
       } else {
         // Tratar erro no envio do pedido
