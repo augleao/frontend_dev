@@ -187,6 +187,53 @@ export default function ServicoManutencao() {
     }));
   }
 
+  // Função para excluir pedido
+  const excluirPedido = async () => {
+    if (!form.protocolo) {
+      alert('Nenhum pedido carregado para excluir.');
+      return;
+    }
+
+    const confirmacao = confirm(`Tem certeza que deseja excluir o pedido ${form.protocolo}? Esta ação não pode ser desfeita.`);
+    if (!confirmacao) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(form.protocolo)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        alert(`Pedido ${form.protocolo} excluído com sucesso!`);
+        // Limpa o formulário e redireciona
+        setForm({
+          protocolo: '',
+          tipo: '',
+          descricao: '',
+          prazo: '',
+          clienteId: null,
+          novoCliente: false,
+          cliente: { nome: '', cpf: '', endereco: '', telefone: '', email: '' },
+          pagamento: { status: 'pendente', valorTotal: '', valorPago: '', data: '', forma: '' },
+          execucao: { status: 'em_andamento', observacoes: '', responsavel: '' },
+          entrega: { data: '', hora: '', retiradoPor: '', documentoRetirada: '', assinaturaDigital: false }
+        });
+        setAtosPedido([]);
+        setPedidoCarregado(false);
+        // Remove o protocolo da URL
+        window.history.pushState({}, '', window.location.pathname);
+      } else {
+        const errorText = await res.text();
+        console.error('Erro ao excluir pedido:', res.status, errorText);
+        alert(`Erro ao excluir pedido: ${res.status}`);
+      }
+    } catch (error) {
+      console.error('Erro ao excluir pedido:', error);
+      alert('Erro ao excluir pedido. Tente novamente.');
+    }
+  };
+
   function registrarServico(e) {
     e.preventDefault();
     let clienteFinal;
