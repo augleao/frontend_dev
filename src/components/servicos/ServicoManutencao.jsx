@@ -54,14 +54,6 @@ export default function ServicoManutencao() {
   });
   const location = useLocation();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    fetch(`${config.apiURL}/admin/combos/listar`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => setCombosDisponiveis(data.combos || []));
-  }, []);
 
 
 
