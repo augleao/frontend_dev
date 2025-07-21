@@ -87,23 +87,23 @@ export default function ServicoManutencao() {
 
   useEffect(() => {
     const protocolo = getProtocoloFromQuery();
-    console.log('Protocolo na URL:', protocolo);
-    if (protocolo) {
-      const token = localStorage.getItem('token');
-      fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`, {
-        headers: { Authorization: `Bearer ${token}` }
+    if (!protocolo) return;
+    if (form.protocolo === protocolo) return; // já carregado, não faz nada
+
+    const token = localStorage.getItem('token');
+    fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.pedido) {
+          setForm(f => ({ ...f, ...data.pedido }));
+        }
       })
-        .then(res => res.json())
-        .then(data => {
-          console.log('Resposta da API (pedido único):', data);
-          if (data.pedido) {
-            setForm(f => ({ ...f, ...data.pedido }));
-          }
-        })
-        .catch(err => {
-          console.error('Erro ao buscar pedido por protocolo:', err);
-        });
-    }
+      .catch(err => {
+        console.error('Erro ao buscar pedido por protocolo:', err);
+      });
+    // eslint-disable-next-line
   }, [location.search]);
 
   useEffect(() => {
