@@ -326,24 +326,28 @@ export default function ServicoManutencao() {
             </div>
           </div>
           <ServicoEntrega form={form} onChange={handleEntregaChange} />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
-            <button
-              type="submit"
-              style={{
-                padding: '12px 32px',
-                background: '#27ae60',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
-              }}
-            >
-              Registrar Serviço
-            </button>
-          </div>
+          {/* Só mostra o botão de excluir se há um pedido carregado */}
+          {form.protocolo && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
+              <button
+                type="button"
+                onClick={excluirPedido}
+                style={{
+                  padding: '12px 32px',
+                  background: '#e74c3c',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(231,76,60,0.3)'
+                }}
+              >
+                🗑️ Excluir Registro
+              </button>
+            </div>
+          )}
         </form>
         
       </div>
