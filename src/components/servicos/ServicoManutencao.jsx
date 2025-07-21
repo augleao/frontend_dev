@@ -46,7 +46,7 @@ export default function ServicoManutencao() {
     tipo: '',
     descricao: '',
     prazo: '',
-    clienteId: '',
+    clienteId: null, // Use null ao invés de string vazia
     novoCliente: false,
     cliente: { nome: '', cpf: '', endereco: '', telefone: '', email: '' },
     pagamento: { status: 'pendente', valorTotal: '', valorPago: '', data: '', forma: '' },
@@ -107,7 +107,7 @@ export default function ServicoManutencao() {
             prazo: prazoFormatado,
             valorAdiantado: data.pedido.valor_adiantado || 0,
             observacao: data.pedido.observacao ?? '',
-            clienteId: data.pedido.cliente?.id || '', // Garante que clienteId seja válido
+            clienteId: data.pedido.cliente?.id || null, // Use null ao invés de string vazia
             novoCliente: false, // Define como cliente existente
             cliente: { ...f.cliente, ...data.pedido.cliente },
             pagamento: { ...f.pagamento, ...data.pedido.pagamento },
@@ -206,7 +206,7 @@ export default function ServicoManutencao() {
       tipo: '',
       descricao: '',
       prazo: '',
-      clienteId: '',
+      clienteId: null, // Use null ao invés de string vazia
       novoCliente: false,
       cliente: { nome: '', cpf: '', endereco: '', telefone: '', email: '' },
       pagamento: { status: 'pendente', valorTotal: '', valorPago: '', data: '', forma: '' },

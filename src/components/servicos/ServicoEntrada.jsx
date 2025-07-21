@@ -110,23 +110,19 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         ato_descricao: ato.atoDescricao,
         quantidade: ato.quantidade || 1,
         codigo_tributario: ato.codigoTributario || ''
-      }))
+      })),
+      usuario
     };
+
+    console.log('=== DADOS SENDO ENVIADOS PARA O BACKEND ===');
+    console.log('Dados formatados para envio:', dadosParaEnvio);
+    console.log('=== FIM DOS DADOS ===');
 
     try {
       const res = await fetch(`${config.apiURL}/pedidos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          tipo: form.tipo,
-          descricao: form.descricao,
-          prazo: form.prazo,
-          clienteId: form.clienteId,
-          valorAdiantado: form.valorAdiantado, // <-- adicionado
-          observacao: form.observacao,         // <-- adicionado (caso queira salvar OBS também)
-          combos: atosPedido,
-          usuario
-        })
+        body: JSON.stringify(dadosParaEnvio)
       });
       
       if (res.ok) {
