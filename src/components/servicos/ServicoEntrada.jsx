@@ -127,6 +127,27 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     }
   };
 
+  useEffect(() => {
+    async function fetchCombos() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${config.apiURL}/combos`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        console.log('Combos recebidos:', data.combos);
+        if (res.ok) {
+          setCombosDisponiveis(data.combos || []);
+        } else {
+          setCombosDisponiveis([]);
+        }
+      } catch (error) {
+        setCombosDisponiveis([]);
+      }
+    }
+    fetchCombos();
+  }, []);
+
   return (
     <div
       style={{
