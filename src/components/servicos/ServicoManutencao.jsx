@@ -71,17 +71,23 @@ export default function ServicoManutencao() {
     const protocolo = getProtocoloFromQuery();
     console.log('Protocolo extraído:', protocolo);
     
-    // Se não há protocolo ou já carregou este protocolo, não faz nada
+    // Se não há protocolo, limpa o estado e sai
     if (!protocolo) {
-      setPedidoCarregado(false);
+      if (pedidoCarregado) {
+        setPedidoCarregado(false);
+        setForm(prev => ({ ...prev, protocolo: '' }));
+        setAtosPedido([]);
+      }
       return;
     }
     
-    // Se já carregou um pedido e o protocolo é o mesmo, não recarrega
-    if (pedidoCarregado && form.protocolo === protocolo) {
+    // Se já carregou este protocolo específico, não recarrega
+    if (form.protocolo === protocolo && pedidoCarregado) {
+      console.log('Protocolo já carregado, pulando...');
       return;
     }
 
+    console.log('Carregando protocolo:', protocolo);
     const token = localStorage.getItem('token');
     fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -128,7 +134,7 @@ export default function ServicoManutencao() {
         console.error('Erro ao buscar pedido por protocolo:', err);
         setPedidoCarregado(true);
       });
-  }, [location.search]); // Remove pedidoCarregado das dependências
+  }, [location.search, form.protocolo]); // Adiciona form.protocolo às dependências
 
   useEffect(() => {
     async function fetchCombos() {
