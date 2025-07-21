@@ -107,6 +107,8 @@ export default function ServicoManutencao() {
             prazo: prazoFormatado,
             valorAdiantado: data.pedido.valor_adiantado || 0,
             observacao: data.pedido.observacao ?? '',
+            clienteId: data.pedido.cliente?.id || '', // Garante que clienteId seja válido
+            novoCliente: false, // Define como cliente existente
             cliente: { ...f.cliente, ...data.pedido.cliente },
             pagamento: { ...f.pagamento, ...data.pedido.pagamento },
             execucao: { ...f.execucao, ...data.pedido.execucao },

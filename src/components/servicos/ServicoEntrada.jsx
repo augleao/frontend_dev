@@ -97,6 +97,22 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     const usuarioObj = JSON.parse(localStorage.getItem('usuario') || '{}');
     const usuario = usuarioObj.nome || '';
 
+    // Prepara os dados para envio
+    const dadosParaEnvio = {
+      ...form,
+      clienteId: form.clienteId || null, // Converte string vazia para null
+      valorAdiantado: form.valorAdiantado || 0, // Garante que seja número
+      combos: atosPedido.map(ato => ({
+        combo_id: ato.comboId,
+        combo_nome: ato.comboNome,
+        ato_id: ato.atoId,
+        ato_codigo: ato.atoCodigo,
+        ato_descricao: ato.atoDescricao,
+        quantidade: ato.quantidade || 1,
+        codigo_tributario: ato.codigoTributario || ''
+      }))
+    };
+
     try {
       const res = await fetch(`${config.apiURL}/pedidos`, {
         method: 'POST',
