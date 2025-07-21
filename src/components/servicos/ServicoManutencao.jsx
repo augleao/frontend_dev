@@ -351,9 +351,6 @@ export default function ServicoManutencao() {
           )}
         </form>
         
-        {/* Adiciona a lista de serviços para ser atualizada */}
-        <ServicoLista />
-        
       </div>
     </div>
   );
