@@ -10,21 +10,14 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const [codigoTributarioIdx, setCodigoTributarioIdx] = useState(null);
   const navigate = useNavigate();
 
-  // Função para calcular o valor previsto dos atos pagos (código tributário "01")
-  const calcularValorPrevisto = () => {
+  // Função para calcular a soma dos valores dos atos pagos (código tributário "01")
+  const calcularTotalAtosPagos = () => {
     return atosPedido
       .filter(ato => ato.codigoTributario === '01')
       .reduce((total, ato) => {
-        // Busca o ato correspondente no combo para obter o valor
-        const combo = combosDisponiveis.find(c => c.id === ato.comboId);
-        if (combo && combo.atos) {
-          const atoDoCombo = combo.atos.find(a => a.id === ato.atoId);
-          if (atoDoCombo) {
-            const valorUnitario = parseFloat(atoDoCombo.valor_final || atoDoCombo.valor_unitario || 0);
-            return total + (valorUnitario * (ato.quantidade || 1));
-          }
-        }
-        return total;
+        // Usa o valor_final retornado pelo backend
+        const valor = parseFloat(ato.valor_final || 0);
+        return total + (valor * (ato.quantidade || 1));
       }, 0);
   };
 
@@ -224,7 +217,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         style={{ width: '100%', marginBottom: 8 }}
       />
 
-      <label>Valor previsto para o serviço:</label>
+      <label>Valor total dos atos pagos (código tributário 01):</label>
       <div style={{
         background: '#f8f9fa',
         borderRadius: 6,
@@ -237,7 +230,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         color: '#28a745',
         textAlign: 'right'
       }}>
-        R$ {calcularValorPrevisto().toFixed(2)}
+        R$ {calcularTotalAtosPagos().toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </div>
 
       <label>Valor Adiantado pelo Usuário:</label>
