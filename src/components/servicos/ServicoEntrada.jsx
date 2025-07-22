@@ -12,13 +12,15 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
   // Função para calcular a soma dos valores dos atos pagos (código tributário "01")
   const calcularTotalAtosPagos = () => {
-    return atosPedido
-      .filter(ato => ato.codigoTributario === '01')
-      .reduce((total, ato) => {
-        // Usa o valor_final retornado pelo backend
-        const valor = parseFloat(ato.valor_final || 0);
-        return total + (valor * (ato.quantidade || 1));
-      }, 0);
+    const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
+    console.log('Atos filtrados para código tributário 01:', atosFiltrados);
+    const total = atosFiltrados.reduce((total, ato) => {
+      const valor = parseFloat(ato.valor_final || 0);
+      console.log(`Ato:`, ato, `Valor considerado:`, valor, `Quantidade:`, ato.quantidade);
+      return total + (valor * (ato.quantidade || 1));
+    }, 0);
+    console.log('Total calculado dos atos pagos:', total);
+    return total;
   };
 
   // Adiciona todos os atos do combo ao pedido
@@ -230,7 +232,12 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         color: '#28a745',
         textAlign: 'right'
       }}>
-        R$ {calcularTotalAtosPagos().toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        {/* Log para depuração do valor exibido */}
+        {(() => {
+          const total = calcularTotalAtosPagos();
+          console.log('Valor exibido na tela (total dos atos pagos):', total);
+          return `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        })()}
       </div>
 
       <label>Valor Adiantado pelo Usuário:</label>
