@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 
 export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
+  console.log('PROPS atosPedido recebidos em ServicoEntrada:', atosPedido);
   const [comboSelecionado, setComboSelecionado] = useState('');
   const [codigoTributarioSuggestions, setCodigoTributarioSuggestions] = useState([]);
   const [loadingCodigoTributario, setLoadingCodigoTributario] = useState(false);
