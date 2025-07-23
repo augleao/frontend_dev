@@ -186,7 +186,16 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
   return (
     <div style={{ background: '#f4f6fb', minHeight: '100vh', padding: '32px 0' }}>
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: 0 }}>
+      <div style={{
+        maxWidth: 900,
+        margin: '0 auto',
+        padding: 0,
+        borderRadius: '24px',
+        border: '3px solid #9b59b6',
+        boxShadow: '0 6px 32px rgba(155,89,182,0.10)',
+        background: '#fff',
+        overflow: 'hidden',
+      }}>
         {/* Header */}
         <div style={{
           background: 'white',
@@ -242,10 +251,12 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               onChange={e => onChange('prazo', e.target.value)}
               style={{
                 width: '100%',
+                maxWidth: '100%',
                 border: '1.5px solid #d6d6f5',
                 borderRadius: 6,
                 padding: '8px 12px',
-                fontSize: 16
+                fontSize: 16,
+                boxSizing: 'border-box',
               }}
             />
           </div>
@@ -307,10 +318,12 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               onChange={e => onChange('valorAdiantado', e.target.value)}
               style={{
                 width: '100%',
+                maxWidth: '100%',
                 border: '1.5px solid #aed6f1',
                 borderRadius: 6,
                 padding: '8px 12px',
-                fontSize: 16
+                fontSize: 16,
+                boxSizing: 'border-box',
               }}
             />
           </div>
@@ -331,12 +344,14 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               maxLength={150}
               style={{
                 width: '100%',
+                maxWidth: '100%',
                 border: '1.5px solid #d2b4de',
                 borderRadius: 6,
                 padding: '8px 12px',
                 fontSize: 16,
                 resize: 'vertical',
-                minHeight: 40
+                minHeight: 40,
+                boxSizing: 'border-box',
               }}
             />
           </div>
@@ -351,7 +366,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
         }}>
           <label style={{ fontWeight: 600, color: '#6c3483', marginRight: 12 }}>Adicionar Combo:</label>
-          <select value={comboSelecionado} onChange={e => setComboSelecionado(e.target.value)} style={{ width: '60%', marginRight: 12, borderRadius: 6, padding: '6px 10px', border: '1.5px solid #d6d6f5', fontSize: 16 }}>
+          <select value={comboSelecionado} onChange={e => setComboSelecionado(e.target.value)} style={{ width: '60%', maxWidth: '100%', marginRight: 12, borderRadius: 6, padding: '6px 10px', border: '1.5px solid #d6d6f5', fontSize: 16, boxSizing: 'border-box' }}>
             <option value="">Selecione um combo...</option>
             {combosDisponiveis.map(c => (
               <option key={c.id} value={c.id}>{c.nome}</option>
@@ -423,7 +438,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           min={1}
                           value={ato.quantidade}
                           onChange={e => handleAtoChange(idx, 'quantidade', Number(e.target.value))}
-                          style={{ width: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '4px 8px', fontSize: 15 }}
+                          style={{ width: '100%', maxWidth: 80, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '4px 8px', fontSize: 15, boxSizing: 'border-box' }}
                         />
                       </td>
                       <td style={{ padding: 8, position: 'relative' }}>
@@ -431,7 +446,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           type="text"
                           value={ato.codigoTributario}
                           onChange={e => handleCodigoTributarioInput(idx, e.target.value)}
-                          style={{ width: 120, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '4px 8px', fontSize: 15 }}
+                          style={{ width: '100%', maxWidth: 140, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '4px 8px', fontSize: 15, boxSizing: 'border-box' }}
                           autoComplete="off"
                         />
                         {codigoTributarioIdx === idx && codigoTributarioSuggestions.length > 0 && (
