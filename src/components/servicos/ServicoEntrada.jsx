@@ -264,7 +264,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           <div style={{
             background: 'white',
             borderRadius: '12px',
-            padding: '24px',
+            padding: '12px',
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
             display: 'flex',
             flexDirection: 'column',
@@ -289,11 +289,11 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               <span style={{ color: '#229954', fontWeight: 600, fontFamily: 'inherit', fontSize: 18 }}>
                 Valor dos atos:
               </span>
-              <span style={{ color: '#229954', fontWeight: 700, fontFamily: 'inherit', fontSize: 18 }}>
+              <span style={{ color: '#229954', fontWeight: 600, fontFamily: 'inherit', fontSize: 18 }}>
                 {(() => {
                   const total = calcularTotalAtosPagos();
                   console.log('Valor exibido na tela (total dos atos pagos):', total);
-                  return `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                  return `R$${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 })()}
               </span>
             </div>
