@@ -29,135 +29,20 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     if (!comboSelecionado) return;
     const combo = combosDisponiveis.find(c => c.id === Number(comboSelecionado));
     if (!combo || !Array.isArray(combo.atos)) return;
-        {atosPedido.length > 0 && (
-          <div style={{
-            background: 'white',
-            borderRadius: '12px',
-            padding: '18px',
-            marginBottom: '24px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
-          }}>
-            <h3 style={{
-              margin: '0 0 20px 0',
-              color: '#2c3e50',
-              fontSize: '16px',
-              fontWeight: '600',
-              borderBottom: '2px solid #9b59b6',
-              paddingBottom: '10px',
-              letterSpacing: 0.5
-            }}>
-              📋 Atos adicionados ao pedido
-            </h3>
-            <div style={{
-              overflowX: 'auto',
-              background: '#f5e6fa',
-              borderRadius: 8,
-              border: '2px solid #9b59b6',
-              boxShadow: '0 2px 8px rgba(155,89,182,0.06)',
-              padding: 0,
-              width: '100%',
-              minWidth: 0,
-            }}>
-              <table
-                style={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                  marginBottom: 0,
-                  tableLayout: 'fixed',
-                  fontSize: 11,
-                  background: 'transparent',
-                  minWidth: 600,
-                }}
-              >
-                <thead>
-                  <tr style={{ background: '#ede1f7' }}>
-                    <th style={{ padding: 4, color: '#6c3483', fontWeight: 700, fontSize: 11 }}>Combo</th>
-                    <th style={{ padding: 4, color: '#6c3483', fontWeight: 700, fontSize: 11 }}>Código do Ato</th>
-                    <th style={{ padding: 4, color: '#6c3483', fontWeight: 700, fontSize: 11 }}>Descrição do Ato</th>
-                    <th style={{ padding: 4, color: '#6c3483', fontWeight: 700, fontSize: 11 }}>Quantidade</th>
-                    <th style={{ padding: 4, color: '#6c3483', fontWeight: 700, fontSize: 11 }}>Código Tributário</th>
-                    <th style={{ padding: 4, color: '#6c3483', fontWeight: 700, fontSize: 11 }}>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {atosPedido.map((ato, idx) => (
-                    <tr key={`${ato.comboId}-${ato.atoId}-${idx}`} style={{ background: idx % 2 === 0 ? '#f8f4fc' : 'transparent' }}>
-                      <td style={{ padding: 4 }}>{ato.comboNome}</td>
-                      <td style={{ padding: 4 }}>{ato.atoCodigo}</td>
-                      <td style={{ padding: 4 }}>{ato.atoDescricao ? ato.atoDescricao.slice(0, 15) : ''}</td>
-                      <td style={{ padding: 4 }}>
-                        <input
-                          type="number"
-                          min={1}
-                          value={ato.quantidade}
-                          onChange={e => handleAtoChange(idx, 'quantidade', Number(e.target.value))}
-                          style={{ width: '100%', maxWidth: 50, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '1px 4px', fontSize: 11, boxSizing: 'border-box' }}
-                        />
-                      </td>
-                      <td style={{ padding: 4, position: 'relative' }}>
-                        <input
-                          type="text"
-                          value={ato.codigoTributario}
-                          onChange={e => handleCodigoTributarioInput(idx, e.target.value)}
-                          style={{ width: '100%', maxWidth: 80, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '1px 4px', fontSize: 11, boxSizing: 'border-box' }}
-                          autoComplete="off"
-                        />
-                        {codigoTributarioIdx === idx && codigoTributarioSuggestions.length > 0 && (
-                          <ul style={{
-                            position: 'absolute',
-                            background: '#fff',
-                            border: '1px solid #ccc',
-                            borderRadius: 4,
-                            margin: 0,
-                            padding: '4px 0',
-                            listStyle: 'none',
-                            zIndex: 10,
-                            width: 100,
-                            left: 0,
-                            top: 20
-                          }}>
-                            {codigoTributarioSuggestions.map(sug => (
-                              <li
-                                key={sug.codigo}
-                                style={{
-                                  padding: '4px 8px',
-                                  cursor: 'pointer',
-                                  fontSize: 11
-                                }}
-                                onClick={() => handleSelectCodigoTributario(sug)}
-                              >
-                                {sug.codigo} - {sug.descricao}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </td>
-                      <td style={{ padding: 4 }}>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoverAto(idx)}
-                          style={{
-                            background: '#e74c3c',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: 8,
-                            padding: '2px 8px',
-                            fontWeight: 'bold',
-                            fontSize: 11,
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease'
-                          }}
-                        >
-                          Remover
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+    setAtosPedido(prev => [
+      ...prev,
+      ...combo.atos.map(ato => ({
+        comboId: combo.id,
+        comboNome: combo.nome,
+        atoId: ato.id,
+        atoCodigo: ato.codigo,
+        atoDescricao: ato.descricao,
+        quantidade: 1,
+        codigoTributario: ''
+      }))
+    ]);
+    setComboSelecionado('');
+  };
       
       if (res.ok) {
         // Pedido enviado com sucesso
