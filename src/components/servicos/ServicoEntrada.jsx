@@ -82,7 +82,13 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         ? `${config.apiUrl}/servicos/atualizar/${encodeURIComponent(form.protocolo)}`
         : `${config.apiUrl}/servicos/novo`;
       const method = isUpdate ? 'PUT' : 'POST';
-      const body = JSON.stringify({ ...form, atos: atosPedido });
+      const body = JSON.stringify({
+        ...form,
+        descricao: form.descricao || '',
+        origem: form.origem || '',
+        origemInfo: form.origemInfo || '',
+        atos: atosPedido
+      });
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
