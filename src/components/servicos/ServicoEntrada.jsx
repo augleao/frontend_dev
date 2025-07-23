@@ -270,7 +270,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             flexDirection: 'column',
             gap: 8
           }}>
-            <label style={{ color: '#229954', fontWeight: 600 }}>Valor dos atos:</label>
             <div style={{
               background: '#eafaf1',
               borderRadius: 8,
@@ -281,17 +280,22 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               fontWeight: 600,
               border: '2px solid #229954',
               boxShadow: '0 2px 8px rgba(34,153,84,0.08)',
-              textAlign: 'right',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'flex-end',
+              justifyContent: 'space-between',
               minHeight: 40,
+              gap: 12,
             }}>
-              {(() => {
-                const total = calcularTotalAtosPagos();
-                console.log('Valor exibido na tela (total dos atos pagos):', total);
-                return `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-              })()}
+              <span style={{ color: '#229954', fontWeight: 600, fontFamily: 'inherit', fontSize: 18 }}>
+                Valor dos atos:
+              </span>
+              <span style={{ color: '#229954', fontWeight: 700, fontFamily: 'inherit', fontSize: 18 }}>
+                {(() => {
+                  const total = calcularTotalAtosPagos();
+                  console.log('Valor exibido na tela (total dos atos pagos):', total);
+                  return `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                })()}
+              </span>
             </div>
           </div>
         </div>
