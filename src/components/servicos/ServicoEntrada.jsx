@@ -1,3 +1,32 @@
+  // Manipula alteração de quantidade ou outros campos do ato
+  const handleAtoChange = (idx, campo, valor) => {
+    setAtosPedido(prev => prev.map((ato, i) => i === idx ? { ...ato, [campo]: valor } : ato));
+  };
+
+  // Manipula input do código tributário (com sugestões)
+  const handleCodigoTributarioInput = (idx, value) => {
+    setAtosPedido(prev => prev.map((ato, i) => i === idx ? { ...ato, codigoTributario: value } : ato));
+    setCodigoTributarioIdx(idx);
+    setCodigoTributarioTerm(value);
+    // Aqui você pode adicionar lógica para buscar sugestões se necessário
+    // Exemplo: setCodigoTributarioSuggestions([...]);
+  };
+
+  // Seleciona sugestão de código tributário
+  const handleSelectCodigoTributario = (sug) => {
+    if (codigoTributarioIdx !== null) {
+      setAtosPedido(prev => prev.map((ato, i) => i === codigoTributarioIdx ? { ...ato, codigoTributario: sug.codigo } : ato));
+      setCodigoTributarioSuggestions([]);
+      setCodigoTributarioIdx(null);
+      setCodigoTributarioTerm('');
+    }
+  };
+
+  // Remove ato do pedido
+  const handleRemoverAto = (idx) => {
+    setAtosPedido(prev => prev.filter((_, i) => i !== idx));
+  };
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import config from '../../config';
@@ -48,8 +77,17 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   // Função para enviar o pedido (salvar ou atualizar)
   const handleSubmit = async () => {
     try {
-      // ...lógica de envio do pedido...
-      // (mantenha aqui o código já existente para envio do pedido)
+      const isUpdate = !!form.protocolo;
+      const url = isUpdate
+        ? `${config.apiUrl}/servicos/atualizar/${encodeURIComponent(form.protocolo)}`
+        : `${config.apiUrl}/servicos/novo`;
+      const method = isUpdate ? 'PUT' : 'POST';
+      const body = JSON.stringify({ ...form, atos: atosPedido });
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body
+      });
       if (res.ok) {
         // Pedido enviado com sucesso
         const data = await res.json();
