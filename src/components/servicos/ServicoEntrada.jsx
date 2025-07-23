@@ -159,6 +159,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           )}
         </div>
 
+
         {/* Descrição do Serviço */}
         <div style={{
           background: 'white',
@@ -188,6 +189,137 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             }}
             placeholder="Descreva o serviço a ser realizado..."
           />
+        </div>
+
+        {/* Origem do Pedido */}
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '24px',
+          margin: '0 0 24px 0',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8
+        }}>
+          <label style={{ color: '#6c3483', fontWeight: 600 }}>Origem:</label>
+          <select
+            value={form.origem || ''}
+            onChange={e => onChange('origem', e.target.value)}
+            style={{
+              width: '100%',
+              border: '1.5px solid #d6d6f5',
+              borderRadius: 6,
+              padding: '8px 12px',
+              fontSize: 16,
+              marginBottom: 8,
+              boxSizing: 'border-box',
+            }}
+          >
+            <option value="">Selecione a origem...</option>
+            <option value="Balcão">Balcão</option>
+            <option value="CRC">CRC</option>
+            <option value="email">email</option>
+            <option value="Whatsapp">Whatsapp</option>
+            <option value="Malote Digital">Malote Digital</option>
+            <option value="PJE">PJE</option>
+          </select>
+          {/* Campo condicional conforme a origem */}
+          {form.origem === 'CRC' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <label style={{ color: '#6c3483', fontWeight: 600 }}>Protocolo CRC:</label>
+              <input
+                type="text"
+                value={form.origemInfo || ''}
+                onChange={e => onChange('origemInfo', e.target.value)}
+                style={{
+                  width: '100%',
+                  border: '1.5px solid #d6d6f5',
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 16,
+                  boxSizing: 'border-box',
+                }}
+                placeholder="Digite o protocolo CRC"
+              />
+            </div>
+          )}
+          {form.origem === 'email' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <label style={{ color: '#6c3483', fontWeight: 600 }}>E-mail:</label>
+              <input
+                type="email"
+                value={form.origemInfo || ''}
+                onChange={e => onChange('origemInfo', e.target.value)}
+                style={{
+                  width: '100%',
+                  border: '1.5px solid #d6d6f5',
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 16,
+                  boxSizing: 'border-box',
+                }}
+                placeholder="Digite o e-mail de origem"
+              />
+            </div>
+          )}
+          {form.origem === 'Whatsapp' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <label style={{ color: '#6c3483', fontWeight: 600 }}>Telefone Whatsapp:</label>
+              <input
+                type="text"
+                value={form.origemInfo || ''}
+                onChange={e => onChange('origemInfo', e.target.value)}
+                style={{
+                  width: '100%',
+                  border: '1.5px solid #d6d6f5',
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 16,
+                  boxSizing: 'border-box',
+                }}
+                placeholder="Digite o telefone do Whatsapp"
+              />
+            </div>
+          )}
+          {form.origem === 'Malote Digital' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <label style={{ color: '#6c3483', fontWeight: 600 }}>Nº de Rastreabilidade:</label>
+              <input
+                type="text"
+                value={form.origemInfo || ''}
+                onChange={e => onChange('origemInfo', e.target.value)}
+                style={{
+                  width: '100%',
+                  border: '1.5px solid #d6d6f5',
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 16,
+                  boxSizing: 'border-box',
+                }}
+                placeholder="Digite o número de rastreabilidade"
+              />
+            </div>
+          )}
+          {form.origem === 'PJE' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <label style={{ color: '#6c3483', fontWeight: 600 }}>Nº do Processo PJE:</label>
+              <input
+                type="text"
+                value={form.origemInfo || ''}
+                onChange={e => onChange('origemInfo', e.target.value)}
+                style={{
+                  width: '100%',
+                  border: '1.5px solid #d6d6f5',
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 16,
+                  boxSizing: 'border-box',
+                }}
+                placeholder="Digite o número do processo PJE"
+              />
+            </div>
+          )}
         </div>
 
         {/* Cards Section */}
