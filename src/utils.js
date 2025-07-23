@@ -1,3 +1,31 @@
+// Função fetch autenticada com tratamento de token expirado
+export async function fetchComAuth(url, options = {}) {
+  const token = localStorage.getItem('token');
+  const headers = {
+    ...(options.headers || {}),
+    Authorization: token ? `Bearer ${token}` : undefined,
+  };
+
+  const finalOptions = {
+    ...options,
+    headers,
+  };
+
+  try {
+    const response = await fetch(url, finalOptions);
+    if (response.status === 401 || response.status === 403) {
+      // Token expirado ou inválido: limpa storage e redireciona
+      localStorage.removeItem('token');
+      localStorage.removeItem('usuario');
+      window.location.href = '/login';
+      return;
+    }
+    return response;
+  } catch (err) {
+    // Erro de rede
+    throw err;
+  }
+}
 // utils.js
 import { jsPDF } from 'jspdf';
 
