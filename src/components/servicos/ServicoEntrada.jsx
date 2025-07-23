@@ -89,14 +89,23 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         origemInfo: form.origemInfo || '',
         atos: atosPedido
       });
+      console.log('[handleSubmit] Enviando pedido:', { url, method, body });
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body
       });
+      console.log('[handleSubmit] Status da resposta:', res.status, res.statusText);
+      const responseText = await res.text();
+      console.log('[handleSubmit] Texto da resposta:', responseText);
+      let data = {};
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (jsonErr) {
+        console.error('[handleSubmit] Erro ao fazer parse do JSON da resposta:', jsonErr);
+      }
       if (res.ok) {
         // Pedido enviado com sucesso
-        const data = await res.json();
         console.log('Operação realizada com sucesso:', data);
         const mensagem = isUpdate 
           ? `Pedido ${form.protocolo} atualizado com sucesso!`
@@ -110,8 +119,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         }
       } else {
         // Tratar erro no envio do pedido
-        const text = await res.text();
-        const data = text ? JSON.parse(text) : {};
         console.error('Erro ao enviar pedido:', res.status, res.statusText, data);
         const mensagem = isUpdate 
           ? `Erro ao atualizar pedido: ${res.status}`
@@ -119,7 +126,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         alert(mensagem);
       }
     } catch (error) {
-      console.error('Erro ao enviar pedido:', error);
+      console.error('Erro ao enviar pedido (catch):', error);
     }
   };
 
