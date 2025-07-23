@@ -77,17 +77,22 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   // Função para enviar o pedido (salvar ou atualizar)
   const handleSubmit = async () => {
     try {
-      const isUpdate = !!form.protocolo;
-      const url = isUpdate
-        ? `${config.apiUrl}/servicos/atualizar/${encodeURIComponent(form.protocolo)}`
-        : `${config.apiUrl}/servicos/novo`;
-      const method = isUpdate ? 'PUT' : 'POST';
+      // Sempre POST para /api/pedidos
+      const url = `${config.apiUrl}/api/pedidos`;
+      const method = 'POST';
+      // Converter atosPedido para combos conforme esperado pelo backend
+      const combos = atosPedido.map(ato => ({
+        combo_id: ato.comboId,
+        ato_id: ato.atoId,
+        quantidade: ato.quantidade,
+        codigo_tributario: ato.codigoTributario
+      }));
       const body = JSON.stringify({
         ...form,
         descricao: form.descricao || '',
         origem: form.origem || '',
         origemInfo: form.origemInfo || '',
-        atos: atosPedido
+        combos
       });
       console.log('[handleSubmit] Enviando pedido:', { url, method, body });
       const res = await fetch(url, {
@@ -107,12 +112,12 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       if (res.ok) {
         // Pedido enviado com sucesso
         console.log('Operação realizada com sucesso:', data);
-        const mensagem = isUpdate 
+        const mensagem = (form.protocolo && form.protocolo.trim() !== '')
           ? `Pedido ${form.protocolo} atualizado com sucesso!`
           : 'Novo pedido criado com sucesso!';
         alert(mensagem);
         // Se foi uma atualização, recarrega a página para mostrar os dados atualizados
-        if (isUpdate) {
+        if (form.protocolo && form.protocolo.trim() !== '') {
           window.location.reload();
         } else if (data.protocolo) {
           navigate(`/servicos/manutencao?protocolo=${encodeURIComponent(data.protocolo)}`);
@@ -120,7 +125,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       } else {
         // Tratar erro no envio do pedido
         console.error('Erro ao enviar pedido:', res.status, res.statusText, data);
-        const mensagem = isUpdate 
+        const mensagem = (form.protocolo && form.protocolo.trim() !== '')
           ? `Erro ao atualizar pedido: ${res.status}`
           : `Erro ao criar pedido: ${res.status}`;
         alert(mensagem);
