@@ -94,10 +94,15 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         origemInfo: form.origemInfo || '',
         combos
       });
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      };
       console.log('[handleSubmit] Enviando pedido:', { url, method, body });
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body
       });
       console.log('[handleSubmit] Status da resposta:', res.status, res.statusText);
