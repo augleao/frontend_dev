@@ -8,6 +8,7 @@ import ServicoEntrega from './ServicoEntrega';
 import ServicoAlertas from './ServicoAlertas';
 import ServicoLista from './ServicoLista';
 import config from '../../config';
+import { fetchComAuth } from '../../utils';
 
 const clientesMock = [
   { id: 1, nome: 'João Silva', cpf: '123.456.789-00', endereco: 'Rua A, 123', telefone: '99999-9999', email: 'joao@email.com' },
@@ -90,10 +91,8 @@ export default function ServicoManutencao() {
 
     console.log('Carregando protocolo:', protocolo);
     const token = localStorage.getItem('token');
-    fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
+    fetchComAuth(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`)
+      .then(res => res && res.json())
       .then(data => {
         console.log('Dados recebidos do backend:', data);
         if (data.pedido) {
@@ -144,9 +143,7 @@ export default function ServicoManutencao() {
     async function fetchCombos() {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${config.apiURL}/combos`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await fetchComAuth(`${config.apiURL}/combos`);
         const data = await res.json();
         if (res.ok) {
           setCombosDisponiveis(data.combos || []);
