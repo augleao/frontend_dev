@@ -208,7 +208,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           justifyContent: 'space-between',
         }}>
           <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 28 }}>
-            Entrada do Serviço
+            Entrada:
           </h2>
           {form.protocolo && (
             <div style={{
@@ -270,18 +270,22 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             flexDirection: 'column',
             gap: 8
           }}>
-            <label style={{ color: '#229954', fontWeight: 600 }}>Valor total dos atos pagos (código tributário 01):</label>
+            <label style={{ color: '#229954', fontWeight: 600 }}>Valor dos atos:</label>
             <div style={{
               background: '#eafaf1',
               borderRadius: 8,
-              padding: '16px',
-              border: '2px solid #229954',
+              padding: '10px 18px',
               fontFamily: 'monospace',
-              fontSize: 20,
-              fontWeight: 'bold',
+              fontSize: 18,
               color: '#229954',
+              fontWeight: 600,
+              border: '2px solid #229954',
+              boxShadow: '0 2px 8px rgba(34,153,84,0.08)',
               textAlign: 'right',
-              boxShadow: '0 2px 8px rgba(34,153,84,0.08)'
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              minHeight: 40,
             }}>
               {(() => {
                 const total = calcularTotalAtosPagos();
