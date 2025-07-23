@@ -125,7 +125,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         if (form.protocolo && form.protocolo.trim() !== '') {
           window.location.reload();
         } else if (data.protocolo) {
-          navigate(`/servicos/manutencao?protocolo=${encodeURIComponent(data.protocolo)}`);
+          navigate('/manutencao-servicos');
         }
       } else {
         // Tratar erro no envio do pedido
