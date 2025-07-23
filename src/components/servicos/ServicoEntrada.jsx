@@ -377,11 +377,11 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 </thead>
                 <tbody>
                   {atosPedido.map((ato, idx) => (
-                    <tr key={`${ato.comboId}-${ato.atoId}-${idx}`} style={{ background: idx % 2 === 0 ? '#f8f4fc' : 'transparent' }}>
-                      <td style={{ padding: 6 }}>{ato.comboNome}</td>
-                      <td style={{ padding: 6 }}>{ato.atoCodigo}</td>
-                      <td style={{ padding: 6 }}>{ato.atoDescricao ? ato.atoDescricao.slice(0, 15) : ''}</td>
-                      <td style={{ padding: 6 }}>
+                  <tr key={`${ato.comboId}-${ato.atoId}-${idx}`} style={{ background: idx % 2 === 0 ? '#f8f4fc' : 'transparent', fontSize: 10 }}>
+                      <td style={{ padding: 6, fontSize: 10 }}>{ato.comboNome}</td>
+                      <td style={{ padding: 6, fontSize: 10 }}>{ato.atoCodigo}</td>
+                      <td style={{ padding: 6, fontSize: 10 }}>{ato.atoDescricao ? ato.atoDescricao.slice(0, 15) : ''}</td>
+                      <td style={{ padding: 6, fontSize: 10 }}>
                         <input
                           type="number"
                           min={1}
@@ -390,7 +390,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           style={{ width: '100%', maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
                         />
                       </td>
-                      <td style={{ padding: 6, position: 'relative' }}>
+                      <td style={{ padding: 6, position: 'relative', fontSize: 10 }}>
                         <input
                           type="text"
                           value={ato.codigoTributario}
@@ -410,7 +410,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                             zIndex: 10,
                             width: 140,
                             left: 0,
-                            top: 28
+                            top: 28,
+                            fontSize: 10
                           }}>
                             {codigoTributarioSuggestions.map(sug => (
                               <li
@@ -428,7 +429,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           </ul>
                         )}
                       </td>
-                      <td style={{ padding: 6 }}>
+                      <td style={{ padding: 6, fontSize: 10 }}>
                         <button
                           type="button"
                           onClick={() => handleRemoverAto(idx)}
