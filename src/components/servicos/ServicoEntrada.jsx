@@ -11,6 +11,35 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const [codigoTributarioIdx, setCodigoTributarioIdx] = useState(null);
   const navigate = useNavigate();
 
+  // Manipula alteração de quantidade ou outros campos do ato
+  const handleAtoChange = (idx, campo, valor) => {
+    setAtosPedido(prev => prev.map((ato, i) => i === idx ? { ...ato, [campo]: valor } : ato));
+  };
+
+  // Manipula input do código tributário (com sugestões)
+  const handleCodigoTributarioInput = (idx, value) => {
+    setAtosPedido(prev => prev.map((ato, i) => i === idx ? { ...ato, codigoTributario: value } : ato));
+    setCodigoTributarioIdx(idx);
+    setCodigoTributarioTerm(value);
+    // Aqui você pode adicionar lógica para buscar sugestões se necessário
+    // Exemplo: setCodigoTributarioSuggestions([...]);
+  };
+
+  // Seleciona sugestão de código tributário
+  const handleSelectCodigoTributario = (sug) => {
+    if (codigoTributarioIdx !== null) {
+      setAtosPedido(prev => prev.map((ato, i) => i === codigoTributarioIdx ? { ...ato, codigoTributario: sug.codigo } : ato));
+      setCodigoTributarioSuggestions([]);
+      setCodigoTributarioIdx(null);
+      setCodigoTributarioTerm('');
+    }
+  };
+
+  // Remove ato do pedido
+  const handleRemoverAto = (idx) => {
+    setAtosPedido(prev => prev.filter((_, i) => i !== idx));
+  };
+
   // Função para calcular a soma dos valores dos atos pagos (código tributário "01")
   const calcularTotalAtosPagos = () => {
     const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
