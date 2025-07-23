@@ -125,7 +125,8 @@ export default function ServicoManutencao() {
                 atoCodigo: combo.ato_codigo,
                 atoDescricao: combo.ato_descricao,
                 quantidade: combo.quantidade || 1,
-                codigoTributario: combo.codigo_tributario || ''
+                codigoTributario: combo.codigo_tributario || '',
+                valor_final: combo.valor_final // Garante que o valor_final venha para o frontend
               }))
             : [];
           
