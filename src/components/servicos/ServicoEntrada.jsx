@@ -110,8 +110,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         }
       } else {
         // Tratar erro no envio do pedido
-        const errorText = await res.text();
-        console.error('Erro ao enviar pedido:', res.status, res.statusText, errorText);
+        const text = await res.text();
+        const data = text ? JSON.parse(text) : {};
+        console.error('Erro ao enviar pedido:', res.status, res.statusText, data);
         const mensagem = isUpdate 
           ? `Erro ao atualizar pedido: ${res.status}`
           : `Erro ao criar pedido: ${res.status}`;
