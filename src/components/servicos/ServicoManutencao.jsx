@@ -91,7 +91,7 @@ export default function ServicoManutencao() {
 
     console.log('Carregando protocolo:', protocolo);
     const token = localStorage.getItem('token');
-    fetchComAuth(`${config.apiUrl}/pedidos/${encodeURIComponent(protocolo)}`)
+    fetchComAuth(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`)
       .then(res => res && res.json())
       .then(data => {
         console.log('Dados recebidos do backend:', data);
@@ -143,7 +143,7 @@ export default function ServicoManutencao() {
     async function fetchCombos() {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetchComAuth(`${config.apiUrl}/combos`);
+        const res = await fetchComAuth(`${config.apiURL}/combos`);
         const data = await res.json();
         if (res.ok) {
           setCombosDisponiveis(data.combos || []);
@@ -198,7 +198,7 @@ export default function ServicoManutencao() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${config.apiUrl}/pedidos/${encodeURIComponent(form.protocolo)}`, {
+      const res = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(form.protocolo)}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
