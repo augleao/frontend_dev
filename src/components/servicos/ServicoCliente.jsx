@@ -97,104 +97,129 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
   return (
     <div
       style={{
-        border: '2px solid #3498db',
-        borderRadius: 12,
-        padding: 24,
-        background: '#fafcff',
-        boxShadow: '0 2px 8px rgba(52,152,219,0.08)',
-        marginBottom: 24
+        maxWidth: 900,
+        margin: '0 auto',
+        padding: 0,
+        borderRadius: '24px',
+        border: '3px solid #9b59b6',
+        boxShadow: '0 6px 32px rgba(155,89,182,0.10)',
+        background: '#f5e6fa',
+        overflow: 'hidden',
+        marginBottom: 32
       }}
     >
-      <h3>Informações do Cliente</h3>
-      <label>Nome:</label>
-      <input
-        type="text"
-        value={form.cliente.nome}
-        onChange={handleNomeChange}
-        style={{ width: '100%', marginBottom: 8 }}
-        autoComplete="off"
-      />
-      <label>CPF/CNPJ:</label>
-      <input
-        type="text"
-        value={form.cliente.cpf}
-        onChange={handleCpfChange}
-        style={{ width: '100%', marginBottom: 8 }}
-        autoComplete="off"
-      />
-      {/* Sugestões aparecem para ambos os campos */}
-      {loading && <div>Buscando...</div>}
-      {suggestions.length > 0 && (
-        <ul style={{
-          background: '#fff',
-          border: '1px solid #ccc',
-          borderRadius: 4,
-          margin: 0,
-          padding: '4px 0',
-          listStyle: 'none',
-          zIndex: 10,
-          width: '100%',
-          position: 'absolute'
-        }}>
-          {suggestions.map(c => (
-            <li
-              key={c.id}
-              style={{ padding: '4px 8px', cursor: 'pointer' }}
-              onClick={() => handleSelectCliente(c)}
+      <div style={{
+        background: 'white',
+        borderRadius: '12px',
+        padding: '28px 32px 18px 32px',
+        marginBottom: '24px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+      }}>
+        <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 24 }}>
+          Informações do Cliente
+        </h2>
+      </div>
+      <div style={{
+        background: 'white',
+        borderRadius: '12px',
+        padding: '24px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+        margin: '0 32px 32px 32px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12
+      }}>
+        <label style={{ color: '#6c3483', fontWeight: 600 }}>Nome:</label>
+        <input
+          type="text"
+          value={form.cliente.nome}
+          onChange={handleNomeChange}
+          style={{ width: '100%', marginBottom: 8, border: '1.5px solid #d6d6f5', borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box' }}
+          autoComplete="off"
+        />
+        <label style={{ color: '#6c3483', fontWeight: 600 }}>CPF/CNPJ:</label>
+        <input
+          type="text"
+          value={form.cliente.cpf}
+          onChange={handleCpfChange}
+          style={{ width: '100%', marginBottom: 8, border: '1.5px solid #d6d6f5', borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box' }}
+          autoComplete="off"
+        />
+        {/* Sugestões aparecem para ambos os campos */}
+        {loading && <div>Buscando...</div>}
+        {suggestions.length > 0 && (
+          <ul style={{
+            background: '#fff',
+            border: '1px solid #ccc',
+            borderRadius: 4,
+            margin: 0,
+            padding: '4px 0',
+            listStyle: 'none',
+            zIndex: 10,
+            width: '100%',
+            position: 'absolute',
+            fontSize: 15
+          }}>
+            {suggestions.map(c => (
+              <li
+                key={c.id}
+                style={{ padding: '4px 8px', cursor: 'pointer', fontSize: 15 }}
+                onClick={() => handleSelectCliente(c)}
+              >
+                {c.nome} ({c.cpf})
+              </li>
+            ))}
+          </ul>
+        )}
+        <label style={{ color: '#6c3483', fontWeight: 600 }}>Endereço:</label>
+        <input type="text" value={form.cliente.endereco} onChange={e => onClienteChange('endereco', e.target.value)} style={{ width: '100%', marginBottom: 8, border: '1.5px solid #d6d6f5', borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box' }} />
+        <label style={{ color: '#6c3483', fontWeight: 600 }}>Telefone:</label>
+        <input type="text" value={form.cliente.telefone} onChange={e => onClienteChange('telefone', e.target.value)} style={{ width: '100%', marginBottom: 8, border: '1.5px solid #d6d6f5', borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box' }} />
+        <label style={{ color: '#6c3483', fontWeight: 600 }}>E-mail:</label>
+        <input type="email" value={form.cliente.email} onChange={e => onClienteChange('email', e.target.value)} style={{ width: '100%', marginBottom: 8, border: '1.5px solid #d6d6f5', borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box' }} />
+        <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+          {/* Exibe botão salvar se não existe clienteId */}
+          {!form.clienteId && (
+            <button
+              type="button"
+              onClick={handleSalvarCliente}
+              style={{
+                background: '#27ae60',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '12px 32px',
+                fontWeight: 'bold',
+                fontSize: 16,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
             >
-              {c.nome} ({c.cpf})
-            </li>
-          ))}
-        </ul>
-      )}
-      <label>Endereço:</label>
-      <input type="text" value={form.cliente.endereco} onChange={e => onClienteChange('endereco', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
-      <label>Telefone:</label>
-      <input type="text" value={form.cliente.telefone} onChange={e => onClienteChange('telefone', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
-      <label>E-mail:</label>
-      <input type="email" value={form.cliente.email} onChange={e => onClienteChange('email', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
-      {/* Exibe botão salvar se não existe clienteId */}
-      {!form.clienteId && (
-        <button
-          type="button"
-          onClick={handleSalvarCliente}
-          style={{
-            background: '#27ae60',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
-            padding: '8px 24px',
-            fontWeight: 'bold',
-            fontSize: 16,
-            cursor: 'pointer',
-            marginTop: 8
-          }}
-        >
-          Salvar
-        </button>
-      )}
-
-      {/* Exibe botão excluir se existe clienteId */}
-      {form.clienteId && (
-        <button
-          type="button"
-          onClick={handleExcluirCliente}
-          style={{
-            background: '#e74c3c',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
-            padding: '8px 24px',
-            fontWeight: 'bold',
-            fontSize: 16,
-            cursor: 'pointer',
-            marginTop: 8,
-            marginLeft: 12
-          }}
-        >
-          Excluir Cadastro do Cliente
-        </button>
-      )}
+              Salvar
+            </button>
+          )}
+          {/* Exibe botão excluir se existe clienteId */}
+          {form.clienteId && (
+            <button
+              type="button"
+              onClick={handleExcluirCliente}
+              style={{
+                background: '#e74c3c',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '12px 32px',
+                fontWeight: 'bold',
+                fontSize: 16,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              Excluir Cadastro do Cliente
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
