@@ -78,7 +78,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const handleSubmit = async () => {
     try {
       // Sempre POST para /api/pedidos
-      const url = `${config.apiURL}/api/pedidos`;
+      const url = `${config.apiURL}/pedidos`;
       const method = 'POST';
       // Converter atosPedido para combos conforme esperado pelo backend
       const combos = atosPedido.map(ato => ({
