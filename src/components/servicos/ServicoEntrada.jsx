@@ -44,36 +44,33 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     setComboSelecionado('');
   };
       
+
+  // Função para enviar o pedido (salvar ou atualizar)
+  const handleSubmit = async () => {
+    try {
+      // ...lógica de envio do pedido...
+      // (mantenha aqui o código já existente para envio do pedido)
       if (res.ok) {
         // Pedido enviado com sucesso
         const data = await res.json();
         console.log('Operação realizada com sucesso:', data);
-        
         const mensagem = isUpdate 
           ? `Pedido ${form.protocolo} atualizado com sucesso!`
           : 'Novo pedido criado com sucesso!';
-        
         alert(mensagem);
-        
         // Se foi uma atualização, recarrega a página para mostrar os dados atualizados
         if (isUpdate) {
-          // Force reload by navigating to the same URL
           window.location.reload();
         } else if (data.protocolo) {
-          // Se foi criação e retornou protocolo, navega para a página de edição
-          // Use a mesma rota atual com o novo protocolo
-          // Navega sempre para a rota correta de manutenção do serviço
           navigate(`/servicos/manutencao?protocolo=${encodeURIComponent(data.protocolo)}`);
         }
       } else {
         // Tratar erro no envio do pedido
         const errorText = await res.text();
         console.error('Erro ao enviar pedido:', res.status, res.statusText, errorText);
-        
         const mensagem = isUpdate 
           ? `Erro ao atualizar pedido: ${res.status}`
           : `Erro ao criar pedido: ${res.status}`;
-        
         alert(mensagem);
       }
     } catch (error) {
