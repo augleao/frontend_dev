@@ -117,7 +117,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   };
 
   return (
-    <div style={{ background: '#fff', minHeight: '100vh', padding: '32px 0' }}>
+    <div style={{ background: '#fff', minHeight: '100vh', padding: '0' }}>
       <div style={{
         maxWidth: 900,
         margin: '0 auto',
