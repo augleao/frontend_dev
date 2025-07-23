@@ -367,12 +367,12 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               >
                 <thead>
                   <tr style={{ background: '#ede1f7' }}>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 13 }}>Combo</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 13 }}>Código do Ato</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 13 }}>Descrição do Ato</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 13 }}>Quantidade</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 13 }}>Código Tributário</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 13 }}>Ações</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Combo</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Código do Ato</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Descrição do Ato</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Quantidade</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Código Tributário</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -387,7 +387,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           min={1}
                           value={ato.quantidade}
                           onChange={e => handleAtoChange(idx, 'quantidade', Number(e.target.value))}
-                          style={{ width: '100%', maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 13, boxSizing: 'border-box' }}
+                          style={{ width: '100%', maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
                         />
                       </td>
                       <td style={{ padding: 6, position: 'relative' }}>
@@ -395,7 +395,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           type="text"
                           value={ato.codigoTributario}
                           onChange={e => handleCodigoTributarioInput(idx, e.target.value)}
-                          style={{ width: '100%', maxWidth: 100, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 13, boxSizing: 'border-box' }}
+                          style={{ width: '100%', maxWidth: 100, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
                           autoComplete="off"
                         />
                         {codigoTributarioIdx === idx && codigoTributarioSuggestions.length > 0 && (
@@ -418,7 +418,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                                 style={{
                                   padding: '4px 8px',
                                   cursor: 'pointer',
-                                  fontSize: 13
+                                  fontSize: 10
                                 }}
                                 onClick={() => handleSelectCodigoTributario(sug)}
                               >
@@ -439,7 +439,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                             borderRadius: 8,
                             padding: '4px 12px',
                             fontWeight: 'bold',
-                            fontSize: 13,
+                            fontSize: 10,
                             cursor: 'pointer',
                             transition: 'all 0.3s ease'
                           }}
