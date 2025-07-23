@@ -1,3 +1,4 @@
+import { jsPDF } from 'jspdf';
 // Função fetch autenticada com tratamento de token expirado
 export async function fetchComAuth(url, options = {}) {
   const token = localStorage.getItem('token');
@@ -26,8 +27,6 @@ export async function fetchComAuth(url, options = {}) {
     throw err;
   }
 }
-// utils.js
-import { jsPDF } from 'jspdf';
 
 export const formasPagamento = [
   { key: 'dinheiro', label: 'Dinheiro' },
