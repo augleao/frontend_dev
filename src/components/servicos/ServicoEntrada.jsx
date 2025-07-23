@@ -185,219 +185,339 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   };
 
   return (
-    <div
-      style={{
-        border: '2px solid #3498db',
-        borderRadius: 12,
-        padding: 24,
-        background: '#fafcff',
-        boxShadow: '0 2px 8px rgba(52,152,219,0.08)',
-        marginBottom: 24
-      }}
-    >
-      <h3>Entrada do Serviço</h3>
-      {/* Exibe o protocolo apenas se existir */}
-      {form.protocolo && (
-        <div style={{ marginBottom: 12 }}>
-          <label style={{ fontWeight: 600, color: '#555' }}>Número de Protocolo:</label>
+    <div style={{ background: '#f4f6fb', minHeight: '100vh', padding: '32px 0' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: 0 }}>
+        {/* Header */}
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '28px 32px 18px 32px',
+          marginBottom: '24px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 28 }}>
+            Entrada do Serviço
+          </h2>
+          {form.protocolo && (
+            <div style={{
+              background: '#f8f9fa',
+              borderRadius: 8,
+              padding: '10px 18px',
+              fontFamily: 'monospace',
+              fontSize: 18,
+              color: '#6c3483',
+              fontWeight: 600,
+              border: '2px solid #9b59b6',
+              boxShadow: '0 2px 8px rgba(155,89,182,0.08)'
+            }}>
+              Protocolo: {form.protocolo}
+            </div>
+          )}
+        </div>
+
+        {/* Cards Section */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '24px',
+          marginBottom: '24px',
+        }}>
+          {/* Prazo Card */}
           <div style={{
-            background: '#f4f4f4',
-            borderRadius: 6,
-            padding: '8px 12px',
-            fontFamily: 'monospace',
-            fontSize: 16,
-            color: '#333'
+            background: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8
           }}>
-            {form.protocolo}
+            <label style={{ color: '#6c3483', fontWeight: 600 }}>Prazo estimado para entrega:</label>
+            <input
+              type="date"
+              value={form.prazo}
+              onChange={e => onChange('prazo', e.target.value)}
+              style={{
+                width: '100%',
+                border: '1.5px solid #d6d6f5',
+                borderRadius: 6,
+                padding: '8px 12px',
+                fontSize: 16
+              }}
+            />
+          </div>
+          {/* Valor Atos Pagos Card */}
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8
+          }}>
+            <label style={{ color: '#229954', fontWeight: 600 }}>Valor total dos atos pagos (código tributário 01):</label>
+            <div style={{
+              background: '#eafaf1',
+              borderRadius: 8,
+              padding: '16px',
+              border: '2px solid #229954',
+              fontFamily: 'monospace',
+              fontSize: 20,
+              fontWeight: 'bold',
+              color: '#229954',
+              textAlign: 'right',
+              boxShadow: '0 2px 8px rgba(34,153,84,0.08)'
+            }}>
+              {(() => {
+                const total = calcularTotalAtosPagos();
+                console.log('Valor exibido na tela (total dos atos pagos):', total);
+                return `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              })()}
+            </div>
           </div>
         </div>
-      )}
-      <label>Prazo estimado para entrega:</label>
-      <input
-        type="date"
-        value={form.prazo}
-        onChange={e => onChange('prazo', e.target.value)}
-        style={{ width: '100%', marginBottom: 8 }}
-      />
 
-      <label>Valor total dos atos pagos (código tributário 01):</label>
-      <div style={{
-        background: '#f8f9fa',
-        borderRadius: 6,
-        padding: '12px',
-        marginBottom: 8,
-        border: '2px solid #e9ecef',
-        fontFamily: 'monospace',
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#28a745',
-        textAlign: 'right'
-      }}>
-        {/* Log para depuração do valor exibido */}
-        {(() => {
-          const total = calcularTotalAtosPagos();
-          console.log('Valor exibido na tela (total dos atos pagos):', total);
-          return `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        })()}
-      </div>
+        {/* Valores e Observação */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '24px',
+          marginBottom: '24px',
+        }}>
+          {/* Valor Adiantado Card */}
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8
+          }}>
+            <label style={{ color: '#2874a6', fontWeight: 600 }}>Valor Adiantado pelo Usuário:</label>
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              value={form.valorAdiantado || ''}
+              onChange={e => onChange('valorAdiantado', e.target.value)}
+              style={{
+                width: '100%',
+                border: '1.5px solid #aed6f1',
+                borderRadius: 6,
+                padding: '8px 12px',
+                fontSize: 16
+              }}
+            />
+          </div>
+          {/* Observação Card */}
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8
+          }}>
+            <label style={{ color: '#884ea0', fontWeight: 600 }}>Observação:</label>
+            <textarea
+              value={form.observacao || ''}
+              onChange={e => onChange('observacao', e.target.value)}
+              maxLength={150}
+              style={{
+                width: '100%',
+                border: '1.5px solid #d2b4de',
+                borderRadius: 6,
+                padding: '8px 12px',
+                fontSize: 16,
+                resize: 'vertical',
+                minHeight: 40
+              }}
+            />
+          </div>
+        </div>
 
-      <label>Valor Adiantado pelo Usuário:</label>
-      <input
-        type="number"
-        min={0}
-        step="0.01"
-        value={form.valorAdiantado || ''}
-        onChange={e => onChange('valorAdiantado', e.target.value)}
-        style={{ width: '100%', marginBottom: 8 }}
-      />
+        {/* Adicionar Combo Card */}
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '24px',
+          marginBottom: '24px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+        }}>
+          <label style={{ fontWeight: 600, color: '#6c3483', marginRight: 12 }}>Adicionar Combo:</label>
+          <select value={comboSelecionado} onChange={e => setComboSelecionado(e.target.value)} style={{ width: '60%', marginRight: 12, borderRadius: 6, padding: '6px 10px', border: '1.5px solid #d6d6f5', fontSize: 16 }}>
+            <option value="">Selecione um combo...</option>
+            {combosDisponiveis.map(c => (
+              <option key={c.id} value={c.id}>{c.nome}</option>
+            ))}
+          </select>
+          <button type="button" onClick={handleAdicionarCombo} style={{
+            padding: '8px 20px',
+            background: '#9b59b6',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            fontWeight: 'bold',
+            fontSize: 15,
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}>
+            ➕ Adicionar
+          </button>
+        </div>
 
-      <label>OBS.:</label>
-      <textarea
-        value={form.observacao || ''}
-        onChange={e => onChange('observacao', e.target.value)}
-        maxLength={150}
-        style={{ width: '100%', marginBottom: 8, resize: 'vertical', minHeight: 40 }}
-      />
+        {/* Atos Table Card */}
+        {atosPedido.length > 0 && (
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            marginBottom: '24px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+          }}>
+            <h3 style={{
+              margin: '0 0 20px 0',
+              color: '#2c3e50',
+              fontSize: '18px',
+              fontWeight: '600',
+              borderBottom: '2px solid #9b59b6',
+              paddingBottom: '10px'
+            }}>
+              📋 Atos adicionados ao pedido
+            </h3>
+            <div style={{ overflowX: 'auto' }}>
+              <table
+                style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  marginBottom: 12,
+                  tableLayout: 'fixed',
+                  fontSize: 15
+                }}
+              >
+                <thead>
+                  <tr style={{ background: '#f0f0f0' }}>
+                    <th style={{ padding: 8 }}>Combo</th>
+                    <th style={{ padding: 8 }}>Código do Ato</th>
+                    <th style={{ padding: 8 }}>Descrição do Ato</th>
+                    <th style={{ padding: 8 }}>Quantidade</th>
+                    <th style={{ padding: 8 }}>Código Tributário</th>
+                    <th style={{ padding: 8 }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {atosPedido.map((ato, idx) => (
+                    <tr key={`${ato.comboId}-${ato.atoId}-${idx}`}>
+                      <td style={{ padding: 8 }}>{ato.comboNome}</td>
+                      <td style={{ padding: 8 }}>{ato.atoCodigo}</td>
+                      <td style={{ padding: 8 }}>{ato.atoDescricao ? ato.atoDescricao.slice(0, 15) : ''}</td>
+                      <td style={{ padding: 8 }}>
+                        <input
+                          type="number"
+                          min={1}
+                          value={ato.quantidade}
+                          onChange={e => handleAtoChange(idx, 'quantidade', Number(e.target.value))}
+                          style={{ width: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '4px 8px', fontSize: 15 }}
+                        />
+                      </td>
+                      <td style={{ padding: 8, position: 'relative' }}>
+                        <input
+                          type="text"
+                          value={ato.codigoTributario}
+                          onChange={e => handleCodigoTributarioInput(idx, e.target.value)}
+                          style={{ width: 120, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '4px 8px', fontSize: 15 }}
+                          autoComplete="off"
+                        />
+                        {codigoTributarioIdx === idx && codigoTributarioSuggestions.length > 0 && (
+                          <ul style={{
+                            position: 'absolute',
+                            background: '#fff',
+                            border: '1px solid #ccc',
+                            borderRadius: 4,
+                            margin: 0,
+                            padding: '4px 0',
+                            listStyle: 'none',
+                            zIndex: 10,
+                            width: 180,
+                            left: 0,
+                            top: 36
+                          }}>
+                            {codigoTributarioSuggestions.map(sug => (
+                              <li
+                                key={sug.codigo}
+                                style={{
+                                  padding: '4px 8px',
+                                  cursor: 'pointer',
+                                  fontSize: 15
+                                }}
+                                onClick={() => handleSelectCodigoTributario(sug)}
+                              >
+                                {sug.codigo} - {sug.descricao}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </td>
+                      <td style={{ padding: 8 }}>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoverAto(idx)}
+                          style={{
+                            background: '#e74c3c',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: 8,
+                            padding: '6px 18px',
+                            fontWeight: 'bold',
+                            fontSize: 15,
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
+                          Remover
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
-      <hr style={{ margin: '18px 0' }} />
-
-      <label>Adicionar Combo:</label>
-      <select value={comboSelecionado} onChange={e => setComboSelecionado(e.target.value)} style={{ width: '70%', marginRight: 8 }}>
-        <option value="">Selecione um combo...</option>
-        {combosDisponiveis.map(c => (
-          <option key={c.id} value={c.id}>{c.nome}</option>
-        ))}
-      </select>
-      <button type="button" onClick={handleAdicionarCombo} style={{
-        padding: '6px 16px',
-        background: '#3498db',
-        color: '#fff',
-        border: 'none',
-        borderRadius: 6,
-        fontWeight: 'bold',
-        fontSize: 14,
-        cursor: 'pointer'
-      }}>
-        Adicionar
-      </button>
-
-      {atosPedido.length > 0 && (
-        <div style={{ marginTop: 18 }}>
-          <h4>Atos adicionados ao pedido:</h4>
-          <table
+        {/* Salvar/Atualizar Button */}
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '24px',
+          marginBottom: '24px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+          textAlign: 'center'
+        }}>
+          <button
+            onClick={handleSubmit}
             style={{
-              width: '100%',
-              maxWidth: '100%',
-              borderCollapse: 'collapse',
-              marginBottom: 12,
-              tableLayout: 'fixed'
+              padding: '12px 32px',
+              background: '#2ecc71',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 'bold',
+              fontSize: 18,
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
             }}
           >
-            <thead>
-              <tr style={{ background: '#f0f0f0' }}>
-                <th>Combo</th>
-                <th>Código do Ato</th>
-                <th>Descrição do Ato</th>
-                <th>Quantidade</th>
-                <th>Código Tributário</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {atosPedido.map((ato, idx) => (
-                <tr key={`${ato.comboId}-${ato.atoId}-${idx}`}>
-                  <td>{ato.comboNome}</td>
-                  <td>{ato.atoCodigo}</td>
-                  <td>
-                    {/* Exibe apenas o texto, limitado a 15 caracteres */}
-                    {ato.atoDescricao ? ato.atoDescricao.slice(0, 15) : ''}
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min={1}
-                      value={ato.quantidade}
-                      onChange={e => handleAtoChange(idx, 'quantidade', Number(e.target.value))}
-                      style={{ width: 60 }}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      value={ato.codigoTributario}
-                      onChange={e => handleCodigoTributarioInput(idx, e.target.value)}
-                      style={{ width: 120 }}
-                      autoComplete="off"
-                    />
-                    {/* Sugestões de autocomplete */}
-                    {codigoTributarioIdx === idx && codigoTributarioSuggestions.length > 0 && (
-                      <ul style={{
-                        position: 'absolute',
-                        background: '#fff',
-                        border: '1px solid #ccc',
-                        borderRadius: 4,
-                        margin: 0,
-                        padding: '4px 0',
-                        listStyle: 'none',
-                        zIndex: 10,
-                        width: 120
-                      }}>
-                        {codigoTributarioSuggestions.map(sug => (
-                          <li
-                            key={sug.codigo}
-                            style={{
-                              padding: '4px 8px',
-                              cursor: 'pointer'
-                            }}
-                            onClick={() => handleSelectCodigoTributario(sug)}
-                          >
-                            {sug.codigo} - {sug.descricao}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoverAto(idx)}
-                      style={{
-                        background: '#e74c3c',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 6,
-                        padding: '6px 16px',
-                        fontWeight: 'bold',
-                        fontSize: 14,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Remover
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            {form.protocolo && form.protocolo.trim() !== '' ? 'Atualizar Pedido' : 'Salvar Pedido'}
+          </button>
         </div>
-      )}
-
-      <button
-        onClick={handleSubmit}
-        style={{
-          marginTop: 12,
-          padding: '10px 20px',
-          background: '#2ecc71',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 6,
-          fontWeight: 'bold',
-          fontSize: 16,
-          cursor: 'pointer'
-        }}
-      >
-        {form.protocolo && form.protocolo.trim() !== '' ? 'Atualizar Pedido' : 'Salvar Pedido'}
-      </button>
+      </div>
     </div>
   );
 }
