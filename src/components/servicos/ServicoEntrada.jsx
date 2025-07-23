@@ -29,123 +29,132 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     if (!comboSelecionado) return;
     const combo = combosDisponiveis.find(c => c.id === Number(comboSelecionado));
     if (!combo || !Array.isArray(combo.atos)) return;
-    // Adiciona cada ato como uma linha separada
-    setAtosPedido(prev => [
-      ...prev,
-      ...combo.atos.map(ato => ({
-        comboId: combo.id,
-        comboNome: combo.nome,
-        atoId: ato.id,
-        atoCodigo: ato.codigo,
-        atoDescricao: ato.descricao,
-        quantidade: 1,
-        codigoTributario: ''
-      }))
-    ]);
-    setComboSelecionado('');
-  };
-
-  const buscarCodigosTributarios = async (term) => {
-    if (term.trim() === '') {
-      setCodigoTributarioSuggestions([]);
-      return;
-    }
-    
-    setLoadingCodigoTributario(true);
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(
-  `${config.apiURL}/codigos-gratuitos?search=${encodeURIComponent(term)}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const data = await res.json();
-      if (res.ok) {
-        setCodigoTributarioSuggestions(data.codigos || []);
-      } else {
-        setCodigoTributarioSuggestions([]);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar códigos tributários:', error);
-      setCodigoTributarioSuggestions([]);
-    }
-    setLoadingCodigoTributario(false);
-  };
-
-  const handleCodigoTributarioInput = (idx, value) => {
-    setCodigoTributarioTerm(value);
-    setCodigoTributarioIdx(idx);
-    handleAtoChange(idx, 'codigoTributario', value);
-    buscarCodigosTributarios(value);
-  };
-
-  // Função para selecionar código tributário
-  const handleSelectCodigoTributario = (codigo) => {
-    if (codigoTributarioIdx !== null) {
-      handleAtoChange(codigoTributarioIdx, 'codigoTributario', codigo.codigo);
-      setCodigoTributarioTerm('');
-      setCodigoTributarioSuggestions([]);
-      setCodigoTributarioIdx(null);
-    }
-  };
-
-  // Altera quantidade ou código tributário de um ato
-  const handleAtoChange = (idx, field, value) => {
-    setAtosPedido(prev =>
-      prev.map((a, i) =>
-        i === idx ? { ...a, [field]: value } : a
-      )
-    );
-  };
-
-  // Remove ato do pedido
-  const handleRemoverAto = idx => {
-    setAtosPedido(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  // Função para envio do pedido
-  const handleSubmit = async () => {
-    const token = localStorage.getItem('token');
-    // Supondo que o nome do usuário está em localStorage ou contexto
-    //const usuario = form.usuario?.nome || form.usuario || '';
-    // ou, se estiver no localStorage:
-    const usuarioObj = JSON.parse(localStorage.getItem('usuario') || '{}');
-    const usuario = usuarioObj.nome || '';
-
-    // Prepara os dados para envio
-    const dadosParaEnvio = {
-      ...form,
-      clienteId: form.clienteId || null, // Converte string vazia para null
-      valorAdiantado: form.valorAdiantado || 0, // Garante que seja número
-      combos: atosPedido.map(ato => ({
-        combo_id: ato.comboId,
-        combo_nome: ato.comboNome,
-        ato_id: ato.atoId,
-        ato_codigo: ato.atoCodigo,
-        ato_descricao: ato.atoDescricao,
-        quantidade: ato.quantidade || 1,
-        codigo_tributario: ato.codigoTributario || ''
-      })),
-      usuario
-    };
-
-    console.log('=== DADOS SENDO ENVIADOS PARA O BACKEND ===');
-    console.log('Dados formatados para envio:', dadosParaEnvio);
-    console.log('=== FIM DOS DADOS ===');
-
-    // Detecta se é atualização (protocolo existe) ou criação (novo pedido)
-    const isUpdate = form.protocolo && form.protocolo.trim() !== '';
-    
-    console.log(`Operação: ${isUpdate ? 'ATUALIZAÇÃO' : 'CRIAÇÃO'} - Método: POST`);
-    console.log(`URL: ${config.apiURL}/pedidos`);
-
-    try {
-      const res = await fetch(`${config.apiURL}/pedidos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(dadosParaEnvio)
-      });
+        {atosPedido.length > 0 && (
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '18px',
+            marginBottom: '24px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+          }}>
+            <h3 style={{
+              margin: '0 0 20px 0',
+              color: '#2c3e50',
+              fontSize: '16px',
+              fontWeight: '600',
+              borderBottom: '2px solid #9b59b6',
+              paddingBottom: '10px',
+              letterSpacing: 0.5
+            }}>
+              📋 Atos adicionados ao pedido
+            </h3>
+            <div style={{
+              overflowX: 'auto',
+              background: '#f5e6fa',
+              borderRadius: 8,
+              border: '2px solid #9b59b6',
+              boxShadow: '0 2px 8px rgba(155,89,182,0.06)',
+              padding: '8px 0',
+            }}>
+              <table
+                style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  marginBottom: 0,
+                  tableLayout: 'fixed',
+                  fontSize: 13,
+                  background: 'transparent',
+                }}
+              >
+                <thead>
+                  <tr style={{ background: '#ede1f7' }}>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 13 }}>Combo</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 13 }}>Código do Ato</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 13 }}>Descrição do Ato</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 13 }}>Quantidade</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 13 }}>Código Tributário</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 13 }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {atosPedido.map((ato, idx) => (
+                    <tr key={`${ato.comboId}-${ato.atoId}-${idx}`} style={{ background: idx % 2 === 0 ? '#f8f4fc' : 'transparent' }}>
+                      <td style={{ padding: 6 }}>{ato.comboNome}</td>
+                      <td style={{ padding: 6 }}>{ato.atoCodigo}</td>
+                      <td style={{ padding: 6 }}>{ato.atoDescricao ? ato.atoDescricao.slice(0, 15) : ''}</td>
+                      <td style={{ padding: 6 }}>
+                        <input
+                          type="number"
+                          min={1}
+                          value={ato.quantidade}
+                          onChange={e => handleAtoChange(idx, 'quantidade', Number(e.target.value))}
+                          style={{ width: '100%', maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 13, boxSizing: 'border-box' }}
+                        />
+                      </td>
+                      <td style={{ padding: 6, position: 'relative' }}>
+                        <input
+                          type="text"
+                          value={ato.codigoTributario}
+                          onChange={e => handleCodigoTributarioInput(idx, e.target.value)}
+                          style={{ width: '100%', maxWidth: 100, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 13, boxSizing: 'border-box' }}
+                          autoComplete="off"
+                        />
+                        {codigoTributarioIdx === idx && codigoTributarioSuggestions.length > 0 && (
+                          <ul style={{
+                            position: 'absolute',
+                            background: '#fff',
+                            border: '1px solid #ccc',
+                            borderRadius: 4,
+                            margin: 0,
+                            padding: '4px 0',
+                            listStyle: 'none',
+                            zIndex: 10,
+                            width: 140,
+                            left: 0,
+                            top: 28
+                          }}>
+                            {codigoTributarioSuggestions.map(sug => (
+                              <li
+                                key={sug.codigo}
+                                style={{
+                                  padding: '4px 8px',
+                                  cursor: 'pointer',
+                                  fontSize: 13
+                                }}
+                                onClick={() => handleSelectCodigoTributario(sug)}
+                              >
+                                {sug.codigo} - {sug.descricao}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </td>
+                      <td style={{ padding: 6 }}>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoverAto(idx)}
+                          style={{
+                            background: '#e74c3c',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: 8,
+                            padding: '4px 12px',
+                            fontWeight: 'bold',
+                            fontSize: 13,
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
+                          Remover
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       
       if (res.ok) {
         // Pedido enviado com sucesso
