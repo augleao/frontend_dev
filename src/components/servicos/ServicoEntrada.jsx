@@ -159,6 +159,37 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           )}
         </div>
 
+        {/* Descrição do Serviço */}
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '24px',
+          margin: '0 0 24px 0',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8
+        }}>
+          <label style={{ color: '#6c3483', fontWeight: 600 }}>Descrição do Serviço:</label>
+          <textarea
+            value={form.descricao || ''}
+            onChange={e => onChange('descricao', e.target.value)}
+            maxLength={200}
+            style={{
+              width: '100%',
+              maxWidth: '100%',
+              border: '1.5px solid #d6d6f5',
+              borderRadius: 6,
+              padding: '8px 12px',
+              fontSize: 16,
+              resize: 'vertical',
+              minHeight: 40,
+              boxSizing: 'border-box',
+            }}
+            placeholder="Descreva o serviço a ser realizado..."
+          />
+        </div>
+
         {/* Cards Section */}
         <div style={{
           display: 'grid',
