@@ -17,12 +17,29 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   };
 
   // Manipula input do código tributário (com sugestões)
-  const handleCodigoTributarioInput = (idx, value) => {
+  const handleCodigoTributarioInput = async (idx, value) => {
     setAtosPedido(prev => prev.map((ato, i) => i === idx ? { ...ato, codigoTributario: value } : ato));
     setCodigoTributarioIdx(idx);
     setCodigoTributarioTerm(value);
-    // Aqui você pode adicionar lógica para buscar sugestões se necessário
-    // Exemplo: setCodigoTributarioSuggestions([...]);
+    // Busca sugestões se houver pelo menos 2 caracteres
+    if (value.length >= 2) {
+      setLoadingCodigoTributario(true);
+      try {
+        // Ajuste a URL abaixo conforme a rota real do seu backend
+        const res = await fetch(`${config.apiUrl || config.apiURL}/api/codigos-tributarios?s=${encodeURIComponent(value)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setCodigoTributarioSuggestions(data.sugestoes || []);
+        } else {
+          setCodigoTributarioSuggestions([]);
+        }
+      } catch (err) {
+        setCodigoTributarioSuggestions([]);
+      }
+      setLoadingCodigoTributario(false);
+    } else {
+      setCodigoTributarioSuggestions([]);
+    }
   };
 
   // Seleciona sugestão de código tributário
@@ -125,7 +142,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         if (form.protocolo && form.protocolo.trim() !== '') {
           window.location.reload();
         } else if (data.protocolo) {
-          navigate('/manutencao-servicos');
+          navigate(`/servicos/manutencao?protocolo=${encodeURIComponent(data.protocolo)}`);
         }
       } else {
         // Tratar erro no envio do pedido
