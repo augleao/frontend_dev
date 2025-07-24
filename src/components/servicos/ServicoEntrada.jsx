@@ -1,3 +1,20 @@
+
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import config from '../../config';
+
+export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
+  console.log('PROPS atosPedido recebidos em ServicoEntrada:', atosPedido);
+  const [comboSelecionado, setComboSelecionado] = useState('');
+  const [codigoTributarioSuggestions, setCodigoTributarioSuggestions] = useState([]);
+  const [loadingCodigoTributario, setLoadingCodigoTributario] = useState(false);
+  const [codigoTributarioTerm, setCodigoTributarioTerm] = useState('');
+  const [codigoTributarioIdx, setCodigoTributarioIdx] = useState(null);
+  const [valorAdiantadoDetalhes, setValorAdiantadoDetalhes] = useState(
+    form.valorAdiantadoDetalhes || [ { valor: '', forma: '' } ]
+  );
+  const navigate = useNavigate();
+
   // Manipula mudança em um item de valor adiantado (valor ou forma)
   const handleValorAdiantadoDetalheChange = (idx, campo, valor) => {
     setValorAdiantadoDetalhes(prev => prev.map((item, i) => i === idx ? { ...item, [campo]: valor } : item));
@@ -12,9 +29,6 @@
   const handleRemoveValorAdiantadoDetalhe = (idx) => {
     setValorAdiantadoDetalhes(prev => prev.filter((_, i) => i !== idx));
   };
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import config from '../../config';
 
 export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
   console.log('PROPS atosPedido recebidos em ServicoEntrada:', atosPedido);
