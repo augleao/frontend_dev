@@ -15,6 +15,21 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   );
   const navigate = useNavigate();
 
+  // Manipula mudança em um item de valor adiantado (valor ou forma)
+  const handleValorAdiantadoDetalheChange = (idx, campo, valor) => {
+    setValorAdiantadoDetalhes(prev => prev.map((item, i) => i === idx ? { ...item, [campo]: valor } : item));
+  };
+
+  // Adiciona um novo item de valor adiantado
+  const handleAddValorAdiantadoDetalhe = () => {
+    setValorAdiantadoDetalhes(prev => [...prev, { valor: '', forma: '' }]);
+  };
+
+  // Remove um item de valor adiantado
+  const handleRemoveValorAdiantadoDetalhe = (idx) => {
+    setValorAdiantadoDetalhes(prev => prev.filter((_, i) => i !== idx));
+  };
+
 
 
   // Manipula alteração de quantidade ou outros campos do ato
