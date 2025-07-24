@@ -604,17 +604,32 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                         />
                         {codigoTributarioIdx === idx && codigoTributarioSuggestions.length > 0 && (
                           <ul style={{
-                            position: 'absolute',
+                            position: 'fixed',
                             background: '#fff',
                             border: '1px solid #ccc',
                             borderRadius: 4,
                             margin: 0,
                             padding: '4px 0',
                             listStyle: 'none',
-                            zIndex: 10,
-                            width: 140,
-                            left: 0,
-                            top: 28,
+                            zIndex: 9999,
+                            width: 220,
+                            left: (() => {
+                              // Calcula a posição do input na tela
+                              const input = document.querySelectorAll('input[type="text"]')[idx];
+                              if (input) {
+                                const rect = input.getBoundingClientRect();
+                                return rect.left;
+                              }
+                              return 0;
+                            })(),
+                            top: (() => {
+                              const input = document.querySelectorAll('input[type="text"]')[idx];
+                              if (input) {
+                                const rect = input.getBoundingClientRect();
+                                return rect.bottom;
+                              }
+                              return 0;
+                            })(),
                             fontSize: 10
                           }}>
                             {codigoTributarioSuggestions.map(sug => (
