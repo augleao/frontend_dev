@@ -305,7 +305,7 @@ export default function ServicoManutencao() {
           <div style={{
             border: '3px solid #9b59b6',
             borderRadius: 24,
-            background: '#f5e6fa',
+            background: '#fdf8feff',
             padding: 24,
             marginBottom: 18,
             display: 'flex',
