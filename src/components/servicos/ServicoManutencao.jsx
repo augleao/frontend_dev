@@ -301,7 +301,19 @@ export default function ServicoManutencao() {
             marginBottom: 32
           }}
         >
-          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 18 }}>
+          {/* Moldura lilás envolvendo ServicoEntrada e ServicoCliente */}
+          <div style={{
+            border: '3px solid #9b59b6',
+            borderRadius: 24,
+            background: '#f5e6fa',
+            padding: 24,
+            marginBottom: 18,
+            display: 'flex',
+            gap: 24,
+            flexWrap: 'wrap',
+            alignItems: 'flex-start',
+            boxShadow: '0 6px 32px rgba(155,89,182,0.10)'
+          }}>
             <div style={{ flex: 1, minWidth: 260 }}>
               <ServicoEntrada
                 form={form}
