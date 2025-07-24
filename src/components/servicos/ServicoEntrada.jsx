@@ -26,7 +26,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       setLoadingCodigoTributario(true);
       try {
         // Ajuste a URL abaixo conforme a rota real do seu backend
-        const res = await fetch(`${config.apiUrl || config.apiURL}/api/codigos-tributarios?s=${encodeURIComponent(value)}`);
+        const res = await fetch(`${config.apiUrl || config.apiURL}/codigos-tributarios?s=${encodeURIComponent(value)}`);
         if (res.ok) {
           const data = await res.json();
           setCodigoTributarioSuggestions(data.sugestoes || []);
