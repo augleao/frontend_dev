@@ -9,6 +9,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const [loadingCodigoTributario, setLoadingCodigoTributario] = useState(false);
   const [codigoTributarioTerm, setCodigoTributarioTerm] = useState('');
   const [codigoTributarioIdx, setCodigoTributarioIdx] = useState(null);
+  const [valorAdiantadoDetalhes, setValorAdiantadoDetalhes] = useState(
+    form.valorAdiantadoDetalhes || [ { valor: '', forma: '' } ]
+  );
   const navigate = useNavigate();
 
   // Manipula alteração de quantidade ou outros campos do ato
@@ -110,8 +113,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         descricao: form.descricao || '',
         origem: form.origem || '',
         origemInfo: form.origemInfo || '',
-        valorAdiantado: form.valorAdiantado || '',
-        formaPagamentoAdiantado: form.formaPagamentoAdiantado || '',
+        valorAdiantadoDetalhes,
         combos
       });
       const token = localStorage.getItem('token');
@@ -457,43 +459,49 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             gap: 8
           }}>
             <label style={{ color: '#2874a6', fontWeight: 600 }}>Valor Adiantado pelo Usuário:</label>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-              <input
-                type="number"
-                min={0}
-                step="0.01"
-                value={form.valorAdiantado || ''}
-                onChange={e => onChange('valorAdiantado', e.target.value)}
-                style={{
-                  width: '60%',
-                  maxWidth: '100%',
-                  border: '1.5px solid #aed6f1',
-                  borderRadius: 6,
-                  padding: '8px 12px',
-                  fontSize: 16,
-                  boxSizing: 'border-box',
-                }}
-              />
-              <select
-                value={form.formaPagamentoAdiantado || ''}
-                onChange={e => onChange('formaPagamentoAdiantado', e.target.value)}
-                style={{
-                  width: '40%',
-                  border: '1.5px solid #aed6f1',
-                  borderRadius: 6,
-                  padding: '8px 12px',
-                  fontSize: 16,
-                  boxSizing: 'border-box',
-                }}
-              >
-                <option value="">Forma de Pagamento</option>
-                <option value="Dinheiro">Dinheiro</option>
-                <option value="Cartão">Cartão</option>
-                <option value="Pix">Pix</option>
-                <option value="CRC">CRC</option>
-                <option value="Depósito Prévio">Depósito Prévio</option>
-              </select>
-            </div>
+            {valorAdiantadoDetalhes.map((item, idx) => (
+              <div key={idx} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 6 }}>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={item.valor}
+                  onChange={e => handleValorAdiantadoDetalheChange(idx, 'valor', e.target.value)}
+                  style={{
+                    width: '50%',
+                    border: '1.5px solid #aed6f1',
+                    borderRadius: 6,
+                    padding: '8px 12px',
+                    fontSize: 16,
+                    boxSizing: 'border-box',
+                  }}
+                  placeholder="Valor"
+                />
+                <select
+                  value={item.forma}
+                  onChange={e => handleValorAdiantadoDetalheChange(idx, 'forma', e.target.value)}
+                  style={{
+                    width: '40%',
+                    border: '1.5px solid #aed6f1',
+                    borderRadius: 6,
+                    padding: '8px 12px',
+                    fontSize: 16,
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <option value="">Forma de Pagamento</option>
+                  <option value="Dinheiro">Dinheiro</option>
+                  <option value="Cartão">Cartão</option>
+                  <option value="Pix">Pix</option>
+                  <option value="CRC">CRC</option>
+                  <option value="Depósito Prévio">Depósito Prévio</option>
+                </select>
+                {valorAdiantadoDetalhes.length > 1 && (
+                  <button type="button" onClick={() => handleRemoveValorAdiantadoDetalhe(idx)} style={{ background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', fontWeight: 'bold', cursor: 'pointer' }}>-</button>
+                )}
+              </div>
+            ))}
+            <button type="button" onClick={handleAddValorAdiantadoDetalhe} style={{ background: '#9b59b6', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 16px', fontWeight: 'bold', cursor: 'pointer', marginTop: 4 }}>Adicionar Pagamento</button>
           </div>
           {/* Observação Card */}
           <div style={{
