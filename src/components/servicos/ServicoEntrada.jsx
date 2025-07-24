@@ -104,11 +104,14 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         quantidade: ato.quantidade,
         codigo_tributario: ato.codigoTributario
       }));
+      // Inclui valor adiantado e forma de pagamento no payload
       const body = JSON.stringify({
         ...form,
         descricao: form.descricao || '',
         origem: form.origem || '',
         origemInfo: form.origemInfo || '',
+        valorAdiantado: form.valorAdiantado || '',
+        formaPagamentoAdiantado: form.formaPagamentoAdiantado || '',
         combos
       });
       const token = localStorage.getItem('token');
@@ -454,22 +457,43 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             gap: 8
           }}>
             <label style={{ color: '#2874a6', fontWeight: 600 }}>Valor Adiantado pelo Usuário:</label>
-            <input
-              type="number"
-              min={0}
-              step="0.01"
-              value={form.valorAdiantado || ''}
-              onChange={e => onChange('valorAdiantado', e.target.value)}
-              style={{
-                width: '100%',
-                maxWidth: '100%',
-                border: '1.5px solid #aed6f1',
-                borderRadius: 6,
-                padding: '8px 12px',
-                fontSize: 16,
-                boxSizing: 'border-box',
-              }}
-            />
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                value={form.valorAdiantado || ''}
+                onChange={e => onChange('valorAdiantado', e.target.value)}
+                style={{
+                  width: '60%',
+                  maxWidth: '100%',
+                  border: '1.5px solid #aed6f1',
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 16,
+                  boxSizing: 'border-box',
+                }}
+              />
+              <select
+                value={form.formaPagamentoAdiantado || ''}
+                onChange={e => onChange('formaPagamentoAdiantado', e.target.value)}
+                style={{
+                  width: '40%',
+                  border: '1.5px solid #aed6f1',
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 16,
+                  boxSizing: 'border-box',
+                }}
+              >
+                <option value="">Forma de Pagamento</option>
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Cartão">Cartão</option>
+                <option value="Pix">Pix</option>
+                <option value="CRC">CRC</option>
+                <option value="Depósito Prévio">Depósito Prévio</option>
+              </select>
+            </div>
           </div>
           {/* Observação Card */}
           <div style={{
