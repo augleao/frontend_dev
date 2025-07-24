@@ -306,10 +306,10 @@ export default function ServicoManutencao() {
             border: '3px solid #9b59b6',
             borderRadius: 24,
             background: '#fdf8feff',
-            padding: 24,
+            padding: 12,
             marginBottom: 18,
             display: 'flex',
-            gap: 24,
+            gap: 12,
             flexWrap: 'wrap',
             alignItems: 'flex-start',
             boxShadow: '0 6px 32px rgba(155,89,182,0.10)'
@@ -329,9 +329,12 @@ export default function ServicoManutencao() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 18 }}>
-            <div style={{ flex: 1, minWidth: 260 }}>
-              <ServicoPagamento form={form} onChange={handlePagamentoChange} />
-            </div>
+            {/* Exibe ServicoPagamento apenas se houver ato com codigoTributario '01' */}
+            {atosPedido.some(ato => ato.codigoTributario === '01') && (
+              <div style={{ flex: 1, minWidth: 260 }}>
+                <ServicoPagamento form={form} onChange={handlePagamentoChange} />
+              </div>
+            )}
             <div style={{ flex: 1, minWidth: 260 }}>
               <ServicoExecucao form={form} onChange={handleExecucaoChange} />
             </div>
