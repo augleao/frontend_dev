@@ -115,6 +115,12 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   // Função para enviar o pedido (salvar ou atualizar)
   const handleSubmit = async () => {
     try {
+      // Se não houver nenhum ato com código 01, define status como 'PAGO'
+      const existeAtoPago = atosPedido.some(ato => ato.codigoTributario === '01');
+      let novoForm = { ...form };
+      if (!existeAtoPago) {
+        novoForm = { ...novoForm, status: 'PAGO' };
+      }
       // Sempre POST para /api/pedidos
       const url = `${config.apiURL}/pedidos`;
       const method = 'POST';
@@ -127,10 +133,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       }));
       // Inclui valor adiantado e forma de pagamento no payload
       const body = JSON.stringify({
-        ...form,
-        descricao: form.descricao || '',
-        origem: form.origem || '',
-        origemInfo: form.origemInfo || '',
+        ...novoForm,
+        descricao: novoForm.descricao || '',
+        origem: novoForm.origem || '',
+        origemInfo: novoForm.origemInfo || '',
         valorAdiantadoDetalhes,
         combos
       });
