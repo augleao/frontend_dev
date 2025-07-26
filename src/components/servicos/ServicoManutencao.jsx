@@ -289,26 +289,8 @@ export default function ServicoManutencao() {
             letterSpacing: 1,
             margin: 0
           }}>
-            Pedidos - Protocolo: {form.protocolo || 'Novo Pedido'}
+            Pedido - Protocolo: {form.protocolo || 'Novo Pedido'}
           </h2>
-          <div style={{ marginLeft: 18 }}>
-            {form.protocolo && (
-              <span style={{
-                background: '#f8f9fa',
-                borderRadius: 8,
-                padding: '8px 18px',
-                fontFamily: 'monospace',
-                fontSize: 18,
-                color: '#6c3483',
-                fontWeight: 600,
-                border: '2px solid #9b59b6',
-                boxShadow: '0 2px 8px rgba(155,89,182,0.08)',
-                marginLeft: 18
-              }}>
-                {form.protocolo}
-              </span>
-            )}
-          </div>
         </div>
         <ServicoAlertas alertas={alertas} />
         <form
