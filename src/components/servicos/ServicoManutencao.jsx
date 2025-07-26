@@ -309,22 +309,38 @@ export default function ServicoManutencao() {
           {console.log('[DEBUG] form.status:', form.status, '| form:', form)}
           {form.status && (
             <span style={{
-              background: '#fff',
-              color: '#884ea0',
-              border: '2px solid #9b59b6',
-              borderRadius: 8,
-              fontWeight: 700,
-              fontSize: 18,
-              padding: '8px 22px',
-              marginLeft: 24,
-              boxShadow: '0 2px 8px rgba(155,89,182,0.10)',
-              textShadow: '0 2px 8px #fff, 0 1px 0 #fff',
-              letterSpacing: 1.5,
-              textTransform: 'uppercase',
-              minWidth: 120,
-              textAlign: 'center'
+              display: 'flex',
+              alignItems: 'center',
+              marginLeft: 24
             }}>
-              {form.status}
+              <span style={{
+                color: '#2c3e50',
+                fontWeight: 700,
+                fontSize: 22,
+                fontFamily: 'monospace',
+                textShadow: '0 2px 8px #fff, 0 1px 0 #fff, 0 0px 2px #fff',
+                marginRight: 8
+              }}>
+                Status:
+              </span>
+              <span style={{
+                background: '#fff',
+                color: '#884ea0',
+                border: '2px solid #9b59b6',
+                borderRadius: 8,
+                fontWeight: 700,
+                fontSize: 28,
+                fontFamily: 'monospace',
+                padding: '8px 22px',
+                boxShadow: '0 2px 8px rgba(155,89,182,0.10)',
+                textShadow: '0 2px 8px #fff, 0 1px 0 #fff',
+                letterSpacing: 1.5,
+                textTransform: 'uppercase',
+                minWidth: 120,
+                textAlign: 'center'
+              }}>
+                {form.status}
+              </span>
             </span>
           )}
         </div>
