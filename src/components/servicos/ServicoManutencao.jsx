@@ -281,16 +281,49 @@ export default function ServicoManutencao() {
         margin: '0 auto',
         padding: '12px 24px 0 24px' // <-- alterado de '48px 24px 0 24px' para diminuir o espaçamento superior
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10, justifyContent: 'space-between' }}>
           <h2 style={{
             color: '#2c3e50',
             fontWeight: 700,
             fontSize: 28,
             letterSpacing: 1,
-            margin: 0
+            margin: 0,
+            textShadow: '0 2px 8px #fff, 0 1px 0 #fff, 0 0px 2px #fff',
+            display: 'flex',
+            alignItems: 'center'
           }}>
-            Pedido - Protocolo: {form.protocolo || 'Novo Pedido'}
+            <span style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #fff, 0 0px 2px #fff' }}>Pedido - Protocolo:</span>
+            <span style={{
+              marginLeft: 12,
+              color: '#6c3483',
+              fontFamily: 'monospace',
+              fontWeight: 700,
+              fontSize: 28,
+              textShadow: '0 2px 8px #fff, 0 1px 0 #fff, 0 0px 2px #fff'
+            }}>
+              {form.protocolo || 'Novo Pedido'}
+            </span>
           </h2>
+          {form.status && (
+            <span style={{
+              background: '#fff',
+              color: '#884ea0',
+              border: '2px solid #9b59b6',
+              borderRadius: 8,
+              fontWeight: 700,
+              fontSize: 18,
+              padding: '8px 22px',
+              marginLeft: 24,
+              boxShadow: '0 2px 8px rgba(155,89,182,0.10)',
+              textShadow: '0 2px 8px #fff, 0 1px 0 #fff',
+              letterSpacing: 1.5,
+              textTransform: 'uppercase',
+              minWidth: 120,
+              textAlign: 'center'
+            }}>
+              {form.status}
+            </span>
+          )}
         </div>
         <ServicoAlertas alertas={alertas} />
         <form
