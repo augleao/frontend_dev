@@ -68,6 +68,7 @@ export default function ServicoManutencao() {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
   }
 
+
   useEffect(() => {
     console.log('useEffect [location.search] disparado');
     const protocolo = getProtocoloFromQuery();
@@ -96,6 +97,7 @@ export default function ServicoManutencao() {
       .then(data => {
         console.log('Dados recebidos do backend:', data);
         if (data.pedido) {
+          console.log('[DEBUG] Status recebido do backend:', data.pedido.status);
           let prazoFormatado = '';
           if (data.pedido.prazo) {
             const d = new Date(data.pedido.prazo);
@@ -304,6 +306,7 @@ export default function ServicoManutencao() {
               {form.protocolo || 'Novo Pedido'}
             </span>
           </h2>
+          {console.log('[DEBUG] form.status:', form.status, '| form:', form)}
           {form.status && (
             <span style={{
               background: '#fff',
