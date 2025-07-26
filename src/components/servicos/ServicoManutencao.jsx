@@ -281,15 +281,33 @@ export default function ServicoManutencao() {
         margin: '0 auto',
         padding: '12px 24px 0 24px' // <-- alterado de '48px 24px 0 24px' para diminuir o espaçamento superior
       }}>
-        <h2 style={{
-          marginBottom: 10,
-          color: '#2c3e50',
-          fontWeight: 700,
-          fontSize: 28,
-          letterSpacing: 1
-        }}>
-          Cadastro de Pedido de Serviço
-        </h2>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+          <h2 style={{
+            color: '#2c3e50',
+            fontWeight: 700,
+            fontSize: 28,
+            letterSpacing: 1,
+            margin: 0
+          }}>
+            Pedidos -
+          </h2>
+          {form.protocolo && (
+            <span style={{
+              background: '#f8f9fa',
+              borderRadius: 8,
+              padding: '8px 18px',
+              fontFamily: 'monospace',
+              fontSize: 18,
+              color: '#6c3483',
+              fontWeight: 600,
+              border: '2px solid #9b59b6',
+              boxShadow: '0 2px 8px rgba(155,89,182,0.08)',
+              marginLeft: 18
+            }}>
+              {form.protocolo}
+            </span>
+          )}
+        </div>
         <ServicoAlertas alertas={alertas} />
         <form
           onSubmit={registrarServico}

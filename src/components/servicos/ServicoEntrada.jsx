@@ -206,21 +206,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 28 }}>
             Entrada:
           </h2>
-          {form.protocolo && (
-            <div style={{
-              background: '#f8f9fa',
-              borderRadius: 8,
-              padding: '10px 18px',
-              fontFamily: 'monospace',
-              fontSize: 18,
-              color: '#6c3483',
-              fontWeight: 600,
-              border: '2px solid #9b59b6',
-              boxShadow: '0 2px 8px rgba(155,89,182,0.08)'
-            }}>
-              Protocolo: {form.protocolo}
-            </div>
-          )}
+          {/* Protocolo removido daqui, agora exibido no topo do ServicoManutencao */}
         </div>
 
 
