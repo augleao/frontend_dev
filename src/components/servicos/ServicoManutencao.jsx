@@ -324,20 +324,12 @@ export default function ServicoManutencao() {
                 Status:
               </span>
               <span style={{
-                background: '#fff',
-                color: '#884ea0',
-                border: '2px solid #9b59b6',
-                borderRadius: 8,
+                color: '#6c3483',
+                fontFamily: 'monospace',
                 fontWeight: 700,
                 fontSize: 28,
-                fontFamily: 'monospace',
-                padding: '8px 22px',
-                boxShadow: '0 2px 8px rgba(155,89,182,0.10)',
-                textShadow: '0 2px 8px #fff, 0 1px 0 #fff',
-                letterSpacing: 1.5,
-                textTransform: 'uppercase',
-                minWidth: 120,
-                textAlign: 'center'
+                textShadow: '0 2px 8px #fff, 0 1px 0 #fff, 0 0px 2px #fff',
+                marginLeft: 0
               }}>
                 {form.status}
               </span>
