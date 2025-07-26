@@ -316,7 +316,7 @@ export default function ServicoManutencao() {
               <span style={{
                 color: '#2c3e50',
                 fontWeight: 700,
-                fontSize: 22,
+                fontSize: 28,
                 fontFamily: 'monospace',
                 textShadow: '0 2px 8px #fff, 0 1px 0 #fff, 0 0px 2px #fff',
                 marginRight: 8
