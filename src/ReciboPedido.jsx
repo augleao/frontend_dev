@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import QRCode from 'qrcode.react';
+import { QRCode } from 'qrcode.react';
 import config from './config';
 
 export default function ReciboPedido() {
