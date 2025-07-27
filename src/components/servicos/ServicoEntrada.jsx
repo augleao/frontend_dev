@@ -175,7 +175,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
             const nomeUsuario = usuario.nome || usuario.email || 'Sistema';
             const statusBody = {
-              status: !existeAtoPago ? 'PAGO' : 'Cadastrado',
+              status: !existeAtoPago ? 'Pago' : 'Cadastrado',
               usuario: nomeUsuario
             };
             console.log('[Status POST] Protocolo:', protocoloParaStatus);
