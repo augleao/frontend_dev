@@ -19,6 +19,7 @@ import AtosPraticados from './AtosPraticados'; // ajuste o caminho se necessári
 import PesquisaAtosPraticados from './pesquisaAtosPraticados'; // ajuste o caminho se necessário
 import ServicoManutencao from './components/servicos/ServicoManutencao'; // ajuste o caminho se necessário
 import ListaServicos from './components/servicos/ServicoLista'; // adicione esta linha
+import ReciboPedido from './ReciboPedido';
 import EditarCombos from './components/admin/EditarCombos';
 
 
@@ -131,6 +132,7 @@ function App() {
     </AdminRoute>
   }
 />
+        <Route path="/recibo/:protocolo" element={<ReciboPedido />} />
       </Routes>
     </AuthProvider>
   );
