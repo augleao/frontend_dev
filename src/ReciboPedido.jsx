@@ -92,9 +92,9 @@ export default function ReciboPedido() {
         <b>Protocolo:</b> {pedido.protocolo}<br/>
         <b>Chave:</b> fe345
       </div>
-      <h3 style={{ marginTop: 24, marginBottom: 8, fontSize: 18 }}>Dados da inscrição</h3>
+      <h3 style={{ marginTop: 24, marginBottom: 8, fontSize: 18 }}>Dados do CLiente:</h3>
       <div style={{ fontSize: 15, marginBottom: 8 }}>
-        <b>Cliente:</b> {pedido.cliente?.nome || '-'}<br/>
+        <b>Nome:</b> {pedido.cliente?.nome || '-'}<br/>
         <b>Telefone:</b> {pedido.cliente?.telefone || '-'} &nbsp; <b>Nº do CPF:</b>  {pedido.cliente?.cpf || '-'}
       </div>
       <h3 style={{ marginTop: 24, marginBottom: 8, fontSize: 18 }}>Valores pagos pela inscrição</h3>
