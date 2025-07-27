@@ -20,7 +20,6 @@ import PesquisaAtosPraticados from './pesquisaAtosPraticados'; // ajuste o camin
 import ServicoManutencao from './components/servicos/ServicoManutencao'; // ajuste o caminho se necessário
 import ListaServicos from './components/servicos/ServicoLista'; // adicione esta linha
 import ReciboPedido from './ReciboPedido';
-import ReciboBusca from './ReciboBusca';
 import EditarCombos from './components/admin/EditarCombos';
 
 
@@ -33,7 +32,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/recibo" element={<ReciboBusca />} />
+        {/* <Route path="/recibo" element={<ReciboBusca />} /> */}
         <Route
           path="/conciliacao"
           element={
@@ -134,7 +133,14 @@ function App() {
     </AdminRoute>
   }
 />
-        <Route path="/recibo/:protocolo" element={<ReciboPedido />} />
+        <Route
+          path="/recibo/:protocolo"
+          element={
+            <PrivateRoute>
+              <ReciboPedido />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </AuthProvider>
   );
