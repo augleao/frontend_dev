@@ -130,15 +130,20 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         quantidade: ato.quantidade,
         codigo_tributario: ato.codigoTributario
       }));
-      // Inclui valor adiantado e forma de pagamento no payload
+      // Recupera usuário logado do localStorage
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
+      const nomeUsuario = usuarioLogado.nome || usuarioLogado.email || 'Sistema';
+      // Inclui valor adiantado, forma de pagamento e o nome do usuário no payload
       const body = JSON.stringify({
         ...novoForm,
+        usuario: nomeUsuario,
         descricao: novoForm.descricao || '',
         origem: novoForm.origem || '',
         origemInfo: novoForm.origemInfo || '',
         valorAdiantadoDetalhes,
         combos
       });
+      console.log('[handleSubmit] Nome do usuário logado enviado no pedido:', nomeUsuario);
       const token = localStorage.getItem('token');
       const headers = {
         'Content-Type': 'application/json',
