@@ -201,8 +201,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         // Se foi uma atualização, recarrega a página para mostrar os dados atualizados
         if (form.protocolo && form.protocolo.trim() !== '') {
           window.location.reload();
-        } else if (data.protocolo) {
-          navigate(`/servicos/manutencao?protocolo=${encodeURIComponent(data.protocolo)}`);
+        } else {
+          navigate(-1); // Volta um nível na navegação
         }
       } else {
         // Tratar erro no envio do pedido
