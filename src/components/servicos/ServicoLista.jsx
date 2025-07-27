@@ -38,6 +38,7 @@ function formatDateTime(dateStr) {
 
 export default function ListaServicos() {
   const [pedidos, setPedidos] = useState([]);
+  const [statusPedidos, setStatusPedidos] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,18 +49,33 @@ export default function ListaServicos() {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        console.log('Dados recebidos:', data.pedidos);
         setPedidos(data.pedidos || []);
+        // Buscar status de todos os pedidos
+        if (data.pedidos && data.pedidos.length > 0) {
+          const statusMap = {};
+          await Promise.all(data.pedidos.map(async (pedido) => {
+            try {
+              const resStatus = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(pedido.protocolo)}/status/ultimo`, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              if (resStatus.ok) {
+                const dataStatus = await resStatus.json();
+                statusMap[pedido.protocolo] = dataStatus.status || '-';
+              } else {
+                statusMap[pedido.protocolo] = '-';
+              }
+            } catch {
+              statusMap[pedido.protocolo] = '-';
+            }
+          }));
+          setStatusPedidos(statusMap);
+        }
       } catch (err) {
         console.error('Erro ao buscar pedidos:', err);
       }
     }
     fetchPedidos();
   }, []);
-
-  useEffect(() => {
-    console.log('Pedidos no estado:', pedidos);
-  }, [pedidos]);
 
   return (
     <div style={{ /* ...estilos... */ }}>
@@ -89,18 +105,19 @@ export default function ListaServicos() {
               <th style={{ padding: 8 }}>Criado em</th>
               <th style={{ padding: 8 }}>Protocolo</th>
               <th style={{ padding: 8 }}>Cliente</th>
+              <th style={{ padding: 8 }}>Status</th>
               <th style={{ padding: 8 }}>Prazo</th>
               <th style={{ padding: 8 }}>Ações</th>
             </tr>
           </thead>
           <tbody>
             {pedidos.map((p, idx) => {
-              console.log('Pedido linha:', p); // <-- log por linha
               return (
                 <tr key={p.protocolo} style={{ background: idx % 2 === 0 ? '#fff' : '#f8f9fa' }}>
                   <td style={{ padding: 8 }}>{formatDateTime(p.criado_em)}</td>
                   <td style={{ padding: 8 }}>{p.protocolo}</td>
                   <td style={{ padding: 8 }}>{p.cliente?.nome || '-'}</td>
+                  <td style={{ padding: 8 }}>{statusPedidos[p.protocolo] || '-'}</td>
                   <td style={{ padding: 8 }}>{formatDate(p.prazo)}</td>
                   <td style={{ padding: 8 }}>
                     <button
@@ -124,7 +141,7 @@ export default function ListaServicos() {
             })}
             {pedidos.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
+                <td colSpan={6} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
                   Nenhum pedido encontrado.
                 </td>
               </tr>
