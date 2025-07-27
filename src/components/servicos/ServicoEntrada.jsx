@@ -169,19 +169,29 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           try {
             const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
             const nomeUsuario = usuario.nome || usuario.email || 'Sistema';
-            await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocoloParaStatus)}/status`, {
+            const statusBody = {
+              status: 'Cadastrado',
+              usuario: nomeUsuario
+            };
+            console.log('[Status POST] Protocolo:', protocoloParaStatus);
+            console.log('[Status POST] Usuário:', usuario);
+            console.log('[Status POST] Body:', statusBody);
+            const statusRes = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocoloParaStatus)}/status`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 ...(token ? { Authorization: `Bearer ${token}` } : {})
               },
-              body: JSON.stringify({
-                status: 'Cadastrado',
-                usuario: nomeUsuario
-              })
+              body: JSON.stringify(statusBody)
             });
+            const statusText = await statusRes.text();
+            console.log('[Status POST] Status da resposta:', statusRes.status, statusRes.statusText);
+            console.log('[Status POST] Texto da resposta:', statusText);
+            if (!statusRes.ok) {
+              console.error('[Status POST] Erro ao gravar status:', statusRes.status, statusRes.statusText, statusText);
+            }
           } catch (errStatus) {
-            console.error('Erro ao gravar status Cadastrado:', errStatus);
+            console.error('Erro ao gravar status Cadastrado (catch):', errStatus);
           }
         }
         const mensagem = (form.protocolo && form.protocolo.trim() !== '')
