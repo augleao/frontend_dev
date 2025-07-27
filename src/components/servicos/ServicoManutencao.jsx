@@ -103,11 +103,17 @@ export default function ServicoManutencao() {
             const d = new Date(data.pedido.prazo);
             prazoFormatado = d.toISOString().slice(0, 10);
           }
+          // Compatibiliza o nome do campo vindo do backend
+          const valorAdiantadoDetalhes =
+            data.pedido.valorAdiantadoDetalhes ||
+            data.pedido.valor_adiantado_detalhes ||
+            [{ valor: '', forma: '' }];
           setForm(f => ({
             ...f,
             ...data.pedido,
             prazo: prazoFormatado,
             valorAdiantado: data.pedido.valor_adiantado || 0,
+            valorAdiantadoDetalhes,
             observacao: data.pedido.observacao ?? '',
             clienteId: data.pedido.cliente?.id || null, // Use null ao invés de string vazia
             novoCliente: false, // Define como cliente existente
@@ -116,7 +122,6 @@ export default function ServicoManutencao() {
             execucao: { ...f.execucao, ...data.pedido.execucao },
             entrega: { ...f.entrega, ...data.pedido.entrega }
           }));
-          
           // Mapeia os combos do backend para o formato esperado pelo frontend
           const combosFormatados = Array.isArray(data.pedido.combos) 
             ? data.pedido.combos.map(combo => ({
@@ -130,7 +135,6 @@ export default function ServicoManutencao() {
                 valor_final: combo.valor_final // Garante que o valor_final venha para o frontend
               }))
             : [];
-          
           setAtosPedido(combosFormatados);
           setPedidoCarregado(true);
         }
