@@ -14,6 +14,7 @@ export default function ReciboPedido() {
       try {
         const res = await fetch(`${config.apiURL}/recibo/${encodeURIComponent(protocolo)}`);
         const data = await res.json();
+        console.log('ReciboPedido: resposta da API', data);
         if (data.pedido) setPedido(data.pedido);
         else setErro('Pedido não encontrado.');
       } catch (err) {
@@ -26,11 +27,14 @@ export default function ReciboPedido() {
 
   if (loading) return <div style={{padding: 32}}>Carregando...</div>;
   if (erro) return <div style={{padding: 32, color: 'red'}}>{erro}</div>;
+
   if (!pedido) return null;
 
   // Monta URL do recibo para QR code
   const urlRecibo = `${window.location.origin}/recibo/${encodeURIComponent(pedido.protocolo)}`;
   const serventia = pedido.serventia || {};
+  console.log('ReciboPedido: pedido', pedido);
+  console.log('ReciboPedido: serventia', serventia);
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(44,62,80,0.08)', padding: 32, fontFamily: 'Arial, sans-serif' }}>
@@ -80,13 +84,8 @@ export default function ReciboPedido() {
         <b>Serviço:</b> R$ 0,00<br/>
         <b>Valor total cobrado:</b> R$ 0,00
       </div>
-      <div style={{ marginTop: 32, fontSize: 13, color: '#444' }}>
-        Renata Magnusson Sea<br/>
-        Convênio homologado pela Lei Federal nº 13.487/17 e executado via Central Nacional de informações do Registro Civil (CRC Nacional)
-      </div>
-      <div style={{ marginTop: 16, fontSize: 13, color: '#888' }}>
-        ARPENBRASIL - ASSOCIAÇÃO NACIONAL DOS REGISTRADORES DE PESSOAS NATURAIS
-      </div>
+
+
     </div>
   );
 }
