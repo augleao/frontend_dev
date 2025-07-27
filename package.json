@@ -8,6 +8,7 @@
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "pdfjs-dist": "^5.0.375",
+    "qrcode.react": "^4.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.6.2",
