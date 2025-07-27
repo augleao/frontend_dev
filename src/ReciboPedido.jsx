@@ -12,7 +12,7 @@ export default function ReciboPedido() {
   useEffect(() => {
     async function fetchPedido() {
       try {
-        const res = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`);
+        const res = await fetch(`${config.apiURL}/recibo/${encodeURIComponent(protocolo)}`);
         const data = await res.json();
         if (data.pedido) setPedido(data.pedido);
         else setErro('Pedido não encontrado.');
