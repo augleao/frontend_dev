@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { QRCode } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 import config from './config';
 
 export default function ReciboPedido() {
@@ -59,7 +59,7 @@ export default function ReciboPedido() {
           <b>Data de entrega:</b> Acompanhar pelo portal
         </div>
         <div style={{ border: '2px dashed #aaa', borderRadius: 8, padding: 8, background: '#fafafa' }}>
-          <QRCode value={urlRecibo} size={100} />
+          <QRCodeCanvas value={urlRecibo} size={100} />
         </div>
       </div>
       <div style={{ border: '1px solid #aaa', borderRadius: 8, padding: 12, marginBottom: 16, background: '#f8f8f8' }}>
