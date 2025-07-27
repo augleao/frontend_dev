@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import config from '../../config';
@@ -168,13 +167,18 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         const protocoloParaStatus = data.protocolo || form.protocolo;
         if (protocoloParaStatus) {
           try {
+            const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+            const nomeUsuario = usuario.nome || usuario.email || 'Sistema';
             await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocoloParaStatus)}/status`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 ...(token ? { Authorization: `Bearer ${token}` } : {})
               },
-              body: JSON.stringify({ status: 'Cadastrado', usuario: localStorage.getItem('usuario') || 'Sistema' })
+              body: JSON.stringify({
+                status: 'Cadastrado',
+                usuario: nomeUsuario
+              })
             });
           } catch (errStatus) {
             console.error('Erro ao gravar status Cadastrado:', errStatus);
