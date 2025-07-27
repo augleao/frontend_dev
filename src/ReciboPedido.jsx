@@ -14,6 +14,12 @@ export default function ReciboPedido() {
       try {
         const res = await fetch(`${config.apiURL}/recibo/${encodeURIComponent(protocolo)}`);
         const data = await res.json();
+        console.log('ReciboPedido: resposta bruta da API', data);
+        if (data && typeof data === 'object') {
+          Object.keys(data).forEach(k => {
+            console.log('ReciboPedido: chave', k, 'valor', data[k]);
+          });
+        }
         console.log('ReciboPedido: resposta da API', data);
         if (data.pedido) setPedido(data.pedido);
         else setErro('Pedido não encontrado.');
@@ -28,13 +34,25 @@ export default function ReciboPedido() {
   if (loading) return <div style={{padding: 32}}>Carregando...</div>;
   if (erro) return <div style={{padding: 32, color: 'red'}}>{erro}</div>;
 
-  if (!pedido) return null;
+  if (!pedido) {
+    console.log('ReciboPedido: pedido está nulo ou indefinido');
+    return null;
+  }
 
   // Monta URL do recibo para QR code
   const urlRecibo = `${window.location.origin}/recibo/${encodeURIComponent(pedido.protocolo)}`;
   const serventia = pedido.serventia || {};
   console.log('ReciboPedido: pedido', pedido);
-  console.log('ReciboPedido: serventia', serventia);
+  if (pedido.serventia === undefined) {
+    console.warn('ReciboPedido: pedido.serventia está undefined');
+  } else if (pedido.serventia === null) {
+    console.warn('ReciboPedido: pedido.serventia está null');
+  } else {
+    console.log('ReciboPedido: serventia', serventia);
+    Object.keys(serventia).forEach(k => {
+      console.log('ReciboPedido: serventia campo', k, 'valor', serventia[k]);
+    });
+  }
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(44,62,80,0.08)', padding: 32, fontFamily: 'Arial, sans-serif' }}>
