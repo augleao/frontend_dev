@@ -160,9 +160,26 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       } catch (jsonErr) {
         console.error('[handleSubmit] Erro ao fazer parse do JSON da resposta:', jsonErr);
       }
+      // Após salvar o pedido, grava o status 'Cadastrado' no DB
       if (res.ok) {
         // Pedido enviado com sucesso
         console.log('Operação realizada com sucesso:', data);
+        // Grava status 'Cadastrado' na tabela de status
+        const protocoloParaStatus = data.protocolo || form.protocolo;
+        if (protocoloParaStatus) {
+          try {
+            await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocoloParaStatus)}/status`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+              },
+              body: JSON.stringify({ status: 'Cadastrado', usuario: localStorage.getItem('usuario') || 'Sistema' })
+            });
+          } catch (errStatus) {
+            console.error('Erro ao gravar status Cadastrado:', errStatus);
+          }
+        }
         const mensagem = (form.protocolo && form.protocolo.trim() !== '')
           ? `Pedido ${form.protocolo} atualizado com sucesso!`
           : 'Novo pedido criado com sucesso!';
