@@ -198,12 +198,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           ? `Pedido ${form.protocolo} atualizado com sucesso!`
           : 'Novo pedido criado com sucesso!';
         alert(mensagem);
-        // Se foi uma atualização, recarrega a página para mostrar os dados atualizados
-        if (form.protocolo && form.protocolo.trim() !== '') {
-          window.location.reload();
-        } else {
-          navigate(-1); // Volta um nível na navegação
-        }
+        // Após salvar ou atualizar, volta um nível na navegação
+        navigate(-1);
       } else {
         // Tratar erro no envio do pedido
         console.error('Erro ao enviar pedido:', res.status, res.statusText, data);
