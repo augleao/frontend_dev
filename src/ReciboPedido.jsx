@@ -76,8 +76,8 @@ export default function ReciboPedido() {
       </div>
       <h3 style={{ marginTop: 24, marginBottom: 8, fontSize: 18 }}>Dados da inscrição</h3>
       <div style={{ fontSize: 15, marginBottom: 8 }}>
-        <b>Nome do registrado:</b> {pedido.cliente?.nome || '-'}<br/>
-        <b>Telefone:</b> {pedido.cliente?.telefone || '-'} &nbsp; <b>Nº do CPF:</b> Ainda não gerado
+        <b>Cliente:</b> {pedido.cliente?.nome || '-'}<br/>
+        <b>Telefone:</b> {pedido.cliente?.telefone || '-'} &nbsp; <b>Nº do CPF:</b>  {pedido.cliente?.cpf || '-'}
       </div>
       <h3 style={{ marginTop: 24, marginBottom: 8, fontSize: 18 }}>Valores pagos pela inscrição</h3>
       <div style={{ fontSize: 15, marginBottom: 8 }}>
