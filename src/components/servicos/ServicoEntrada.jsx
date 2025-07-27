@@ -4,6 +4,8 @@ import config from '../../config';
 
 export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
   console.log('PROPS atosPedido recebidos em ServicoEntrada:', atosPedido);
+  console.log('[LOG] form recebido em ServicoEntrada:', form);
+  console.log('[LOG] form.valorAdiantadoDetalhes recebido:', form.valorAdiantadoDetalhes);
   const [comboSelecionado, setComboSelecionado] = useState('');
   const [codigoTributarioSuggestions, setCodigoTributarioSuggestions] = useState([]);
   const [loadingCodigoTributario, setLoadingCodigoTributario] = useState(false);
@@ -12,6 +14,11 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const [valorAdiantadoDetalhes, setValorAdiantadoDetalhes] = useState(
     form.valorAdiantadoDetalhes || [ { valor: '', forma: '' } ]
   );
+
+  useEffect(() => {
+    console.log('[LOG] useEffect - form.valorAdiantadoDetalhes mudou:', form.valorAdiantadoDetalhes);
+    setValorAdiantadoDetalhes(form.valorAdiantadoDetalhes || [ { valor: '', forma: '' } ]);
+  }, [form.valorAdiantadoDetalhes]);
   const navigate = useNavigate();
 
   // Manipula mudança em um item de valor adiantado (valor ou forma)
