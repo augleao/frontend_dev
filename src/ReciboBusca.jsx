@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+
 export default function ReciboBusca() {
+  console.log('ReciboBusca: renderizou');
   const [protocolo, setProtocolo] = useState('');
   const [erro, setErro] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    console.log('ReciboBusca: useEffect inicial');
+  }, []);
+
+
   function handleSubmit(e) {
     e.preventDefault();
+    console.log('ReciboBusca: submit', protocolo);
     if (!protocolo.trim()) {
       setErro('Digite o número do protocolo.');
       return;
