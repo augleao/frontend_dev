@@ -121,7 +121,7 @@ export default function ListaServicos() {
                   <td style={{ padding: 8 }}>{p.descricao || '-'}</td>
                   <td style={{ padding: 8 }}>{statusPedidos[p.protocolo] || '-'}</td>
                   <td style={{ padding: 8 }}>{formatDate(p.prazo)}</td>
-                  <td style={{ padding: 8 }}>
+                  <td style={{ padding: 8, display: 'flex', gap: 8 }}>
                     <button
                       style={{
                         background: '#3498db',
@@ -136,6 +136,38 @@ export default function ListaServicos() {
                       onClick={() => navigate(`/manutencao-servicos?protocolo=${encodeURIComponent(p.protocolo)}`)}
                     >
                       EDITAR
+                    </button>
+                    <button
+                      style={{
+                        background: '#e74c3c',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 6,
+                        padding: '6px 16px',
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        cursor: 'pointer'
+                      }}
+                      onClick={async () => {
+                        if (window.confirm(`Tem certeza que deseja apagar o pedido ${p.protocolo}?`)) {
+                          try {
+                            const token = localStorage.getItem('token');
+                            const res = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(p.protocolo)}`, {
+                              method: 'DELETE',
+                              headers: { Authorization: `Bearer ${token}` }
+                            });
+                            if (res.ok) {
+                              setPedidos(pedidos => pedidos.filter(x => x.protocolo !== p.protocolo));
+                            } else {
+                              alert('Erro ao apagar pedido.');
+                            }
+                          } catch (err) {
+                            alert('Erro ao apagar pedido.');
+                          }
+                        }
+                      }}
+                    >
+                      APAGAR
                     </button>
                   </td>
                 </tr>
