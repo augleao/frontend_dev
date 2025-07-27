@@ -139,6 +139,21 @@ export default function ListaServicos() {
                     </button>
                     <button
                       style={{
+                        background: '#e67e22',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 6,
+                        padding: '6px 16px',
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => window.open(`/recibo/${encodeURIComponent(p.protocolo)}`, '_blank')}
+                    >
+                      RECIBO
+                    </button>
+                    <button
+                      style={{
                         background: '#e74c3c',
                         color: '#fff',
                         border: 'none',
