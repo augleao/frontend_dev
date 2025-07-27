@@ -168,14 +168,14 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       if (res.ok) {
         // Pedido enviado com sucesso
         console.log('Operação realizada com sucesso:', data);
-        // Grava status 'Cadastrado' na tabela de status
+        // Grava status 'Cadastrado' ou 'PAGO' na tabela de status
         const protocoloParaStatus = data.protocolo || form.protocolo;
         if (protocoloParaStatus) {
           try {
             const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
             const nomeUsuario = usuario.nome || usuario.email || 'Sistema';
             const statusBody = {
-              status: 'Cadastrado',
+              status: !existeAtoPago ? 'PAGO' : 'Cadastrado',
               usuario: nomeUsuario
             };
             console.log('[Status POST] Protocolo:', protocoloParaStatus);
@@ -196,7 +196,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               console.error('[Status POST] Erro ao gravar status:', statusRes.status, statusRes.statusText, statusText);
             }
           } catch (errStatus) {
-            console.error('Erro ao gravar status Cadastrado (catch):', errStatus);
+            console.error('Erro ao gravar status (catch):', errStatus);
           }
         }
         const mensagem = (form.protocolo && form.protocolo.trim() !== '')
