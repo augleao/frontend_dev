@@ -30,6 +30,7 @@ export default function ReciboPedido() {
 
   // Monta URL do recibo para QR code
   const urlRecibo = `${window.location.origin}/recibo/${encodeURIComponent(pedido.protocolo)}`;
+  const serventia = pedido.serventia || {};
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(44,62,80,0.08)', padding: 32, fontFamily: 'Arial, sans-serif' }}>
@@ -40,17 +41,19 @@ export default function ReciboPedido() {
             <b>Tipo serviço:</b> <span style={{ fontWeight: 600 }}>Inscrição de CPF</span>
           </div>
           <div style={{ fontSize: 14 }}>
-            <b>Cartório:</b> Eugênio de Melo - Distrito do Município de São José dos Campos<br/>
-            Avenida José Francisco Marcondes, 387, Jd. São Vicente - São José dos Campos/SP<br/>
-            (12) 3929-5200
+            <b>Cartório:</b> {serventia.nome_completo || '-'}<br/>
+            {serventia.endereco || '-'}<br/>
+            {serventia.telefone || ''}{serventia.telefone && serventia.whatsapp ? ' / ' : ''}{serventia.whatsapp || ''}<br/>
+            {serventia.email ? <span>{serventia.email}<br/></span> : null}
+            {serventia.cnpj ? <span><b>CNPJ:</b> {serventia.cnpj}<br/></span> : null}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 14 }}>
             <b>Pedido nº:</b> {pedido.protocolo}<br/>
-            <b>CNS cartório:</b> 123125
+            <b>CNS cartório:</b> {serventia.cns || '-'}
           </div>
-          <img src="/logo-crc.png" alt="CRC" style={{ height: 32, marginTop: 8 }} />
+          {/* <img src="/logo-crc.png" alt="CRC" style={{ height: 32, marginTop: 8 }} /> */}
         </div>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
