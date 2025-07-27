@@ -105,6 +105,7 @@ export default function ListaServicos() {
               <th style={{ padding: 8 }}>Criado em</th>
               <th style={{ padding: 8 }}>Protocolo</th>
               <th style={{ padding: 8 }}>Cliente</th>
+              <th style={{ padding: 8 }}>Descrição</th>
               <th style={{ padding: 8 }}>Status</th>
               <th style={{ padding: 8 }}>Prazo</th>
               <th style={{ padding: 8 }}>Ações</th>
@@ -117,6 +118,7 @@ export default function ListaServicos() {
                   <td style={{ padding: 8 }}>{formatDateTime(p.criado_em)}</td>
                   <td style={{ padding: 8 }}>{p.protocolo}</td>
                   <td style={{ padding: 8 }}>{p.cliente?.nome || '-'}</td>
+                  <td style={{ padding: 8 }}>{p.descricao || '-'}</td>
                   <td style={{ padding: 8 }}>{statusPedidos[p.protocolo] || '-'}</td>
                   <td style={{ padding: 8 }}>{formatDate(p.prazo)}</td>
                   <td style={{ padding: 8 }}>
@@ -141,7 +143,7 @@ export default function ListaServicos() {
             })}
             {pedidos.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
+                <td colSpan={7} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
                   Nenhum pedido encontrado.
                 </td>
               </tr>
