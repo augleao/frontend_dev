@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+
+import config from '../../config';
 
 export default function ServicoConferencia({ protocolo }) {
   const [usuario, setUsuario] = useState('');
@@ -25,9 +26,12 @@ export default function ServicoConferencia({ protocolo }) {
     setErro(null);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/conferencias?protocolo=${encodeURIComponent(protocolo)}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
+      const res = await fetch(
+        `${config.apiURL}/conferencias?protocolo=${encodeURIComponent(protocolo)}`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }
+      );
       if (res.ok) {
         const data = await res.json();
         setConferencias(data.conferencias || []);
@@ -51,7 +55,7 @@ export default function ServicoConferencia({ protocolo }) {
         status,
         observacao
       });
-      const res = await fetch('/api/conferencias', {
+      const res = await fetch(`${config.apiURL}/conferencias`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
