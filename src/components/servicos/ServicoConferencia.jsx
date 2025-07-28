@@ -92,6 +92,7 @@ export default function ServicoConferencia({ protocolo }) {
           <select value={status} onChange={e => setStatus(e.target.value)} style={{ width: '100%', border: '1.5px solid #f9e79f', borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box', background: '#fffbe6' }}>
             <option value="conferido">Conferido</option>
             <option value="retificado">Retificado</option>
+            <option value="recusado">Recusado</option>
           </select>
         </div>
         <div style={{ flex: 2, minWidth: 200 }}>
@@ -135,7 +136,9 @@ export default function ServicoConferencia({ protocolo }) {
                 <tr key={idx} style={{ background: idx % 2 === 0 ? '#fff3e0' : 'transparent' }}>
                   <td style={{ padding: 6 }}>{c.dataHora ? new Date(c.dataHora).toLocaleString() : '-'}</td>
                   <td style={{ padding: 6 }}>{c.usuario}</td>
-                  <td style={{ padding: 6 }}>{c.status === 'conferido' ? 'Conferido' : 'Retificado'}</td>
+                  <td style={{ padding: 6 }}>
+                    {c.status === 'conferido' ? 'Conferido' : c.status === 'retificado' ? 'Retificado' : c.status === 'recusado' ? 'Recusado' : c.status}
+                  </td>
                   <td style={{ padding: 6 }}>{c.observacao}</td>
                 </tr>
               ))
