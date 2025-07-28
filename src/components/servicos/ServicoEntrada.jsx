@@ -49,7 +49,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     setCodigoTributarioIdx(idx);
     setCodigoTributarioTerm(value);
     // Busca sugestões se houver pelo menos 2 caracteres
-    if (value.length >= 2) {
+    if (value.length >= 1) {
       setLoadingCodigoTributario(true);
       try {
         // Ajuste a URL abaixo conforme a rota real do seu backend
