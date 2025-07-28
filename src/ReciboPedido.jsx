@@ -40,10 +40,6 @@ export default function ReciboPedido() {
     }
     fetchPedido();
 
-    // Abrir automaticamente em nova guia se não for popup
-    if (window.opener == null) {
-      window.open(window.location.href, '_blank', 'noopener,noreferrer');
-    }
   }, [protocolo]);
 
   if (loading) return <div style={{padding: 32}}>Carregando...</div>;
