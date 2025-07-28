@@ -3,6 +3,15 @@ import { useParams } from 'react-router-dom';
 import { QRCodeCanvas } from 'qrcode.react';
 import config from './config';
 
+// Oculta a NavBar se existir
+useEffect(() => {
+  const nav = document.querySelector('.navbar, nav, #navbar, .NavBar');
+  if (nav) nav.style.display = 'none';
+  return () => {
+    if (nav) nav.style.display = '';
+  };
+}, []);
+
 export default function ReciboPedido() {
   const { protocolo } = useParams();
   const [pedido, setPedido] = useState(null);
@@ -29,6 +38,11 @@ export default function ReciboPedido() {
       setLoading(false);
     }
     fetchPedido();
+
+    // Abrir automaticamente em nova guia se não for popup
+    if (window.opener == null) {
+      window.open(window.location.href, '_blank', 'noopener,noreferrer');
+    }
   }, [protocolo]);
 
   if (loading) return <div style={{padding: 32}}>Carregando...</div>;
@@ -54,8 +68,15 @@ export default function ReciboPedido() {
     });
   }
 
+  // Sugestão para abrir em nova guia: pode-se usar um botão ou instrução para o usuário
+  // Exemplo: <a href={window.location.href} target="_blank" rel="noopener noreferrer">Abrir recibo em nova guia</a>
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(44,62,80,0.08)', padding: 32, fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ textAlign: 'right', marginBottom: 8 }}>
+        <a href={window.location.href} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: '#6c3483', textDecoration: 'underline' }}>
+          Abrir recibo em nova guia
+        </a>
+      </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div>
           <h2 style={{ margin: 0, fontWeight: 700 }}>Recibo de serviço</h2>
