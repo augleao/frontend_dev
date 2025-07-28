@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import ServicoEntrada from './ServicoEntrada';
 import ServicoCliente from './ServicoCliente';
 import ServicoPagamento from './ServicoPagamento';
+import ServicoConferencia from './ServicoConferencia';
 import ServicoExecucao from './ServicoExecucao';
 import ServicoEntrega from './ServicoEntrega';
 import ServicoAlertas from './ServicoAlertas';
@@ -378,6 +379,9 @@ export default function ServicoManutencao() {
               <ServicoCliente form={form} clientes={clientes} onChange={handleFormChange} onClienteChange={handleClienteChange} />
             </div>
           </div>
+
+          {/* Novo componente de conferência */}
+          <ServicoConferencia protocolo={form.protocolo} />
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 18 }}>
             {/* Exibe ServicoPagamento apenas se houver ato com codigoTributario '01' */}
             {atosPedido.some(ato => ato.codigoTributario === '01') && (
