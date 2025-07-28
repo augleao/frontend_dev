@@ -74,7 +74,7 @@ export default function ServicoConferencia({ protocolo }) {
               'Content-Type': 'application/json',
               ...(token ? { Authorization: `Bearer ${token}` } : {})
             },
-            body: JSON.stringify({ status })
+            body: JSON.stringify({ status, usuario })
           });
         } catch (e) {
           // Não bloqueia o fluxo se falhar, mas pode exibir um aviso se desejar
