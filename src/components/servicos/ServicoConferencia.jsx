@@ -4,7 +4,7 @@ import config from '../../config';
 
 export default function ServicoConferencia({ protocolo }) {
   const [usuario, setUsuario] = useState('');
-  const [status, setStatus] = useState('conferido');
+  const [status, setStatus] = useState('Conferido');
   const [observacao, setObservacao] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [conferencias, setConferencias] = useState([]);
@@ -80,7 +80,7 @@ export default function ServicoConferencia({ protocolo }) {
           // Não bloqueia o fluxo se falhar, mas pode exibir um aviso se desejar
         }
         setObservacao('');
-        setStatus('conferido');
+        setStatus('Conferido');
         fetchConferencias();
       } else {
         setErro('Erro ao salvar conferência.');
@@ -109,9 +109,9 @@ export default function ServicoConferencia({ protocolo }) {
         <div style={{ flex: 1, minWidth: 200 }}>
           <label style={{ color: '#e67e22', fontWeight: 600 }}>Status da conferência:</label><br />
           <select value={status} onChange={e => setStatus(e.target.value)} style={{ width: '100%', border: '1.5px solid #f9e79f', borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box', background: '#fffbe6' }}>
-            <option value="conferido">Conferido</option>
-            <option value="retificado">Retificado</option>
-            <option value="recusado">Recusado</option>
+            <option value="Conferido">Conferido</option>
+            <option value="Retificado">Retificado</option>
+            <option value="Recusado">Recusado</option>
           </select>
         </div>
         <div style={{ flex: 2, minWidth: 200 }}>
@@ -163,7 +163,7 @@ export default function ServicoConferencia({ protocolo }) {
                   </td>
                   <td style={{ padding: 6 }}>{c.usuario}</td>
                   <td style={{ padding: 6 }}>
-                    {c.status === 'conferido' ? 'Conferido' : c.status === 'retificado' ? 'Retificado' : c.status === 'recusado' ? 'Recusado' : c.status}
+                    {c.status === 'Conferido' ? 'Conferido' : c.status === 'Retificado' ? 'Retificado' : c.status === 'Recusado' ? 'Recusado' : c.status}
                   </td>
                   <td style={{ padding: 6 }}>{c.observacao}</td>
                   <td style={{ padding: 6 }}>
