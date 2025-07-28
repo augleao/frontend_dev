@@ -55,6 +55,37 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
 
   // Salva novo cliente
   const handleSalvarCliente = async () => {
+    // Validação: verifica se CPF/CNPJ já existe
+    if (!form.cliente.cpf || form.cliente.cpf.trim() === '') {
+      alert('CPF/CNPJ é obrigatório para salvar o cliente.');
+      return;
+    }
+
+    // Verifica se já existe cliente com o mesmo CPF/CNPJ
+    try {
+      const token = localStorage.getItem('token');
+      const checkRes = await fetch(
+        `${config.apiURL}/clientes?search=${encodeURIComponent(form.cliente.cpf)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const checkData = await checkRes.json();
+      const clientesExistentes = checkData.clientes || [];
+      
+      // Verifica se existe algum cliente com CPF/CNPJ idêntico
+      const cpfExiste = clientesExistentes.some(cliente => 
+        cliente.cpf === form.cliente.cpf && cliente.id !== form.clienteId
+      );
+      
+      if (cpfExiste) {
+        alert('Já existe um cliente cadastrado com este CPF/CNPJ.');
+        return;
+      }
+    } catch (err) {
+      alert('Erro ao verificar CPF/CNPJ. Tente novamente.');
+      return;
+    }
+
+    // Salva o cliente se passou na validação
     const token = localStorage.getItem('token');
     const res = await fetch(`${config.apiURL}/clientes`, {
       method: 'POST',
@@ -69,6 +100,10 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
       onChange('clienteId', novoCliente.id);
       setSearchTerm(novoCliente.nome);
       setSuggestions([]);
+      alert('Cliente salvo com sucesso!');
+    } else {
+      const errorData = await res.json();
+      alert(errorData.error || 'Erro ao salvar cliente.');
     }
   };
 
