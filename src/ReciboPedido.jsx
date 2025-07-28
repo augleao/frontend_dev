@@ -3,16 +3,17 @@ import { useParams } from 'react-router-dom';
 import { QRCodeCanvas } from 'qrcode.react';
 import config from './config';
 
-// Oculta a NavBar se existir
-useEffect(() => {
-  const nav = document.querySelector('.navbar, nav, #navbar, .NavBar');
-  if (nav) nav.style.display = 'none';
-  return () => {
-    if (nav) nav.style.display = '';
-  };
-}, []);
+
 
 export default function ReciboPedido() {
+  // Oculta a NavBar se existir
+  useEffect(() => {
+    const nav = document.querySelector('.navbar, nav, #navbar, .NavBar');
+    if (nav) nav.style.display = 'none';
+    return () => {
+      if (nav) nav.style.display = '';
+    };
+  }, []);
   const { protocolo } = useParams();
   const [pedido, setPedido] = useState(null);
   const [loading, setLoading] = useState(true);
