@@ -357,10 +357,10 @@ export default function ServicoManutencao() {
             border: '3px solid #9b59b6',
             borderRadius: 24,
             background: '#fdf8feff',
-            padding: 12,
-            marginBottom: 18,
+            padding: 5,
+            marginBottom: 12,
             display: 'flex',
-            gap: 12,
+            gap: 5,
             flexWrap: 'wrap',
             alignItems: 'flex-start',
             boxShadow: '0 6px 32px rgba(155,89,182,0.10)'
