@@ -127,11 +127,11 @@ export default function ServicoConferencia({ protocolo }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, background: 'transparent' }}>
           <thead>
             <tr style={{ background: '#ffe5b4' }}>
-              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12 }}>Data/Hora</th>
-              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12 }}>Usuário</th>
-              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12 }}>Status</th>
-              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12 }}>Observação</th>
-              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12 }}>Ações</th>
+              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Data/Hora</th>
+              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Usuário</th>
+              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Status</th>
+              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Observação</th>
+              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Ações</th>
             </tr>
           </thead>
           <tbody>
