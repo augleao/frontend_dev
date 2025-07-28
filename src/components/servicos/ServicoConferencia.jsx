@@ -56,6 +56,7 @@ export default function ServicoConferencia({ protocolo }) {
         status,
         observacao
       });
+      // Salva a conferência normalmente
       const res = await fetch(`${config.apiURL}/conferencias`, {
         method: 'POST',
         headers: {
@@ -65,6 +66,19 @@ export default function ServicoConferencia({ protocolo }) {
         body
       });
       if (res.ok) {
+        // Atualiza o status do pedido na tabela pedido_status
+        try {
+          await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}/status`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({ status })
+          });
+        } catch (e) {
+          // Não bloqueia o fluxo se falhar, mas pode exibir um aviso se desejar
+        }
         setObservacao('');
         setStatus('conferido');
         fetchConferencias();
