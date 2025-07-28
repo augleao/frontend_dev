@@ -131,20 +131,49 @@ export default function ServicoConferencia({ protocolo }) {
               <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12 }}>Usuário</th>
               <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12 }}>Status</th>
               <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12 }}>Observação</th>
+              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12 }}>Ações</th>
             </tr>
           </thead>
           <tbody>
             {conferencias.length === 0 ? (
-              <tr><td colSpan={4} style={{ textAlign: 'center', color: '#aaa', padding: 12 }}>Nenhuma conferência registrada.</td></tr>
+              <tr><td colSpan={5} style={{ textAlign: 'center', color: '#aaa', padding: 12 }}>Nenhuma conferência registrada.</td></tr>
             ) : (
               conferencias.map((c, idx) => (
-                <tr key={idx} style={{ background: idx % 2 === 0 ? '#fff3e0' : 'transparent' }}>
-                  <td style={{ padding: 6 }}>{c.dataHora ? new Date(c.dataHora).toLocaleString() : '-'}</td>
+                <tr key={c.id || idx} style={{ background: idx % 2 === 0 ? '#fff3e0' : 'transparent' }}>
+                  <td style={{ padding: 6 }}>
+                    {c.dataHora
+                      ? new Date(c.dataHora).toLocaleString()
+                      : c.data_hora
+                        ? new Date(c.data_hora).toLocaleString()
+                        : '-'}
+                  </td>
                   <td style={{ padding: 6 }}>{c.usuario}</td>
                   <td style={{ padding: 6 }}>
                     {c.status === 'conferido' ? 'Conferido' : c.status === 'retificado' ? 'Retificado' : c.status === 'recusado' ? 'Recusado' : c.status}
                   </td>
                   <td style={{ padding: 6 }}>{c.observacao}</td>
+                  <td style={{ padding: 6 }}>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (window.confirm('Deseja realmente apagar esta conferência?')) {
+                          try {
+                            const token = localStorage.getItem('token');
+                            await fetch(`${config.apiURL}/conferencias/${c.id}`, {
+                              method: 'DELETE',
+                              headers: token ? { Authorization: `Bearer ${token}` } : {}
+                            });
+                            fetchConferencias();
+                          } catch (err) {
+                            alert('Erro ao apagar conferência.');
+                          }
+                        }
+                      }}
+                      style={{ background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 'bold', fontSize: 13, cursor: 'pointer' }}
+                    >
+                      Apagar
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
