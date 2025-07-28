@@ -97,10 +97,23 @@ export default function ReciboPedido() {
         <b>Nome:</b> {pedido.cliente?.nome || '-'}<br/>
         <b>Telefone:</b> {pedido.cliente?.telefone || '-'} &nbsp; <b>Nº do CPF:</b>  {pedido.cliente?.cpf || '-'}
       </div>
-      <h3 style={{ marginTop: 24, marginBottom: 8, fontSize: 18 }}>Valores pagos pela inscrição</h3>
+      <h3 style={{ marginTop: 24, marginBottom: 8, fontSize: 18 }}>Valores pagos pelo cliente</h3>
       <div style={{ fontSize: 15, marginBottom: 8 }}>
-        <b>Serviço:</b> R$ 0,00<br/>
-        <b>Valor total cobrado:</b> R$ 0,00
+        {Array.isArray(pedido.valorAdiantadoDetalhes) && pedido.valorAdiantadoDetalhes.length > 0 ? (
+          <>
+            <b>Valores antecipados:</b>
+            <ul style={{ margin: '8px 0 8px 16px', padding: 0 }}>
+              {pedido.valorAdiantadoDetalhes.map((item, idx) => (
+                <li key={idx} style={{ marginBottom: 2 }}>
+                  Valor: R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {item.forma ? ` (${item.forma})` : ''}
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <span>Nenhum valor antecipado informado.</span>
+        )}
       </div>
 
 
