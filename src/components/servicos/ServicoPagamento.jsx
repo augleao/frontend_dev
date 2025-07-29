@@ -20,9 +20,20 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   // Função para atualizar status no banco de dados
   const atualizarStatusPedido = async (novoStatus) => {
     try {
+      // Verifica se temos protocolo válido
+      if (!form.protocolo) {
+        throw new Error('Protocolo não encontrado. Não é possível atualizar o status.');
+      }
+
       const token = localStorage.getItem('token');
-      const response = await fetch(`${config.apiURL}/pedidos/${form.protocolo}/status`, {
-        method: 'PATCH',
+      
+      if (!token) {
+        throw new Error('Token de autenticação não encontrado. Faça login novamente.');
+      }
+      
+      // Primeiro tenta com PUT (mais comum e aceito)
+      let response = await fetch(`${config.apiURL}/pedidos/${form.protocolo}/status`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -30,8 +41,32 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         body: JSON.stringify({ status: novoStatus })
       });
 
+      // Se PUT não funcionar, tenta com POST
+      if (!response.ok && response.status === 405) {
+        response = await fetch(`${config.apiURL}/pedidos/${form.protocolo}/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status: novoStatus })
+        });
+      }
+
+      // Se ainda não funcionar, tenta atualizar o pedido completo
       if (!response.ok) {
-        throw new Error('Erro ao atualizar status do pedido');
+        response = await fetch(`${config.apiURL}/pedidos/${form.protocolo}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ ...form, status: novoStatus })
+        });
+      }
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
       }
 
       const resultado = await response.json();
@@ -45,7 +80,21 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       return resultado;
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
-      alert('Erro ao atualizar status do pedido. Tente novamente.');
+      
+      // Fallback: atualiza apenas localmente se o backend falhar
+      if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+        console.warn('Erro de CORS/rede detectado. Atualizando status apenas localmente.');
+        setStatusPedido(novoStatus);
+        
+        if (onChange) {
+          onChange({ ...form, status: novoStatus });
+        }
+        
+        alert(`⚠️ Status atualizado localmente para "${novoStatus}". \nO servidor pode estar temporariamente indisponível.`);
+        return { status: novoStatus, local: true };
+      }
+      
+      alert(`❌ Erro ao atualizar status do pedido: ${error.message}`);
       throw error;
     }
   };
@@ -168,17 +217,21 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       const excesso = totalAdiantado - valorTotal;
       
       // Atualiza o status para "Pago" no banco de dados
-      await atualizarStatusPedido('Pago');
+      const resultado = await atualizarStatusPedido('Pago');
       
       // Se há excesso, gera automaticamente o recibo
       if (excesso > 0) {
         gerarReciboExcesso(excesso);
       }
       
-      alert('✅ Pagamento confirmado com sucesso! Status atualizado para "Pago".');
+      if (resultado.local) {
+        alert('✅ Pagamento confirmado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
+      } else {
+        alert('✅ Pagamento confirmado com sucesso! Status atualizado para "Pago".');
+      }
     } catch (error) {
       console.error('Erro ao confirmar pagamento:', error);
-      alert('❌ Erro ao confirmar pagamento. Tente novamente.');
+      alert('❌ Erro ao confirmar pagamento. Verifique sua conexão e tente novamente.');
     } finally {
       setProcessando(false);
     }
@@ -191,12 +244,16 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         setProcessando(true);
         
         // Atualiza o status para "Conferido" no banco de dados
-        await atualizarStatusPedido('Conferido');
+        const resultado = await atualizarStatusPedido('Conferido');
         
-        alert('✅ Pagamento cancelado com sucesso! Status atualizado para "Conferido".');
+        if (resultado.local) {
+          alert('✅ Pagamento cancelado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
+        } else {
+          alert('✅ Pagamento cancelado com sucesso! Status atualizado para "Conferido".');
+        }
       } catch (error) {
         console.error('Erro ao cancelar pagamento:', error);
-        alert('❌ Erro ao cancelar pagamento. Tente novamente.');
+        alert('❌ Erro ao cancelar pagamento. Verifique sua conexão e tente novamente.');
       } finally {
         setProcessando(false);
       }
