@@ -399,6 +399,7 @@ export default function ServicoManutencao() {
               form={form} 
               onChange={handlePagamentoChange} 
               valorTotal={calcularTotalAtosPagos()}
+              valorAdiantadoDetalhes={form.valorAdiantadoDetalhes || []}
             />
           )}
           
