@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import config from '../../config';
+import React from 'react';
 
 const statusPagamento = [
   { value: 'pendente', label: 'Pendente' },
@@ -8,9 +7,6 @@ const statusPagamento = [
 ];
 
 export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes = [] }) {
-  const [statusPagamento, setStatusPagamento] = useState(form.status || 'conferido');
-  const [processando, setProcessando] = useState(false);
-
   // Função para calcular o total adiantado
   const calcularTotalAdiantado = () => {
     return valorAdiantadoDetalhes
@@ -18,119 +14,11 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       .reduce((total, item) => total + parseFloat(item.valor || 0), 0);
   };
 
-  // Função para atualizar status no backend
-  const atualizarStatusPedido = async (novoStatus) => {
-    try {
-      const token = localStorage.getItem('token');
-      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-      const nomeUsuario = usuario.nome || usuario.email || 'Sistema';
-
-      const response = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(form.protocolo)}/status`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          status: novoStatus,
-          usuario: nomeUsuario
-        })
-      });
-
-      if (response.ok) {
-        setStatusPagamento(novoStatus);
-        return true;
-      } else {
-        throw new Error(`Erro ao atualizar status: ${response.status}`);
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar status do pedido:', error);
-      alert('Erro ao atualizar status do pedido. Tente novamente.');
-      return false;
-    }
-  };
-
-  // Função para gerar recibo do excesso
-  const handleSolicitarComplementacao = () => {
-    const totalAdiantado = calcularTotalAdiantado();
-    const valorRestante = valorTotal - totalAdiantado;
-    
-    alert(`💳 Valor adiantado insuficiente!\n\nValor total: R$ ${valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\nValor adiantado: R$ ${totalAdiantado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\nValor restante: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n\nSolicite ao usuário que efetue o pagamento complementar.`);
-  };
-    const totalAdiantado = calcularTotalAdiantado();
-    const cliente = form.cliente || {};
-    const dataAtual = new Date().toLocaleDateString('pt-BR');
-    const horaAtual = new Date().toLocaleTimeString('pt-BR');
-
-    const reciboHtml = `
-      <html>
-        <head>
-          <title>Recibo de Excesso de Pagamento</title>
-          <style>
-            body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { text-align: center; border-bottom: 2px solid #e53e3e; margin-bottom: 20px; padding-bottom: 10px; }
-            .info { margin: 10px 0; }
-            .valor { font-size: 18px; font-weight: bold; color: #e53e3e; }
-            .footer { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 10px; font-size: 12px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h2>RECIBO DE EXCESSO DE PAGAMENTO</h2>
-            <p>Protocolo: ${form.protocolo}</p>
-          </div>
-          <div class="info"><strong>Cliente:</strong> ${cliente.nome || 'Não informado'}</div>
-          <div class="info"><strong>CPF/CNPJ:</strong> ${cliente.cpf || 'Não informado'}</div>
-          <div class="info"><strong>Data/Hora:</strong> ${dataAtual} às ${horaAtual}</div>
-          <div class="info"><strong>Valor do Serviço:</strong> R$ ${valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-          <div class="info"><strong>Valor Adiantado:</strong> R$ ${totalAdiantado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-          <div class="info valor"><strong>VALOR DE EXCESSO:</strong> R$ ${valorExcesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-          <div class="footer">
-            <p>Este recibo comprova o excesso de pagamento realizado pelo cliente.</p>
-            <p>Gerado automaticamente pelo sistema em ${dataAtual} às ${horaAtual}</p>
-          </div>
-        </body>
-      </html>
-    `;
-
-    const novaJanela = window.open('', '_blank');
-    novaJanela.document.write(reciboHtml);
-    novaJanela.document.close();
-    novaJanela.print();
-  };
-
   // Função para lidar com confirmação de pagamento
-  const handleConfirmarPagamento = async () => {
-    setProcessando(true);
-    try {
-      const sucesso = await atualizarStatusPedido('Pago');
-      if (sucesso) {
-        alert('Pagamento confirmado com sucesso! Status alterado para "Pago".');
-      }
-    } catch (error) {
-      console.error('Erro ao confirmar pagamento:', error);
-    } finally {
-      setProcessando(false);
-    }
-  };
-
-  // Função para cancelar pagamento
-  const handleCancelarPagamento = async () => {
-    if (!window.confirm('Tem certeza que deseja cancelar o pagamento? O status voltará para "Conferido".')) {
-      return;
-    }
-
-    setProcessando(true);
-    try {
-      const sucesso = await atualizarStatusPedido('Conferido');
-      if (sucesso) {
-        alert('Pagamento cancelado! Status alterado para "Conferido".');
-      }
-    } catch (error) {
-      console.error('Erro ao cancelar pagamento:', error);
-    } finally {
-      setProcessando(false);
-    }
+  const handleConfirmarPagamento = () => {
+    // Lógica para confirmar o pagamento
+    alert('Pagamento confirmado com sucesso!');
+    // Aqui você pode adicionar lógica adicional, como atualizar o status no backend
   };
 
   // Função para lidar com solicitação de complementação
@@ -138,6 +26,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
     const valorAdiantado = calcularTotalAdiantado();
     const valorRestante = valorTotal - valorAdiantado;
     alert(`É necessário complementar R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} para completar o pagamento.`);
+    // Aqui você pode adicionar lógica adicional, como redirecionar para pagamento
   };
 
   const inputStyle = {
@@ -313,8 +202,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           {(() => {
             const totalAdiantado = calcularTotalAdiantado();
             const valorRestante = valorTotal - totalAdiantado;
-            const valorExcesso = totalAdiantado - valorTotal;
-            const isPago = statusPagamento === 'Pago' || form.status === 'Pago';
             
             if (totalAdiantado >= valorTotal) {
               return (
@@ -322,87 +209,34 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                   <div style={{
                     marginBottom: 12,
                     padding: 12,
-                    background: isPago ? '#d4edda' : '#e8f5e8',
-                    border: `2px solid ${isPago ? '#28a745' : '#38a169'}`,
+                    background: '#e8f5e8',
+                    border: '2px solid #38a169',
                     borderRadius: 8,
-                    color: isPago ? '#155724' : '#2d5016',
+                    color: '#2d5016',
                     fontWeight: 'bold'
                   }}>
-                    {isPago ? '✅ PAGAMENTO CONFIRMADO' : '✅ Valor adiantado suficiente!'} 
-                    {valorExcesso > 0 && ` Excesso: R$ ${valorExcesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    ✅ Valor adiantado suficiente! Excesso: R$ {(totalAdiantado - valorTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
-                  
-                  <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                    {!isPago ? (
-                      <button
-                        type="button"
-                        onClick={handleConfirmarPagamento}
-                        disabled={processando}
-                        style={{
-                          padding: '14px 32px',
-                          background: processando ? '#ccc' : 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 8,
-                          fontSize: '16px',
-                          fontWeight: '700',
-                          cursor: processando ? 'not-allowed' : 'pointer',
-                          boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
-                        onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
-                      >
-                        {processando ? '⏳ Processando...' : '✅ Confirmar Pagamento'}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleCancelarPagamento}
-                        disabled={processando}
-                        style={{
-                          padding: '14px 32px',
-                          background: processando ? '#ccc' : 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 8,
-                          fontSize: '16px',
-                          fontWeight: '700',
-                          cursor: processando ? 'not-allowed' : 'pointer',
-                          boxShadow: '0 4px 12px rgba(220,53,69,0.3)',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
-                        onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
-                      >
-                        {processando ? '⏳ Processando...' : '❌ Cancelar Pagamento'}
-                      </button>
-                    )}
-                    
-                    {/* Botão de recibo do excesso - sempre visível quando há excesso */}
-                    {valorExcesso > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => gerarReciboExcesso(valorExcesso)}
-                        style={{
-                          padding: '14px 32px',
-                          background: 'linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%)',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 8,
-                          fontSize: '16px',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(111,66,193,0.3)',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
-                        onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
-                      >
-                        🧾 Recibo do Excesso
-                      </button>
-                    )}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleConfirmarPagamento}
+                    style={{
+                      padding: '14px 32px',
+                      background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                    onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
+                  >
+                    ✅ Confirmar Pagamento
+                  </button>
                 </div>
               );
             } else {
