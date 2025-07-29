@@ -555,17 +555,35 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             padding: '16px',
             marginBottom: '16px',
           }}>
-            <h3 style={{
-              margin: '0 0 20px 0',
-              color: '#2c3e50',
-              fontSize: '16px',
-              fontWeight: '600',
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              margin: '0 0 16px 0',
               borderBottom: '2px solid #9b59b6',
               paddingBottom: '10px',
-              letterSpacing: 0.5
             }}>
-              📋 Atos adicionados ao pedido
-            </h3>
+              <h3 style={{
+                margin: 0,
+                color: '#2c3e50',
+                fontSize: '16px',
+                fontWeight: '600',
+                letterSpacing: 0.5
+              }}>
+                📋 Atos adicionados ao pedido
+              </h3>
+              <span style={{
+                color: '#2c3e50',
+                fontSize: '16px',
+                fontWeight: '600',
+                letterSpacing: 0.5
+              }}>
+                Valor dos atos: {(() => {
+                  const total = calcularTotalAtosPagos();
+                  return `R$${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                })()}
+              </span>
+            </div>
             <div style={{
               overflowX: 'auto',
               background: '#f5e6fa',
