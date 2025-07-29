@@ -125,7 +125,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       const existeAtoPago = atosPedido.some(ato => ato.codigoTributario === '01');
       let novoForm = { ...form };
       if (!existeAtoPago) {
-        novoForm = { ...novoForm, status: 'PAGO' };
+        novoForm = { ...novoForm, status: 'Aguardando Verificação' };
       }
       // Sempre POST para /api/pedidos
       const url = `${config.apiURL}/pedidos`;
