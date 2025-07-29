@@ -124,103 +124,231 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
     const reciboHtml = `
       <html>
         <head>
-          <title>Recibo de Excesso de Pagamento</title>
+          <title>Recibo de DevoluçãoExcesso de Pagamento</title>
           <style>
+            @page {
+              size: A4;
+              margin: 1cm;
+            }
+            
             body { 
-              font-family: Arial, sans-serif; 
-              max-width: 600px; 
-              margin: 0 auto; 
-              padding: 20px; 
-              line-height: 1.6;
+              font-family: 'Times New Roman', serif; 
+              font-size: 11pt;
+              color: black;
+              line-height: 1.4;
+              margin: 0;
+              padding: 0;
+              width: 19cm;
+              height: 13.5cm; /* Meia folha A4 */
+              box-sizing: border-box;
             }
-            .header { 
-              text-align: center; 
-              border-bottom: 3px solid #e53e3e; 
-              margin-bottom: 20px; 
-              padding-bottom: 15px; 
+            
+            .cabecalho {
+              text-align: center;
+              margin-bottom: 20px;
+              border-bottom: 2px solid black;
+              padding-bottom: 15px;
             }
-            .info { 
-              margin: 12px 0; 
-              display: flex; 
+            
+            .serventia {
+              font-size: 14pt;
+              font-weight: bold;
+              margin-bottom: 5px;
+            }
+            
+            .endereco {
+              font-size: 10pt;
+              margin-bottom: 3px;
+            }
+            
+            .titulo-recibo {
+              font-size: 16pt;
+              font-weight: bold;
+              margin: 15px 0 10px 0;
+              text-decoration: underline;
+            }
+            
+            .protocolo {
+              font-size: 12pt;
+              font-weight: bold;
+              margin-bottom: 10px;
+            }
+            
+            .secao {
+              margin: 15px 0;
+            }
+            
+            .linha-info {
+              display: flex;
               justify-content: space-between;
-              border-bottom: 1px solid #eee;
-              padding: 8px 0;
+              margin: 8px 0;
+              border-bottom: 1px dotted black;
+              padding-bottom: 3px;
             }
-            .valor-excesso { 
-              font-size: 20px; 
-              font-weight: bold; 
-              color: #e53e3e; 
+            
+            .label {
+              font-weight: bold;
+              width: 40%;
+            }
+            
+            .valor {
+              text-align: right;
+              width: 55%;
+            }
+            
+            .destaque-excesso {
+              border: 3px double black;
+              padding: 15px;
               text-align: center;
               margin: 20px 0;
-              padding: 15px;
-              border: 2px solid #e53e3e;
-              border-radius: 8px;
+              background-color: #f9f9f9;
             }
-            .footer { 
-              margin-top: 30px; 
-              border-top: 2px solid #ccc; 
-              padding-top: 15px; 
-              font-size: 12px; 
-              text-align: center;
-              color: #666;
-            }
-            .protocolo {
-              background: #f5f5f5;
-              padding: 10px;
-              border-radius: 5px;
-              font-family: monospace;
+            
+            .valor-excesso {
+              font-size: 20pt;
               font-weight: bold;
+              margin: 10px 0;
+            }
+            
+            .assinatura {
+              margin-top: 30px;
+              display: flex;
+              justify-content: space-between;
+            }
+            
+            .campo-assinatura {
+              width: 45%;
+              text-align: center;
+              border-top: 1px solid black;
+              padding-top: 5px;
+              margin-top: 40px;
+            }
+            
+            .rodape {
+              margin-top: 25px;
+              font-size: 9pt;
+              text-align: center;
+              border-top: 1px solid black;
+              padding-top: 10px;
+            }
+            
+            .observacoes {
+              margin: 15px 0;
+              font-size: 10pt;
+              font-style: italic;
+            }
+            
+            @media print {
+              body {
+                margin: 0;
+                padding: 0;
+              }
             }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1 style="color: #e53e3e; margin: 0;">RECIBO DE EXCESSO DE PAGAMENTO</h1>
-            <div class="protocolo">Protocolo: ${form.protocolo}</div>
+          <div class="cabecalho">
+            <div class="serventia">1º OFÍCIO DE REGISTRO DE IMÓVEIS</div>
+            <div class="endereco">Rua das Flores, 123 - Centro - São Paulo/SP - CEP: 01234-567</div>
+            <div class="endereco">Telefone: (11) 1234-5678 | Email: contato@1oficio.sp.gov.br</div>
+            <div class="endereco">CNPJ: 12.345.678/0001-90</div>
+            
+            <div class="titulo-recibo">RECIBO DE EXCESSO DE PAGAMENTO</div>
+            <div class="protocolo">Protocolo: ${form.protocolo || 'Não informado'}</div>
           </div>
           
-          <div class="info">
-            <strong>Cliente:</strong> 
-            <span>${cliente.nome || 'Não informado'}</span>
-          </div>
-          <div class="info">
-            <strong>CPF/CNPJ:</strong> 
-            <span>${cliente.cpf || 'Não informado'}</span>
-          </div>
-          <div class="info">
-            <strong>Data/Hora:</strong> 
-            <span>${dataAtual} às ${horaAtual}</span>
-          </div>
-          <div class="info">
-            <strong>Valor do Serviço:</strong> 
-            <span>R$ ${valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-          </div>
-          <div class="info">
-            <strong>Valor Adiantado:</strong> 
-            <span>R$ ${totalAdiantado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-          </div>
-          
-          <div class="valor-excesso">
-            <div>VALOR DE EXCESSO A SER DEVOLVIDO</div>
-            <div style="font-size: 28px; margin-top: 10px;">
-              R$ ${valorExcesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <div class="secao">
+            <div class="linha-info">
+              <div class="label">Cliente:</div>
+              <div class="valor">${cliente.nome || 'Não informado'}</div>
+            </div>
+            <div class="linha-info">
+              <div class="label">CPF/CNPJ:</div>
+              <div class="valor">${cliente.cpf || cliente.cnpj || 'Não informado'}</div>
+            </div>
+            <div class="linha-info">
+              <div class="label">Endereço:</div>
+              <div class="valor">${cliente.endereco || 'Não informado'}</div>
+            </div>
+            <div class="linha-info">
+              <div class="label">Telefone:</div>
+              <div class="valor">${cliente.telefone || 'Não informado'}</div>
             </div>
           </div>
           
-          <div class="footer">
-            <p><strong>Este recibo comprova o excesso de pagamento realizado pelo cliente.</strong></p>
-            <p>O valor acima deverá ser devolvido ao cliente conforme procedimentos internos.</p>
+          <div class="secao">
+            <div class="linha-info">
+              <div class="label">Data da Operação:</div>
+              <div class="valor">${dataAtual}</div>
+            </div>
+            <div class="linha-info">
+              <div class="label">Horário:</div>
+              <div class="valor">${horaAtual}</div>
+            </div>
+          </div>
+          
+          <div class="secao">
+            <div class="linha-info">
+              <div class="label">Valor do Serviço:</div>
+              <div class="valor">R$ ${valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            </div>
+            <div class="linha-info">
+              <div class="label">Valor Total Pago:</div>
+              <div class="valor">R$ ${totalAdiantado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            </div>
+          </div>
+          
+          <div class="destaque-excesso">
+            <div style="font-size: 14pt; font-weight: bold; margin-bottom: 10px;">
+              VALOR DE EXCESSO A SER DEVOLVIDO
+            </div>
+            <div class="valor-excesso">
+              R$ ${valorExcesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <div style="font-size: 10pt; margin-top: 10px;">
+              (${valorExcesso.toLocaleString('pt-BR', { 
+                style: 'currency', 
+                currency: 'BRL' 
+              }).replace('R$', '').trim()} por extenso)
+            </div>
+          </div>
+          
+          <div class="observacoes">
+            <strong>Observações:</strong><br>
+            • Este recibo comprova o excesso de pagamento realizado pelo cliente.<br>
+            • O valor acima deverá ser devolvido conforme procedimentos internos da serventia.<br>
+            • Válido somente com assinatura do responsável pela operação.<br>
+            • Em caso de dúvidas, entrar em contato com a serventia.
+          </div>
+          
+          <div class="assinatura">
+            <div class="campo-assinatura">
+              <div>Assinatura do Cliente</div>
+              <div style="font-size: 9pt; margin-top: 5px;">${cliente.nome || '____________________'}</div>
+            </div>
+            <div class="campo-assinatura">
+              <div>Assinatura do Responsável</div>
+              <div style="font-size: 9pt; margin-top: 5px;">Serventia</div>
+            </div>
+          </div>
+          
+          <div class="rodape">
             <p>Documento gerado automaticamente pelo sistema em ${dataAtual} às ${horaAtual}</p>
+            <p>Este documento possui validade legal e deve ser conservado pelo cliente</p>
           </div>
         </body>
       </html>
     `;
 
-    const novaJanela = window.open('', '_blank', 'width=800,height=600');
+    const novaJanela = window.open('', '_blank', 'width=794,height=550'); // Tamanho aproximado de meia folha A4
     novaJanela.document.write(reciboHtml);
     novaJanela.document.close();
     novaJanela.focus();
-    novaJanela.print();
+    
+    // Aguarda o carregamento e imprime automaticamente
+    setTimeout(() => {
+      novaJanela.print();
+    }, 500);
   };
 
   // Função para lidar com confirmação de pagamento
