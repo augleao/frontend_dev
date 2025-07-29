@@ -412,17 +412,24 @@ export default function ServicoManutencao() {
             border: '3px solid #9b59b6',
             borderRadius: 24,
             background: '#fdf8feff',
-            padding: 5,
+            padding: 20,
             marginBottom: 12,
             boxShadow: '0 6px 32px rgba(155,89,182,0.10)'
           }}>
             {/* ServicoCliente - largura total, em cima */}
-            <div style={{ width: '100%', marginBottom: 5 }}>
+            <div style={{ 
+              width: '100%', 
+              marginBottom: 20,
+              boxSizing: 'border-box'
+            }}>
               <ServicoCliente form={form} clientes={clientes} onChange={handleFormChange} onClienteChange={handleClienteChange} />
             </div>
             
             {/* ServicoEntrada - largura total, embaixo */}
-            <div style={{ width: '100%' }}>
+            <div style={{ 
+              width: '100%',
+              boxSizing: 'border-box'
+            }}>
               <ServicoEntrada
                 form={form}
                 tiposServico={tiposServico}
