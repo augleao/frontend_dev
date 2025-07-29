@@ -30,33 +30,36 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       if (!token) {
         throw new Error('Token de autenticação não encontrado. Faça login novamente.');
       }
+
+      // Recupera usuário logado do localStorage
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
+      const usuario = usuarioLogado.nome || usuarioLogado.email || 'Sistema';
       
       console.log(`[DEBUG] Tentando atualizar status para: ${novoStatus}`);
       
       try {
         // Usa a mesma API do ServicoConferencia
-        const response = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(form.protocolo)}`, {
-          method: 'PUT',
+        const response = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(form.protocolo)}/status`, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({ 
-            ...form, 
-            status: novoStatus 
+            status: novoStatus,
+            usuario: usuario
           })
         });
 
         if (response.ok) {
-          const resultado = await response.json();
           setStatusPedido(novoStatus);
           
           if (onChange) {
             onChange({ ...form, status: novoStatus });
           }
           
-          console.log('[DEBUG] Status atualizado com sucesso via PUT pedido completo');
-          return resultado;
+          console.log('[DEBUG] Status atualizado com sucesso via POST status');
+          return { status: novoStatus, success: true };
         }
 
         throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
