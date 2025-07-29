@@ -236,11 +236,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       }}>
         {/* Header */}
         <div style={{
-          background: 'white',
-          borderRadius: '12px',
           padding: '28px 32px 18px 32px',
           marginBottom: '24px',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -254,11 +251,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
         {/* Descrição do Serviço */}
         <div style={{
-          background: 'white',
-          borderRadius: '12px',
           padding: '24px',
           margin: '0 0 24px 0',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
           display: 'flex',
           flexDirection: 'column',
           gap: 8
@@ -285,11 +279,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
         {/* Origem do Pedido */}
         <div style={{
-          background: 'white',
-          borderRadius: '12px',
           padding: '24px',
           margin: '0 0 24px 0',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
           display: 'flex',
           flexDirection: 'column',
           gap: 8
@@ -423,10 +414,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         }}>
           {/* Prazo Card */}
           <div style={{
-            background: 'white',
-            borderRadius: '12px',
             padding: '24px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
             display: 'flex',
             flexDirection: 'column',
             gap: 8
@@ -449,10 +437,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           </div>
           {/* Valor Atos Pagos Card */}
           <div style={{
-            background: 'white',
-            borderRadius: '12px',
             padding: '18px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
             display: 'flex',
             flexDirection: 'column',
             gap: 8
@@ -496,10 +481,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         }}>
           {/* Valor Adiantado Card */}
           <div style={{
-            background: 'white',
-            borderRadius: '12px',
             padding: '24px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
             display: 'flex',
             flexDirection: 'column',
             gap: 8
@@ -551,10 +533,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           </div>
           {/* Observação Card */}
           <div style={{
-            background: 'white',
-            borderRadius: '12px',
             padding: '24px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
             display: 'flex',
             flexDirection: 'column',
             gap: 8
@@ -581,11 +560,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
         {/* Adicionar Combo Card */}
         <div style={{
-          background: 'white',
-          borderRadius: '12px',
           padding: '24px',
           marginBottom: '24px',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
         }}>
           <label style={{ fontWeight: 600, color: '#6c3483', marginRight: 12 }}>Adicionar Combo:</label>
           <select value={comboSelecionado} onChange={e => setComboSelecionado(e.target.value)} style={{ width: '60%', maxWidth: '100%', marginRight: 12, borderRadius: 6, padding: '6px 10px', border: '1.5px solid #d6d6f5', fontSize: 16, boxSizing: 'border-box' }}>
@@ -612,11 +588,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         {/* Atos Table Card */}
         {atosPedido.length > 0 && (
           <div style={{
-            background: 'white',
-            borderRadius: '12px',
             padding: '18px',
             marginBottom: '24px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
           }}>
             <h3 style={{
               margin: '0 0 20px 0',
@@ -755,11 +728,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
         {/* Salvar/Atualizar Button */}
         <div style={{
-          background: 'white',
-          borderRadius: '12px',
           padding: '24px',
           marginBottom: '24px',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
           textAlign: 'center'
         }}>
           <button
