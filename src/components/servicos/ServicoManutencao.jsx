@@ -407,20 +407,22 @@ export default function ServicoManutencao() {
             marginBottom: 32
           }}
         >
-          {/* Moldura lilás envolvendo ServicoEntrada e ServicoCliente */}
+          {/* Moldura lilás envolvendo ServicoCliente e ServicoEntrada */}
           <div style={{
             border: '3px solid #9b59b6',
             borderRadius: 24,
             background: '#fdf8feff',
             padding: 5,
             marginBottom: 12,
-            display: 'flex',
-            gap: 5,
-            flexWrap: 'wrap',
-            alignItems: 'flex-start',
             boxShadow: '0 6px 32px rgba(155,89,182,0.10)'
           }}>
-            <div style={{ flex: 1, minWidth: 260 }}>
+            {/* ServicoCliente - largura total, em cima */}
+            <div style={{ width: '100%', marginBottom: 5 }}>
+              <ServicoCliente form={form} clientes={clientes} onChange={handleFormChange} onClienteChange={handleClienteChange} />
+            </div>
+            
+            {/* ServicoEntrada - largura total, embaixo */}
+            <div style={{ width: '100%' }}>
               <ServicoEntrada
                 form={form}
                 tiposServico={tiposServico}
@@ -429,9 +431,6 @@ export default function ServicoManutencao() {
                 atosPedido={atosPedido}
                 setAtosPedido={setAtosPedido}
               />
-            </div>
-            <div style={{ flex: 1, minWidth: 260 }}>
-              <ServicoCliente form={form} clientes={clientes} onChange={handleFormChange} onClienteChange={handleClienteChange} />
             </div>
           </div>
 
