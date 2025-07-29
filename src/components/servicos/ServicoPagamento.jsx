@@ -59,11 +59,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0 }) {
       {/* Valor a ser pago */}
       <div style={{
         marginBottom: 20,
-        padding: 16,
-        background: '#fff5f5',
-        border: '2px solid #e53e3e',
-        borderRadius: 8,
-        textAlign: 'center'
+        textAlign: 'left'
       }}>
         <span style={{
           fontSize: '16px',
