@@ -391,18 +391,17 @@ export default function ServicoManutencao() {
             padding: 5,
             marginBottom: 18,
             display: 'flex',
+            flexDirection: 'column',
             gap: 5,
-            flexWrap: 'wrap',
-            alignItems: 'flex-start',
             boxShadow: '0 6px 32px rgba(229,62,62,0.10)'
           }}>
             {/* Exibe ServicoPagamento apenas se houver ato com codigoTributario '01' */}
             {atosPedido.some(ato => ato.codigoTributario === '01') && (
-              <div style={{ flex: 1, minWidth: 260 }}>
+              <div style={{ width: '100%' }}>
                 <ServicoPagamento form={form} onChange={handlePagamentoChange} />
               </div>
             )}
-            <div style={{ flex: 1, minWidth: 260 }}>
+            <div style={{ width: '100%' }}>
               <ServicoExecucao form={form} onChange={handleExecucaoChange} />
             </div>
           </div>
