@@ -11,7 +11,7 @@ export default function ServicoPagamento({ form, onChange }) {
     width: '100%', 
     padding: '12px 16px',
     borderRadius: 8,
-    border: '1px solid #fed7d7',
+    border: '3px solid #b30202ff',
     fontSize: '14px',
     backgroundColor: 'white',
     transition: 'border-color 0.2s ease',
