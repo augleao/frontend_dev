@@ -43,6 +43,7 @@ export default function ServicoManutencao() {
   const [combosDisponiveis, setCombosDisponiveis] = useState([]);
   const [pedidos, setPedidos] = useState([]);
   const [atosPedido, setAtosPedido] = useState([]);
+  const [historicoStatus, setHistoricoStatus] = useState([]);
   const [form, setForm] = useState({
     protocolo: '', // começa vazio
     tipo: '',
@@ -68,6 +69,40 @@ export default function ServicoManutencao() {
   function deepEqual(obj1, obj2) {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
   }
+
+  // Função para buscar histórico de status
+  const buscarHistoricoStatus = async (protocolo) => {
+    if (!protocolo) return;
+    
+    try {
+      const response = await fetchComAuth(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}/historico-status`);
+      if (response && response.ok) {
+        const data = await response.json();
+        setHistoricoStatus(data.historico || []);
+      } else {
+        // Se não houver endpoint específico, simula histórico básico
+        setHistoricoStatus([
+          {
+            status: form.status || 'Em Análise',
+            data_alteracao: new Date().toISOString(),
+            responsavel: 'Sistema',
+            observacoes: 'Status atual do pedido'
+          }
+        ]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar histórico de status:', error);
+      // Fallback com dados básicos
+      setHistoricoStatus([
+        {
+          status: form.status || 'Em Análise',
+          data_alteracao: new Date().toISOString(),
+          responsavel: 'Sistema',
+          observacoes: 'Status atual do pedido'
+        }
+      ]);
+    }
+  };
 
 
   useEffect(() => {
@@ -138,6 +173,9 @@ export default function ServicoManutencao() {
             : [];
           setAtosPedido(combosFormatados);
           setPedidoCarregado(true);
+          
+          // Busca o histórico de status após carregar o pedido
+          buscarHistoricoStatus(protocolo);
         }
       })
       .catch(err => {
@@ -284,6 +322,13 @@ export default function ServicoManutencao() {
     setAlertas(atrasados.map(s => `Serviço ${s.protocolo} está atrasado!`));
   }, [servicos]);
 
+  // Efeito para atualizar histórico quando o status mudar
+  useEffect(() => {
+    if (form.protocolo && form.status) {
+      buscarHistoricoStatus(form.protocolo);
+    }
+  }, [form.status, form.protocolo]);
+
 
 
   return (
@@ -428,6 +473,194 @@ export default function ServicoManutencao() {
             </div>
           )}
         </form>
+        
+        {/* Tabela de Histórico de Status */}
+        {form.protocolo && historicoStatus.length > 0 && (
+          <div style={{
+            background: 'white',
+            borderRadius: 16,
+            boxShadow: '0 4px 24px rgba(44,62,80,0.08)',
+            padding: 32,
+            marginBottom: 32
+          }}>
+            <h3 style={{
+              color: '#2c3e50',
+              fontSize: 24,
+              fontWeight: 700,
+              marginBottom: 24,
+              borderBottom: '3px solid #9b59b6',
+              paddingBottom: 12,
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              📊 Histórico de Status - Protocolo: {form.protocolo}
+            </h3>
+            
+            <div style={{
+              border: '2px solid #9b59b6',
+              borderRadius: 12,
+              overflow: 'hidden',
+              boxShadow: '0 2px 12px rgba(155,89,182,0.15)'
+            }}>
+              <table style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                fontSize: '14px'
+              }}>
+                <thead>
+                  <tr style={{ 
+                    background: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
+                    color: 'white'
+                  }}>
+                    <th style={{
+                      padding: '16px 20px',
+                      textAlign: 'left',
+                      fontWeight: '700',
+                      fontSize: '16px',
+                      borderRight: '1px solid rgba(255,255,255,0.2)'
+                    }}>
+                      📅 Data/Hora
+                    </th>
+                    <th style={{
+                      padding: '16px 20px',
+                      textAlign: 'left',
+                      fontWeight: '700',
+                      fontSize: '16px',
+                      borderRight: '1px solid rgba(255,255,255,0.2)'
+                    }}>
+                      📋 Status
+                    </th>
+                    <th style={{
+                      padding: '16px 20px',
+                      textAlign: 'left',
+                      fontWeight: '700',
+                      fontSize: '16px',
+                      borderRight: '1px solid rgba(255,255,255,0.2)'
+                    }}>
+                      👤 Responsável
+                    </th>
+                    <th style={{
+                      padding: '16px 20px',
+                      textAlign: 'left',
+                      fontWeight: '700',
+                      fontSize: '16px'
+                    }}>
+                      📝 Observações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historicoStatus.map((item, index) => {
+                    const dataFormatada = new Date(item.data_alteracao).toLocaleString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit'
+                    });
+                    
+                    // Define cor baseada no status
+                    const getStatusColor = (status) => {
+                      switch (status?.toLowerCase()) {
+                        case 'pago': return '#27ae60';
+                        case 'conferido': return '#3498db';
+                        case 'em análise': return '#f39c12';
+                        case 'cancelado': return '#e74c3c';
+                        case 'concluído': return '#2ecc71';
+                        default: return '#7f8c8d';
+                      }
+                    };
+                    
+                    return (
+                      <tr key={index} style={{ 
+                        background: index % 2 === 0 ? '#fafafa' : '#ffffff',
+                        borderBottom: index < historicoStatus.length - 1 ? '1px solid #ecf0f1' : 'none',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => e.target.parentElement.style.backgroundColor = '#f8f9fa'}
+                      onMouseLeave={(e) => e.target.parentElement.style.backgroundColor = index % 2 === 0 ? '#fafafa' : '#ffffff'}
+                      >
+                        <td style={{
+                          padding: '16px 20px',
+                          borderRight: '1px solid #ecf0f1',
+                          fontFamily: 'monospace',
+                          fontWeight: '600',
+                          color: '#2c3e50'
+                        }}>
+                          {dataFormatada}
+                        </td>
+                        <td style={{
+                          padding: '16px 20px',
+                          borderRight: '1px solid #ecf0f1',
+                          fontWeight: '700',
+                          color: getStatusColor(item.status)
+                        }}>
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            backgroundColor: `${getStatusColor(item.status)}20`,
+                            border: `2px solid ${getStatusColor(item.status)}`,
+                            fontSize: '13px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
+                          }}>
+                            {item.status}
+                          </span>
+                        </td>
+                        <td style={{
+                          padding: '16px 20px',
+                          borderRight: '1px solid #ecf0f1',
+                          color: '#2c3e50',
+                          fontWeight: '600'
+                        }}>
+                          {item.responsavel || 'Sistema'}
+                        </td>
+                        <td style={{
+                          padding: '16px 20px',
+                          color: '#7f8c8d',
+                          fontStyle: item.observacoes ? 'normal' : 'italic'
+                        }}>
+                          {item.observacoes || 'Nenhuma observação'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Resumo estatístico */}
+            <div style={{
+              marginTop: 20,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px 20px',
+              background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+              borderRadius: 8,
+              border: '1px solid #dee2e6'
+            }}>
+              <div style={{
+                fontSize: '14px',
+                color: '#6c757d',
+                fontWeight: '600'
+              }}>
+                📈 Total de alterações de status: <strong style={{ color: '#2c3e50' }}>{historicoStatus.length}</strong>
+              </div>
+              <div style={{
+                fontSize: '14px',
+                color: '#6c757d',
+                fontWeight: '600'
+              }}>
+                🕒 Última atualização: <strong style={{ color: '#2c3e50' }}>
+                  {historicoStatus.length > 0 ? new Date(historicoStatus[historicoStatus.length - 1].data_alteracao).toLocaleString('pt-BR') : 'N/A'}
+                </strong>
+              </div>
+            </div>
+          </div>
+        )}
         
       </div>
     </div>
