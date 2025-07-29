@@ -300,7 +300,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           
           <div class="destaque-excesso">
             <div style="font-size: 14pt; font-weight: bold; margin-bottom: 10px;">
-              VALOR DE EXCESSO DEVOLVIDO
+              VALOR DEVOLVIDO
             </div>
             <div class="valor-excesso">
               R$ ${valorExcesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -315,10 +315,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           
           <div class="observacoes">
             <strong>Observações:</strong><br>
-            • Este recibo comprova o excesso de pagamento realizado pelo cliente.<br>
-            • O valor acima deverá ser devolvido conforme procedimentos internos da serventia.<br>
-            • Válido somente com assinatura do responsável pela operação.<br>
-            • Em caso de dúvidas, entrar em contato com a serventia.
+            • Este recibo comprova a devolução do valor pago em excesso pelo cliente.<br>
+            • O valor acima foi devolvido conforme procedimentos internos da serventia.<br>
           </div>
           
           <div class="assinatura">
