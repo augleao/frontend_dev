@@ -383,28 +383,12 @@ export default function ServicoManutencao() {
           {/* Novo componente de conferência */}
           <ServicoConferencia protocolo={form.protocolo} />
           
-          {/* Moldura vermelha envolvendo ServicoPagamento e ServicoExecucao */}
-          <div style={{
-            border: '3px solid #e53e3e',
-            borderRadius: 24,
-            background: '#fef5f5',
-            padding: 5,
-            marginBottom: 18,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 5,
-            boxShadow: '0 6px 32px rgba(229,62,62,0.10)'
-          }}>
-            {/* Exibe ServicoPagamento apenas se houver ato com codigoTributario '01' */}
-            {atosPedido.some(ato => ato.codigoTributario === '01') && (
-              <div style={{ width: '100%' }}>
-                <ServicoPagamento form={form} onChange={handlePagamentoChange} />
-              </div>
-            )}
-            <div style={{ width: '100%' }}>
-              <ServicoExecucao form={form} onChange={handleExecucaoChange} />
-            </div>
-          </div>
+          {/* Exibe ServicoPagamento apenas se houver ato com codigoTributario '01' */}
+          {atosPedido.some(ato => ato.codigoTributario === '01') && (
+            <ServicoPagamento form={form} onChange={handlePagamentoChange} />
+          )}
+          
+          <ServicoExecucao form={form} onChange={handleExecucaoChange} />
           <ServicoEntrega form={form} onChange={handleEntregaChange} />
           {/* Só mostra o botão de excluir se há um pedido carregado */}
           {form.protocolo && (
