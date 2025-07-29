@@ -132,15 +132,16 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
   return (
     <div
       style={{
-        maxWidth: 900,
-        margin: '0 auto',
+        width: '100%',
+        margin: '0',
         padding: 0,
         borderRadius: '24px',
         border: '3px solid #9b59b6',
         boxShadow: '0 6px 32px rgba(155,89,182,0.10)',
         background: '#f5e6fa',
         overflow: 'hidden',
-        marginBottom: 32
+        marginBottom: 32,
+        boxSizing: 'border-box'
       }}
     >
       <div style={{

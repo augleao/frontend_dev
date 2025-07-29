@@ -226,16 +226,17 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   };
 
   return (
-    <div style={{ background: '#f5e6fa', minHeight: '100vh', padding: '0', borderRadius: '24px' }}>
+    <div style={{ background: '#f5e6fa', padding: '0', borderRadius: '24px', width: '100%', boxSizing: 'border-box' }}>
       <div style={{
-        maxWidth: 900,
-        margin: '0 auto',
+        width: '100%',
+        margin: '0',
         padding: 0,
         borderRadius: '24px',
         border: '3px solid #9b59b6',
         boxShadow: '0 6px 32px rgba(155,89,182,0.10)',
         background: '#f5e6fa',
         overflow: 'hidden',
+        boxSizing: 'border-box'
       }}>
         {/* Header */}
         <div style={{
