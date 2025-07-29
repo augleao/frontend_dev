@@ -79,54 +79,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0 }) {
         </span>
       </div>
       
-      <label style={labelStyle}>Status do pagamento:</label>
-      <select 
-        value={form.pagamento.status} 
-        onChange={e => onChange('status', e.target.value)} 
-        style={selectStyle}
-      >
-        {statusPagamento.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-      </select>
-      
-      <label style={labelStyle}>Valor total do serviço:</label>
-      <input 
-        type="number" 
-        value={form.pagamento.valorTotal} 
-        onChange={e => onChange('valorTotal', e.target.value)} 
-        style={inputStyle}
-        placeholder="R$ 0,00"
-      />
-      
-      <label style={labelStyle}>Valor pago:</label>
-      <input 
-        type="number" 
-        value={form.pagamento.valorPago} 
-        onChange={e => onChange('valorPago', e.target.value)} 
-        style={inputStyle}
-        placeholder="R$ 0,00"
-      />
-      
-      <label style={labelStyle}>Data do pagamento:</label>
-      <input 
-        type="date" 
-        value={form.pagamento.data} 
-        onChange={e => onChange('data', e.target.value)} 
-        style={inputStyle}
-      />
-      
-      <label style={labelStyle}>Forma de pagamento:</label>
-      <select 
-        value={form.pagamento.forma} 
-        onChange={e => onChange('forma', e.target.value)} 
-        style={selectStyle}
-      >
-        <option value="">Selecione uma forma de pagamento...</option>
-        <option value="dinheiro">💵 Dinheiro</option>
-        <option value="cartao">💳 Cartão</option>
-        <option value="pix">📱 PIX</option>
-        <option value="boleto">📄 Boleto</option>
-      </select>
-      
       {form.pagamento.status === 'pago' && (
         <div style={{ 
           marginTop: 20, 
