@@ -121,11 +121,11 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   // Função para enviar o pedido (salvar ou atualizar)
   const handleSubmit = async () => {
     try {
-      // Se não houver nenhum ato com código 01, define status como 'PAGO'
+      // Se não houver nenhum ato com código 01, define status como 'Aguardando Conferência'
       const existeAtoPago = atosPedido.some(ato => ato.codigoTributario === '01');
       let novoForm = { ...form };
       if (!existeAtoPago) {
-        novoForm = { ...novoForm, status: 'Aguardando Verificação' };
+        novoForm = { ...novoForm, status: 'Aguardando Conferência' };
       }
       // Sempre POST para /api/pedidos
       const url = `${config.apiURL}/pedidos`;
@@ -171,18 +171,18 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       } catch (jsonErr) {
         console.error('[handleSubmit] Erro ao fazer parse do JSON da resposta:', jsonErr);
       }
-      // Após salvar o pedido, grava o status 'Cadastrado' no DB
+      // Após salvar o pedido, grava o status 'Cadastrado' ou 'Aguardando Conferência' no DB
       if (res.ok) {
         // Pedido enviado com sucesso
         console.log('Operação realizada com sucesso:', data);
-        // Grava status 'Cadastrado' ou 'PAGO' na tabela de status
+        // Grava status 'Cadastrado' ou 'Aguardando Conferência' na tabela de status
         const protocoloParaStatus = data.protocolo || form.protocolo;
         if (protocoloParaStatus) {
           try {
             const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
             const nomeUsuario = usuario.nome || usuario.email || 'Sistema';
             const statusBody = {
-              status: !existeAtoPago ? 'Pago' : 'Cadastrado',
+              status: !existeAtoPago ? 'Aguardando Conferência' : 'Cadastrado',
               usuario: nomeUsuario
             };
             console.log('[Status POST] Protocolo:', protocoloParaStatus);
