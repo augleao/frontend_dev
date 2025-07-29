@@ -34,14 +34,17 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       console.log(`[DEBUG] Tentando atualizar status para: ${novoStatus}`);
       
       try {
-        // Primeiro tenta com PUT (mais comum e aceito)
-        let response = await fetch(`${config.apiURL}/pedidos/${form.protocolo}/status`, {
+        // Usa a mesma API do ServicoConferencia
+        const response = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(form.protocolo)}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ status: novoStatus })
+          body: JSON.stringify({ 
+            ...form, 
+            status: novoStatus 
+          })
         });
 
         if (response.ok) {
@@ -52,55 +55,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             onChange({ ...form, status: novoStatus });
           }
           
-          console.log('[DEBUG] Status atualizado com sucesso via PUT');
-          return resultado;
-        }
-
-        // Se PUT não funcionar, tenta com POST
-        if (response.status === 405) {
-          console.log('[DEBUG] PUT falhou (405), tentando POST...');
-          response = await fetch(`${config.apiURL}/pedidos/${form.protocolo}/status`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ status: novoStatus })
-          });
-
-          if (response.ok) {
-            const resultado = await response.json();
-            setStatusPedido(novoStatus);
-            
-            if (onChange) {
-              onChange({ ...form, status: novoStatus });
-            }
-            
-            console.log('[DEBUG] Status atualizado com sucesso via POST');
-            return resultado;
-          }
-        }
-
-        // Se ainda não funcionar, tenta atualizar o pedido completo
-        console.log('[DEBUG] Tentativas anteriores falharam, tentando PUT completo...');
-        response = await fetch(`${config.apiURL}/pedidos/${form.protocolo}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ ...form, status: novoStatus })
-        });
-
-        if (response.ok) {
-          const resultado = await response.json();
-          setStatusPedido(novoStatus);
-          
-          if (onChange) {
-            onChange({ ...form, status: novoStatus });
-          }
-          
-          console.log('[DEBUG] Status atualizado com sucesso via PUT completo');
+          console.log('[DEBUG] Status atualizado com sucesso via PUT pedido completo');
           return resultado;
         }
 
