@@ -7,6 +7,28 @@ const statusPagamento = [
 ];
 
 export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes = [] }) {
+  // Função para calcular o total adiantado
+  const calcularTotalAdiantado = () => {
+    return valorAdiantadoDetalhes
+      .filter(item => item.valor && item.forma)
+      .reduce((total, item) => total + parseFloat(item.valor || 0), 0);
+  };
+
+  // Função para lidar com confirmação de pagamento
+  const handleConfirmarPagamento = () => {
+    // Lógica para confirmar o pagamento
+    alert('Pagamento confirmado com sucesso!');
+    // Aqui você pode adicionar lógica adicional, como atualizar o status no backend
+  };
+
+  // Função para lidar com solicitação de complementação
+  const handleSolicitarComplementacao = () => {
+    const valorAdiantado = calcularTotalAdiantado();
+    const valorRestante = valorTotal - valorAdiantado;
+    alert(`É necessário complementar R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} para completar o pagamento.`);
+    // Aqui você pode adicionar lógica adicional, como redirecionar para pagamento
+  };
+
   const inputStyle = {
     width: '100%', 
     padding: '12px 16px',
@@ -155,10 +177,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                   color: '#8b1a1a',
                   fontSize: '16px'
                 }}>
-                  R$ {valorAdiantadoDetalhes
-                    .filter(item => item.valor && item.forma)
-                    .reduce((total, item) => total + parseFloat(item.valor || 0), 0)
-                    .toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  R$ {calcularTotalAdiantado().toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </td>
                 <td style={{
                   padding: '10px 12px',
@@ -171,6 +190,93 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               </tr>
             </tbody>
           </table>
+        </div>
+      )}
+      
+      {/* Botão condicional baseado no valor adiantado */}
+      {valorAdiantadoDetalhes && valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
+        <div style={{
+          marginBottom: 20,
+          textAlign: 'center'
+        }}>
+          {(() => {
+            const totalAdiantado = calcularTotalAdiantado();
+            const valorRestante = valorTotal - totalAdiantado;
+            
+            if (totalAdiantado >= valorTotal) {
+              return (
+                <div>
+                  <div style={{
+                    marginBottom: 12,
+                    padding: 12,
+                    background: '#e8f5e8',
+                    border: '2px solid #38a169',
+                    borderRadius: 8,
+                    color: '#2d5016',
+                    fontWeight: 'bold'
+                  }}>
+                    ✅ Valor adiantado suficiente! Excesso: R$ {(totalAdiantado - valorTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleConfirmarPagamento}
+                    style={{
+                      padding: '14px 32px',
+                      background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                    onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
+                  >
+                    ✅ Confirmar Pagamento
+                  </button>
+                </div>
+              );
+            } else {
+              return (
+                <div>
+                  <div style={{
+                    marginBottom: 12,
+                    padding: 12,
+                    background: '#fff5f5',
+                    border: '2px solid #e53e3e',
+                    borderRadius: 8,
+                    color: '#8b1a1a',
+                    fontWeight: 'bold'
+                  }}>
+                    ⚠️ Valor insuficiente! Faltam: R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSolicitarComplementacao}
+                    style={{
+                      padding: '14px 32px',
+                      background: 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(229,62,62,0.3)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                    onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
+                  >
+                    💳 Solicitar Complementação
+                  </button>
+                </div>
+              );
+            }
+          })()}
         </div>
       )}
       
