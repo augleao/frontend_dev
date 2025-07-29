@@ -300,7 +300,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           
           <div class="destaque-excesso">
             <div style="font-size: 14pt; font-weight: bold; margin-bottom: 10px;">
-              VALOR DE EXCESSO A SER DEVOLVIDO
+              VALOR DE EXCESSO DEVOLVIDO
             </div>
             <div class="valor-excesso">
               R$ ${valorExcesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
