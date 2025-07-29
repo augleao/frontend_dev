@@ -6,7 +6,7 @@ const statusPagamento = [
   { value: 'pago', label: 'Pago' }
 ];
 
-export default function ServicoPagamento({ form, onChange }) {
+export default function ServicoPagamento({ form, onChange, valorTotal = 0 }) {
   const inputStyle = {
     width: '100%', 
     padding: '12px 16px',
@@ -44,7 +44,7 @@ export default function ServicoPagamento({ form, onChange }) {
         padding: 28,
         boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
         marginBottom: 24,
-        border: '1px solid #fed7d7'
+        border: '3px solid #8b1a1a'
       }}
     >
       <h3 style={{
@@ -55,6 +55,33 @@ export default function ServicoPagamento({ form, onChange }) {
         borderBottom: '2px solid #e53e3e',
         paddingBottom: 8
       }}>💳 Informações de Pagamento</h3>
+      
+      {/* Valor a ser pago */}
+      <div style={{
+        marginBottom: 20,
+        padding: 16,
+        background: '#fff5f5',
+        border: '2px solid #e53e3e',
+        borderRadius: 8,
+        textAlign: 'center'
+      }}>
+        <span style={{
+          fontSize: '16px',
+          fontWeight: 'bold',
+          color: '#742a2a',
+          marginRight: 12
+        }}>
+          Valor a ser pago:
+        </span>
+        <span style={{
+          fontSize: '18px',
+          fontWeight: 'bold',
+          color: '#e53e3e',
+          fontFamily: 'monospace'
+        }}>
+          R$ {valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
+      </div>
       
       <label style={labelStyle}>Status do pagamento:</label>
       <select 

@@ -240,6 +240,16 @@ export default function ServicoManutencao() {
     }
   };
 
+  // Função para calcular o total dos atos pagos (código tributário "01")
+  const calcularTotalAtosPagos = () => {
+    const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
+    const total = atosFiltrados.reduce((total, ato) => {
+      const valor = parseFloat(ato.valor_final || 0);
+      return total + (valor * (ato.quantidade || 1));
+    }, 0);
+    return total;
+  };
+
   function registrarServico(e) {
     e.preventDefault();
     let clienteFinal;
@@ -385,7 +395,11 @@ export default function ServicoManutencao() {
           
           {/* Exibe ServicoPagamento apenas se houver ato com codigoTributario '01' */}
           {atosPedido.some(ato => ato.codigoTributario === '01') && (
-            <ServicoPagamento form={form} onChange={handlePagamentoChange} />
+            <ServicoPagamento 
+              form={form} 
+              onChange={handlePagamentoChange} 
+              valorTotal={calcularTotalAtosPagos()}
+            />
           )}
           
           <ServicoExecucao form={form} onChange={handleExecucaoChange} />
