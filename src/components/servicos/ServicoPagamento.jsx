@@ -31,30 +31,58 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         throw new Error('Token de autenticação não encontrado. Faça login novamente.');
       }
       
-      // Primeiro tenta com PUT (mais comum e aceito)
-      let response = await fetch(`${config.apiURL}/pedidos/${form.protocolo}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ status: novoStatus })
-      });
-
-      // Se PUT não funcionar, tenta com POST
-      if (!response.ok && response.status === 405) {
-        response = await fetch(`${config.apiURL}/pedidos/${form.protocolo}/status`, {
-          method: 'POST',
+      console.log(`[DEBUG] Tentando atualizar status para: ${novoStatus}`);
+      
+      try {
+        // Primeiro tenta com PUT (mais comum e aceito)
+        let response = await fetch(`${config.apiURL}/pedidos/${form.protocolo}/status`, {
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({ status: novoStatus })
         });
-      }
 
-      // Se ainda não funcionar, tenta atualizar o pedido completo
-      if (!response.ok) {
+        if (response.ok) {
+          const resultado = await response.json();
+          setStatusPedido(novoStatus);
+          
+          if (onChange) {
+            onChange({ ...form, status: novoStatus });
+          }
+          
+          console.log('[DEBUG] Status atualizado com sucesso via PUT');
+          return resultado;
+        }
+
+        // Se PUT não funcionar, tenta com POST
+        if (response.status === 405) {
+          console.log('[DEBUG] PUT falhou (405), tentando POST...');
+          response = await fetch(`${config.apiURL}/pedidos/${form.protocolo}/status`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ status: novoStatus })
+          });
+
+          if (response.ok) {
+            const resultado = await response.json();
+            setStatusPedido(novoStatus);
+            
+            if (onChange) {
+              onChange({ ...form, status: novoStatus });
+            }
+            
+            console.log('[DEBUG] Status atualizado com sucesso via POST');
+            return resultado;
+          }
+        }
+
+        // Se ainda não funcionar, tenta atualizar o pedido completo
+        console.log('[DEBUG] Tentativas anteriores falharam, tentando PUT completo...');
         response = await fetch(`${config.apiURL}/pedidos/${form.protocolo}`, {
           method: 'PUT',
           headers: {
@@ -63,37 +91,66 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           },
           body: JSON.stringify({ ...form, status: novoStatus })
         });
-      }
 
-      if (!response.ok) {
+        if (response.ok) {
+          const resultado = await response.json();
+          setStatusPedido(novoStatus);
+          
+          if (onChange) {
+            onChange({ ...form, status: novoStatus });
+          }
+          
+          console.log('[DEBUG] Status atualizado com sucesso via PUT completo');
+          return resultado;
+        }
+
         throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+
+      } catch (networkError) {
+        // Detecta erros de rede/CORS de forma mais específica
+        if (networkError.name === 'TypeError' && 
+            (networkError.message.includes('Failed to fetch') || 
+             networkError.message.includes('NetworkError') ||
+             networkError.message.includes('CORS'))) {
+          
+          console.warn('[DEBUG] Erro de rede/CORS detectado, aplicando fallback local');
+          
+          // Fallback: atualiza apenas localmente
+          setStatusPedido(novoStatus);
+          
+          if (onChange) {
+            onChange({ ...form, status: novoStatus });
+          }
+          
+          return { status: novoStatus, local: true };
+        }
+        
+        // Re-lança outros tipos de erro
+        throw networkError;
       }
 
-      const resultado = await response.json();
-      setStatusPedido(novoStatus);
-      
-      // Atualiza o form se onChange estiver disponível
-      if (onChange) {
-        onChange({ ...form, status: novoStatus });
-      }
-      
-      return resultado;
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
       
-      // Fallback: atualiza apenas localmente se o backend falhar
-      if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-        console.warn('Erro de CORS/rede detectado. Atualizando status apenas localmente.');
+      // Verifica se é um erro de rede conhecido
+      if (error.message.includes('Failed to fetch') || 
+          error.message.includes('NetworkError') ||
+          error.message.includes('CORS') ||
+          error.name === 'TypeError') {
+        
+        console.warn('[DEBUG] Aplicando fallback devido a erro de conectividade');
+        
+        // Fallback final: atualiza apenas localmente
         setStatusPedido(novoStatus);
         
         if (onChange) {
           onChange({ ...form, status: novoStatus });
         }
         
-        alert(`⚠️ Status atualizado localmente para "${novoStatus}". \nO servidor pode estar temporariamente indisponível.`);
         return { status: novoStatus, local: true };
       }
       
+      // Para outros erros, mostra mensagem e re-lança
       alert(`❌ Erro ao atualizar status do pedido: ${error.message}`);
       throw error;
     }
@@ -216,6 +273,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       const totalAdiantado = calcularTotalAdiantado();
       const excesso = totalAdiantado - valorTotal;
       
+      console.log('[DEBUG] Iniciando confirmação de pagamento...');
+      
       // Atualiza o status para "Pago" no banco de dados
       const resultado = await atualizarStatusPedido('Pago');
       
@@ -224,14 +283,18 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         gerarReciboExcesso(excesso);
       }
       
-      if (resultado.local) {
+      if (resultado && resultado.local) {
         alert('✅ Pagamento confirmado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
       } else {
         alert('✅ Pagamento confirmado com sucesso! Status atualizado para "Pago".');
       }
     } catch (error) {
       console.error('Erro ao confirmar pagamento:', error);
-      alert('❌ Erro ao confirmar pagamento. Verifique sua conexão e tente novamente.');
+      
+      // Só mostra erro se realmente falhou (não foi fallback)
+      if (!error.message.includes('local')) {
+        alert('❌ Erro ao confirmar pagamento. Verifique sua conexão e tente novamente.');
+      }
     } finally {
       setProcessando(false);
     }
@@ -243,17 +306,23 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       try {
         setProcessando(true);
         
+        console.log('[DEBUG] Iniciando cancelamento de pagamento...');
+        
         // Atualiza o status para "Conferido" no banco de dados
         const resultado = await atualizarStatusPedido('Conferido');
         
-        if (resultado.local) {
+        if (resultado && resultado.local) {
           alert('✅ Pagamento cancelado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
         } else {
           alert('✅ Pagamento cancelado com sucesso! Status atualizado para "Conferido".');
         }
       } catch (error) {
         console.error('Erro ao cancelar pagamento:', error);
-        alert('❌ Erro ao cancelar pagamento. Verifique sua conexão e tente novamente.');
+        
+        // Só mostra erro se realmente falhou (não foi fallback)
+        if (!error.message.includes('local')) {
+          alert('❌ Erro ao cancelar pagamento. Verifique sua conexão e tente novamente.');
+        }
       } finally {
         setProcessando(false);
       }
