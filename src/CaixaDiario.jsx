@@ -772,54 +772,41 @@ useEffect(() => {
     border: '2px solid #3498db',
     borderRadius: '8px',
     display: 'flex',
-    gap: '24px', // Espaço entre os campos
-    alignItems: 'flex-end', // Alinha os inputs na base
-    flexWrap: 'wrap' // Responsivo para telas pequenas
+    gap: '32px',
+    alignItems: 'center',
+    flexWrap: 'wrap'
   }}
 >
-  {/* ISS */}
-  <div style={{ display: 'flex', flexDirection: 'column' }}>
-    <label
-      style={{
-        marginBottom: '6px',
-        fontWeight: '600',
-        color: '#2c3e50'
-      }}
-    >
+  {/* ISS - Apenas texto */}
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <span style={{
+      fontWeight: '600',
+      color: '#2c3e50',
+      fontSize: '14px'
+    }}>
       📊 Percentual de ISS (%):
-    </label>
-    <input
-      type="text"
-      min="0"
-      max="100"
-      step="0.1"
-      value={percentualISS}
-      readOnly
-      tabIndex={-1}
-      style={{
-        width: '150px',
-        padding: '10px',
-        borderRadius: '8px',
-        border: '2px solid #e3f2fd',
-        backgroundColor: '#e3f2fd',
-        fontSize: '14px',
-        fontWeight: '600',
-        color: '#1565c0',
-        pointerEvents: 'none'
-      }}
-    />
+    </span>
+    <span style={{
+      fontWeight: '700',
+      color: '#1565c0',
+      fontSize: '16px',
+      background: '#e3f2fd',
+      padding: '6px 12px',
+      borderRadius: '6px',
+      border: '2px solid #bbdefb'
+    }}>
+      {percentualISS}%
+    </span>
   </div>
 
-  {/* Valor Inicial */}
-  <div style={{ display: 'flex', flexDirection: 'column' }}>
-    <label
-      style={{
-        marginBottom: '6px',
-        fontWeight: '600',
-        color: '#2c3e50'
-      }}
-    >
-      Valor Inicial do Caixa:
+  {/* Valor Inicial - Input */}
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <label style={{
+      fontWeight: '600',
+      color: '#2c3e50',
+      fontSize: '14px'
+    }}>
+      💰 Valor Inicial do Caixa:
     </label>
     <input
       type="number"
@@ -829,44 +816,36 @@ useEffect(() => {
       onChange={e => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
       onBlur={salvarValorInicialCaixa}
       style={{
-        width: '150px',
-        padding: '10px',
-        borderRadius: '8px',
-        border: '2px solid #e3f2fd',
+        width: '120px',
+        padding: '8px 10px',
+        borderRadius: '6px',
+        border: '2px solid #27ae60',
         fontSize: '14px',
         fontWeight: '600'
       }}
     />
   </div>
 
-  {/* Valor Final */}
-  <div style={{ display: 'flex', flexDirection: 'column' }}>
-    <label
-      style={{
-        marginBottom: '6px',
-        fontWeight: '600',
-        color: '#2c3e50'
-      }}
-    >
-      Valor Final do Caixa:
-    </label>
-    <input
-      type="text"
-      value={formatarMoeda(calcularValorFinalCaixa())}
-      readOnly
-      tabIndex={-1}
-      style={{
-        width: '150px',
-        padding: '10px',
-        borderRadius: '8px',
-        border: '2px solid #e3f2fd',
-        backgroundColor: '#e3f2fd',
-        fontSize: '14px',
-        fontWeight: '600',
-        color: '#1565c0',
-        pointerEvents: 'none'
-      }}
-    />
+  {/* Valor Final - Apenas texto */}
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <span style={{
+      fontWeight: '600',
+      color: '#2c3e50',
+      fontSize: '14px'
+    }}>
+      💎 Valor Final do Caixa:
+    </span>
+    <span style={{
+      fontWeight: '700',
+      color: '#27ae60',
+      fontSize: '16px',
+      background: '#d4edda',
+      padding: '6px 12px',
+      borderRadius: '6px',
+      border: '2px solid #c3e6cb'
+    }}>
+      {formatarMoeda(calcularValorFinalCaixa())}
+    </span>
   </div>
 </div>
       </div>
