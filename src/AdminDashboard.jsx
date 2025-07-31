@@ -7,6 +7,11 @@ export default function AdminDashboard() {
   const [editId, setEditId] = useState(null);
   const [editData, setEditData] = useState({});
   const [msg, setMsg] = useState('');
+  const [backups, setBackups] = useState([]);
+  const [backupLoading, setBackupLoading] = useState(false);
+  const [backupMsg, setBackupMsg] = useState('');
+  const [recoveryInfo, setRecoveryInfo] = useState({});
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
 
   // Estilos dos botões (mesmo padrão do ImportarAtos)
   const buttonStyle = {
@@ -47,8 +52,26 @@ export default function AdminDashboard() {
     background: '#f44336',
   };
 
+  const buttonBackupStyle = {
+    ...buttonStyle,
+    background: '#ff9800',
+  };
+
+  const buttonRecoveryStyle = {
+    ...buttonStyle,
+    background: '#9c27b0',
+  };
+
+  const buttonCheckStyle = {
+    ...buttonStyle,
+    background: '#607d8b',
+  };
+
+  const RENDER_API_KEY = 'rnd_2iUOT7XH1HjT8TrH4T4Sv4pm92uS';
+
   useEffect(() => {
     fetchUsuarios();
+    fetchBackups();
   }, []);
 
   const fetchUsuarios = async () => {
@@ -58,6 +81,135 @@ export default function AdminDashboard() {
     });
     const data = await res.json();
     setUsuarios(data.usuarios || []);
+  };
+
+  const fetchBackups = async () => {
+    try {
+      setBackupLoading(true);
+      const response = await fetch('https://api.render.com/v1/services', {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${RENDER_API_KEY}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Filtrar apenas serviços de banco de dados PostgreSQL
+        const dbServices = data.filter(service => 
+          service.type === 'postgresql' || service.type === 'database'
+        );
+        setBackups(dbServices);
+        setBackupMsg('');
+      } else {
+        setBackupMsg('Erro ao carregar serviços do Render');
+      }
+    } catch (error) {
+      setBackupMsg('Erro de conexão com Render API: ' + error.message);
+      console.error('Erro ao buscar backups:', error);
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
+  const createBackup = async (serviceId) => {
+    try {
+      setBackupLoading(true);
+      setBackupMsg('Criando backup...');
+      
+      const response = await fetch(`https://api.render.com/v1/services/${serviceId}/backups`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${RENDER_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        setBackupMsg('Backup criado com sucesso!');
+        setTimeout(() => fetchBackups(), 2000); // Atualizar após 2 segundos
+      } else {
+        const error = await response.json();
+        setBackupMsg('Erro ao criar backup: ' + (error.message || 'Erro desconhecido'));
+      }
+    } catch (error) {
+      setBackupMsg('Erro de conexão: ' + error.message);
+      console.error('Erro ao criar backup:', error);
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
+  const checkRecoveryStatus = async (postgresId) => {
+    try {
+      setRecoveryLoading(true);
+      const response = await fetch(`https://api.render.com/v1/postgres/${postgresId}/recovery`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${RENDER_API_KEY}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setRecoveryInfo(prev => ({
+          ...prev,
+          [postgresId]: data
+        }));
+        setBackupMsg(`Status de recuperação verificado para ${postgresId}`);
+        return data;
+      } else {
+        const error = await response.json();
+        setBackupMsg('Erro ao verificar status de recuperação: ' + (error.message || 'Erro desconhecido'));
+      }
+    } catch (error) {
+      setBackupMsg('Erro de conexão ao verificar recuperação: ' + error.message);
+      console.error('Erro ao verificar recovery:', error);
+    } finally {
+      setRecoveryLoading(false);
+    }
+  };
+
+  const triggerRecovery = async (postgresId) => {
+    if (!window.confirm(`Tem certeza que deseja iniciar a recuperação point-in-time para o serviço ${postgresId}?\n\nEsta operação pode afetar a disponibilidade do banco de dados.`)) {
+      return;
+    }
+
+    try {
+      setRecoveryLoading(true);
+      setBackupMsg('Iniciando recuperação point-in-time...');
+      
+      const response = await fetch(`https://api.render.com/v1/postgres/${postgresId}/recovery`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${RENDER_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          // Adicione parâmetros específicos se necessário
+          // timestamp: new Date().toISOString() // exemplo
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setBackupMsg('Recuperação point-in-time iniciada com sucesso!');
+        console.log('Recovery response:', data);
+        // Atualizar status após iniciar recovery
+        setTimeout(() => checkRecoveryStatus(postgresId), 3000);
+      } else {
+        const error = await response.json();
+        setBackupMsg('Erro ao iniciar recuperação: ' + (error.message || 'Erro desconhecido'));
+      }
+    } catch (error) {
+      setBackupMsg('Erro de conexão ao iniciar recuperação: ' + error.message);
+      console.error('Erro ao iniciar recovery:', error);
+    } finally {
+      setRecoveryLoading(false);
+    }
   };
 
   const handleEdit = (usuario) => {
@@ -107,7 +259,7 @@ export default function AdminDashboard() {
   return (
     <div
       style={{
-        maxWidth: 800,
+        maxWidth: 1200,
         margin: '40px auto',
         padding: 20,
         border: '1px solid #ddd',
@@ -152,99 +304,296 @@ export default function AdminDashboard() {
             Editar Atos (Tabelas 07/08)
           </Link>
         </div>
-        <h2 style={{ margin: 0 }}>Administração de Usuários</h2>
+        <h2 style={{ margin: 0 }}>Painel de Administração</h2>
       </div>
-      {msg && (
+
+      {/* Seção de Gerenciamento de Backups */}
+      <div
+        style={{
+          background: '#f8f9fa',
+          border: '1px solid #dee2e6',
+          borderRadius: 8,
+          padding: 20,
+          marginBottom: 30,
+        }}
+      >
         <div
           style={{
-            color: msg.includes('Erro') ? 'red' : 'green',
-            marginBottom: 10,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 16,
           }}
         >
-          {msg}
+          <h3 style={{ margin: 0, color: '#495057' }}>🗄️ Gerenciamento de Backups (PostgreSQL - Render)</h3>
+          <button
+            onClick={fetchBackups}
+            style={buttonStyle}
+            disabled={backupLoading}
+          >
+            {backupLoading ? 'Carregando...' : 'Atualizar'}
+          </button>
         </div>
-      )}
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ background: '#f0f0f0' }}>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Serventia</th>
-            <th>Cargo</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {usuarios.map((usuario) => (
-            <tr key={usuario.id}>
-              <td>
-                {editId === usuario.id ? (
-                  <input
-                    name="nome"
-                    value={editData.nome}
-                    onChange={handleEditChange}
-                    style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
-                  />
-                ) : (
-                  usuario.nome
-                )}
-              </td>
-              <td>{usuario.email}</td>
-              <td>
-                {editId === usuario.id ? (
-                  <input
-                    name="serventia"
-                    value={editData.serventia}
-                    onChange={handleEditChange}
-                    style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
-                  />
-                ) : (
-                  usuario.serventia
-                )}
-              </td>
-              <td>
-                {editId === usuario.id ? (
-                  <select
-                    name="cargo"
-                    value={editData.cargo}
-                    onChange={handleEditChange}
-                    style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+
+        {backupMsg && (
+          <div
+            style={{
+              color: backupMsg.includes('Erro') ? '#dc3545' : '#28a745',
+              background: backupMsg.includes('Erro') ? '#f8d7da' : '#d4edda',
+              border: `1px solid ${backupMsg.includes('Erro') ? '#f5c6cb' : '#c3e6cb'}`,
+              borderRadius: 4,
+              padding: 10,
+              marginBottom: 15,
+            }}
+          >
+            {backupMsg}
+          </div>
+        )}
+
+        <div style={{ marginBottom: 20 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #dee2e6' }}>
+            <thead>
+              <tr style={{ background: '#e9ecef' }}>
+                <th style={{ padding: 12, textAlign: 'left', borderBottom: '1px solid #dee2e6' }}>
+                  Serviço
+                </th>
+                <th style={{ padding: 12, textAlign: 'left', borderBottom: '1px solid #dee2e6' }}>
+                  Tipo
+                </th>
+                <th style={{ padding: 12, textAlign: 'left', borderBottom: '1px solid #dee2e6' }}>
+                  Status
+                </th>
+                <th style={{ padding: 12, textAlign: 'left', borderBottom: '1px solid #dee2e6' }}>
+                  Recovery Status
+                </th>
+                <th style={{ padding: 12, textAlign: 'center', borderBottom: '1px solid #dee2e6' }}>
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {backups.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="5"
+                    style={{
+                      padding: 20,
+                      textAlign: 'center',
+                      color: '#6c757d',
+                      borderBottom: '1px solid #dee2e6',
+                    }}
                   >
-                    <option value="Registrador">Registrador</option>
-                    <option value="Escrevente">Escrevente</option>
-                    <option value="Substituto">Substituto</option>
-                    <option value="Auxiliar">Auxiliar</option>
-                    <option value="Outro">Outro</option>
-                  </select>
-                ) : (
-                  usuario.cargo
-                )}
-              </td>
-              <td>
-                {editId === usuario.id ? (
-                  <>
-                    <button onClick={handleSave} style={buttonSaveStyle}>
-                      Salvar
-                    </button>
-                    <button onClick={() => setEditId(null)} style={buttonCancelStyle}>
-                      Cancelar
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={() => handleEdit(usuario)} style={buttonEditStyle}>
-                      Editar
-                    </button>
-                    <button onClick={() => handleDelete(usuario.id)} style={{ ...buttonDeleteStyle, marginLeft: 8 }}>
-                      Excluir
-                    </button>
-                  </>
-                )}
-              </td>
+                    {backupLoading ? 'Carregando serviços...' : 'Nenhum serviço PostgreSQL encontrado'}
+                  </td>
+                </tr>
+              ) : (
+                backups.map((service) => (
+                  <tr key={service.id}>
+                    <td style={{ padding: 12, borderBottom: '1px solid #dee2e6' }}>
+                      <strong>{service.name}</strong>
+                      <br />
+                      <small style={{ color: '#6c757d' }}>ID: {service.id}</small>
+                    </td>
+                    <td style={{ padding: 12, borderBottom: '1px solid #dee2e6' }}>
+                      {service.type}
+                    </td>
+                    <td style={{ padding: 12, borderBottom: '1px solid #dee2e6' }}>
+                      <span
+                        style={{
+                          padding: '4px 8px',
+                          borderRadius: 4,
+                          fontSize: 12,
+                          fontWeight: 'bold',
+                          background: service.status === 'available' ? '#d4edda' : '#f8d7da',
+                          color: service.status === 'available' ? '#155724' : '#721c24',
+                        }}
+                      >
+                        {service.status || 'unknown'}
+                      </span>
+                    </td>
+                    <td style={{ padding: 12, borderBottom: '1px solid #dee2e6' }}>
+                      {recoveryInfo[service.id] ? (
+                        <div>
+                          <span
+                            style={{
+                              padding: '2px 6px',
+                              borderRadius: 4,
+                              fontSize: 11,
+                              fontWeight: 'bold',
+                              background: recoveryInfo[service.id].available ? '#e1f5fe' : '#fff3e0',
+                              color: recoveryInfo[service.id].available ? '#01579b' : '#e65100',
+                            }}
+                          >
+                            {recoveryInfo[service.id].available ? 'Disponível' : 'Indisponível'}
+                          </span>
+                          {recoveryInfo[service.id].lastBackup && (
+                            <div style={{ fontSize: 10, color: '#6c757d', marginTop: 4 }}>
+                              Último backup: {new Date(recoveryInfo[service.id].lastBackup).toLocaleDateString('pt-BR')}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span style={{ color: '#6c757d', fontSize: 12 }}>Não verificado</span>
+                      )}
+                    </td>
+                    <td style={{ padding: 12, textAlign: 'center', borderBottom: '1px solid #dee2e6' }}>
+                      <div style={{ display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button
+                          onClick={() => createBackup(service.id)}
+                          style={{ ...buttonBackupStyle, fontSize: 12, padding: '6px 12px' }}
+                          disabled={backupLoading || recoveryLoading}
+                        >
+                          Backup
+                        </button>
+                        <button
+                          onClick={() => checkRecoveryStatus(service.id)}
+                          style={{ ...buttonCheckStyle, fontSize: 12, padding: '6px 12px' }}
+                          disabled={backupLoading || recoveryLoading}
+                        >
+                          Check Recovery
+                        </button>
+                        <button
+                          onClick={() => triggerRecovery(service.id)}
+                          style={{ ...buttonRecoveryStyle, fontSize: 12, padding: '6px 12px' }}
+                          disabled={backupLoading || recoveryLoading || !recoveryInfo[service.id]?.available}
+                        >
+                          Point-in-Time Recovery
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          style={{
+            background: '#fff3cd',
+            border: '1px solid #ffeaa7',
+            borderRadius: 4,
+            padding: 12,
+            fontSize: 14,
+            color: '#856404',
+          }}
+        >
+          <strong>ℹ️ Informações sobre Backup e Recovery:</strong>
+          <ul style={{ margin: '8px 0', paddingLeft: 20 }}>
+            <li><strong>Backup:</strong> Os backups são armazenados automaticamente pelo Render</li>
+            <li><strong>Check Recovery:</strong> Verifica se a recuperação point-in-time está disponível</li>
+            <li><strong>Point-in-Time Recovery:</strong> Restaura o banco para um ponto específico no tempo</li>
+            <li><strong>Atenção:</strong> Recovery pode afetar a disponibilidade do banco durante o processo</li>
+            <li>Verifique o painel do Render para mais detalhes sobre os backups e recovery status</li>
+          </ul>
+          <div style={{ 
+            background: '#f8d7da', 
+            border: '1px solid #f5c6cb', 
+            borderRadius: 4, 
+            padding: 8, 
+            marginTop: 10,
+            color: '#721c24'
+          }}>
+            <strong>⚠️ Aviso:</strong> Operações de recovery são críticas. Sempre confirme antes de executar.
+          </div>
+        </div>
+      </div>
+
+      {/* Seção de Administração de Usuários */}
+      <div>
+        <h3 style={{ marginBottom: 16, color: '#495057' }}>👥 Administração de Usuários</h3>
+        {msg && (
+          <div
+            style={{
+              color: msg.includes('Erro') ? 'red' : 'green',
+              marginBottom: 10,
+            }}
+          >
+            {msg}
+          </div>
+        )}
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: '#f0f0f0' }}>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Serventia</th>
+              <th>Cargo</th>
+              <th>Ações</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {usuarios.map((usuario) => (
+              <tr key={usuario.id}>
+                <td>
+                  {editId === usuario.id ? (
+                    <input
+                      name="nome"
+                      value={editData.nome}
+                      onChange={handleEditChange}
+                      style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                    />
+                  ) : (
+                    usuario.nome
+                  )}
+                </td>
+                <td>{usuario.email}</td>
+                <td>
+                  {editId === usuario.id ? (
+                    <input
+                      name="serventia"
+                      value={editData.serventia}
+                      onChange={handleEditChange}
+                      style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                    />
+                  ) : (
+                    usuario.serventia
+                  )}
+                </td>
+                <td>
+                  {editId === usuario.id ? (
+                    <select
+                      name="cargo"
+                      value={editData.cargo}
+                      onChange={handleEditChange}
+                      style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                    >
+                      <option value="Registrador">Registrador</option>
+                      <option value="Escrevente">Escrevente</option>
+                      <option value="Substituto">Substituto</option>
+                      <option value="Auxiliar">Auxiliar</option>
+                      <option value="Outro">Outro</option>
+                    </select>
+                  ) : (
+                    usuario.cargo
+                  )}
+                </td>
+                <td>
+                  {editId === usuario.id ? (
+                    <>
+                      <button onClick={handleSave} style={buttonSaveStyle}>
+                        Salvar
+                      </button>
+                      <button onClick={() => setEditId(null)} style={buttonCancelStyle}>
+                        Cancelar
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => handleEdit(usuario)} style={buttonEditStyle}>
+                        Editar
+                      </button>
+                      <button onClick={() => handleDelete(usuario.id)} style={{ ...buttonDeleteStyle, marginLeft: 8 }}>
+                        Excluir
+                      </button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
