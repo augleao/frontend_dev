@@ -213,7 +213,7 @@ export default function ListaServicos() {
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 16
+          gap: 12
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Data Inicial:</label>
@@ -255,7 +255,7 @@ export default function ListaServicos() {
             <div style={{
               display: 'flex',
               flexWrap: 'wrap',
-              gap: 8,
+              gap: 6,
               padding: '8px 12px',
               border: '1.5px solid #bdc3c7',
               borderRadius: 6,
@@ -304,6 +304,13 @@ export default function ListaServicos() {
           </button>
         </div>
       </div>
+
+      {/* Linha divisória */}
+      <div style={{
+        height: '1px',
+        background: 'linear-gradient(to right, transparent, #bdc3c7, transparent)',
+        margin: '0 24px 16px 24px'
+      }}></div>
 
       {/* Informação dos resultados */}
       <div style={{
