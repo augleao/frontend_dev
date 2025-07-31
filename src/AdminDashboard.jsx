@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import config from './config';
 import { Link } from 'react-router-dom';
+import { apiURL } from './config';
 
 export default function AdminDashboard() {
   const [usuarios, setUsuarios] = useState([]);
@@ -96,9 +97,19 @@ export default function AdminDashboard() {
         const data = await response.json();
         setBackups(data.services || []);
         setBackupMsg('');
+      } else if (response.status === 404) {
+        setBackupMsg('Endpoints de backup não implementados no backend ainda');
+        console.warn('Rota /admin/render/services não encontrada - implemente no backend');
       } else {
-        const errorData = await response.json();
-        setBackupMsg('Erro ao carregar serviços do Render: ' + (errorData.message || 'Erro desconhecido'));
+        // Tentar ler como JSON, se falhar, ler como texto
+        try {
+          const errorData = await response.json();
+          setBackupMsg('Erro ao carregar serviços do Render: ' + (errorData.message || 'Erro desconhecido'));
+        } catch (jsonError) {
+          const errorText = await response.text();
+          setBackupMsg(`Erro do servidor (${response.status}): Resposta não é JSON válido`);
+          console.error('Resposta do servidor:', errorText.substring(0, 200));
+        }
       }
     } catch (error) {
       setBackupMsg('Erro de conexão com o servidor: ' + error.message);
@@ -126,10 +137,16 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         setBackupMsg('Backup criado com sucesso!');
-        setTimeout(() => fetchBackups(), 2000); // Atualizar após 2 segundos
+        setTimeout(() => fetchBackups(), 2000);
+      } else if (response.status === 404) {
+        setBackupMsg('Endpoint de backup não implementado no backend ainda');
       } else {
-        const errorData = await response.json();
-        setBackupMsg('Erro ao criar backup: ' + (errorData.message || 'Erro desconhecido'));
+        try {
+          const errorData = await response.json();
+          setBackupMsg('Erro ao criar backup: ' + (errorData.message || 'Erro desconhecido'));
+        } catch (jsonError) {
+          setBackupMsg(`Erro do servidor (${response.status}): Resposta não é JSON válido`);
+        }
       }
     } catch (error) {
       setBackupMsg('Erro de conexão: ' + error.message);
@@ -159,9 +176,15 @@ export default function AdminDashboard() {
         }));
         setBackupMsg(`Status de recuperação verificado para ${postgresId}`);
         return data;
+      } else if (response.status === 404) {
+        setBackupMsg('Endpoint de recovery não implementado no backend ainda');
       } else {
-        const errorData = await response.json();
-        setBackupMsg('Erro ao verificar status de recuperação: ' + (errorData.message || 'Erro desconhecido'));
+        try {
+          const errorData = await response.json();
+          setBackupMsg('Erro ao verificar status de recuperação: ' + (errorData.message || 'Erro desconhecido'));
+        } catch (jsonError) {
+          setBackupMsg(`Erro do servidor (${response.status}): Resposta não é JSON válido`);
+        }
       }
     } catch (error) {
       setBackupMsg('Erro de conexão ao verificar recuperação: ' + error.message);
@@ -200,9 +223,15 @@ export default function AdminDashboard() {
         console.log('Recovery response:', data);
         // Atualizar status após iniciar recovery
         setTimeout(() => checkRecoveryStatus(postgresId), 3000);
+      } else if (response.status === 404) {
+        setBackupMsg('Endpoint de recovery não implementado no backend ainda');
       } else {
-        const errorData = await response.json();
-        setBackupMsg('Erro ao iniciar recuperação: ' + (errorData.message || 'Erro desconhecido'));
+        try {
+          const errorData = await response.json();
+          setBackupMsg('Erro ao iniciar recuperação: ' + (errorData.message || 'Erro desconhecido'));
+        } catch (jsonError) {
+          setBackupMsg(`Erro do servidor (${response.status}): Resposta não é JSON válido`);
+        }
       }
     } catch (error) {
       setBackupMsg('Erro de conexão ao iniciar recuperação: ' + error.message);
@@ -495,6 +524,19 @@ export default function AdminDashboard() {
             color: '#721c24'
           }}>
             <strong>⚠️ Aviso:</strong> Operações de recovery são críticas. Sempre confirme antes de executar.
+          </div>
+          <div style={{ 
+            background: '#d1ecf1', 
+            border: '1px solid #bee5eb', 
+            borderRadius: 4, 
+            padding: 8, 
+            marginTop: 10,
+            color: '#0c5460'
+          }}>
+            <strong>🔧 Status:</strong> {backups.length === 0 && backupMsg.includes('não implementado') ? 
+              'Endpoints do Render não implementados no backend ainda. Implemente as rotas mencionadas acima.' : 
+              'Sistema funcionando normalmente.'
+            }
           </div>
         </div>
       </div>
