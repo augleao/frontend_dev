@@ -749,105 +749,73 @@ useEffect(() => {
         marginBottom: '12px',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
       }}>
-        <h2 style={{ 
-          margin: '0 0 12px 0', 
-          color: '#2c3e50',
-          fontSize: '18px',
-          fontWeight: '600',
+        {/* Tudo na mesma linha do título */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '16px',
           borderBottom: '2px solid #3498db',
           paddingBottom: '8px'
         }}>
-          📊 Resumo do Caixa
-        </h2>
-        
+          <h2 style={{ 
+            margin: 0, 
+            color: '#2c3e50',
+            fontSize: '18px',
+            fontWeight: '600'
+          }}>
+            📊 Resumo do Caixa:
+          </h2>
 
+          {/* Percentual de ISS */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{
+              color: '#2c3e50',
+              fontSize: '18px',
+              fontWeight: '600'
+            }}>
+              Percentual de ISS (%): {percentualISS}%
+            </span>
+          </div>
 
+          {/* Valor Inicial do Caixa */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{
+              color: '#2c3e50',
+              fontSize: '18px',
+              fontWeight: '600'
+            }}>
+              💰 Valor Inicial do Caixa:
+            </span>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={valorInicialCaixa}
+              onChange={e => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
+              onBlur={salvarValorInicialCaixa}
+              style={{
+                width: '100px',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                border: '1px solid #27ae60',
+                fontSize: '16px',
+                fontWeight: '600'
+              }}
+            />
+          </div>
 
-        {/* Campo para ISS, Valor Inicial e Valor Final do Caixa */}
-<div
-  style={{
-    marginTop: '12px',
-    padding: '12px',
-    background: '#f8f9fa',
-    border: '2px solid #3498db',
-    borderRadius: '8px',
-    display: 'flex',
-    gap: '32px',
-    alignItems: 'center',
-    flexWrap: 'wrap'
-  }}
->
-  {/* ISS - Apenas texto */}
-  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-    <span style={{
-      fontWeight: '600',
-      color: '#2c3e50',
-      fontSize: '14px'
-    }}>
-      📊 Percentual de ISS (%):
-    </span>
-    <span style={{
-      fontWeight: '700',
-      color: '#1565c0',
-      fontSize: '16px',
-      background: '#e3f2fd',
-      padding: '6px 12px',
-      borderRadius: '6px',
-      border: '2px solid #bbdefb'
-    }}>
-      {percentualISS}%
-    </span>
-  </div>
-
-  {/* Valor Inicial - Input */}
-  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-    <label style={{
-      fontWeight: '600',
-      color: '#2c3e50',
-      fontSize: '14px'
-    }}>
-      💰 Valor Inicial do Caixa:
-    </label>
-    <input
-      type="number"
-      min="0"
-      step="0.01"
-      value={valorInicialCaixa}
-      onChange={e => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
-      onBlur={salvarValorInicialCaixa}
-      style={{
-        width: '120px',
-        padding: '8px 10px',
-        borderRadius: '6px',
-        border: '2px solid #27ae60',
-        fontSize: '14px',
-        fontWeight: '600'
-      }}
-    />
-  </div>
-
-  {/* Valor Final - Apenas texto */}
-  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-    <span style={{
-      fontWeight: '600',
-      color: '#2c3e50',
-      fontSize: '14px'
-    }}>
-      💎 Valor Final do Caixa:
-    </span>
-    <span style={{
-      fontWeight: '700',
-      color: '#27ae60',
-      fontSize: '16px',
-      background: '#d4edda',
-      padding: '6px 12px',
-      borderRadius: '6px',
-      border: '2px solid #c3e6cb'
-    }}>
-      {formatarMoeda(calcularValorFinalCaixa())}
-    </span>
-  </div>
-</div>
+          {/* Valor Final do Caixa */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{
+              color: '#2c3e50',
+              fontSize: '18px',
+              fontWeight: '600'
+            }}>
+              💎 Valor Final do Caixa: {formatarMoeda(calcularValorFinalCaixa())}
+            </span>
+          </div>
+        </div>
       </div>
 
 
