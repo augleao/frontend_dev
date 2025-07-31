@@ -19,36 +19,36 @@ export default function CaixaTableEscrevente({ atos, onRemover }) {
 
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa', fontSize: '13px' }}>
         <thead>
           <tr style={{ background: '#f5f5f5' }}>
-            <th style={{ border: '1px solid #ddd', padding: 8 }}>Data</th>
-            <th style={{ border: '1px solid #ddd', padding: 8 }}>Hora</th>
-            <th style={{ border: '1px solid #ddd', padding: 8 }}>Código</th>
-            <th style={{ border: '1px solid #ddd', padding: 8 }}>Descrição</th>
-            <th style={{ border: '1px solid #ddd', padding: 8 }}>Quantidade</th>
-            <th style={{ border: '1px solid #ddd', padding: 8 }}>Valor Unitário</th>
-            <th style={{ border: '1px solid #ddd', padding: 8 }}>Pagamentos</th>
-            <th style={{ border: '1px solid #ddd', padding: 8 }}>Ações</th>
+            <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Data</th>
+            <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Hora</th>
+            <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Código</th>
+            <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Descrição</th>
+            <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Quantidade</th>
+            <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Valor Unitário</th>
+            <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Pagamentos</th>
+            <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Ações</th>
           </tr>
         </thead>
         <tbody>
           {atos.length === 0 && (
             <tr>
-              <td colSpan={8} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
+              <td colSpan={8} style={{ textAlign: 'center', padding: '12px', color: '#888', fontSize: '13px' }}>
                 Nenhum ato cadastrado para esta data.
               </td>
             </tr>
           )}
           {atos.map((ato, idx) => (
             <tr key={idx} style={{ backgroundColor: getCorFundo(ato.codigo) }}>
-              <td style={{ border: '1px solid #ddd', padding: 8 }}>{formatarDataBR(ato.data)}</td>
-              <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.hora}</td>
-              <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
-              <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.descricao}</td>
-              <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.quantidade}</td>
-              <td style={{ border: '1px solid #ddd', padding: 8 }}>R$ {formatarValor(ato.valor_unitario)}</td>
-              <td style={{ border: '1px solid #ddd', padding: 8 }}>
+              <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px' }}>{formatarDataBR(ato.data)}</td>
+              <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px' }}>{ato.hora}</td>
+              <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px' }}>{ato.codigo}</td>
+              <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px' }}>{ato.descricao}</td>
+              <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px' }}>{ato.quantidade}</td>
+              <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px' }}>R$ {formatarValor(ato.valor_unitario)}</td>
+              <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '11px' }}>
                 {formasPagamento
                   .filter((fp) => {
                     const val = ato.pagamentos[fp.key]?.valor;
@@ -62,15 +62,17 @@ export default function CaixaTableEscrevente({ atos, onRemover }) {
                   })
                   .join(' | ')}
               </td>
-              <td style={{ border: '1px solid #ddd', padding: 8 }}>
+              <td style={{ border: '1px solid #ddd', padding: '4px 6px' }}>
                 <button
                   style={{
                     background: '#d32f2f',
                     color: '#fff',
                     border: 'none',
-                    borderRadius: 6,
-                    padding: '6px 12px',
+                    borderRadius: 4,
+                    padding: '4px 8px',
                     cursor: 'pointer',
+                    fontSize: '11px',
+                    fontWeight: '600'
                   }}
                   onClick={() => onRemover(idx)}
                 >
