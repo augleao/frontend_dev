@@ -94,6 +94,7 @@ export default function ListaServicos() {
         // Se só tem data inicial, filtra de data inicial até hoje
         if (dataInicial && !dataFinal) {
           const dataInicialObj = new Date(dataInicial);
+          dataInicialObj.setHours(0, 0, 0, 0); // Início do dia selecionado
           const hoje = new Date();
           hoje.setHours(23, 59, 59, 999); // Final do dia de hoje
           return dataPedido >= dataInicialObj && dataPedido <= hoje;
@@ -102,15 +103,16 @@ export default function ListaServicos() {
         // Se só tem data final, filtra desde o início até data final
         if (!dataInicial && dataFinal) {
           const dataFinalObj = new Date(dataFinal);
-          dataFinalObj.setHours(23, 59, 59, 999); // Final do dia
+          dataFinalObj.setHours(23, 59, 59, 999); // Final do dia selecionado
           return dataPedido <= dataFinalObj;
         }
         
         // Se tem ambas as datas
         if (dataInicial && dataFinal) {
           const dataInicialObj = new Date(dataInicial);
+          dataInicialObj.setHours(0, 0, 0, 0); // Início do dia inicial
           const dataFinalObj = new Date(dataFinal);
-          dataFinalObj.setHours(23, 59, 59, 999); // Final do dia
+          dataFinalObj.setHours(23, 59, 59, 999); // Final do dia final
           return dataPedido >= dataInicialObj && dataPedido <= dataFinalObj;
         }
         
