@@ -43,10 +43,10 @@ export default function ListaServicos() {
   const [dataInicial, setDataInicial] = useState('');
   const [dataFinal, setDataFinal] = useState('');
   const [statusSelecionados, setStatusSelecionados] = useState({
-    'aguardando conferência': false,
-    'aguardando pagamento': false,
-    'aguardando execução': false,
-    'aguardando entrega': false,
+    'aguardando conferência': true,
+    'aguardando pagamento': true,
+    'aguardando execução': true,
+    'aguardando entrega': true,
     'concluído': false
   });
   const navigate = useNavigate();
@@ -158,10 +158,10 @@ export default function ListaServicos() {
     setDataInicial('');
     setDataFinal('');
     setStatusSelecionados({
-      'aguardando conferência': false,
-      'aguardando pagamento': false,
-      'aguardando execução': false,
-      'aguardando entrega': false,
+      'aguardando conferência': true,
+      'aguardando pagamento': true,
+      'aguardando execução': true,
+      'aguardando entrega': true,
       'concluído': false
     });
     setPedidosFiltrados(pedidos);
