@@ -86,8 +86,8 @@ export default function AdminDashboard() {
     try {
       setBackupLoading(true);
       const token = localStorage.getItem('token');
-      console.log('[fetchBackups] Fazendo requisição para:', `${config.apiURL}/admin/render/services`);
-      const response = await fetch(`${config.apiURL}/admin/render/services`, {
+      console.log('[fetchBackups] Fazendo requisição para:', `${config.apiURL}/admin/render/postgres`);
+      const response = await fetch(`${config.apiURL}/admin/render/postgres`, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -97,17 +97,17 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         console.log('[fetchBackups] Dados recebidos:', data);
-        setBackups(data.services || []);
+        setBackups(data.bancos || []);
         setBackupMsg('');
       } else if (response.status === 404) {
         setBackupMsg('Endpoints de backup não implementados no backend ainda');
-        console.warn('Rota /admin/render/services não encontrada - implemente no backend');
+        console.warn('Rota /admin/render/postgres não encontrada - implemente no backend');
       } else {
         // Tentar ler como JSON, se falhar, ler como texto
         try {
           const errorData = await response.json();
           console.error('[fetchBackups] Erro JSON:', errorData);
-          setBackupMsg('Erro ao carregar serviços do Render: ' + (errorData.message || 'Erro desconhecido'));
+          setBackupMsg('Erro ao carregar bancos do Render: ' + (errorData.message || 'Erro desconhecido'));
         } catch (jsonError) {
           const errorText = await response.text();
           console.error('[fetchBackups] Resposta do servidor (texto):', errorText.substring(0, 200));
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       setBackupMsg('Erro de conexão com o servidor: ' + error.message);
-      console.error('[fetchBackups] Erro ao buscar backups:', error);
+      console.error('[fetchBackups] Erro ao buscar bancos:', error);
     } finally {
       setBackupLoading(false);
     }
