@@ -67,8 +67,6 @@ export default function AdminDashboard() {
     background: '#607d8b',
   };
 
-  const RENDER_API_KEY = 'rnd_2iUOT7XH1HjT8TrH4T4Sv4pm92uS';
-
   useEffect(() => {
     fetchUsuarios();
     fetchBackups();
@@ -86,26 +84,24 @@ export default function AdminDashboard() {
   const fetchBackups = async () => {
     try {
       setBackupLoading(true);
-      const response = await fetch('https://api.render.com/v1/services', {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${config.apiURL}/admin/render/services`, {
         headers: {
           'Accept': 'application/json',
-          'Authorization': `Bearer ${RENDER_API_KEY}`
+          'Authorization': `Bearer ${token}`
         }
       });
       
       if (response.ok) {
         const data = await response.json();
-        // Filtrar apenas serviços de banco de dados PostgreSQL
-        const dbServices = data.filter(service => 
-          service.type === 'postgresql' || service.type === 'database'
-        );
-        setBackups(dbServices);
+        setBackups(data.services || []);
         setBackupMsg('');
       } else {
-        setBackupMsg('Erro ao carregar serviços do Render');
+        const errorData = await response.json();
+        setBackupMsg('Erro ao carregar serviços do Render: ' + (errorData.message || 'Erro desconhecido'));
       }
     } catch (error) {
-      setBackupMsg('Erro de conexão com Render API: ' + error.message);
+      setBackupMsg('Erro de conexão com o servidor: ' + error.message);
       console.error('Erro ao buscar backups:', error);
     } finally {
       setBackupLoading(false);
@@ -117,21 +113,23 @@ export default function AdminDashboard() {
       setBackupLoading(true);
       setBackupMsg('Criando backup...');
       
-      const response = await fetch(`https://api.render.com/v1/services/${serviceId}/backups`, {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${config.apiURL}/admin/render/services/${serviceId}/backup`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
-          'Authorization': `Bearer ${RENDER_API_KEY}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
       
       if (response.ok) {
+        const data = await response.json();
         setBackupMsg('Backup criado com sucesso!');
         setTimeout(() => fetchBackups(), 2000); // Atualizar após 2 segundos
       } else {
-        const error = await response.json();
-        setBackupMsg('Erro ao criar backup: ' + (error.message || 'Erro desconhecido'));
+        const errorData = await response.json();
+        setBackupMsg('Erro ao criar backup: ' + (errorData.message || 'Erro desconhecido'));
       }
     } catch (error) {
       setBackupMsg('Erro de conexão: ' + error.message);
@@ -144,11 +142,12 @@ export default function AdminDashboard() {
   const checkRecoveryStatus = async (postgresId) => {
     try {
       setRecoveryLoading(true);
-      const response = await fetch(`https://api.render.com/v1/postgres/${postgresId}/recovery`, {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${config.apiURL}/admin/render/postgres/${postgresId}/recovery`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'Authorization': `Bearer ${RENDER_API_KEY}`
+          'Authorization': `Bearer ${token}`
         }
       });
       
@@ -161,8 +160,8 @@ export default function AdminDashboard() {
         setBackupMsg(`Status de recuperação verificado para ${postgresId}`);
         return data;
       } else {
-        const error = await response.json();
-        setBackupMsg('Erro ao verificar status de recuperação: ' + (error.message || 'Erro desconhecido'));
+        const errorData = await response.json();
+        setBackupMsg('Erro ao verificar status de recuperação: ' + (errorData.message || 'Erro desconhecido'));
       }
     } catch (error) {
       setBackupMsg('Erro de conexão ao verificar recuperação: ' + error.message);
@@ -181,11 +180,12 @@ export default function AdminDashboard() {
       setRecoveryLoading(true);
       setBackupMsg('Iniciando recuperação point-in-time...');
       
-      const response = await fetch(`https://api.render.com/v1/postgres/${postgresId}/recovery`, {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${config.apiURL}/admin/render/postgres/${postgresId}/recovery`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
-          'Authorization': `Bearer ${RENDER_API_KEY}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -201,8 +201,8 @@ export default function AdminDashboard() {
         // Atualizar status após iniciar recovery
         setTimeout(() => checkRecoveryStatus(postgresId), 3000);
       } else {
-        const error = await response.json();
-        setBackupMsg('Erro ao iniciar recuperação: ' + (error.message || 'Erro desconhecido'));
+        const errorData = await response.json();
+        setBackupMsg('Erro ao iniciar recuperação: ' + (errorData.message || 'Erro desconhecido'));
       }
     } catch (error) {
       setBackupMsg('Erro de conexão ao iniciar recuperação: ' + error.message);
