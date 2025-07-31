@@ -712,30 +712,7 @@ useEffect(() => {
             alignItems: 'center',
             gap: '6px'
           }}>
-            <span style={{ color: '#666', fontSize: '14px' }}>👤 Usuário:</span>
-            <input
-              type="text"
-              value={nomeUsuario}
-              readOnly
-              tabIndex={-1}
-              style={{
-                padding: '8px 12px',
-                borderRadius: '8px',
-                border: '2px solid rgb(0, 0, 0)',
-                backgroundColor: '#e3f2fd', // azul claro
-                fontWeight: '600',
-                color: '#000', // azul escuro para contraste
-                fontSize: '14px',
-                pointerEvents: 'none', // impede clique/foco via mouse
-              }}
-            />
-          </div>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}>
-            <span style={{ color: '#666', fontSize: '14px' }}>📅</span>
+            <span style={{ color: '#666', fontSize: '14px' }}></span>
             <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
           </div>
         </div>
@@ -754,9 +731,7 @@ useEffect(() => {
           display: 'flex',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '16px',
-          borderBottom: '2px solid #3498db',
-          paddingBottom: '8px'
+          gap: '16px'
         }}>
           <h2 style={{ 
             margin: 0, 
