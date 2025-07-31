@@ -42,6 +42,13 @@ export default function ListaServicos() {
   const [statusPedidos, setStatusPedidos] = useState({});
   const [dataInicial, setDataInicial] = useState('');
   const [dataFinal, setDataFinal] = useState('');
+  const [statusSelecionados, setStatusSelecionados] = useState({
+    'aguardando conferência': false,
+    'aguardando pagamento': false,
+    'aguardando execução': false,
+    'aguardando entrega': false,
+    'concluído': false
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -81,12 +88,13 @@ export default function ListaServicos() {
     fetchPedidos();
   }, []);
 
-  // Função para aplicar filtros de data
-  const aplicarFiltroData = () => {
+  // Função para aplicar filtros de data e status
+  const aplicarFiltros = () => {
     let pedidosFiltradosTemp = [...pedidos];
 
+    // Filtro por data
     if (dataInicial || dataFinal) {
-      pedidosFiltradosTemp = pedidos.filter(pedido => {
+      pedidosFiltradosTemp = pedidosFiltradosTemp.filter(pedido => {
         if (!pedido.criado_em) return false;
         
         const dataPedido = new Date(pedido.criado_em);
@@ -120,6 +128,28 @@ export default function ListaServicos() {
       });
     }
 
+    // Filtro por status
+    const statusMarcados = Object.keys(statusSelecionados).filter(status => statusSelecionados[status]);
+    if (statusMarcados.length > 0) {
+      pedidosFiltradosTemp = pedidosFiltradosTemp.filter(pedido => {
+        const statusPedido = statusPedidos[pedido.protocolo];
+        if (!statusPedido || statusPedido === '-') return false;
+        
+        // Normaliza o status para comparação (minúsculo e sem acentos)
+        const statusNormalizado = statusPedido.toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '');
+        
+        return statusMarcados.some(statusMarcado => {
+          const statusMarcadoNormalizado = statusMarcado.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+          return statusNormalizado.includes(statusMarcadoNormalizado) || 
+                 statusMarcadoNormalizado.includes(statusNormalizado);
+        });
+      });
+    }
+
     setPedidosFiltrados(pedidosFiltradosTemp);
   };
 
@@ -127,13 +157,28 @@ export default function ListaServicos() {
   const limparFiltros = () => {
     setDataInicial('');
     setDataFinal('');
+    setStatusSelecionados({
+      'aguardando conferência': false,
+      'aguardando pagamento': false,
+      'aguardando execução': false,
+      'aguardando entrega': false,
+      'concluído': false
+    });
     setPedidosFiltrados(pedidos);
   };
 
-  // Aplicar filtros sempre que as datas ou pedidos mudarem
+  // Função para alterar status selecionado
+  const handleStatusChange = (status, checked) => {
+    setStatusSelecionados(prev => ({
+      ...prev,
+      [status]: checked
+    }));
+  };
+
+  // Aplicar filtros sempre que as datas, status ou pedidos mudarem
   useEffect(() => {
-    aplicarFiltroData();
-  }, [dataInicial, dataFinal, pedidos]);
+    aplicarFiltros();
+  }, [dataInicial, dataFinal, statusSelecionados, pedidos, statusPedidos]);
 
   return (
     <div style={{ /* ...estilos... */ }}>
@@ -204,6 +249,42 @@ export default function ListaServicos() {
             />
           </div>
 
+          {/* Filtros de Status */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Status do Pedido:</label>
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 8,
+              padding: '8px 12px',
+              border: '1.5px solid #bdc3c7',
+              borderRadius: 6,
+              background: '#ffffff',
+              minWidth: 280,
+              maxWidth: 320
+            }}>
+              {Object.keys(statusSelecionados).map(status => (
+                <label key={status} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  color: '#2c3e50',
+                  whiteSpace: 'nowrap'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={statusSelecionados[status]}
+                    onChange={e => handleStatusChange(status, e.target.checked)}
+                    style={{ margin: 0 }}
+                  />
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </label>
+              ))}
+            </div>
+          </div>
+
           <button
             onClick={limparFiltros}
             style={{
@@ -234,16 +315,31 @@ export default function ListaServicos() {
         color: '#2c3e50',
         fontWeight: 600
       }}>
-        {(dataInicial || dataFinal) ? (
-          <>
-            Exibindo <strong>{pedidosFiltrados.length}</strong> de <strong>{pedidos.length}</strong> pedidos
-            {dataInicial && dataFinal && ` (período: ${new Date(dataInicial).toLocaleDateString('pt-BR')} até ${new Date(dataFinal).toLocaleDateString('pt-BR')})`}
-            {dataInicial && !dataFinal && ` (a partir de ${new Date(dataInicial).toLocaleDateString('pt-BR')})`}
-            {!dataInicial && dataFinal && ` (até ${new Date(dataFinal).toLocaleDateString('pt-BR')})`}
-          </>
-        ) : (
-          <>Total de <strong>{pedidos.length}</strong> pedidos</>
-        )}
+        {(() => {
+          const statusMarcados = Object.keys(statusSelecionados).filter(status => statusSelecionados[status]);
+          const temFiltroData = dataInicial || dataFinal;
+          const temFiltroStatus = statusMarcados.length > 0;
+          
+          if (temFiltroData || temFiltroStatus) {
+            return (
+              <>
+                Exibindo <strong>{pedidosFiltrados.length}</strong> de <strong>{pedidos.length}</strong> pedidos
+                {temFiltroData && (
+                  <>
+                    {dataInicial && dataFinal && ` (período: ${new Date(dataInicial).toLocaleDateString('pt-BR')} até ${new Date(dataFinal).toLocaleDateString('pt-BR')})`}
+                    {dataInicial && !dataFinal && ` (a partir de ${new Date(dataInicial).toLocaleDateString('pt-BR')})`}
+                    {!dataInicial && dataFinal && ` (até ${new Date(dataFinal).toLocaleDateString('pt-BR')})`}
+                  </>
+                )}
+                {temFiltroStatus && (
+                  <> - Status: <strong>{statusMarcados.join(', ')}</strong></>
+                )}
+              </>
+            );
+          } else {
+            return <>Total de <strong>{pedidos.length}</strong> pedidos</>;
+          }
+        })()}
       </div>
       
       {/* Tabela de pedidos */}
