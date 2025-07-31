@@ -27,7 +27,7 @@ export default function AtoSearch({
         </label>
         
         {/* Container do input com position relative para dropdown */}
-        <div style={{ position: 'relative', flex: 1 }}>
+        <div style={{ position: 'relative', width: '250px' }}>
           <input
             type="text"
             value={searchTerm}
