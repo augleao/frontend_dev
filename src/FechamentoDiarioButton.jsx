@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function FechamentoDiarioButton({ onClick }) {
   return (
-    <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', justifyContent: 'center', gap: 16 }}>
+    <div style={{ textAlign: 'center', marginBottom: 8, display: 'flex', justifyContent: 'center', gap: 16 }}>
       <button
         style={{
           padding: '10px 24px',
