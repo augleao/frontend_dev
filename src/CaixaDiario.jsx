@@ -859,12 +859,11 @@ useEffect(() => {
             </div>
           )}
 
-          <div style={{ marginBottom: '12px' }}>
+          <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <label style={{ 
-              display: 'block', 
-              marginBottom: '6px', 
               fontWeight: '600',
-              color: '#2c3e50'
+              color: '#2c3e50',
+              minWidth: '80px'
             }}>
               Quantidade:
             </label>
@@ -874,9 +873,9 @@ useEffect(() => {
               value={quantidade}
               onChange={(e) => handleQuantidadeChange(e.target.value)}
               style={{
-                width: '90%',
-                padding: '10px',
-                borderRadius: '8px',
+                width: '80px',
+                padding: '8px',
+                borderRadius: '6px',
                 border: '2px solid #e3f2fd',
                 fontSize: '14px'
               }}
