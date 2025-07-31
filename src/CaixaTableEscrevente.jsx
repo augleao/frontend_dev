@@ -5,6 +5,21 @@ import { formasPagamento, formatarDataBR, formatarValor } from './utils';
 export default function CaixaTableEscrevente({ atos, onRemover }) {
   console.log("Atos recebidos na tabela caixa-table:", atos);
 
+  // Função para determinar a cor de fundo baseada no código do ato
+  const getCorFundo = (codigo) => {
+    switch (codigo) {
+      case '0003': // Entrada manual
+      case '0005': // Valor inicial do caixa
+        return '#e8f5e8'; // Verde claro
+      case '0002': // Saída manual
+        return '#ffeaea'; // Vermelho claro
+      case '0001': // Valor final do caixa (fechamento)
+        return '#e3f2fd'; // Azul claro
+      default:
+        return '#ffffff'; // Branco para atos normais
+    }
+  };
+
   return (
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa' }}>
@@ -29,8 +44,8 @@ export default function CaixaTableEscrevente({ atos, onRemover }) {
             </tr>
           )}
           {atos.map((ato, idx) => (
-            <tr key={idx}>
-              <td>{formatarDataBR(ato.data)}</td>
+            <tr key={idx} style={{ backgroundColor: getCorFundo(ato.codigo) }}>
+              <td style={{ border: '1px solid #ddd', padding: 8 }}>{formatarDataBR(ato.data)}</td>
               <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.hora}</td>
               <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
               <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.descricao}</td>
