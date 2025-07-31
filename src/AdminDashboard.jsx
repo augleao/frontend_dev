@@ -86,15 +86,17 @@ export default function AdminDashboard() {
     try {
       setBackupLoading(true);
       const token = localStorage.getItem('token');
+      console.log('[fetchBackups] Fazendo requisição para:', `${config.apiURL}/admin/render/services`);
       const response = await fetch(`${config.apiURL}/admin/render/services`, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`
         }
       });
-      
+      console.log('[fetchBackups] Status da resposta:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('[fetchBackups] Dados recebidos:', data);
         setBackups(data.services || []);
         setBackupMsg('');
       } else if (response.status === 404) {
@@ -104,16 +106,17 @@ export default function AdminDashboard() {
         // Tentar ler como JSON, se falhar, ler como texto
         try {
           const errorData = await response.json();
+          console.error('[fetchBackups] Erro JSON:', errorData);
           setBackupMsg('Erro ao carregar serviços do Render: ' + (errorData.message || 'Erro desconhecido'));
         } catch (jsonError) {
           const errorText = await response.text();
+          console.error('[fetchBackups] Resposta do servidor (texto):', errorText.substring(0, 200));
           setBackupMsg(`Erro do servidor (${response.status}): Resposta não é JSON válido`);
-          console.error('Resposta do servidor:', errorText.substring(0, 200));
         }
       }
     } catch (error) {
       setBackupMsg('Erro de conexão com o servidor: ' + error.message);
-      console.error('Erro ao buscar backups:', error);
+      console.error('[fetchBackups] Erro ao buscar backups:', error);
     } finally {
       setBackupLoading(false);
     }
