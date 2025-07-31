@@ -800,8 +800,8 @@ useEffect(() => {
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-        gap: '12px',
-        marginBottom: '12px',
+        gap: '8px',
+        marginBottom: '8px',
         maxWidth: '100%',
         overflow: 'hidden'
       }}>
@@ -1104,7 +1104,7 @@ useEffect(() => {
         background: 'white',
         borderRadius: '12px',
         padding: '16px',
-        marginBottom: '12px',
+        marginBottom: '8px',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
         textAlign: 'center'
       }}>
@@ -1116,7 +1116,7 @@ useEffect(() => {
         background: 'white',
         borderRadius: '12px',
         padding: '16px',
-        marginBottom: '12px',
+        marginBottom: '8px',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
       }}>
         <h3 style={{ 
