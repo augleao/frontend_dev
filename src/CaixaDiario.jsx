@@ -670,7 +670,7 @@ useEffect(() => {
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '20px',
+      padding: '12px',
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
     }}>
       {/* Container Principal */}
@@ -684,19 +684,19 @@ useEffect(() => {
         <div style={{
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(10px)',
-          borderRadius: '16px',
-          padding: '25px',
-          marginBottom: '20px',
+          borderRadius: '12px',
+          padding: '16px',
+          marginBottom: '12px',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '15px'
+          gap: '12px'
         }}>      <h1 style={{ 
           margin: 0, 
           color: '#2c3e50',
-          fontSize: '28px',
+          fontSize: '26px',
           fontWeight: '600'
         }}>
           💰 Movimento Diário do Caixa
@@ -704,13 +704,13 @@ useEffect(() => {
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
-          gap: '15px',
+          gap: '12px',
           flexWrap: 'wrap'
         }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '6px'
           }}>
             <span style={{ color: '#666', fontSize: '14px' }}>👤 Usuário:</span>
             <input
@@ -733,7 +733,7 @@ useEffect(() => {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '6px'
           }}>
             <span style={{ color: '#666', fontSize: '14px' }}>📅</span>
             <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
@@ -745,17 +745,17 @@ useEffect(() => {
       <div style={{
         background: 'white',
         borderRadius: '12px',
-        padding: '25px',
-        marginBottom: '20px',
+        padding: '16px',
+        marginBottom: '12px',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
       }}>
         <h2 style={{ 
-          margin: '0 0 20px 0', 
+          margin: '0 0 12px 0', 
           color: '#2c3e50',
-          fontSize: '20px',
+          fontSize: '18px',
           fontWeight: '600',
           borderBottom: '2px solid #3498db',
-          paddingBottom: '10px'
+          paddingBottom: '8px'
         }}>
           📊 Resumo do Caixa
         </h2>
@@ -766,13 +766,13 @@ useEffect(() => {
         {/* Campo para ISS, Valor Inicial e Valor Final do Caixa */}
 <div
   style={{
-    marginTop: '20px',
-    padding: '15px',
+    marginTop: '12px',
+    padding: '12px',
     background: '#f8f9fa',
     border: '2px solid #3498db',
     borderRadius: '8px',
     display: 'flex',
-    gap: '32px', // Espaço entre os campos
+    gap: '24px', // Espaço entre os campos
     alignItems: 'flex-end', // Alinha os inputs na base
     flexWrap: 'wrap' // Responsivo para telas pequenas
   }}
@@ -781,7 +781,7 @@ useEffect(() => {
   <div style={{ display: 'flex', flexDirection: 'column' }}>
     <label
       style={{
-        marginBottom: '8px',
+        marginBottom: '6px',
         fontWeight: '600',
         color: '#2c3e50'
       }}
@@ -798,11 +798,11 @@ useEffect(() => {
       tabIndex={-1}
       style={{
         width: '150px',
-        padding: '12px',
+        padding: '10px',
         borderRadius: '8px',
         border: '2px solid #e3f2fd',
         backgroundColor: '#e3f2fd',
-        fontSize: '16px',
+        fontSize: '14px',
         fontWeight: '600',
         color: '#1565c0',
         pointerEvents: 'none'
@@ -814,7 +814,7 @@ useEffect(() => {
   <div style={{ display: 'flex', flexDirection: 'column' }}>
     <label
       style={{
-        marginBottom: '8px',
+        marginBottom: '6px',
         fontWeight: '600',
         color: '#2c3e50'
       }}
@@ -830,10 +830,10 @@ useEffect(() => {
       onBlur={salvarValorInicialCaixa}
       style={{
         width: '150px',
-        padding: '12px',
+        padding: '10px',
         borderRadius: '8px',
         border: '2px solid #e3f2fd',
-        fontSize: '16px',
+        fontSize: '14px',
         fontWeight: '600'
       }}
     />
@@ -843,7 +843,7 @@ useEffect(() => {
   <div style={{ display: 'flex', flexDirection: 'column' }}>
     <label
       style={{
-        marginBottom: '8px',
+        marginBottom: '6px',
         fontWeight: '600',
         color: '#2c3e50'
       }}
@@ -857,11 +857,11 @@ useEffect(() => {
       tabIndex={-1}
       style={{
         width: '150px',
-        padding: '12px',
+        padding: '10px',
         borderRadius: '8px',
         border: '2px solid #e3f2fd',
         backgroundColor: '#e3f2fd',
-        fontSize: '16px',
+        fontSize: '14px',
         fontWeight: '600',
         color: '#1565c0',
         pointerEvents: 'none'
@@ -878,8 +878,8 @@ useEffect(() => {
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-        gap: '20px',
-        marginBottom: '20px',
+        gap: '12px',
+        marginBottom: '12px',
         maxWidth: '100%',
         overflow: 'hidden'
       }}>
@@ -888,21 +888,21 @@ useEffect(() => {
         <div style={{
           background: 'white',
           borderRadius: '12px',
-          padding: '25px',
+          padding: '16px',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
         }}>
           <h3 style={{ 
-            margin: '0 0 20px 0', 
+            margin: '0 0 12px 0', 
             color: '#2c3e50',
-            fontSize: '18px',
+            fontSize: '16px',
             fontWeight: '600',
             borderBottom: '2px solid #27ae60',
-            paddingBottom: '10px'
+            paddingBottom: '8px'
           }}>
             ➕ Adicionar Ato
           </h3>
           
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '12px' }}>
             <AtoSearch
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
@@ -917,16 +917,16 @@ useEffect(() => {
               background: '#f8f9fa',
               border: '2px solid #27ae60',
               borderRadius: '8px',
-              padding: '15px',
-              marginBottom: '20px'
+              padding: '12px',
+              marginBottom: '12px'
             }}>
-              <h4 style={{ margin: '0 0 10px 0', color: '#27ae60' }}>
+              <h4 style={{ margin: '0 0 8px 0', color: '#27ae60' }}>
                 Ato Selecionado:
               </h4>
               <p style={{ margin: '0', fontWeight: '600' }}>
                 {selectedAto.codigo} - {selectedAto.descricao}
               </p>
-              <p style={{ margin: '5px 0 0 0', color: '#666' }}>
+              <p style={{ margin: '4px 0 0 0', color: '#666' }}>
                 Valor base: {formatarMoeda(selectedAto.valor_final)}
                 {percentualISS > 0 && (
                   <span style={{ color: '#3498db', fontWeight: '600' }}>
@@ -937,10 +937,10 @@ useEffect(() => {
             </div>
           )}
 
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '12px' }}>
             <label style={{ 
               display: 'block', 
-              marginBottom: '8px', 
+              marginBottom: '6px', 
               fontWeight: '600',
               color: '#2c3e50'
             }}>
@@ -953,15 +953,15 @@ useEffect(() => {
               onChange={(e) => handleQuantidadeChange(e.target.value)}
               style={{
                 width: '90%',
-                padding: '12px',
+                padding: '10px',
                 borderRadius: '8px',
                 border: '2px solid #e3f2fd',
-                fontSize: '16px'
+                fontSize: '14px'
               }}
             />
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '12px' }}>
             <FormasPagamento
               formasPagamento={formasPagamento}
               pagamentos={pagamentos}
@@ -977,10 +977,10 @@ useEffect(() => {
               background: valoresIguais(somaPagamentos, valorTotal) ? '#d4edda' : '#f8d7da',
               border: `2px solid ${valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#dc3545'}`,
               borderRadius: '8px',
-              padding: '15px',
-              marginBottom: '20px'
+              padding: '12px',
+              marginBottom: '12px'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span style={{ fontWeight: '600' }}>Valor Total:</span>
                 <span style={{ fontWeight: '600' }}>{formatarMoeda(valorTotal)}</span>
               </div>
@@ -996,12 +996,12 @@ useEffect(() => {
             disabled={!selectedAto || !valoresIguais(somaPagamentos, valorTotal)}
             style={{
               width: '100%',
-              padding: '15px',
+              padding: '12px',
               backgroundColor: selectedAto && valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#95a5a6',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
-              fontSize: '16px',
+              fontSize: '14px',
               fontWeight: '600',
               cursor: selectedAto && valoresIguais(somaPagamentos, valorTotal) ? 'pointer' : 'not-allowed',
               transition: 'all 0.3s ease'
@@ -1015,16 +1015,16 @@ useEffect(() => {
         <div style={{
           background: 'white',
           borderRadius: '12px',
-          padding: '25px',
+          padding: '16px',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
         }}>
           <h3 style={{ 
-            margin: '0 0 20px 0', 
+            margin: '0 0 12px 0', 
             color: '#2c3e50',
-            fontSize: '18px',
+            fontSize: '16px',
             fontWeight: '600',
             borderBottom: '2px solid #f39c12',
-            paddingBottom: '10px'
+            paddingBottom: '8px'
           }}>
             💸 Entradas e Saídas Manuais
           </h3>
@@ -1034,16 +1034,16 @@ useEffect(() => {
             background: '#f8f9fa',
             border: '2px solid #27ae60',
             borderRadius: '8px',
-            padding: '20px',
-            marginBottom: '20px'
+            padding: '12px',
+            marginBottom: '12px'
           }}>
-            <h4 style={{ margin: '0 0 15px 0', color: '#27ae60' }}>
+            <h4 style={{ margin: '0 0 10px 0', color: '#27ae60' }}>
               📈 Entrada de Valor
             </h4>
-            <div style={{ marginBottom: '15px' }}>
+            <div style={{ marginBottom: '10px' }}>
               <label style={{ 
                 display: 'block', 
-                marginBottom: '8px', 
+                marginBottom: '6px', 
                 fontWeight: '600',
                 color: '#2c3e50'
               }}>
@@ -1056,17 +1056,17 @@ useEffect(() => {
                 placeholder="R$ 0,00"
                 style={{
                   width: '90%',
-                  padding: '12px',
+                  padding: '10px',
                   borderRadius: '8px',
                   border: '2px solid #e3f2fd',
-                  fontSize: '16px'
+                  fontSize: '14px'
                 }}
               />
             </div>
-            <div style={{ marginBottom: '15px' }}>
+            <div style={{ marginBottom: '10px' }}>
               <label style={{ 
                 display: 'block', 
-                marginBottom: '8px', 
+                marginBottom: '6px', 
                 fontWeight: '600',
                 color: '#2c3e50'
               }}>
@@ -1079,10 +1079,10 @@ useEffect(() => {
                 placeholder="Ex. Troco, abertura de caixa, outras entradas"
                 style={{
                   width: '90%',
-                  padding: '12px',
+                  padding: '10px',
                   borderRadius: '8px',
                   border: '2px solid #e3f2fd',
-                  fontSize: '16px'
+                  fontSize: '14px'
                 }}
               />
             </div>
@@ -1090,12 +1090,12 @@ useEffect(() => {
               onClick={adicionarEntrada}
               style={{
                 width: '100%',
-                padding: '12px',
+                padding: '10px',
                 backgroundColor: '#27ae60',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
-                fontSize: '14px',
+                fontSize: '13px',
                 fontWeight: '600',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease'
@@ -1110,15 +1110,15 @@ useEffect(() => {
             background: '#f8f9fa',
             border: '2px solid #e74c3c',
             borderRadius: '8px',
-            padding: '20px'
+            padding: '12px'
           }}>
-            <h4 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>
+            <h4 style={{ margin: '0 0 10px 0', color: '#e74c3c' }}>
               📉 Saída de Valor
             </h4>
-            <div style={{ marginBottom: '15px' }}>
+            <div style={{ marginBottom: '10px' }}>
               <label style={{ 
                 display: 'block', 
-                marginBottom: '8px', 
+                marginBottom: '6px', 
                 fontWeight: '600',
                 color: '#2c3e50'
               }}>
@@ -1131,17 +1131,17 @@ useEffect(() => {
                 placeholder="R$ 0,00"
                 style={{
                   width: '90%',
-                  padding: '12px',
+                  padding: '10px',
                   borderRadius: '8px',
                   border: '2px solid #e3f2fd',
-                  fontSize: '16px'
+                  fontSize: '14px'
                 }}
               />
             </div>
-            <div style={{ marginBottom: '15px' }}>
+            <div style={{ marginBottom: '10px' }}>
               <label style={{ 
                 display: 'block', 
-                marginBottom: '8px', 
+                marginBottom: '6px', 
                 fontWeight: '600',
                 color: '#2c3e50'
               }}>
@@ -1154,10 +1154,10 @@ useEffect(() => {
                 placeholder="Ex. Depósitos, retiradas, outras saídas."
                 style={{
                   width: '90%',
-                  padding: '12px',
+                  padding: '10px',
                   borderRadius: '8px',
                   border: '2px solid #e3f2fd',
-                  fontSize: '16px'
+                  fontSize: '14px'
                 }}
               />
             </div>
@@ -1165,12 +1165,12 @@ useEffect(() => {
               onClick={adicionarSaida}
               style={{
                 width: '100%',
-                padding: '12px',
+                padding: '10px',
                 backgroundColor: '#e74c3c',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
-                fontSize: '14px',
+                fontSize: '13px',
                 fontWeight: '600',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease'
@@ -1186,8 +1186,8 @@ useEffect(() => {
       <div style={{
         background: 'white',
         borderRadius: '12px',
-        padding: '25px',
-        marginBottom: '20px',
+        padding: '16px',
+        marginBottom: '12px',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
         textAlign: 'center'
       }}>
@@ -1198,17 +1198,17 @@ useEffect(() => {
       <div style={{
         background: 'white',
         borderRadius: '12px',
-        padding: '25px',
-        marginBottom: '20px',
+        padding: '16px',
+        marginBottom: '12px',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
       }}>
         <h3 style={{ 
-          margin: '0 0 20px 0', 
+          margin: '0 0 12px 0', 
           color: '#2c3e50',
-          fontSize: '18px',
+          fontSize: '16px',
           fontWeight: '600',
           borderBottom: '2px solid #9b59b6',
-          paddingBottom: '10px'
+          paddingBottom: '8px'
         }}>
           📋 Movimentos do Dia
         </h3>
