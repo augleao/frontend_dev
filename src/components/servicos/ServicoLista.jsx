@@ -213,7 +213,7 @@ export default function ListaServicos() {
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 12
+          gap: 6
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Data Inicial:</label>
