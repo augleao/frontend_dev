@@ -38,7 +38,10 @@ function formatDateTime(dateStr) {
 
 export default function ListaServicos() {
   const [pedidos, setPedidos] = useState([]);
+  const [pedidosFiltrados, setPedidosFiltrados] = useState([]);
   const [statusPedidos, setStatusPedidos] = useState({});
+  const [dataInicial, setDataInicial] = useState('');
+  const [dataFinal, setDataFinal] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,6 +53,7 @@ export default function ListaServicos() {
         });
         const data = await res.json();
         setPedidos(data.pedidos || []);
+        setPedidosFiltrados(data.pedidos || []); // Inicializa os pedidos filtrados
         // Buscar status de todos os pedidos
         if (data.pedidos && data.pedidos.length > 0) {
           const statusMap = {};
@@ -77,9 +81,70 @@ export default function ListaServicos() {
     fetchPedidos();
   }, []);
 
+  // Função para aplicar filtros de data
+  const aplicarFiltroData = () => {
+    let pedidosFiltradosTemp = [...pedidos];
+
+    if (dataInicial || dataFinal) {
+      pedidosFiltradosTemp = pedidos.filter(pedido => {
+        if (!pedido.criado_em) return false;
+        
+        const dataPedido = new Date(pedido.criado_em);
+        
+        // Se só tem data inicial, filtra de data inicial até hoje
+        if (dataInicial && !dataFinal) {
+          const dataInicialObj = new Date(dataInicial);
+          const hoje = new Date();
+          hoje.setHours(23, 59, 59, 999); // Final do dia de hoje
+          return dataPedido >= dataInicialObj && dataPedido <= hoje;
+        }
+        
+        // Se só tem data final, filtra desde o início até data final
+        if (!dataInicial && dataFinal) {
+          const dataFinalObj = new Date(dataFinal);
+          dataFinalObj.setHours(23, 59, 59, 999); // Final do dia
+          return dataPedido <= dataFinalObj;
+        }
+        
+        // Se tem ambas as datas
+        if (dataInicial && dataFinal) {
+          const dataInicialObj = new Date(dataInicial);
+          const dataFinalObj = new Date(dataFinal);
+          dataFinalObj.setHours(23, 59, 59, 999); // Final do dia
+          return dataPedido >= dataInicialObj && dataPedido <= dataFinalObj;
+        }
+        
+        return true;
+      });
+    }
+
+    setPedidosFiltrados(pedidosFiltradosTemp);
+  };
+
+  // Função para limpar filtros
+  const limparFiltros = () => {
+    setDataInicial('');
+    setDataFinal('');
+    setPedidosFiltrados(pedidos);
+  };
+
+  // Aplicar filtros sempre que as datas ou pedidos mudarem
+  useEffect(() => {
+    aplicarFiltroData();
+  }, [dataInicial, dataFinal, pedidos]);
+
   return (
     <div style={{ /* ...estilos... */ }}>
-      <div style={{ /* ...container... */ }}>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: 24,
+        padding: '16px 24px',
+        background: '#ffffff',
+        borderRadius: 12,
+        boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
+      }}>
         <button
           onClick={() => navigate('/manutencao-servicos')}
           style={{
@@ -96,7 +161,89 @@ export default function ListaServicos() {
         >
           + NOVO PEDIDO
         </button>
+
+        {/* Filtros de Data */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Data Inicial:</label>
+            <input
+              type="date"
+              value={dataInicial}
+              onChange={e => setDataInicial(e.target.value)}
+              style={{
+                border: '1.5px solid #bdc3c7',
+                borderRadius: 6,
+                padding: '8px 12px',
+                fontSize: 14,
+                minWidth: 140,
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Data Final:</label>
+            <input
+              type="date"
+              value={dataFinal}
+              onChange={e => setDataFinal(e.target.value)}
+              style={{
+                border: '1.5px solid #bdc3c7',
+                borderRadius: 6,
+                padding: '8px 12px',
+                fontSize: 14,
+                minWidth: 140,
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+
+          <button
+            onClick={limparFiltros}
+            style={{
+              background: '#95a5a6',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              padding: '8px 16px',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              marginTop: 16,
+              boxShadow: '0 2px 4px rgba(44,62,80,0.12)'
+            }}
+          >
+            Limpar Filtros
+          </button>
+        </div>
       </div>
+
+      {/* Informação dos resultados */}
+      <div style={{
+        padding: '8px 16px',
+        background: '#ecf0f1',
+        borderRadius: 8,
+        marginBottom: 16,
+        fontSize: 14,
+        color: '#2c3e50',
+        fontWeight: 600
+      }}>
+        {(dataInicial || dataFinal) ? (
+          <>
+            Exibindo <strong>{pedidosFiltrados.length}</strong> de <strong>{pedidos.length}</strong> pedidos
+            {dataInicial && dataFinal && ` (período: ${new Date(dataInicial).toLocaleDateString('pt-BR')} até ${new Date(dataFinal).toLocaleDateString('pt-BR')})`}
+            {dataInicial && !dataFinal && ` (a partir de ${new Date(dataInicial).toLocaleDateString('pt-BR')})`}
+            {!dataInicial && dataFinal && ` (até ${new Date(dataFinal).toLocaleDateString('pt-BR')})`}
+          </>
+        ) : (
+          <>Total de <strong>{pedidos.length}</strong> pedidos</>
+        )}
+      </div>
+      
       {/* Tabela de pedidos */}
       <div style={{ marginTop: 24, borderRadius: 12, background: '#f4f6f8', padding: 16 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -112,7 +259,7 @@ export default function ListaServicos() {
             </tr>
           </thead>
           <tbody>
-            {pedidos.map((p, idx) => {
+            {pedidosFiltrados.map((p, idx) => {
               return (
                 <tr key={p.protocolo} style={{ background: idx % 2 === 0 ? '#fff' : '#f8f9fa' }}>
                   <td style={{ padding: 8 }}>{formatDateTime(p.criado_em)}</td>
@@ -188,10 +335,10 @@ export default function ListaServicos() {
                 </tr>
               );
             })}
-            {pedidos.length === 0 && (
+            {pedidosFiltrados.length === 0 && (
               <tr>
                 <td colSpan={7} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
-                  Nenhum pedido encontrado.
+                  {pedidos.length === 0 ? 'Nenhum pedido encontrado.' : 'Nenhum pedido encontrado para o período selecionado.'}
                 </td>
               </tr>
             )}
