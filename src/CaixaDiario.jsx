@@ -842,16 +842,16 @@ useEffect(() => {
               padding: '12px',
               marginBottom: '12px'
             }}>
-              <h4 style={{ margin: '0 0 8px 0', color: '#27ae60' }}>
+              <h4 style={{ margin: '0 0 8px 0', color: '#27ae60', fontSize: '14px' }}>
                 Ato Selecionado:
               </h4>
-              <p style={{ margin: '0', fontWeight: '600' }}>
+              <p style={{ margin: '0', fontWeight: '600', fontSize: '14px' }}>
                 {selectedAto.codigo} - {selectedAto.descricao}
               </p>
-              <p style={{ margin: '4px 0 0 0', color: '#666' }}>
+              <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
                 Valor base: {formatarMoeda(selectedAto.valor_final)}
                 {percentualISS > 0 && (
-                  <span style={{ color: '#3498db', fontWeight: '600' }}>
+                  <span style={{ color: '#3498db', fontWeight: '600', fontSize: '14px' }}>
                     {' '}+ ISS {percentualISS}% = {formatarMoeda(calcularValorComISS(selectedAto.valor_final))}
                   </span>
                 )}
