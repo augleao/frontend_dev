@@ -8,15 +8,12 @@ export default function CaixaTableEscrevente({ atos, onRemover }) {
   // Função para determinar a cor de fundo baseada no código do ato
   const getCorFundo = (codigo) => {
     switch (codigo) {
-      case '0003': // Entrada manual
-      case '0005': // Valor inicial do caixa
-        return '#e8f5e8'; // Verde claro
       case '0002': // Saída manual
-        return '#ffeaea'; // Vermelho claro
+        return '#ffcccb'; // Vermelho mais forte
       case '0001': // Valor final do caixa (fechamento)
-        return '#e3f2fd'; // Azul claro
-      default:
-        return '#ffffff'; // Branco para atos normais
+        return '#bbdefb'; // Azul mais forte
+      default: // Todos os outros códigos (0003, 0005 e atos normais)
+        return '#c8e6c9'; // Verde mais forte
     }
   };
 
