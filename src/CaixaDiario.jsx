@@ -961,12 +961,11 @@ useEffect(() => {
             <h4 style={{ margin: '0 0 10px 0', color: '#27ae60' }}>
               📈 Entrada de Valor
             </h4>
-            <div style={{ marginBottom: '10px' }}>
+            <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <label style={{ 
-                display: 'block', 
-                marginBottom: '6px', 
                 fontWeight: '600',
-                color: '#2c3e50'
+                color: '#2c3e50',
+                minWidth: '60px'
               }}>
                 Valor:
               </label>
@@ -976,9 +975,9 @@ useEffect(() => {
                 onChange={(e) => setEntradaValor(e.target.value)}
                 placeholder="R$ 0,00"
                 style={{
-                  width: '90%',
-                  padding: '10px',
-                  borderRadius: '8px',
+                  flex: 1,
+                  padding: '8px',
+                  borderRadius: '6px',
                   border: '2px solid #e3f2fd',
                   fontSize: '14px'
                 }}
