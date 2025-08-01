@@ -1,4 +1,42 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+// Utilitário para converter hora (HH:mm) em ms desde meia-noite
+function getMsFromTimeString(timeStr) {
+  const [h, m] = timeStr.split(':').map(Number);
+  return h * 60 * 60 * 1000 + m * 60 * 1000;
+}
+  // Estado para agendamento
+  const [scheduledTime, setScheduledTime] = useState(() => localStorage.getItem('recoveryScheduleTime') || '03:00');
+  const [autoRecoveryMsg, setAutoRecoveryMsg] = useState('');
+  const autoRecoveryTimer = useRef(null);
+
+  // Função para agendar o recovery automático
+  useEffect(() => {
+    if (!scheduledTime) return;
+    if (autoRecoveryTimer.current) clearTimeout(autoRecoveryTimer.current);
+    const now = new Date();
+    const msNow = now.getHours() * 60 * 60 * 1000 + now.getMinutes() * 60 * 1000 + now.getSeconds() * 1000;
+    const msTarget = getMsFromTimeString(scheduledTime);
+    let msToWait = msTarget - msNow;
+    if (msToWait < 0) msToWait += 24 * 60 * 60 * 1000;
+    autoRecoveryTimer.current = setTimeout(() => {
+      handleAutoRecovery();
+    }, msToWait);
+    return () => clearTimeout(autoRecoveryTimer.current);
+    // eslint-disable-next-line
+  }, [scheduledTime]);
+
+  // Função para disparar recovery automático
+  const handleAutoRecovery = async () => {
+    const forcedBancoId = 'dpg-d13h6lbipnbc73ba1j80-a';
+    setAutoRecoveryMsg('Disparando recovery automático...');
+    try {
+      await triggerRecovery(forcedBancoId, true);
+      setAutoRecoveryMsg('Recovery automático disparado com sucesso!');
+    } catch (e) {
+      setAutoRecoveryMsg('Erro ao disparar recovery automático: ' + (e?.message || e));
+    }
+    autoRecoveryTimer.current = setTimeout(handleAutoRecovery, 24 * 60 * 60 * 1000);
+  };
 import config from './config';
 
 export default function RenderBackupManager() {
@@ -132,14 +170,21 @@ export default function RenderBackupManager() {
     }
   };
 
-  const triggerRecovery = async (postgresId) => {
-    if (!window.confirm(`Tem certeza que deseja iniciar a recuperação point-in-time para o serviço ${postgresId}?\n\nEsta operação pode afetar a disponibilidade do banco de dados.`)) {
-      return;
+  // triggerRecovery pode ser chamado manualmente ou pelo agendador
+  const triggerRecovery = async (postgresId, auto = false) => {
+    if (!auto) {
+      if (!window.confirm(`Tem certeza que deseja iniciar a recuperação point-in-time para o serviço ${postgresId}?\n\nEsta operação pode afetar a disponibilidade do banco de dados.`)) {
+        return;
+      }
     }
     try {
       setRecoveryLoading(true);
-      setBackupMsg('Iniciando recuperação point-in-time...');
+      if (!auto) setBackupMsg('Iniciando recuperação point-in-time...');
       const token = localStorage.getItem('token');
+      // Parâmetro obrigatório: restoreTime (agora)
+      const now = new Date();
+      const restoreTime = now.toISOString();
+      const body = { restoreTime };
       const response = await fetch(`${config.apiURL}/admin/render/postgres/${postgresId}/recovery`, {
         method: 'POST',
         headers: {
@@ -147,27 +192,33 @@ export default function RenderBackupManager() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({})
+        body: JSON.stringify(body)
       });
       if (response.ok) {
         const data = await response.json();
-        setBackupMsg('Recuperação point-in-time iniciada com sucesso!');
+        if (!auto) setBackupMsg('Recuperação point-in-time iniciada com sucesso!');
         setTimeout(() => checkRecoveryStatus(postgresId), 3000);
       } else if (response.status === 404) {
-        setBackupMsg('Endpoint de recovery não implementado no backend ainda');
+        if (!auto) setBackupMsg('Endpoint de recovery não implementado no backend ainda');
       } else {
         try {
           const errorData = await response.json();
-          setBackupMsg('Erro ao iniciar recuperação: ' + (errorData.message || 'Erro desconhecido'));
+          if (!auto) setBackupMsg('Erro ao iniciar recuperação: ' + (errorData.message || 'Erro desconhecido'));
         } catch {
-          setBackupMsg(`Erro do servidor (${response.status}): Resposta não é JSON válido`);
+          if (!auto) setBackupMsg(`Erro do servidor (${response.status}): Resposta não é JSON válido`);
         }
       }
     } catch (error) {
-      setBackupMsg('Erro de conexão ao iniciar recuperação: ' + error.message);
+      if (!auto) setBackupMsg('Erro de conexão ao iniciar recuperação: ' + error.message);
     } finally {
       setRecoveryLoading(false);
     }
+  };
+  // Handler para alteração do horário agendado
+  const handleScheduleChange = (e) => {
+    setScheduledTime(e.target.value);
+    localStorage.setItem('recoveryScheduleTime', e.target.value);
+    setAutoRecoveryMsg('Horário de recovery automático atualizado!');
   };
 
   return (
@@ -176,6 +227,23 @@ export default function RenderBackupManager() {
       <button onClick={fetchBackups} style={{ marginBottom: 16, padding: '8px 18px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 'bold', fontSize: 15 }} disabled={backupLoading}>
         {backupLoading ? 'Carregando...' : 'Atualizar'}
       </button>
+
+      {/* Agendamento de recovery automático */}
+      <div style={{ marginBottom: 18, marginTop: 8, background: '#e3f2fd', border: '1px solid #90caf9', borderRadius: 6, padding: 12 }}>
+        <strong>⏰ Agendar Recovery Automático:</strong>
+        <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <label htmlFor="recovery-time">Horário diário:</label>
+          <input
+            id="recovery-time"
+            type="time"
+            value={scheduledTime}
+            onChange={handleScheduleChange}
+            style={{ fontSize: 16, padding: '4px 10px', borderRadius: 4, border: '1px solid #90caf9' }}
+          />
+          <span style={{ color: '#1976d2', fontSize: 14 }}>O recovery será disparado automaticamente todo dia nesse horário.</span>
+        </div>
+        {autoRecoveryMsg && <div style={{ color: '#388e3c', marginTop: 6 }}>{autoRecoveryMsg}</div>}
+      </div>
       {backupMsg && (
         <div style={{ color: backupMsg.includes('Erro') ? '#dc3545' : '#28a745', background: backupMsg.includes('Erro') ? '#f8d7da' : '#d4edda', border: `1px solid ${backupMsg.includes('Erro') ? '#f5c6cb' : '#c3e6cb'}`, borderRadius: 4, padding: 10, marginBottom: 15 }}>
           {backupMsg}
