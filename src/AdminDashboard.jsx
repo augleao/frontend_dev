@@ -70,7 +70,16 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchUsuarios();
-    fetchBackups();
+    // Forçar exibição apenas do banco dpg-d13h6lbipnbc73ba1j80-a
+    const forcedBanco = {
+      id: 'dpg-d13h6lbipnbc73ba1j80-a',
+      name: 'Banco Principal',
+      type: 'postgres',
+      status: 'available'
+    };
+    setBackups([forcedBanco]);
+    const token = localStorage.getItem('token');
+    fetchRecoveryInfo(forcedBanco.id, token);
   }, []);
 
   const fetchUsuarios = async () => {
