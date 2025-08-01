@@ -99,6 +99,12 @@ export default function AdminDashboard() {
         console.log('[fetchBackups] Dados recebidos:', data);
         setBackups(data.bancos || []);
         setBackupMsg('');
+        // Buscar recovery info de todos os bancos
+        if (Array.isArray(data.bancos)) {
+          data.bancos.forEach((banco) => {
+            fetchRecoveryInfo(banco.id, token);
+          });
+        }
       } else if (response.status === 404) {
         setBackupMsg('Endpoints de backup não implementados no backend ainda');
         console.warn('Rota /admin/render/postgres não encontrada - implemente no backend');
@@ -119,6 +125,26 @@ export default function AdminDashboard() {
       console.error('[fetchBackups] Erro ao buscar bancos:', error);
     } finally {
       setBackupLoading(false);
+    }
+  };
+  // Função auxiliar para buscar recovery info de um banco
+  const fetchRecoveryInfo = async (postgresId, token) => {
+    try {
+      const response = await fetch(`${config.apiURL}/admin/render/postgres/${postgresId}/recovery`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setRecoveryInfo(prev => ({ ...prev, [postgresId]: data }));
+      } else {
+        setRecoveryInfo(prev => ({ ...prev, [postgresId]: { available: false } }));
+      }
+    } catch (error) {
+      setRecoveryInfo(prev => ({ ...prev, [postgresId]: { available: false, error: error.message } }));
     }
   };
 
