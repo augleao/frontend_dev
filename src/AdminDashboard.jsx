@@ -1,3 +1,33 @@
+  // Estado para armazenar exports do banco
+  const [exports, setExports] = useState([]);
+
+  // Buscar exports ao carregar o painel
+  useEffect(() => {
+    const postgresId = 'dpg-d13h6lbipnbc73ba1j80-a';
+    const token = localStorage.getItem('token');
+    fetchExports(postgresId, token);
+  }, []);
+
+  // Função para buscar exports
+  const fetchExports = async (postgresId, token) => {
+    try {
+      const response = await fetch(`${config.apiURL}/admin/render/postgres/${postgresId}/exports`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setExports(data.exports || []);
+      } else {
+        setExports([]);
+      }
+    } catch (error) {
+      setExports([]);
+    }
+  };
 import React, { useEffect, useState } from 'react';
 import config from './config';
 import { Link } from 'react-router-dom';
@@ -533,6 +563,32 @@ export default function AdminDashboard() {
               )}
             </tbody>
           </table>
+
+          {/* Lista de exports (backups lógicos) */}
+          <div style={{ marginTop: 30 }}>
+            <h4 style={{ marginBottom: 8 }}>Backups Lógicos (Exports)</h4>
+            {exports.length === 0 ? (
+              <div style={{ color: '#6c757d', fontSize: 14 }}>Nenhum export disponível para download.</div>
+            ) : (
+              <ul style={{ paddingLeft: 18 }}>
+                {exports.map((exp) => (
+                  <li key={exp.id} style={{ marginBottom: 6 }}>
+                    <span style={{ fontSize: 13, color: '#333' }}>
+                      {new Date(exp.createdAt).toLocaleString('pt-BR')} -
+                    </span>
+                    <a
+                      href={exp.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ marginLeft: 8, color: '#1976d2', fontWeight: 'bold', textDecoration: 'underline' }}
+                    >
+                      Download
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
 
         <div
