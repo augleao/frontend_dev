@@ -106,11 +106,7 @@ export default function AdminDashboard() {
     setUsuarios(data.usuarios || []);
   };
 
-  const fetchBackups = async () => {
-    try {
-      setBackupLoading(true);
-      const token = localStorage.getItem('token');
-      console.log('[fetchBackups] Fazendo requisição para:', `${config.apiURL}/admin/render/postgres`);
+  // ...existing code...
   const handleEdit = (usuario) => {
     setEditId(usuario.id);
     setEditData({ ...usuario });
