@@ -1,33 +1,4 @@
-  // Estado para armazenar exports do banco
-  const [exports, setExports] = useState([]);
-
-  // Buscar exports ao carregar o painel
-  useEffect(() => {
-    const postgresId = 'dpg-d13h6lbipnbc73ba1j80-a';
-    const token = localStorage.getItem('token');
-    fetchExports(postgresId, token);
-  }, []);
-
-  // Função para buscar exports
-  const fetchExports = async (postgresId, token) => {
-    try {
-      const response = await fetch(`${config.apiURL}/admin/render/postgres/${postgresId}/exports`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setExports(data.exports || []);
-      } else {
-        setExports([]);
-      }
-    } catch (error) {
-      setExports([]);
-    }
-  };
+// ...existing code...
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import config from './config';
