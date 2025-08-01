@@ -1,13 +1,33 @@
 import React, { useEffect, useState, useRef } from 'react';
+import config from './config';
 // Utilitário para converter hora (HH:mm) em ms desde meia-noite
 function getMsFromTimeString(timeStr) {
   const [h, m] = timeStr.split(':').map(Number);
   return h * 60 * 60 * 1000 + m * 60 * 1000;
 }
+
+export default function RenderBackupManager() {
   // Estado para agendamento
   const [scheduledTime, setScheduledTime] = useState(() => localStorage.getItem('recoveryScheduleTime') || '03:00');
   const [autoRecoveryMsg, setAutoRecoveryMsg] = useState('');
   const autoRecoveryTimer = useRef(null);
+
+  // triggerRecovery pode ser chamado manualmente ou pelo agendador
+  // Definido mais abaixo, mas precisamos referenciar aqui, então usamos useRef para evitar problemas de hoisting
+  const triggerRecoveryRef = useRef();
+
+  // Função para disparar recovery automático
+  const handleAutoRecovery = async () => {
+    const forcedBancoId = 'dpg-d13h6lbipnbc73ba1j80-a';
+    setAutoRecoveryMsg('Disparando recovery automático...');
+    try {
+      await triggerRecoveryRef.current(forcedBancoId, true);
+      setAutoRecoveryMsg('Recovery automático disparado com sucesso!');
+    } catch (e) {
+      setAutoRecoveryMsg('Erro ao disparar recovery automático: ' + (e?.message || e));
+    }
+    autoRecoveryTimer.current = setTimeout(handleAutoRecovery, 24 * 60 * 60 * 1000);
+  };
 
   // Função para agendar o recovery automático
   useEffect(() => {
@@ -24,22 +44,6 @@ function getMsFromTimeString(timeStr) {
     return () => clearTimeout(autoRecoveryTimer.current);
     // eslint-disable-next-line
   }, [scheduledTime]);
-
-  // Função para disparar recovery automático
-  const handleAutoRecovery = async () => {
-    const forcedBancoId = 'dpg-d13h6lbipnbc73ba1j80-a';
-    setAutoRecoveryMsg('Disparando recovery automático...');
-    try {
-      await triggerRecovery(forcedBancoId, true);
-      setAutoRecoveryMsg('Recovery automático disparado com sucesso!');
-    } catch (e) {
-      setAutoRecoveryMsg('Erro ao disparar recovery automático: ' + (e?.message || e));
-    }
-    autoRecoveryTimer.current = setTimeout(handleAutoRecovery, 24 * 60 * 60 * 1000);
-  };
-import config from './config';
-
-export default function RenderBackupManager() {
   const [backups, setBackups] = useState([]);
   const [backupLoading, setBackupLoading] = useState(false);
   const [backupMsg, setBackupMsg] = useState('');
@@ -214,6 +218,8 @@ export default function RenderBackupManager() {
       setRecoveryLoading(false);
     }
   };
+  // Referência para uso no agendador
+  triggerRecoveryRef.current = triggerRecovery;
   // Handler para alteração do horário agendado
   const handleScheduleChange = (e) => {
     setScheduledTime(e.target.value);
