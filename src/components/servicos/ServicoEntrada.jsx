@@ -249,25 +249,27 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     const data = new Date().toLocaleString('pt-BR');
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     const nomeUsuario = usuario.nome || usuario.email || 'Usuário';
-    // Dados do cliente e serventia
+    // Dados do cliente
     const cliente = form.cliente || {};
     const clienteNome = cliente.nome || form.clienteNome || '-';
     const clienteDoc = cliente.cpf || cliente.cnpj || form.clienteCpf || form.clienteCnpj || '-';
     const clienteEmail = cliente.email || form.clienteEmail || '-';
     const clienteTel = cliente.telefone || form.clienteTelefone || '-';
-    // Monta info completa da serventia
+    // Sempre tenta usar as informações completas da serventia vindas do DB
     let serventiaHtml = '-';
-    if (serventiaInfo) {
+    const s = serventiaInfo || {};
+    if (s && (s.nome || s.endereco || s.bairro || s.cidade || s.uf || s.cep || s.cnpj)) {
       serventiaHtml = `
-        <div><b>${serventiaInfo.nome || ''}</b></div>
-        <div>${serventiaInfo.endereco || ''}${serventiaInfo.numero ? ', ' + serventiaInfo.numero : ''}</div>
-        <div>${serventiaInfo.bairro || ''} - ${serventiaInfo.cidade || ''} - ${serventiaInfo.uf || ''}</div>
-        <div>CEP: ${serventiaInfo.cep || ''}</div>
-        <div>CNPJ: ${serventiaInfo.cnpj || ''}</div>
-        <div>Telefone: ${serventiaInfo.telefone || ''}</div>
-        <div>Email: ${serventiaInfo.email || ''}</div>
+        <div><b>${s.nome || ''}</b></div>
+        <div>${s.endereco || ''}${s.numero ? ', ' + s.numero : ''}</div>
+        <div>${s.bairro || ''} - ${s.cidade || ''} - ${s.uf || ''}</div>
+        <div>CEP: ${s.cep || ''}</div>
+        <div>CNPJ: ${s.cnpj || ''}</div>
+        <div>Telefone: ${s.telefone || ''}</div>
+        <div>Email: ${s.email || ''}</div>
       `;
     } else {
+      // fallback para string simples
       serventiaHtml = form.serventia || usuario.serventia || '-';
     }
     // Monta HTML do protocolo para impressora térmica 80 colunas, apenas preto
