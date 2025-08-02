@@ -10,6 +10,7 @@ import PrivateRoute from './PrivateRoute';
 import Home2 from './Home2';
 import MeusRelatorios from './components/MeusRelatorios';
 import AdminDashboard from './AdminDashboard';
+import UsuariosAdmin from './UsuariosAdmin';
 import RenderBackupManager from './RenderBackupManager';
 import AdminRoute from './AdminRoute';
 import CaixaDiario from './CaixaDiario'; // ajuste o caminho se necessário
@@ -95,6 +96,14 @@ function App() {
           element={
             <AdminRoute>
               <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/usuarios"
+          element={
+            <AdminRoute>
+              <UsuariosAdmin />
             </AdminRoute>
           }
         />
