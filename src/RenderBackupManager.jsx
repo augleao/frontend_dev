@@ -233,7 +233,18 @@ export default function RenderBackupManager() {
                   <td style={{ padding: 12, textAlign: 'center', borderBottom: '1px solid #dee2e6' }}>
                     <div style={{ display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
                       <button onClick={() => checkRecoveryStatus(service.id)} style={{ background: '#607d8b', color: '#fff', fontSize: 12, padding: '6px 12px', border: 'none', borderRadius: 8, fontWeight: 'bold' }} disabled={backupLoading || recoveryLoading}>Check Recovery</button>
-                      <button onClick={() => triggerRecovery(service.id)} style={{ background: '#9c27b0', color: '#fff', fontSize: 12, padding: '6px 12px', border: 'none', borderRadius: 8, fontWeight: 'bold' }} disabled={backupLoading || recoveryLoading || !recoveryInfo[service.id]?.available}>Disparar Recovery Manual</button>
+                      <button
+                        onClick={() => {
+                          // Só permite disparar se recoveryInfo estiver disponível e for available
+                          if (recoveryInfo[service.id] && recoveryInfo[service.id].available) {
+                            triggerRecovery(service.id);
+                          }
+                        }}
+                        style={{ background: '#9c27b0', color: '#fff', fontSize: 12, padding: '6px 12px', border: 'none', borderRadius: 8, fontWeight: 'bold', opacity: (backupLoading || recoveryLoading || !recoveryInfo[service.id]?.available) ? 0.5 : 1, cursor: (backupLoading || recoveryLoading || !recoveryInfo[service.id]?.available) ? 'not-allowed' : 'pointer' }}
+                        disabled={backupLoading || recoveryLoading || !recoveryInfo[service.id]?.available}
+                      >
+                        Disparar Recovery Manual
+                      </button>
                     </div>
                   </td>
                 </tr>

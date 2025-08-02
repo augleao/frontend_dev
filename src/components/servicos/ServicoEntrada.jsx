@@ -357,7 +357,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           justifyContent: 'space-between',
         }}>
           <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 18 }}>
-            Entrada:
+            Informações do Serviço:
           </h2>
         </div>
 
@@ -465,19 +465,19 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
-          gap: '16px',
-          marginBottom: '16px',
+          gap: '8px',
+          marginBottom: '8px',
         }}>
           {/* Valor Adiantado Card */}
           <div style={{
-            padding: '16px',
+            padding: '8px',
             display: 'flex',
             flexDirection: 'column',
-            gap: 6
+            gap: 3
           }}>
-            <label style={{ color: '#2874a6', fontWeight: 600 }}>Valor Adiantado pelo Usuário:</label>
+            <label style={{ color: '#2874a6', fontWeight: 600, fontSize: 12, marginBottom: 2 }}>Valor Adiantado pelo Usuário:</label>
             {valorAdiantadoDetalhes.map((item, idx) => (
-              <div key={idx} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 6 }}>
+              <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 3 }}>
                 <input
                   type="number"
                   min={0}
@@ -488,8 +488,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                     width: '50%',
                     border: '1.5px solid #aed6f1',
                     borderRadius: 6,
-                    padding: '8px 12px',
-                    fontSize: 16,
+                    padding: '3px 6px',
+                    fontSize: 12,
+                    height: 26,
                     boxSizing: 'border-box',
                   }}
                   placeholder="Valor"
@@ -501,8 +502,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                     width: '40%',
                     border: '1.5px solid #aed6f1',
                     borderRadius: 6,
-                    padding: '8px 12px',
-                    fontSize: 16,
+                    padding: '3px 6px',
+                    fontSize: 12,
+                    height: 26,
                     boxSizing: 'border-box',
                   }}
                 >
@@ -514,20 +516,20 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                   <option value="Depósito Prévio">Depósito Prévio</option>
                 </select>
                 {valorAdiantadoDetalhes.length > 1 && (
-                  <button type="button" onClick={() => handleRemoveValorAdiantadoDetalhe(idx)} style={{ background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', fontWeight: 'bold', cursor: 'pointer' }}>-</button>
+                  <button type="button" onClick={() => handleRemoveValorAdiantadoDetalhe(idx)} style={{ background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 6, padding: '2px 6px', fontWeight: 'bold', cursor: 'pointer', fontSize: 12, height: 24 }}>-</button>
                 )}
               </div>
             ))}
-            <button type="button" onClick={handleAddValorAdiantadoDetalhe} style={{ background: '#9b59b6', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 16px', fontWeight: 'bold', cursor: 'pointer', marginTop: 4 }}>Adicionar Pagamento</button>
+            <button type="button" onClick={handleAddValorAdiantadoDetalhe} style={{ background: '#9b59b6', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', fontWeight: 'bold', cursor: 'pointer', marginTop: 2, fontSize: 12, height: 26 }}>Adicionar Pagamento</button>
           </div>
           {/* Observação Card */}
           <div style={{
-            padding: '16px',
+            padding: '8px',
             display: 'flex',
             flexDirection: 'column',
-            gap: 6
+            gap: 3
           }}>
-            <label style={{ color: '#884ea0', fontWeight: 600 }}>Observação:</label>
+            <label style={{ color: '#884ea0', fontWeight: 600, fontSize: 12, marginBottom: 2 }}>Observação:</label>
             <textarea
               value={form.observacao || ''}
               onChange={e => onChange('observacao', e.target.value)}
@@ -537,10 +539,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 maxWidth: '100%',
                 border: '1.5px solid #d2b4de',
                 borderRadius: 6,
-                padding: '8px 12px',
-                fontSize: 16,
+                padding: '3px 6px',
+                fontSize: 12,
                 resize: 'vertical',
-                minHeight: 40,
+                minHeight: 26,
                 boxSizing: 'border-box',
               }}
             />
