@@ -244,6 +244,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
   // Função para gerar protocolo em HTML e abrir para impressão
   const handleImprimirProtocolo = () => {
+    // DEBUG: logar serventiaInfo para depuração
+    console.log('[PROTOCOLO DEBUG] serventiaInfo:', serventiaInfo);
     // Dados principais do protocolo
     const protocolo = form.protocolo || '(sem número)';
     const data = new Date().toLocaleString('pt-BR');
