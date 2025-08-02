@@ -336,55 +336,53 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   };
 
   return (
-    <div style={{ background: '#f5e6fa', padding: '0', borderRadius: '24px', width: '100%', boxSizing: 'border-box' }}>
+    <div style={{ background: '#f5e6fa', padding: '0', borderRadius: '16px', width: '100%', boxSizing: 'border-box' }}>
       <div style={{
         width: '100%',
         margin: '0',
         padding: 0,
-        borderRadius: '24px',
-        border: '3px solid #9b59b6',
-        boxShadow: '0 6px 32px rgba(155,89,182,0.10)',
+        borderRadius: '16px',
+        border: '2px solid #9b59b6',
+        boxShadow: '0 2px 12px rgba(155,89,182,0.10)',
         background: '#f5e6fa',
         overflow: 'hidden',
         boxSizing: 'border-box'
       }}>
         {/* Header */}
         <div style={{
-          padding: '20px 24px 12px 24px',
-          marginBottom: '16px',
+          padding: '10px 16px 6px 16px',
+          marginBottom: '8px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-          <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 28 }}>
+          <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 18 }}>
             Entrada:
           </h2>
-          {/* Protocolo removido daqui, agora exibido no topo do ServicoManutencao */}
         </div>
 
 
         {/* Descrição do Serviço */}
         <div style={{
-          padding: '16px',
-          margin: '0 0 16px 0',
+          padding: '8px 12px',
+          margin: '0 0 8px 0',
           display: 'flex',
-          flexDirection: 'column',
-          gap: 6
+          alignItems: 'center',
+          gap: 8
         }}>
-          <label style={{ color: '#6c3483', fontWeight: 600 }}>Descrição do Serviço:</label>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 120, margin: 0 }}>Descrição do Serviço:</label>
           <textarea
             value={form.descricao || ''}
             onChange={e => onChange('descricao', e.target.value)}
             maxLength={200}
             style={{
-              width: '100%',
-              maxWidth: '100%',
+              flex: 1,
               border: '1.5px solid #d6d6f5',
               borderRadius: 6,
-              padding: '8px 12px',
-              fontSize: 16,
+              padding: '4px 8px',
+              fontSize: 13,
               resize: 'vertical',
-              minHeight: 40,
+              minHeight: 28,
               boxSizing: 'border-box',
             }}
             placeholder="Descreva o serviço a ser realizado..."
@@ -393,29 +391,23 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
         {/* Origem do Pedido e Prazo */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '16px',
-          marginBottom: '16px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 12,
+          marginBottom: '8px',
         }}>
           {/* Origem do Pedido */}
-          <div style={{
-            padding: '16px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 6
-          }}>
-            <label style={{ color: '#6c3483', fontWeight: 600 }}>Origem:</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 220 }}>
+            <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>Origem:</label>
             <select
               value={form.origem || ''}
               onChange={e => onChange('origem', e.target.value)}
               style={{
-                width: '100%',
+                flex: 1,
                 border: '1.5px solid #d6d6f5',
                 borderRadius: 6,
-                padding: '8px 12px',
-                fontSize: 16,
-                marginBottom: 8,
+                padding: '4px 8px',
+                fontSize: 13,
                 boxSizing: 'border-box',
               }}
             >
@@ -427,123 +419,52 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               <option value="Malote Digital">Malote Digital</option>
               <option value="PJE">PJE</option>
             </select>
-            {/* Campo condicional conforme a origem */}
-            {form.origem === 'CRC' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <label style={{ color: '#6c3483', fontWeight: 600 }}>Protocolo CRC:</label>
-                <input
-                  type="text"
-                  value={form.origemInfo || ''}
-                  onChange={e => onChange('origemInfo', e.target.value)}
-                  style={{
-                    width: '100%',
-                    border: '1.5px solid #d6d6f5',
-                    borderRadius: 6,
-                    padding: '8px 12px',
-                    fontSize: 16,
-                    boxSizing: 'border-box',
-                  }}
-                  placeholder="Digite o protocolo CRC"
-                />
-              </div>
-            )}
-            {form.origem === 'email' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <label style={{ color: '#6c3483', fontWeight: 600 }}>E-mail:</label>
-                <input
-                  type="email"
-                  value={form.origemInfo || ''}
-                  onChange={e => onChange('origemInfo', e.target.value)}
-                  style={{
-                    width: '100%',
-                    border: '1.5px solid #d6d6f5',
-                    borderRadius: 6,
-                    padding: '8px 12px',
-                    fontSize: 16,
-                    boxSizing: 'border-box',
-                  }}
-                  placeholder="Digite o e-mail de origem"
-                />
-              </div>
-            )}
-            {form.origem === 'Whatsapp' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <label style={{ color: '#6c3483', fontWeight: 600 }}>Telefone Whatsapp:</label>
-                <input
-                  type="text"
-                  value={form.origemInfo || ''}
-                  onChange={e => onChange('origemInfo', e.target.value)}
-                  style={{
-                    width: '100%',
-                    border: '1.5px solid #d6d6f5',
-                    borderRadius: 6,
-                    padding: '8px 12px',
-                    fontSize: 16,
-                    boxSizing: 'border-box',
-                  }}
-                  placeholder="Digite o telefone do Whatsapp"
-                />
-              </div>
-            )}
-            {form.origem === 'Malote Digital' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <label style={{ color: '#6c3483', fontWeight: 600 }}>Nº de Rastreabilidade:</label>
-                <input
-                  type="text"
-                  value={form.origemInfo || ''}
-                  onChange={e => onChange('origemInfo', e.target.value)}
-                  style={{
-                    width: '100%',
-                    border: '1.5px solid #d6d6f5',
-                    borderRadius: 6,
-                    padding: '8px 12px',
-                    fontSize: 16,
-                    boxSizing: 'border-box',
-                  }}
-                  placeholder="Digite o número de rastreabilidade"
-                />
-              </div>
-            )}
-            {form.origem === 'PJE' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <label style={{ color: '#6c3483', fontWeight: 600 }}>Nº do Processo PJE:</label>
-                <input
-                  type="text"
-                  value={form.origemInfo || ''}
-                  onChange={e => onChange('origemInfo', e.target.value)}
-                  style={{
-                    width: '100%',
-                    border: '1.5px solid #d6d6f5',
-                    borderRadius: 6,
-                    padding: '8px 12px',
-                    fontSize: 16,
-                    boxSizing: 'border-box',
-                  }}
-                  placeholder="Digite o número do processo PJE"
-                />
-              </div>
-            )}
           </div>
-          
+          {/* Campo condicional conforme a origem */}
+          {form.origem && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 180 }}>
+              <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>
+                {form.origem === 'CRC' ? 'Protocolo CRC:' :
+                 form.origem === 'email' ? 'E-mail:' :
+                 form.origem === 'Whatsapp' ? 'Telefone Whatsapp:' :
+                 form.origem === 'Malote Digital' ? 'Nº de Rastreabilidade:' :
+                 form.origem === 'PJE' ? 'Nº do Processo PJE:' : ''}
+              </label>
+              <input
+                type={form.origem === 'email' ? 'email' : 'text'}
+                value={form.origemInfo || ''}
+                onChange={e => onChange('origemInfo', e.target.value)}
+                style={{
+                  flex: 1,
+                  border: '1.5px solid #d6d6f5',
+                  borderRadius: 6,
+                  padding: '4px 8px',
+                  fontSize: 13,
+                  boxSizing: 'border-box',
+                }}
+                placeholder={
+                  form.origem === 'CRC' ? 'Digite o protocolo CRC' :
+                  form.origem === 'email' ? 'Digite o e-mail de origem' :
+                  form.origem === 'Whatsapp' ? 'Digite o telefone do Whatsapp' :
+                  form.origem === 'Malote Digital' ? 'Digite o número de rastreabilidade' :
+                  form.origem === 'PJE' ? 'Digite o número do processo PJE' : ''
+                }
+              />
+            </div>
+          )}
           {/* Prazo Card */}
-          <div style={{
-            padding: '16px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 6
-          }}>
-            <label style={{ color: '#6c3483', fontWeight: 600 }}>Prazo estimado para entrega:</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 180 }}>
+            <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 90, margin: 0 }}>Prazo estimado:</label>
             <input
               type="date"
               value={form.prazo}
               onChange={e => onChange('prazo', e.target.value)}
               style={{
-                width: '100%',
-                maxWidth: '100%',
+                flex: 1,
                 border: '1.5px solid #d6d6f5',
                 borderRadius: 6,
-                padding: '8px 12px',
-                fontSize: 16,
+                padding: '4px 8px',
+                fontSize: 13,
                 boxSizing: 'border-box',
               }}
             />
