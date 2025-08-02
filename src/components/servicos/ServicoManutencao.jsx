@@ -75,9 +75,14 @@ export default function ServicoManutencao() {
     if (!protocolo) return;
     
     try {
-      const response = await fetchComAuth(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}/historico-status`);
+      const response = await fetchComAuth(`${config.apiURL}/pedidoshistoricostatus/${encodeURIComponent(protocolo)}/historico-status`);
       if (response && response.ok) {
         const data = await response.json();
+        console.log('[HISTORICO DEBUG] Resposta da API /historico-status:', data);
+        if (Array.isArray(data.historico)) {
+          console.log(`[HISTORICO DEBUG] Quantidade de status recebidos: ${data.historico.length}`);
+          data.historico.forEach((item, idx) => console.log(`[HISTORICO DEBUG] #${idx+1}:`, item));
+        }
         setHistoricoStatus(data.historico || []);
       } else {
         // Se não houver endpoint específico, simula histórico básico
