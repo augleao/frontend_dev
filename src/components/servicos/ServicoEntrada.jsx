@@ -551,26 +551,27 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
         {/* Adicionar Combo Card */}
         <div style={{
-          padding: '16px',
-          marginBottom: '16px',
+          padding: '6px 8px',
+          marginBottom: '8px',
         }}>
-          <label style={{ fontWeight: 600, color: '#6c3483', marginRight: 12 }}>Adicionar Combo:</label>
-          <select value={comboSelecionado} onChange={e => setComboSelecionado(e.target.value)} style={{ width: '60%', maxWidth: '100%', marginRight: 12, borderRadius: 6, padding: '6px 10px', border: '1.5px solid #d6d6f5', fontSize: 16, boxSizing: 'border-box' }}>
+          <label style={{ fontWeight: 600, color: '#6c3483', marginRight: 8, fontSize: 13 }}>Adicionar Combo:</label>
+          <select value={comboSelecionado} onChange={e => setComboSelecionado(e.target.value)} style={{ width: '55%', maxWidth: '100%', marginRight: 8, borderRadius: 6, padding: '3px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 28 }}>
             <option value="">Selecione um combo...</option>
             {combosDisponiveis.map(c => (
               <option key={c.id} value={c.id}>{c.nome}</option>
             ))}
           </select>
           <button type="button" onClick={handleAdicionarCombo} style={{
-            padding: '8px 20px',
+            padding: '4px 12px',
             background: '#9b59b6',
             color: '#fff',
             border: 'none',
             borderRadius: 8,
             fontWeight: 'bold',
-            fontSize: 15,
+            fontSize: 13,
             cursor: 'pointer',
-            transition: 'all 0.3s ease'
+            transition: 'all 0.3s ease',
+            height: 28
           }}>
             ➕ Adicionar
           </button>
@@ -737,24 +738,24 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
         {/* Salvar/Atualizar Button e Imprimir Protocolo */}
         <div style={{
-          padding: '16px',
-          marginBottom: '16px',
+          padding: '6px 0',
+          marginBottom: '8px',
           textAlign: 'center',
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'center',
-          gap: 16
+          gap: 10
         }}>
           <button
             onClick={handleSubmit}
             style={{
-              padding: '12px 32px',
+              padding: '6px 18px',
               background: '#2ecc71',
               color: '#fff',
               border: 'none',
               borderRadius: 8,
               fontWeight: 'bold',
-              fontSize: 18,
+              fontSize: 15,
               cursor: 'pointer',
               transition: 'all 0.3s ease'
             }}
@@ -765,13 +766,13 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             type="button"
             onClick={handleImprimirProtocolo}
             style={{
-              padding: '12px 32px',
+              padding: '6px 18px',
               background: '#9b59b6',
               color: '#fff',
               border: 'none',
               borderRadius: 8,
               fontWeight: 'bold',
-              fontSize: 18,
+              fontSize: 15,
               cursor: 'pointer',
               transition: 'all 0.3s ease'
             }}
