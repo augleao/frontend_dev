@@ -82,13 +82,13 @@ export default function ServicoExecucao({ form, onChange }) {
         />
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
-        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 140, margin: 0, marginTop: 4 }}>Observações internas:</label>
+        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 100, margin: 0, marginTop: 4 }}>Observações:</label>
         <textarea
           value={form.execucao.observacoes}
           onChange={e => onChange('observacoes', e.target.value)}
           maxLength={200}
           style={{
-            width: 320,
+            width: 220,
             minHeight: 32,
             border: '1.5px solid #aed6f1',
             borderRadius: 6,
