@@ -1,4 +1,5 @@
 import React from 'react';
+import SeloEletronicoManager from './SeloEletronicoManager';
 
 const statusExecucao = [
   { value: 'em_andamento', label: 'Em andamento' },
@@ -102,7 +103,8 @@ export default function ServicoExecucao({ form, onChange }) {
           }}
         />
       </div>
-      {/* Campo Funcionário responsável removido, pois Responsável já é exibido acima como somente leitura */}
+      {/* Selos Eletrônicos - área de colagem/upload e tabela de selos extraídos */}
+      <SeloEletronicoManager pedidoId={form.protocolo} />
     </div>
   );
 }
