@@ -362,31 +362,53 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         </div>
 
 
-        {/* Descrição do Serviço */}
+        {/* Descrição do Serviço e Origem na mesma linha */}
         <div style={{
           padding: '8px 12px',
           margin: '0 0 8px 0',
           display: 'flex',
           alignItems: 'center',
-          gap: 8
+          gap: 12
         }}>
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 120, margin: 0 }}>Descrição do Serviço:</label>
-          <textarea
+          <input
+            type="text"
             value={form.descricao || ''}
             onChange={e => onChange('descricao', e.target.value)}
             maxLength={200}
             style={{
-              flex: 1,
+              width: 180,
               border: '1.5px solid #d6d6f5',
               borderRadius: 6,
               padding: '4px 8px',
               fontSize: 13,
-              resize: 'vertical',
-              minHeight: 28,
+              height: 32,
               boxSizing: 'border-box',
             }}
-            placeholder="Descreva o serviço a ser realizado..."
+            placeholder="Descreva o serviço..."
           />
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>Origem:</label>
+          <select
+            value={form.origem || ''}
+            onChange={e => onChange('origem', e.target.value)}
+            style={{
+              width: 120,
+              border: '1.5px solid #d6d6f5',
+              borderRadius: 6,
+              padding: '4px 8px',
+              fontSize: 13,
+              height: 32,
+              boxSizing: 'border-box',
+            }}
+          >
+            <option value="">Selecione a origem...</option>
+            <option value="Balcão">Balcão</option>
+            <option value="CRC">CRC</option>
+            <option value="email">email</option>
+            <option value="Whatsapp">Whatsapp</option>
+            <option value="Malote Digital">Malote Digital</option>
+            <option value="PJE">PJE</option>
+          </select>
         </div>
 
         {/* Origem do Pedido e Prazo */}
