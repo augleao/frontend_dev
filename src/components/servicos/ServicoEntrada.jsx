@@ -221,6 +221,73 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     }
   };
 
+  // Função para gerar protocolo em HTML e abrir para impressão
+  const handleImprimirProtocolo = () => {
+    // Dados principais do protocolo
+    const protocolo = form.protocolo || '(sem número)';
+    const data = new Date().toLocaleString('pt-BR');
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const nomeUsuario = usuario.nome || usuario.email || 'Usuário';
+    // Monta HTML do protocolo
+    const html = `
+      <html>
+      <head>
+        <title>Protocolo de Entrada</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 32px; }
+          .protocolo-box { border: 2px solid #9b59b6; border-radius: 12px; padding: 32px; max-width: 600px; margin: 0 auto; }
+          h2 { color: #9b59b6; text-align: center; }
+          .info { margin-bottom: 18px; }
+          .label { color: #6c3483; font-weight: bold; }
+          .valor { color: #222; }
+          .atos-table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+          .atos-table th, .atos-table td { border: 1px solid #ccc; padding: 6px 10px; font-size: 13px; }
+          .atos-table th { background: #ede1f7; color: #6c3483; }
+        </style>
+      </head>
+      <body>
+        <div class="protocolo-box">
+          <h2>PROTOCOLO DE ENTRADA</h2>
+          <div class="info"><span class="label">Protocolo:</span> <span class="valor">${protocolo}</span></div>
+          <div class="info"><span class="label">Data/Hora:</span> <span class="valor">${data}</span></div>
+          <div class="info"><span class="label">Usuário:</span> <span class="valor">${nomeUsuario}</span></div>
+          <div class="info"><span class="label">Descrição:</span> <span class="valor">${form.descricao || ''}</span></div>
+          <div class="info"><span class="label">Origem:</span> <span class="valor">${form.origem || ''} ${form.origemInfo ? '(' + form.origemInfo + ')' : ''}</span></div>
+          <div class="info"><span class="label">Prazo estimado:</span> <span class="valor">${form.prazo || ''}</span></div>
+          <div class="info"><span class="label">Observação:</span> <span class="valor">${form.observacao || ''}</span></div>
+          <div class="info"><span class="label">Valor(es) Adiantado(s):</span> <span class="valor">${(valorAdiantadoDetalhes || []).map(v => v.valor ? `R$${parseFloat(v.valor).toLocaleString('pt-BR', {minimumFractionDigits:2})} (${v.forma})` : '').filter(Boolean).join(' | ') || '-'}</span></div>
+          <table class="atos-table">
+            <thead>
+              <tr>
+                <th>Combo</th>
+                <th>Cód. Ato</th>
+                <th>Descrição</th>
+                <th>Qtd</th>
+                <th>Cód. Tributário</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(atosPedido || []).map(ato => `
+                <tr>
+                  <td>${ato.comboNome || ''}</td>
+                  <td>${ato.atoCodigo || ''}</td>
+                  <td>${ato.atoDescricao ? ato.atoDescricao.slice(0, 30) : ''}</td>
+                  <td>${ato.quantidade || 1}</td>
+                  <td>${ato.codigoTributario || ''}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <script>window.onload = function() { window.print(); }</script>
+      </body>
+      </html>
+    `;
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+  };
+
   return (
     <div style={{ background: '#f5e6fa', padding: '0', borderRadius: '24px', width: '100%', boxSizing: 'border-box' }}>
       <div style={{
@@ -708,11 +775,15 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           </div>
         )}
 
-        {/* Salvar/Atualizar Button */}
+        {/* Salvar/Atualizar Button e Imprimir Protocolo */}
         <div style={{
           padding: '16px',
           marginBottom: '16px',
-          textAlign: 'center'
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          gap: 16
         }}>
           <button
             onClick={handleSubmit}
@@ -729,6 +800,23 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             }}
           >
             {form.protocolo && form.protocolo.trim() !== '' ? 'Atualizar Pedido' : 'Salvar Pedido'}
+          </button>
+          <button
+            type="button"
+            onClick={handleImprimirProtocolo}
+            style={{
+              padding: '12px 32px',
+              background: '#9b59b6',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 'bold',
+              fontSize: 18,
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Imprimir Protocolo
           </button>
         </div>
       </div>
