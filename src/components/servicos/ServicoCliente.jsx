@@ -158,14 +158,14 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
         flexDirection: 'column',
         gap: 6
       }}>
-        {/* Nome e CPF/CNPJ na mesma linha, inputs menores */}
+        {/* Nome e CPF/CNPJ na mesma linha, input nome maior */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 50, margin: 0 }}>Nome:</label>
           <input
             type="text"
             value={form.cliente.nome}
             onChange={handleNomeChange}
-            style={{ width: 120, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
+            style={{ width: 200, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
             autoComplete="off"
           />
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0, marginLeft: 12 }}>CPF/CNPJ:</label>
@@ -203,19 +203,16 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             ))}
           </ul>
         )}
-        {/* Endereço */}
+        {/* Endereço, Telefone e Email na mesma linha */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>Endereço:</label>
           <input 
             type="text" 
             value={form.cliente.endereco} 
             onChange={e => onClienteChange('endereco', e.target.value)} 
-            style={{ flex: 1, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+            style={{ width: '45%', minWidth: 120, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
           />
-        </div>
-        {/* Telefone e Email na mesma linha, inputs menores */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>Telefone:</label>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0, marginLeft: 12 }}>Telefone:</label>
           <input 
             type="text" 
             value={form.cliente.telefone} 
