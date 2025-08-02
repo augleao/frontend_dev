@@ -158,25 +158,22 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
         flexDirection: 'column',
         gap: 6
       }}>
-        {/* Nome */}
+        {/* Nome e CPF/CNPJ na mesma linha, inputs menores */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>Nome:</label>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 50, margin: 0 }}>Nome:</label>
           <input
             type="text"
             value={form.cliente.nome}
             onChange={handleNomeChange}
-            style={{ flex: 1, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
+            style={{ width: 120, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
             autoComplete="off"
           />
-        </div>
-        {/* CPF/CNPJ */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>CPF/CNPJ:</label>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0, marginLeft: 12 }}>CPF/CNPJ:</label>
           <input
             type="text"
             value={form.cliente.cpf}
             onChange={handleCpfChange}
-            style={{ flex: 1, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
+            style={{ width: 110, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
             autoComplete="off"
           />
         </div>
@@ -216,24 +213,21 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             style={{ flex: 1, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
           />
         </div>
-        {/* Telefone */}
+        {/* Telefone e Email na mesma linha, inputs menores */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>Telefone:</label>
           <input 
             type="text" 
             value={form.cliente.telefone} 
             onChange={e => onClienteChange('telefone', e.target.value)} 
-            style={{ flex: 1, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+            style={{ width: 110, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
           />
-        </div>
-        {/* Email */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>E-mail:</label>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0, marginLeft: 12 }}>E-mail:</label>
           <input 
             type="email" 
             value={form.cliente.email} 
             onChange={e => onClienteChange('email', e.target.value)} 
-            style={{ flex: 1, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+            style={{ width: 160, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
           />
         </div>
         {/* Botões */}
