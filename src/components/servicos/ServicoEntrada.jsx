@@ -427,87 +427,39 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           />
         </div>
 
-        {/* Origem do Pedido e Prazo */}
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 12,
-          marginBottom: '8px',
-        }}>
-          {/* Origem do Pedido */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 220 }}>
-            <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>Origem:</label>
-            <select
-              value={form.origem || ''}
-              onChange={e => onChange('origem', e.target.value)}
-              style={{
-                flex: 1,
-                border: '1.5px solid #d6d6f5',
-                borderRadius: 6,
-                padding: '4px 8px',
-                fontSize: 13,
-                boxSizing: 'border-box',
-              }}
-            >
-              <option value="">Selecione a origem...</option>
-              <option value="Balcão">Balcão</option>
-              <option value="CRC">CRC</option>
-              <option value="email">email</option>
-              <option value="Whatsapp">Whatsapp</option>
-              <option value="Malote Digital">Malote Digital</option>
-              <option value="PJE">PJE</option>
-            </select>
-          </div>
-          {/* Campo condicional conforme a origem */}
-          {form.origem && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 180 }}>
-              <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>
-                {form.origem === 'CRC' ? 'Protocolo CRC:' :
-                 form.origem === 'email' ? 'E-mail:' :
-                 form.origem === 'Whatsapp' ? 'Telefone Whatsapp:' :
-                 form.origem === 'Malote Digital' ? 'Nº de Rastreabilidade:' :
-                 form.origem === 'PJE' ? 'Nº do Processo PJE:' : ''}
-              </label>
-              <input
-                type={form.origem === 'email' ? 'email' : 'text'}
-                value={form.origemInfo || ''}
-                onChange={e => onChange('origemInfo', e.target.value)}
-                style={{
-                  flex: 1,
-                  border: '1.5px solid #d6d6f5',
-                  borderRadius: 6,
-                  padding: '4px 8px',
-                  fontSize: 13,
-                  boxSizing: 'border-box',
-                }}
-                placeholder={
-                  form.origem === 'CRC' ? 'Digite o protocolo CRC' :
-                  form.origem === 'email' ? 'Digite o e-mail de origem' :
-                  form.origem === 'Whatsapp' ? 'Digite o telefone do Whatsapp' :
-                  form.origem === 'Malote Digital' ? 'Digite o número de rastreabilidade' :
-                  form.origem === 'PJE' ? 'Digite o número do processo PJE' : ''
-                }
-              />
-            </div>
-          )}
-          {/* Prazo Card */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 180 }}>
-            <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 90, margin: 0 }}>Prazo estimado:</label>
+        {/* Campo condicional conforme a origem */}
+        {form.origem && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 8px 0', padding: '0 12px' }}>
+            <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>
+              {form.origem === 'CRC' ? 'Protocolo CRC:' :
+                form.origem === 'email' ? 'E-mail:' :
+                form.origem === 'Whatsapp' ? 'Telefone Whatsapp:' :
+                form.origem === 'Malote Digital' ? 'Nº de Rastreabilidade:' :
+                form.origem === 'PJE' ? 'Nº do Processo PJE:' : ''}
+            </label>
             <input
-              type="date"
-              value={form.prazo}
-              onChange={e => onChange('prazo', e.target.value)}
+              type={form.origem === 'email' ? 'email' : 'text'}
+              value={form.origemInfo || ''}
+              onChange={e => onChange('origemInfo', e.target.value)}
               style={{
-                flex: 1,
+                width: 180,
                 border: '1.5px solid #d6d6f5',
                 borderRadius: 6,
                 padding: '4px 8px',
                 fontSize: 13,
+                height: 32,
                 boxSizing: 'border-box',
               }}
+              placeholder={
+                form.origem === 'CRC' ? 'Digite o protocolo CRC' :
+                form.origem === 'email' ? 'Digite o e-mail de origem' :
+                form.origem === 'Whatsapp' ? 'Digite o telefone do Whatsapp' :
+                form.origem === 'Malote Digital' ? 'Digite o número de rastreabilidade' :
+                form.origem === 'PJE' ? 'Digite o número do processo PJE' : ''
+              }
             />
           </div>
-        </div>
+        )}
 
         {/* Valores e Observação */}
         <div style={{
