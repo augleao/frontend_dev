@@ -36,15 +36,26 @@ export default function SeloEletronicoManager({ pedidoId, onSelosChange }) {
       const formData = new FormData();
       formData.append('imagem', file);
       formData.append('pedidoId', pedidoId);
+      console.log('[SeloEletronicoManager] Enviando imagem para backend:', { pedidoId, file });
       const res = await fetch('/api/selos-eletronicos', {
         method: 'POST',
         body: formData
       });
+      console.log('[SeloEletronicoManager] Status da resposta:', res.status);
+      const text = await res.text();
+      console.log('[SeloEletronicoManager] Resposta bruta:', text);
       if (!res.ok) throw new Error('Erro ao processar selo.');
-      const data = await res.json();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (parseErr) {
+        console.error('[SeloEletronicoManager] Erro ao fazer parse do JSON:', parseErr);
+        throw new Error('Resposta inválida do backend.');
+      }
       setSelos(prev => [...prev, data]);
       if (onSelosChange) onSelosChange([...selos, data]);
     } catch (err) {
+      console.error('[SeloEletronicoManager] Falha ao processar selo:', err);
       setError('Falha ao processar selo: ' + (err.message || err));
     }
     setUploading(false);
