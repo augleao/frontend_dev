@@ -161,7 +161,15 @@ export default function ServicoManutencao() {
             cliente: { ...f.cliente, ...data.pedido.cliente },
             pagamento: { ...f.pagamento, ...data.pedido.pagamento },
             execucao: { ...f.execucao, ...data.pedido.execucao },
-            entrega: { ...f.entrega, ...data.pedido.entrega }
+            entrega: { ...f.entrega, ...data.pedido.entrega },
+            // Garante que o id da serventia esteja presente para o ServicoEntrada
+            serventiaId: (
+              data.pedido.serventiaId ||
+              data.pedido.serventia_id ||
+              (typeof data.pedido.serventia === 'object' && data.pedido.serventia?.id) ||
+              data.pedido.serventia ||
+              null
+            )
           }));
           // Mapeia os combos do backend para o formato esperado pelo frontend
           const combosFormatados = Array.isArray(data.pedido.combos) 
