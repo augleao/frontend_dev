@@ -165,7 +165,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             type="text"
             value={form.cliente.nome}
             onChange={handleNomeChange}
-            style={{ width: 200, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
+            style={{ width: 200, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
             autoComplete="off"
           />
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0, marginLeft: 12 }}>CPF/CNPJ:</label>
@@ -173,7 +173,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             type="text"
             value={form.cliente.cpf}
             onChange={handleCpfChange}
-            style={{ width: 110, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
+            style={{ width: 110, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
             autoComplete="off"
           />
         </div>
@@ -210,21 +210,21 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             type="text" 
             value={form.cliente.endereco} 
             onChange={e => onClienteChange('endereco', e.target.value)} 
-            style={{ width: '45%', minWidth: 120, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+            style={{ width: '45%', minWidth: 120, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
           />
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0, marginLeft: 12 }}>Telefone:</label>
           <input 
             type="text" 
             value={form.cliente.telefone} 
             onChange={e => onClienteChange('telefone', e.target.value)} 
-            style={{ width: 110, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+            style={{ width: 110, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
           />
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0, marginLeft: 12 }}>E-mail:</label>
           <input 
             type="email" 
             value={form.cliente.email} 
             onChange={e => onClienteChange('email', e.target.value)} 
-            style={{ width: 160, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+            style={{ width: 160, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
           />
         </div>
         {/* Botões */}
