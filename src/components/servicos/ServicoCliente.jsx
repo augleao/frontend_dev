@@ -134,74 +134,71 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
       style={{
         width: '100%',
         margin: '0',
-        padding: '32px',
-        borderRadius: '24px',
-        border: '3px solid #9b59b6',
-        boxShadow: '0 6px 32px rgba(155,89,182,0.10)',
+        padding: '16px', // padding reduzido
+        borderRadius: '16px', // borda menor
+        border: '2px solid #9b59b6',
+        boxShadow: '0 2px 12px rgba(155,89,182,0.10)',
         background: '#f5e6fa',
         overflow: 'hidden',
-        marginBottom: 32,
+        marginBottom: 16,
         boxSizing: 'border-box'
       }}
     >
       <h2 style={{ 
-        margin: '0 0 24px 0', 
+        margin: '0 0 12px 0', 
         color: '#6c3483', 
         fontWeight: 700, 
-        fontSize: 24,
+        fontSize: 18,
         textAlign: 'left'
       }}>
         👤 Informações do Cliente
       </h2>
-      
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 12
+        gap: 6
       }}>
-        {/* Nome e CPF/CNPJ na mesma linha */}
-        <div style={{ display: 'flex', gap: 16 }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ color: '#6c3483', fontWeight: 600, display: 'block', marginBottom: 4 }}>Nome:</label>
-            <input
-              type="text"
-              value={form.cliente.nome}
-              onChange={handleNomeChange}
-              style={{ width: '100%', border: '1.5px solid #d6d6f5', borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box' }}
-              autoComplete="off"
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ color: '#6c3483', fontWeight: 600, display: 'block', marginBottom: 4 }}>CPF/CNPJ:</label>
-            <input
-              type="text"
-              value={form.cliente.cpf}
-              onChange={handleCpfChange}
-              style={{ width: '100%', border: '1.5px solid #d6d6f5', borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box' }}
-              autoComplete="off"
-            />
-          </div>
+        {/* Nome */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>Nome:</label>
+          <input
+            type="text"
+            value={form.cliente.nome}
+            onChange={handleNomeChange}
+            style={{ flex: 1, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
+            autoComplete="off"
+          />
         </div>
-        
+        {/* CPF/CNPJ */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>CPF/CNPJ:</label>
+          <input
+            type="text"
+            value={form.cliente.cpf}
+            onChange={handleCpfChange}
+            style={{ flex: 1, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
+            autoComplete="off"
+          />
+        </div>
         {/* Sugestões aparecem para ambos os campos */}
-        {loading && <div style={{ color: '#6c3483', fontStyle: 'italic' }}>Buscando...</div>}
+        {loading && <div style={{ color: '#6c3483', fontStyle: 'italic', fontSize: 12 }}>Buscando...</div>}
         {suggestions.length > 0 && (
           <ul style={{
             background: '#fff',
             border: '1px solid #ccc',
             borderRadius: 4,
             margin: 0,
-            padding: '4px 0',
+            padding: '2px 0',
             listStyle: 'none',
             zIndex: 10,
             width: '100%',
             position: 'absolute',
-            fontSize: 15
+            fontSize: 13
           }}>
             {suggestions.map(c => (
               <li
                 key={c.id}
-                style={{ padding: '4px 8px', cursor: 'pointer', fontSize: 15 }}
+                style={{ padding: '2px 6px', cursor: 'pointer', fontSize: 13 }}
                 onClick={() => handleSelectCliente(c)}
               >
                 {c.nome} ({c.cpf})
@@ -209,40 +206,38 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             ))}
           </ul>
         )}
-        
-        {/* Endereço - largura total */}
-        <div>
-          <label style={{ color: '#6c3483', fontWeight: 600, display: 'block', marginBottom: 4 }}>Endereço:</label>
+        {/* Endereço */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>Endereço:</label>
           <input 
             type="text" 
             value={form.cliente.endereco} 
             onChange={e => onClienteChange('endereco', e.target.value)} 
-            style={{ width: '100%', border: '1.5px solid #d6d6f5', borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box' }} 
+            style={{ flex: 1, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
           />
         </div>
-        
-        {/* Telefone e Email na mesma linha */}
-        <div style={{ display: 'flex', gap: 16 }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ color: '#6c3483', fontWeight: 600, display: 'block', marginBottom: 4 }}>Telefone:</label>
-            <input 
-              type="text" 
-              value={form.cliente.telefone} 
-              onChange={e => onClienteChange('telefone', e.target.value)} 
-              style={{ width: '100%', border: '1.5px solid #d6d6f5', borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box' }} 
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ color: '#6c3483', fontWeight: 600, display: 'block', marginBottom: 4 }}>E-mail:</label>
-            <input 
-              type="email" 
-              value={form.cliente.email} 
-              onChange={e => onClienteChange('email', e.target.value)} 
-              style={{ width: '100%', border: '1.5px solid #d6d6f5', borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box' }} 
-            />
-          </div>
+        {/* Telefone */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>Telefone:</label>
+          <input 
+            type="text" 
+            value={form.cliente.telefone} 
+            onChange={e => onClienteChange('telefone', e.target.value)} 
+            style={{ flex: 1, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+          />
         </div>
-        <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+        {/* Email */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>E-mail:</label>
+          <input 
+            type="email" 
+            value={form.cliente.email} 
+            onChange={e => onClienteChange('email', e.target.value)} 
+            style={{ flex: 1, border: '1px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+          />
+        </div>
+        {/* Botões */}
+        <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
           {/* Exibe botão salvar se não existe clienteId */}
           {!form.clienteId && (
             <button
@@ -252,10 +247,10 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
                 background: '#27ae60',
                 color: '#fff',
                 border: 'none',
-                borderRadius: 8,
-                padding: '12px 32px',
+                borderRadius: 6,
+                padding: '8px 18px',
                 fontWeight: 'bold',
-                fontSize: 16,
+                fontSize: 13,
                 cursor: 'pointer',
                 transition: 'all 0.3s ease'
               }}
@@ -272,10 +267,10 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
                 background: '#e74c3c',
                 color: '#fff',
                 border: 'none',
-                borderRadius: 8,
-                padding: '12px 32px',
+                borderRadius: 6,
+                padding: '8px 18px',
                 fontWeight: 'bold',
-                fontSize: 16,
+                fontSize: 13,
                 cursor: 'pointer',
                 transition: 'all 0.3s ease'
               }}
