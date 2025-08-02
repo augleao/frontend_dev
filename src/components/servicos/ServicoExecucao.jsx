@@ -13,17 +13,18 @@ export default function ServicoExecucao({ form, onChange }) {
       style={{
         border: '2.5px solid #3498db',
         borderRadius: 16,
-        padding: '18px 24px 18px 24px',
+        padding: '18px 32px 18px 32px',
         background: '#f5faff',
         boxShadow: '0 2px 12px rgba(52,152,219,0.10)',
         marginBottom: 24,
-        maxWidth: 600,
-        marginLeft: 'auto',
-        marginRight: 'auto',
+        width: '100%',
+        marginLeft: 0,
+        marginRight: 0,
         marginTop: 0,
         display: 'flex',
         flexDirection: 'column',
-        gap: 10
+        gap: 10,
+        boxSizing: 'border-box'
       }}
     >
       <h3 style={{
@@ -35,12 +36,11 @@ export default function ServicoExecucao({ form, onChange }) {
         letterSpacing: 0.5
       }}>Execução do Serviço</h3>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
-        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 140, margin: 0 }}>Status de execução:</label>
-        <select
-          value={form.execucao.status}
-          onChange={e => onChange('status', e.target.value)}
+        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 140, margin: 0 }}>Responsável:</label>
+        <span
           style={{
             width: 220,
+            display: 'inline-block',
             border: '1.5px solid #aed6f1',
             borderRadius: 6,
             padding: '4px 8px',
@@ -49,11 +49,19 @@ export default function ServicoExecucao({ form, onChange }) {
             boxSizing: 'border-box',
             background: '#fff',
             color: '#154360',
-            fontWeight: 500
+            fontWeight: 500,
+            lineHeight: '24px',
+            verticalAlign: 'middle',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis'
           }}
         >
-          {statusExecucao.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
+          {(() => {
+            const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+            return usuario.nome || usuario.email || 'Usuário';
+          })()}
+        </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
         <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 140, margin: 0, marginTop: 4 }}>Observações internas:</label>
