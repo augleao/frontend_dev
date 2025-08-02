@@ -3,6 +3,27 @@ import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 
 export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
+  const [serventiaInfo, setServentiaInfo] = useState(null);
+  // Buscar informações completas da serventia ao montar
+  useEffect(() => {
+    async function fetchServentia() {
+      let id = form.serventiaId || form.serventia_id || form.serventia || null;
+      if (!id) return;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${config.apiURL}/serventias/${id}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setServentiaInfo(data.serventia || data);
+        }
+      } catch (e) {
+        // ignora erro
+      }
+    }
+    fetchServentia();
+  }, [form.serventiaId, form.serventia_id, form.serventia]);
   console.log('PROPS atosPedido recebidos em ServicoEntrada:', atosPedido);
   console.log('[LOG] form recebido em ServicoEntrada:', form);
   console.log('[LOG] form.valorAdiantadoDetalhes recebido:', form.valorAdiantadoDetalhes);
@@ -234,28 +255,42 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     const clienteDoc = cliente.cpf || cliente.cnpj || form.clienteCpf || form.clienteCnpj || '-';
     const clienteEmail = cliente.email || form.clienteEmail || '-';
     const clienteTel = cliente.telefone || form.clienteTelefone || '-';
-    const serventia = form.serventia || usuario.serventia || '-';
-    // Monta HTML do protocolo para impressora térmica 80 colunas
+    // Monta info completa da serventia
+    let serventiaHtml = '-';
+    if (serventiaInfo) {
+      serventiaHtml = `
+        <div><b>${serventiaInfo.nome || ''}</b></div>
+        <div>${serventiaInfo.endereco || ''}${serventiaInfo.numero ? ', ' + serventiaInfo.numero : ''}</div>
+        <div>${serventiaInfo.bairro || ''} - ${serventiaInfo.cidade || ''} - ${serventiaInfo.uf || ''}</div>
+        <div>CEP: ${serventiaInfo.cep || ''}</div>
+        <div>CNPJ: ${serventiaInfo.cnpj || ''}</div>
+        <div>Telefone: ${serventiaInfo.telefone || ''}</div>
+        <div>Email: ${serventiaInfo.email || ''}</div>
+      `;
+    } else {
+      serventiaHtml = form.serventia || usuario.serventia || '-';
+    }
+    // Monta HTML do protocolo para impressora térmica 80 colunas, apenas preto
     const html = `
       <html>
       <head>
         <title>Protocolo de Entrada</title>
         <style>
-          body { font-family: Arial, sans-serif; margin: 4px; font-size: 11px; }
-          .protocolo-box { border: 1px solid #9b59b6; border-radius: 6px; padding: 8px 8px 4px 8px; max-width: 420px; margin: 0 auto; }
-          h2 { color: #9b59b6; text-align: center; font-size: 15px; margin: 2px 0 8px 0; }
+          body { font-family: Arial, sans-serif; margin: 4px; font-size: 11px; color: #000; background: #fff; }
+          .protocolo-box { border: 1px solid #000; border-radius: 6px; padding: 8px 8px 4px 8px; max-width: 420px; margin: 0 auto; }
+          h2 { color: #000; text-align: center; font-size: 15px; margin: 2px 0 8px 0; font-weight: bold; }
           .info { margin-bottom: 4px; }
-          .label { color: #6c3483; font-weight: bold; }
-          .valor { color: #222; }
+          .label { color: #000; font-weight: bold; }
+          .valor { color: #000; }
           .atos-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
-          .atos-table th, .atos-table td { border: 1px solid #ccc; padding: 2px 3px; font-size: 10px; }
-          .atos-table th { background: #ede1f7; color: #6c3483; }
+          .atos-table th, .atos-table td { border: 1px solid #000; padding: 2px 3px; font-size: 10px; color: #000; }
+          .atos-table th { background: #fff; color: #000; font-weight: bold; }
         </style>
       </head>
       <body>
         <div class="protocolo-box">
           <h2>PROTOCOLO DE ENTRADA</h2>
-          <div class="info"><span class="label">Serventia:</span> <span class="valor">${serventia}</span></div>
+          <div class="info"><span class="label">Serventia:</span> <span class="valor">${serventiaHtml}</span></div>
           <div class="info"><span class="label">Protocolo:</span> <span class="valor">${protocolo}</span></div>
           <div class="info"><span class="label">Data/Hora:</span> <span class="valor">${data}</span></div>
           <div class="info"><span class="label">Usuário:</span> <span class="valor">${nomeUsuario}</span></div>
