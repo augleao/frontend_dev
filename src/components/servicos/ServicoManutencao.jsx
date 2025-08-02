@@ -149,6 +149,10 @@ export default function ServicoManutencao() {
             data.pedido.valorAdiantadoDetalhes ||
             data.pedido.valor_adiantado_detalhes ||
             [{ valor: '', forma: '' }];
+          // LOGS DE DEPURAÇÃO PARA SERVANTIA
+          console.log('[DEBUG] data.pedido.serventia:', data.pedido.serventia);
+          console.log('[DEBUG] data.pedido.serventiaId:', data.pedido.serventiaId);
+          console.log('[DEBUG] data.pedido.serventia_id:', data.pedido.serventia_id);
           setForm(f => ({
             ...f,
             ...data.pedido,
