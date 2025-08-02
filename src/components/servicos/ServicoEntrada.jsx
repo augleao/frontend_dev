@@ -362,7 +362,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         </div>
 
 
-        {/* Descrição do Serviço, Origem e Prazo na mesma linha */}
+        {/* Descrição do Serviço, Origem, campo condicional e Prazo na mesma linha */}
         <div style={{
           padding: '8px 12px',
           margin: '0 0 8px 0',
@@ -410,6 +410,39 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             <option value="Malote Digital">Malote Digital</option>
             <option value="PJE">PJE</option>
           </select>
+          {/* Campo condicional logo após Origem, exceto para Balcão */}
+          {form.origem && form.origem !== 'Balcão' && (
+            <>
+              <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>
+                {form.origem === 'CRC' ? 'Protocolo CRC:' :
+                  form.origem === 'email' ? 'E-mail:' :
+                  form.origem === 'Whatsapp' ? 'Telefone Whatsapp:' :
+                  form.origem === 'Malote Digital' ? 'Nº de Rastreabilidade:' :
+                  form.origem === 'PJE' ? 'Nº do Processo PJE:' : ''}
+              </label>
+              <input
+                type={form.origem === 'email' ? 'email' : 'text'}
+                value={form.origemInfo || ''}
+                onChange={e => onChange('origemInfo', e.target.value)}
+                style={{
+                  width: 180,
+                  border: '1.5px solid #d6d6f5',
+                  borderRadius: 6,
+                  padding: '4px 8px',
+                  fontSize: 13,
+                  height: 32,
+                  boxSizing: 'border-box',
+                }}
+                placeholder={
+                  form.origem === 'CRC' ? 'Digite o protocolo CRC' :
+                  form.origem === 'email' ? 'Digite o e-mail de origem' :
+                  form.origem === 'Whatsapp' ? 'Digite o telefone do Whatsapp' :
+                  form.origem === 'Malote Digital' ? 'Digite o número de rastreabilidade' :
+                  form.origem === 'PJE' ? 'Digite o número do processo PJE' : ''
+                }
+              />
+            </>
+          )}
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 80, margin: 0 }}>Prazo estimado:</label>
           <input
             type="date"
@@ -427,39 +460,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           />
         </div>
 
-        {/* Campo condicional conforme a origem */}
-        {form.origem && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 8px 0', padding: '0 12px' }}>
-            <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>
-              {form.origem === 'CRC' ? 'Protocolo CRC:' :
-                form.origem === 'email' ? 'E-mail:' :
-                form.origem === 'Whatsapp' ? 'Telefone Whatsapp:' :
-                form.origem === 'Malote Digital' ? 'Nº de Rastreabilidade:' :
-                form.origem === 'PJE' ? 'Nº do Processo PJE:' : ''}
-            </label>
-            <input
-              type={form.origem === 'email' ? 'email' : 'text'}
-              value={form.origemInfo || ''}
-              onChange={e => onChange('origemInfo', e.target.value)}
-              style={{
-                width: 180,
-                border: '1.5px solid #d6d6f5',
-                borderRadius: 6,
-                padding: '4px 8px',
-                fontSize: 13,
-                height: 32,
-                boxSizing: 'border-box',
-              }}
-              placeholder={
-                form.origem === 'CRC' ? 'Digite o protocolo CRC' :
-                form.origem === 'email' ? 'Digite o e-mail de origem' :
-                form.origem === 'Whatsapp' ? 'Digite o telefone do Whatsapp' :
-                form.origem === 'Malote Digital' ? 'Digite o número de rastreabilidade' :
-                form.origem === 'PJE' ? 'Digite o número do processo PJE' : ''
-              }
-            />
-          </div>
-        )}
 
         {/* Valores e Observação */}
         <div style={{
