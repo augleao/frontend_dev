@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import config from '../config';
+import config from './config';
 
 export default function UsuariosAdmin() {
   const [usuarios, setUsuarios] = useState([]);
