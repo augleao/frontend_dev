@@ -362,13 +362,14 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         </div>
 
 
-        {/* Descrição do Serviço e Origem na mesma linha */}
+        {/* Descrição do Serviço, Origem e Prazo na mesma linha */}
         <div style={{
           padding: '8px 12px',
           margin: '0 0 8px 0',
           display: 'flex',
           alignItems: 'center',
-          gap: 12
+          gap: 12,
+          flexWrap: 'wrap'
         }}>
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 120, margin: 0 }}>Descrição do Serviço:</label>
           <input
@@ -377,7 +378,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             onChange={e => onChange('descricao', e.target.value)}
             maxLength={200}
             style={{
-              width: 180,
+              width: 160,
               border: '1.5px solid #d6d6f5',
               borderRadius: 6,
               padding: '4px 8px',
@@ -392,7 +393,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             value={form.origem || ''}
             onChange={e => onChange('origem', e.target.value)}
             style={{
-              width: 120,
+              width: 110,
               border: '1.5px solid #d6d6f5',
               borderRadius: 6,
               padding: '4px 8px',
@@ -409,6 +410,21 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             <option value="Malote Digital">Malote Digital</option>
             <option value="PJE">PJE</option>
           </select>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 80, margin: 0 }}>Prazo estimado:</label>
+          <input
+            type="date"
+            value={form.prazo}
+            onChange={e => onChange('prazo', e.target.value)}
+            style={{
+              width: 120,
+              border: '1.5px solid #d6d6f5',
+              borderRadius: 6,
+              padding: '4px 8px',
+              fontSize: 13,
+              height: 32,
+              boxSizing: 'border-box',
+            }}
+          />
         </div>
 
         {/* Origem do Pedido e Prazo */}
