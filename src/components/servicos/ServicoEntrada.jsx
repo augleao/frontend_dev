@@ -8,18 +8,27 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   useEffect(() => {
     async function fetchServentia() {
       let id = form.serventiaId || form.serventia_id || form.serventia || null;
-      if (!id) return;
+      console.log('[DEBUG] Buscando serventia, id:', id);
+      if (!id) {
+        console.log('[DEBUG] Nenhum id de serventia encontrado no form.');
+        return;
+      }
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${config.apiURL}/serventias/${id}`, {
+        const url = `${config.apiURL}/serventias/${id}`;
+        console.log('[DEBUG] Fazendo fetch para:', url);
+        const res = await fetch(url, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         if (res.ok) {
           const data = await res.json();
+          console.log('[DEBUG] Resposta da API serventia:', data);
           setServentiaInfo(data.serventia || data);
+        } else {
+          console.log('[DEBUG] Erro ao buscar serventia, status:', res.status);
         }
       } catch (e) {
-        // ignora erro
+        console.log('[DEBUG] Erro no fetch da serventia:', e);
       }
     }
     fetchServentia();
