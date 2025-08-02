@@ -62,6 +62,24 @@ export default function ServicoExecucao({ form, onChange }) {
             return usuario.nome || usuario.email || 'Usuário';
           })()}
         </span>
+        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0, marginLeft: 16 }}>Data:</label>
+        <input
+          type="date"
+          value={form.execucao.data || new Date().toISOString().slice(0, 10)}
+          onChange={e => onChange('data', e.target.value)}
+          style={{
+            width: 140,
+            border: '1.5px solid #aed6f1',
+            borderRadius: 6,
+            padding: '4px 8px',
+            fontSize: 13,
+            height: 32,
+            boxSizing: 'border-box',
+            background: '#fff',
+            color: '#154360',
+            fontWeight: 500
+          }}
+        />
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
         <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 140, margin: 0, marginTop: 4 }}>Observações internas:</label>
@@ -84,27 +102,7 @@ export default function ServicoExecucao({ form, onChange }) {
           }}
         />
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 0 }}>
-        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 140, margin: 0 }}>Funcionário responsável:</label>
-        <input
-          type="text"
-          value={form.execucao.responsavel}
-          onChange={e => onChange('responsavel', e.target.value)}
-          maxLength={60}
-          style={{
-            width: 220,
-            border: '1.5px solid #aed6f1',
-            borderRadius: 6,
-            padding: '4px 8px',
-            fontSize: 13,
-            height: 32,
-            boxSizing: 'border-box',
-            background: '#fff',
-            color: '#154360',
-            fontWeight: 500
-          }}
-        />
-      </div>
+      {/* Campo Funcionário responsável removido, pois Responsável já é exibido acima como somente leitura */}
     </div>
   );
 }
