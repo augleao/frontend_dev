@@ -11,23 +11,92 @@ export default function ServicoExecucao({ form, onChange }) {
   return (
     <div
       style={{
-        border: '2px solid #3498db',
-        borderRadius: 12,
-        padding: 24,
-        background: '#fafcff',
-        boxShadow: '0 2px 8px rgba(52,152,219,0.08)',
-        marginBottom: 24
+        border: '2.5px solid #3498db',
+        borderRadius: 16,
+        padding: '18px 24px 18px 24px',
+        background: '#f5faff',
+        boxShadow: '0 2px 12px rgba(52,152,219,0.10)',
+        marginBottom: 24,
+        maxWidth: 600,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        marginTop: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10
       }}
     >
-      <h3>Execução do Serviço</h3>
-      <label>Status de execução:</label>
-      <select value={form.execucao.status} onChange={e => onChange('status', e.target.value)} style={{ width: '100%', marginBottom: 8 }}>
-        {statusExecucao.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-      </select>
-      <label>Observações internas:</label>
-      <textarea value={form.execucao.observacoes} onChange={e => onChange('observacoes', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
-      <label>Funcionário responsável:</label>
-      <input type="text" value={form.execucao.responsavel} onChange={e => onChange('responsavel', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
+      <h3 style={{
+        color: '#2471a3',
+        fontWeight: 700,
+        fontSize: 18,
+        margin: 0,
+        marginBottom: 12,
+        letterSpacing: 0.5
+      }}>Execução do Serviço</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
+        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 140, margin: 0 }}>Status de execução:</label>
+        <select
+          value={form.execucao.status}
+          onChange={e => onChange('status', e.target.value)}
+          style={{
+            width: 220,
+            border: '1.5px solid #aed6f1',
+            borderRadius: 6,
+            padding: '4px 8px',
+            fontSize: 13,
+            height: 32,
+            boxSizing: 'border-box',
+            background: '#fff',
+            color: '#154360',
+            fontWeight: 500
+          }}
+        >
+          {statusExecucao.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+        </select>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
+        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 140, margin: 0, marginTop: 4 }}>Observações internas:</label>
+        <textarea
+          value={form.execucao.observacoes}
+          onChange={e => onChange('observacoes', e.target.value)}
+          maxLength={200}
+          style={{
+            width: 320,
+            minHeight: 32,
+            border: '1.5px solid #aed6f1',
+            borderRadius: 6,
+            padding: '4px 8px',
+            fontSize: 13,
+            resize: 'vertical',
+            boxSizing: 'border-box',
+            background: '#fff',
+            color: '#154360',
+            fontWeight: 500
+          }}
+        />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 0 }}>
+        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 140, margin: 0 }}>Funcionário responsável:</label>
+        <input
+          type="text"
+          value={form.execucao.responsavel}
+          onChange={e => onChange('responsavel', e.target.value)}
+          maxLength={60}
+          style={{
+            width: 220,
+            border: '1.5px solid #aed6f1',
+            borderRadius: 6,
+            padding: '4px 8px',
+            fontSize: 13,
+            height: 32,
+            boxSizing: 'border-box',
+            background: '#fff',
+            color: '#154360',
+            fontWeight: 500
+          }}
+        />
+      </div>
     </div>
   );
 }
