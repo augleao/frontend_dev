@@ -228,42 +228,54 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     const data = new Date().toLocaleString('pt-BR');
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     const nomeUsuario = usuario.nome || usuario.email || 'Usuário';
-    // Monta HTML do protocolo
+    // Dados do cliente e serventia
+    const cliente = form.cliente || {};
+    const clienteNome = cliente.nome || form.clienteNome || '-';
+    const clienteDoc = cliente.cpf || cliente.cnpj || form.clienteCpf || form.clienteCnpj || '-';
+    const clienteEmail = cliente.email || form.clienteEmail || '-';
+    const clienteTel = cliente.telefone || form.clienteTelefone || '-';
+    const serventia = form.serventia || usuario.serventia || '-';
+    // Monta HTML do protocolo para impressora térmica 80 colunas
     const html = `
       <html>
       <head>
         <title>Protocolo de Entrada</title>
         <style>
-          body { font-family: Arial, sans-serif; margin: 32px; }
-          .protocolo-box { border: 2px solid #9b59b6; border-radius: 12px; padding: 32px; max-width: 600px; margin: 0 auto; }
-          h2 { color: #9b59b6; text-align: center; }
-          .info { margin-bottom: 18px; }
+          body { font-family: Arial, sans-serif; margin: 4px; font-size: 11px; }
+          .protocolo-box { border: 1px solid #9b59b6; border-radius: 6px; padding: 8px 8px 4px 8px; max-width: 420px; margin: 0 auto; }
+          h2 { color: #9b59b6; text-align: center; font-size: 15px; margin: 2px 0 8px 0; }
+          .info { margin-bottom: 4px; }
           .label { color: #6c3483; font-weight: bold; }
           .valor { color: #222; }
-          .atos-table { width: 100%; border-collapse: collapse; margin-top: 18px; }
-          .atos-table th, .atos-table td { border: 1px solid #ccc; padding: 6px 10px; font-size: 13px; }
+          .atos-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+          .atos-table th, .atos-table td { border: 1px solid #ccc; padding: 2px 3px; font-size: 10px; }
           .atos-table th { background: #ede1f7; color: #6c3483; }
         </style>
       </head>
       <body>
         <div class="protocolo-box">
           <h2>PROTOCOLO DE ENTRADA</h2>
+          <div class="info"><span class="label">Serventia:</span> <span class="valor">${serventia}</span></div>
           <div class="info"><span class="label">Protocolo:</span> <span class="valor">${protocolo}</span></div>
           <div class="info"><span class="label">Data/Hora:</span> <span class="valor">${data}</span></div>
           <div class="info"><span class="label">Usuário:</span> <span class="valor">${nomeUsuario}</span></div>
+          <div class="info"><span class="label">Cliente:</span> <span class="valor">${clienteNome}</span></div>
+          <div class="info"><span class="label">Doc:</span> <span class="valor">${clienteDoc}</span></div>
+          <div class="info"><span class="label">E-mail:</span> <span class="valor">${clienteEmail}</span></div>
+          <div class="info"><span class="label">Tel:</span> <span class="valor">${clienteTel}</span></div>
           <div class="info"><span class="label">Descrição:</span> <span class="valor">${form.descricao || ''}</span></div>
           <div class="info"><span class="label">Origem:</span> <span class="valor">${form.origem || ''} ${form.origemInfo ? '(' + form.origemInfo + ')' : ''}</span></div>
-          <div class="info"><span class="label">Prazo estimado:</span> <span class="valor">${form.prazo || ''}</span></div>
-          <div class="info"><span class="label">Observação:</span> <span class="valor">${form.observacao || ''}</span></div>
+          <div class="info"><span class="label">Prazo:</span> <span class="valor">${form.prazo || ''}</span></div>
+          <div class="info"><span class="label">Obs:</span> <span class="valor">${form.observacao || ''}</span></div>
           <div class="info"><span class="label">Valor(es) Adiantado(s):</span> <span class="valor">${(valorAdiantadoDetalhes || []).map(v => v.valor ? `R$${parseFloat(v.valor).toLocaleString('pt-BR', {minimumFractionDigits:2})} (${v.forma})` : '').filter(Boolean).join(' | ') || '-'}</span></div>
           <table class="atos-table">
             <thead>
               <tr>
                 <th>Combo</th>
-                <th>Cód. Ato</th>
-                <th>Descrição</th>
+                <th>Cód.</th>
+                <th>Desc.</th>
                 <th>Qtd</th>
-                <th>Cód. Tributário</th>
+                <th>Trib.</th>
               </tr>
             </thead>
             <tbody>
@@ -271,7 +283,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 <tr>
                   <td>${ato.comboNome || ''}</td>
                   <td>${ato.atoCodigo || ''}</td>
-                  <td>${ato.atoDescricao ? ato.atoDescricao.slice(0, 30) : ''}</td>
+                  <td>${ato.atoDescricao ? ato.atoDescricao.slice(0, 18) : ''}</td>
                   <td>${ato.quantidade || 1}</td>
                   <td>${ato.codigoTributario || ''}</td>
                 </tr>
