@@ -10,10 +10,6 @@ export default function SeloEletronicoManager({ pedidoId, onSelosChange }) {
   // Handler para colar imagem da área de transferência
   const handlePaste = async (e) => {
     setError('');
-    if (!pedidoId || isNaN(Number(pedidoId))) {
-      setError('Não é possível enviar selo: pedido ainda não foi salvo ou carregado.');
-      return;
-    }
     const items = e.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf('image') !== -1) {
@@ -27,10 +23,6 @@ export default function SeloEletronicoManager({ pedidoId, onSelosChange }) {
   // Handler para upload manual
   const handleFileChange = async (e) => {
     setError('');
-    if (!pedidoId || isNaN(Number(pedidoId))) {
-      setError('Não é possível enviar selo: pedido ainda não foi salvo ou carregado.');
-      return;
-    }
     const file = e.target.files[0];
     if (file) {
       await handleImageUpload(file);
@@ -39,10 +31,6 @@ export default function SeloEletronicoManager({ pedidoId, onSelosChange }) {
 
   // Envia imagem para o backend e salva selo
   const handleImageUpload = async (file) => {
-    if (!pedidoId || isNaN(Number(pedidoId))) {
-      setError('Não é possível enviar selo: pedido ainda não foi salvo ou carregado.');
-      return;
-    }
     setUploading(true);
     setError('');
     try {
@@ -96,19 +84,12 @@ export default function SeloEletronicoManager({ pedidoId, onSelosChange }) {
           fontWeight: 600,
           fontSize: 15,
           marginBottom: 12,
-          cursor: (!pedidoId || isNaN(Number(pedidoId))) ? 'not-allowed' : 'pointer',
-          opacity: (!pedidoId || isNaN(Number(pedidoId))) ? 0.5 : 1
+          cursor: 'pointer',
         }}
-        onClick={() => {
-          if (!pedidoId || isNaN(Number(pedidoId))) {
-            setError('Não é possível enviar selo: pedido ainda não foi salvo ou carregado.');
-            return;
-          }
-          fileInputRef.current && fileInputRef.current.click();
-        }}
-        title={(!pedidoId || isNaN(Number(pedidoId))) ? 'Salve ou carregue o pedido antes de enviar selos.' : 'Clique ou cole a imagem do selo eletrônico aqui'}
+        onClick={() => fileInputRef.current && fileInputRef.current.click()}
+        title="Clique ou cole a imagem do selo eletrônico aqui"
       >
-        {uploading ? 'Processando selo...' : (!pedidoId || isNaN(Number(pedidoId))) ? 'Salve ou carregue o pedido antes de enviar selos.' : 'Clique ou cole a imagem do selo eletrônico aqui'}
+        {uploading ? 'Processando selo...' : 'Clique ou cole a imagem do selo eletrônico aqui'}
         <input
           type="file"
           accept="image/*"

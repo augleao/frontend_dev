@@ -133,8 +133,7 @@ export default function ServicoManutencao() {
 
     console.log('Carregando protocolo:', protocolo);
     const token = localStorage.getItem('token');
-    fetchComAuth(`sim
-      /pedidos/${encodeURIComponent(protocolo)}`)
+    fetchComAuth(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`)
       .then(res => res && res.json())
       .then(data => {
         console.log('Dados recebidos do backend:', data);
@@ -472,8 +471,10 @@ export default function ServicoManutencao() {
             />
           )}
           
-          {/* Sempre renderiza ServicoExecucao, o upload será bloqueado se pedidoId não for válido */}
-          <ServicoExecucao form={form} onChange={handleExecucaoChange} pedidoId={form.id} />
+          {/* Só renderiza ServicoExecucao se form.id estiver definido e for um número */}
+          {Number.isInteger(form.id) && (
+            <ServicoExecucao form={form} onChange={handleExecucaoChange} pedidoId={form.id} />
+          )}
           <ServicoEntrega form={form} onChange={handleEntregaChange} />
           {/* Só mostra o botão de excluir se há um pedido carregado */}
           {form.protocolo && (
