@@ -471,8 +471,8 @@ export default function ServicoManutencao() {
             />
           )}
           
-          {/* Sempre renderiza ServicoExecucao */}
-          <ServicoExecucao form={form} onChange={handleExecucaoChange} pedidoId={form.id} />
+          {/* Sempre renderiza ServicoExecucao, passando o protocolo como pedidoId */}
+          <ServicoExecucao form={form} onChange={handleExecucaoChange} pedidoId={form.protocolo} />
           <ServicoEntrega form={form} onChange={handleEntregaChange} />
           {/* Só mostra o botão de excluir se há um pedido carregado */}
           {form.protocolo && (
