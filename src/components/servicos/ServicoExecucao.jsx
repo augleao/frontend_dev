@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import SeloEletronicoManager from './SeloEletronicoManager';
 import config from '../../config';
 
@@ -12,14 +12,6 @@ const statusExecucao = [
 export default function ServicoExecucao({ form, onChange, pedidoId }) {
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState('');
-  const [execucaoId, setExecucaoId] = useState(form && form.execucao && form.execucao.id ? form.execucao.id : undefined);
-
-  // Atualiza execucaoId sempre que form.execucao.id mudar
-  useEffect(() => {
-    if (form && form.execucao && form.execucao.id) {
-      setExecucaoId(form.execucao.id);
-    }
-  }, [form && form.execucao && form.execucao.id]);
 
   // Função para salvar ou alterar execução do serviço
   const salvarOuAlterarExecucao = async () => {
@@ -48,11 +40,12 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
       });
       if (!res.ok) throw new Error('Erro ao salvar execução do serviço');
       const data = await res.json();
-      if (method === 'PUT' && data && data.execucao && typeof onChange === 'function') {
+      // Sempre atualiza o form.execucao no componente pai
+      if (data && data.execucao && typeof onChange === 'function') {
         onChange('execucao', data.execucao);
-        setExecucaoId(data.execucao.id || pedidoId);
-      } else if (data && data.execucaoId) {
-        setExecucaoId(data.execucaoId);
+      } else if (data && data.execucaoId && typeof onChange === 'function') {
+        // fallback para casos antigos
+        onChange('execucao', { ...form.execucao, id: data.execucaoId });
       }
     } catch (err) {
       setErroSalvar(err.message || 'Erro desconhecido');
