@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import config from '../../config';
 
 export default function SeloEletronicoManager({ pedidoId, onSelosChange }) {
   const [selos, setSelos] = useState([]);
