@@ -274,10 +274,18 @@ export default function ServicoManutencao() {
     }));
   }
   function handleExecucaoChange(field, value) {
-    setForm(f => ({
-      ...f,
-      execucao: { ...f.execucao, [field]: value }
-    }));
+    // Se o field for 'execucao' (vindo do backend), substitui o objeto inteiro
+    if (field === 'execucao' && value && typeof value === 'object') {
+      setForm(f => ({
+        ...f,
+        execucao: { ...value }
+      }));
+    } else {
+      setForm(f => ({
+        ...f,
+        execucao: { ...f.execucao, [field]: value }
+      }));
+    }
   }
   function handleEntregaChange(field, value) {
     setForm(f => ({
