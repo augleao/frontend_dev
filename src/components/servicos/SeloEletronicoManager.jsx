@@ -37,7 +37,7 @@ export default function SeloEletronicoManager({ pedidoId, onSelosChange }) {
       formData.append('imagem', file);
       formData.append('pedidoId', pedidoId);
       console.log('[SeloEletronicoManager] Enviando imagem para backend:', { pedidoId, file });
-      const res = await fetch(`${config.apiURL}/execucao-servico/${pedidoId}/selo`, {
+      const res = await fetch(`${config.apiURL}/execucaoservico/${pedidoId}/selo`, {
         method: 'POST',
         body: formData
       });
