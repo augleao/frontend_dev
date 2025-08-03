@@ -26,7 +26,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         ...form.execucao,
         pedidoId: pedidoId
       };
-      const res = await fetch(`${config.apiURL}/execucaoservico`, {
+      const res = await fetch(`${config.apiURL}/execucao-servico`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
