@@ -104,7 +104,7 @@ export default function ServicoExecucao({ form, onChange }) {
         />
       </div>
       {/* Selos Eletrônicos - área de colagem/upload e tabela de selos extraídos */}
-      <SeloEletronicoManager pedidoId={form.protocolo} />
+      <SeloEletronicoManager pedidoId={form.execucao.id} />
     </div>
   );
 }
