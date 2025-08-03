@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import SeloEletronicoManager from './SeloEletronicoManager';
+import config from '../../config';
 
 const statusExecucao = [
   { value: 'em_andamento', label: 'Em andamento' },
@@ -9,15 +10,40 @@ const statusExecucao = [
 ];
 
 export default function ServicoExecucao({ form, onChange, pedidoId }) {
-  // Log para depuração do form e do pedidoId
-  console.log('[DEBUG][ServicoExecucao] form recebido:', form);
-  console.log('[DEBUG][ServicoExecucao] pedidoId recebido via prop:', pedidoId);
-  console.log('[DEBUG][ServicoExecucao] form.execucao.id:', form?.execucao?.id);
-  console.log('[DEBUG][ServicoExecucao] form.id:', form?.id);
-  
-  // Preferir pedidoId da prop, senão usar form.execucao.id
-  const pedidoIdFinal = pedidoId || (form && form.execucao && form.execucao.id);
-  console.log('[DEBUG][ServicoExecucao] pedidoIdFinal usado:', pedidoIdFinal);
+  const [execucaoSalva, setExecucaoSalva] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [erroSalvar, setErroSalvar] = useState('');
+  const [execucaoId, setExecucaoId] = useState(pedidoId || (form && form.execucao && form.execucao.id));
+
+  // Função para salvar execução do serviço
+  const salvarExecucao = async () => {
+    setSalvando(true);
+    setErroSalvar('');
+    try {
+      const token = localStorage.getItem('token');
+      const body = {
+        protocolo: pedidoId, // ou outro identificador necessário
+        ...form.execucao,
+        pedidoId: pedidoId
+      };
+      const res = await fetch(`${config.apiURL}/execucaoservico`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error('Erro ao salvar execução do serviço');
+      const data = await res.json();
+      setExecucaoSalva(true);
+      setExecucaoId(data.execucaoId || pedidoId); // backend deve retornar o id salvo
+    } catch (err) {
+      setErroSalvar(err.message || 'Erro desconhecido');
+    }
+    setSalvando(false);
+  };
+
   return (
     <div
       style={{
@@ -112,8 +138,34 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
           }}
         />
       </div>
-      {/* Selos Eletrônicos - área de colagem/upload e tabela de selos extraídos */}
-      <SeloEletronicoManager pedidoId={pedidoIdFinal} />
+      {/* Botão Salvar Execução */}
+      {!execucaoSalva && (
+        <div style={{ margin: '12px 0' }}>
+          <button
+            type="button"
+            onClick={salvarExecucao}
+            disabled={salvando}
+            style={{
+              padding: '10px 28px',
+              background: '#3498db',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '15px',
+              fontWeight: '600',
+              cursor: salvando ? 'not-allowed' : 'pointer',
+              boxShadow: '0 2px 8px rgba(52,152,219,0.2)'
+            }}
+          >
+            {salvando ? 'Salvando...' : 'Salvar Execução'}
+          </button>
+          {erroSalvar && <span style={{ color: 'red', marginLeft: 16 }}>{erroSalvar}</span>}
+        </div>
+      )}
+      {/* Selos Eletrônicos - só aparece após salvar execução */}
+      {execucaoSalva && (
+        <SeloEletronicoManager pedidoId={execucaoId} />
+      )}
     </div>
   );
 }
