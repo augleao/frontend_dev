@@ -472,10 +472,8 @@ export default function ServicoManutencao() {
             />
           )}
           
-          {/* Só renderiza ServicoExecucao se form.id estiver definido e for um número */}
-          {Number.isInteger(form.id) && (
-            <ServicoExecucao form={form} onChange={handleExecucaoChange} pedidoId={form.id} />
-          )}
+          {/* Sempre renderiza ServicoExecucao, o upload será bloqueado se pedidoId não for válido */}
+          <ServicoExecucao form={form} onChange={handleExecucaoChange} pedidoId={form.id} />
           <ServicoEntrega form={form} onChange={handleEntregaChange} />
           {/* Só mostra o botão de excluir se há um pedido carregado */}
           {form.protocolo && (
