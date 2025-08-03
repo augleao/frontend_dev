@@ -46,6 +46,19 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
     setSalvando(false);
   };
 
+  // Garante formato yyyy-MM-dd para o campo data
+  const getDataExecucao = () => {
+    const raw = form.execucao.data;
+    if (!raw) return new Date().toISOString().slice(0, 10);
+    if (typeof raw === 'string' && raw.length >= 10) {
+      // Se vier no formato ISO, extrai só a parte da data
+      if (raw.includes('T')) return raw.split('T')[0];
+      // Se já está no formato yyyy-MM-dd, retorna direto
+      return raw.slice(0, 10);
+    }
+    return new Date().toISOString().slice(0, 10);
+  };
+
   return (
     <div
       style={{
@@ -103,7 +116,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0, marginLeft: 16 }}>Data:</label>
         <input
           type="date"
-          value={form.execucao.data || new Date().toISOString().slice(0, 10)}
+          value={getDataExecucao()}
           onChange={e => onChange('data', e.target.value)}
           style={{
             width: 140,
