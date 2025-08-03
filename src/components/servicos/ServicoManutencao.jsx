@@ -133,7 +133,8 @@ export default function ServicoManutencao() {
 
     console.log('Carregando protocolo:', protocolo);
     const token = localStorage.getItem('token');
-    fetchComAuth(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`)
+    fetchComAuth(`sim
+      /pedidos/${encodeURIComponent(protocolo)}`)
       .then(res => res && res.json())
       .then(data => {
         console.log('Dados recebidos do backend:', data);
@@ -471,7 +472,7 @@ export default function ServicoManutencao() {
             />
           )}
           
-          <ServicoExecucao form={form} onChange={handleExecucaoChange} />
+          <ServicoExecucao form={form} onChange={handleExecucaoChange} pedidoId={form.id} />
           <ServicoEntrega form={form} onChange={handleEntregaChange} />
           {/* Só mostra o botão de excluir se há um pedido carregado */}
           {form.protocolo && (

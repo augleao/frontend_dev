@@ -8,7 +8,16 @@ const statusExecucao = [
   { value: 'cancelado', label: 'Cancelado' }
 ];
 
-export default function ServicoExecucao({ form, onChange }) {
+export default function ServicoExecucao({ form, onChange, pedidoId }) {
+  // Log para depuração do form e do pedidoId
+  console.log('[DEBUG][ServicoExecucao] form recebido:', form);
+  console.log('[DEBUG][ServicoExecucao] pedidoId recebido via prop:', pedidoId);
+  console.log('[DEBUG][ServicoExecucao] form.execucao.id:', form?.execucao?.id);
+  console.log('[DEBUG][ServicoExecucao] form.id:', form?.id);
+  
+  // Preferir pedidoId da prop, senão usar form.execucao.id
+  const pedidoIdFinal = pedidoId || (form && form.execucao && form.execucao.id);
+  console.log('[DEBUG][ServicoExecucao] pedidoIdFinal usado:', pedidoIdFinal);
   return (
     <div
       style={{
@@ -104,7 +113,7 @@ export default function ServicoExecucao({ form, onChange }) {
         />
       </div>
       {/* Selos Eletrônicos - área de colagem/upload e tabela de selos extraídos */}
-      <SeloEletronicoManager pedidoId={form.execucao.id} />
+      <SeloEletronicoManager pedidoId={pedidoIdFinal} />
     </div>
   );
 }
