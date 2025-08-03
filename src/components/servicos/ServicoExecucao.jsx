@@ -10,13 +10,13 @@ const statusExecucao = [
 ];
 
 export default function ServicoExecucao({ form, onChange, pedidoId }) {
-  const [execucaoSalva, setExecucaoSalva] = useState(false);
+  const [execucaoSalva, setExecucaoSalva] = useState(!!(form && form.execucao && form.execucao.id));
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState('');
   const [execucaoId, setExecucaoId] = useState(pedidoId || (form && form.execucao && form.execucao.id));
 
-  // Função para salvar execução do serviço
-  const salvarExecucao = async () => {
+  // Função para salvar ou alterar execução do serviço
+  const salvarOuAlterarExecucao = async () => {
     setSalvando(true);
     setErroSalvar('');
     try {
@@ -28,8 +28,12 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         ...form.execucao,
         pedidoId: pedidoId
       };
-      const res = await fetch(`${config.apiURL}/execucao-servico`, {
-        method: 'POST',
+      const method = form.execucao && form.execucao.id ? 'PUT' : 'POST';
+      const url = method === 'PUT'
+        ? `${config.apiURL}/execucao-servico/${form.execucao.id}`
+        : `${config.apiURL}/execucao-servico`;
+      const res = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -38,8 +42,14 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
       });
       if (!res.ok) throw new Error('Erro ao salvar execução do serviço');
       const data = await res.json();
-      setExecucaoSalva(true);
-      setExecucaoId(data.execucaoId || pedidoId);
+      if (method === 'PUT' && data && data.execucao && typeof onChange === 'function') {
+        onChange('execucao', data.execucao);
+        setExecucaoId(data.execucao.id || pedidoId);
+        setExecucaoSalva(true);
+      } else {
+        setExecucaoSalva(true);
+        setExecucaoId(data.execucaoId || pedidoId);
+      }
     } catch (err) {
       setErroSalvar(err.message || 'Erro desconhecido');
     }
@@ -153,30 +163,30 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
           }}
         />
       </div>
-      {/* Botão Salvar Execução */}
-      {!execucaoSalva && (
-        <div style={{ margin: '12px 0' }}>
-          <button
-            type="button"
-            onClick={salvarExecucao}
-            disabled={salvando}
-            style={{
-              padding: '10px 28px',
-              background: '#3498db',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '15px',
-              fontWeight: '600',
-              cursor: salvando ? 'not-allowed' : 'pointer',
-              boxShadow: '0 2px 8px rgba(52,152,219,0.2)'
-            }}
-          >
-            {salvando ? 'Salvando...' : 'Salvar Execução'}
-          </button>
-          {erroSalvar && <span style={{ color: 'red', marginLeft: 16 }}>{erroSalvar}</span>}
-        </div>
-      )}
+      {/* Botão Salvar/Alterar Execução */}
+      <div style={{ margin: '12px 0' }}>
+        <button
+          type="button"
+          onClick={salvarOuAlterarExecucao}
+          disabled={salvando}
+          style={{
+            padding: '10px 28px',
+            background: execucaoSalva ? '#f39c12' : '#3498db',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '15px',
+            fontWeight: '600',
+            cursor: salvando ? 'not-allowed' : 'pointer',
+            boxShadow: '0 2px 8px rgba(52,152,219,0.2)'
+          }}
+        >
+          {salvando
+            ? (execucaoSalva ? 'Alterando...' : 'Salvando...')
+            : (execucaoSalva ? 'Alterar Execução' : 'Salvar Execução')}
+        </button>
+        {erroSalvar && <span style={{ color: 'red', marginLeft: 16 }}>{erroSalvar}</span>}
+      </div>
       {/* Selos Eletrônicos - só aparece após salvar execução */}
       {execucaoSalva && (
         <SeloEletronicoManager pedidoId={execucaoId} />
