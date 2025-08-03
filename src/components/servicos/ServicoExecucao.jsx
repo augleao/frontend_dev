@@ -21,8 +21,10 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
     setErroSalvar('');
     try {
       const token = localStorage.getItem('token');
+      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
       const body = {
-        protocolo: pedidoId, // ou outro identificador necessário
+        protocolo: pedidoId,
+        usuario: usuario.nome || usuario.email || 'Usuário',
         ...form.execucao,
         pedidoId: pedidoId
       };
@@ -37,7 +39,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
       if (!res.ok) throw new Error('Erro ao salvar execução do serviço');
       const data = await res.json();
       setExecucaoSalva(true);
-      setExecucaoId(data.execucaoId || pedidoId); // backend deve retornar o id salvo
+      setExecucaoId(data.execucaoId || pedidoId);
     } catch (err) {
       setErroSalvar(err.message || 'Erro desconhecido');
     }
