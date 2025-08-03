@@ -203,10 +203,8 @@ export default function ServicoManutencao() {
                   setForm(f => ({
                     ...f,
                     execucao: {
-                      status: execData.status || 'em_andamento',
-                      observacoes: execData.observacoes || '',
-                      responsavel: execData.responsavel || '',
-                      ...execData
+                      ...f.execucao, // mantém campos já existentes
+                      ...execData    // sobrescreve pelos do backend
                     }
                   }));
                   console.log('[EXECUCAO DEBUG] Execução do serviço carregada no form:', execData);
