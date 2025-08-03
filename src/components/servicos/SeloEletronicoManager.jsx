@@ -36,9 +36,10 @@ export default function SeloEletronicoManager({ pedidoId, onSelosChange }) {
     try {
       const formData = new FormData();
       formData.append('imagem', file);
-      formData.append('pedidoId', pedidoId);
-      console.log('[SeloEletronicoManager] Enviando imagem para backend:', { pedidoId, file });
-      const token = localStorage.getItem('token'); // ou o nome que você usa para armazenar o token
+      // Envia o protocolo (string) como execucao_servico_id
+      formData.append('execucao_servico_id', pedidoId);
+      console.log('[SeloEletronicoManager] Enviando imagem para backend:', { execucao_servico_id: pedidoId, file });
+      const token = localStorage.getItem('token');
       const res = await fetch(`${config.apiURL}/execucaoservico/${pedidoId}/selo`, {
         method: 'POST',
         body: formData,
