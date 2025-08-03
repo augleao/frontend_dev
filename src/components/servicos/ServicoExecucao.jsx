@@ -10,7 +10,6 @@ const statusExecucao = [
 ];
 
 export default function ServicoExecucao({ form, onChange, pedidoId }) {
-  const [execucaoSalva, setExecucaoSalva] = useState(!!(form && form.execucao && form.execucao.id));
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState('');
   const [execucaoId, setExecucaoId] = useState(pedidoId || (form && form.execucao && form.execucao.id));
@@ -45,10 +44,8 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
       if (method === 'PUT' && data && data.execucao && typeof onChange === 'function') {
         onChange('execucao', data.execucao);
         setExecucaoId(data.execucao.id || pedidoId);
-        setExecucaoSalva(true);
-      } else {
-        setExecucaoSalva(true);
-        setExecucaoId(data.execucaoId || pedidoId);
+      } else if (data && data.execucaoId) {
+        setExecucaoId(data.execucaoId);
       }
     } catch (err) {
       setErroSalvar(err.message || 'Erro desconhecido');
@@ -171,7 +168,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
           disabled={salvando}
           style={{
             padding: '10px 28px',
-            background: execucaoSalva ? '#f39c12' : '#3498db',
+            background: form.execucao && form.execucao.id ? '#f39c12' : '#3498db',
             color: 'white',
             border: 'none',
             borderRadius: '8px',
@@ -182,13 +179,13 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
           }}
         >
           {salvando
-            ? (execucaoSalva ? 'Alterando...' : 'Salvando...')
-            : (execucaoSalva ? 'Alterar Execução' : 'Salvar Execução')}
+            ? (form.execucao && form.execucao.id ? 'Alterando...' : 'Salvando...')
+            : (form.execucao && form.execucao.id ? 'Alterar Execução' : 'Salvar Execução')}
         </button>
         {erroSalvar && <span style={{ color: 'red', marginLeft: 16 }}>{erroSalvar}</span>}
       </div>
       {/* Selos Eletrônicos - só aparece após salvar execução */}
-      {execucaoSalva && (
+      {form.execucao && form.execucao.id && (
         <SeloEletronicoManager pedidoId={execucaoId} />
       )}
     </div>
