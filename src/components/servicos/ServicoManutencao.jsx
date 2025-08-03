@@ -164,7 +164,13 @@ export default function ServicoManutencao() {
             novoCliente: false, // Define como cliente existente
             cliente: { ...f.cliente, ...data.pedido.cliente },
             pagamento: { ...f.pagamento, ...data.pedido.pagamento },
-            execucao: { ...f.execucao, ...data.pedido.execucao },
+            execucao: {
+              status: 'em_andamento',
+              observacoes: '',
+              responsavel: '',
+              ...f.execucao,
+              ...(data.pedido.execucao || {})
+            },
             entrega: { ...f.entrega, ...data.pedido.entrega },
             // Garante que o id da serventia esteja presente para o ServicoEntrada
             serventiaId: (
@@ -175,6 +181,40 @@ export default function ServicoManutencao() {
               null
             )
           }));
+
+          // Após carregar o pedido, buscar execução salva (se existir) e atualizar o form
+          if (data.pedido && data.pedido.protocolo) {
+            console.log('[EXECUCAO DEBUG] Buscando execução do serviço para protocolo:', data.pedido.protocolo);
+            fetchComAuth(`${config.apiURL}/execucao-servico/${encodeURIComponent(data.pedido.protocolo)}`)
+              .then(execRes => {
+                if (!execRes) {
+                  console.warn('[EXECUCAO DEBUG] Resposta fetchComAuth nula para execução');
+                  return null;
+                }
+                if (!execRes.ok) {
+                  console.warn('[EXECUCAO DEBUG] Execução não encontrada ou erro HTTP:', execRes.status);
+                  return null;
+                }
+                return execRes.json();
+              })
+              .then(execData => {
+                console.log('[EXECUCAO DEBUG] Dados recebidos da execução:', execData);
+                if (execData) {
+                  setForm(f => ({
+                    ...f,
+                    execucao: {
+                      status: execData.status || 'em_andamento',
+                      observacoes: execData.observacoes || '',
+                      responsavel: execData.responsavel || '',
+                      ...execData
+                    }
+                  }));
+                  console.log('[EXECUCAO DEBUG] Execução do serviço carregada no form:', execData);
+                } else {
+                  console.log('[EXECUCAO DEBUG] Nenhuma execução encontrada para o protocolo:', data.pedido.protocolo);
+                }
+              });
+          }
           // Mapeia os combos do backend para o formato esperado pelo frontend
           const combosFormatados = Array.isArray(data.pedido.combos) 
             ? data.pedido.combos.map(combo => ({
