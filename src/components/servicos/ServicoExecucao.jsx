@@ -228,57 +228,58 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
       {/* Selos Eletrônicos - só aparece após salvar execução */}
       {/* Selos Eletrônicos - só aparece após salvar execução */}
       {form.execucao && form.execucao.id && (
-        <SeloEletronicoManager protocolo={protocolo} onSelosChange={setSelos} />
-      )}
-
-      {/* Tabela de selos utilizados neste pedido */}
-      {selos.length > 0 && (
-        <div style={{ marginTop: 24 }}>
-          <h4 style={{ color: '#6c3483', marginBottom: 8 }}>Selos Utilizados neste Pedido</h4>
-          <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8 }}>
-            <thead>
-              <tr style={{ background: '#ede1f7' }}>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Selo Consulta</th>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Código de Segurança</th>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Qtd. Atos</th>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Atos praticados por</th>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Valores</th>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Data/Hora</th>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selos.map((selo, idx) => (
-                <tr key={selo.id || idx} style={{ background: idx % 2 === 0 ? '#f8f4fc' : '#fff' }}>
-                  <td style={{ padding: 6, fontSize: 12 }}>{selo.selo_consulta}</td>
-                  <td style={{ padding: 6, fontSize: 12 }}>{selo.codigo_seguranca}</td>
-                  <td style={{ padding: 6, fontSize: 12 }}>{selo.qtd_atos}</td>
-                  <td style={{ padding: 6, fontSize: 12 }}>{selo.atos_praticados_por}</td>
-                  <td style={{ padding: 6, fontSize: 12 }}>{selo.valores}</td>
-                  <td style={{ padding: 6, fontSize: 12 }}>{selo.criado_em ? new Date(selo.criado_em).toLocaleString() : ''}</td>
-                  <td style={{ padding: 6, fontSize: 12 }}>
-                    <button
-                      style={{
-                        background: '#e74c3c',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: 4,
-                        padding: '4px 10px',
-                        fontSize: 12,
-                        cursor: 'pointer',
-                        fontWeight: 600
-                      }}
-                      title="Excluir selo"
-                      onClick={() => excluirSelo(selo)}
-                    >
-                      Excluir
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <SeloEletronicoManager protocolo={protocolo} onSelosChange={setSelos} />
+          {/* Tabela de selos utilizados neste pedido */}
+          {selos.length > 0 && (
+            <div style={{ marginTop: 24 }}>
+              <h4 style={{ color: '#6c3483', marginBottom: 8 }}>Selos Utilizados neste Pedido</h4>
+              <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8 }}>
+                <thead>
+                  <tr style={{ background: '#ede1f7' }}>
+                    <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Selo Consulta</th>
+                    <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Código de Segurança</th>
+                    <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Qtd. Atos</th>
+                    <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Atos praticados por</th>
+                    <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Valores</th>
+                    <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Data/Hora</th>
+                    <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selos.map((selo, idx) => (
+                    <tr key={selo.id || idx} style={{ background: idx % 2 === 0 ? '#f8f4fc' : '#fff' }}>
+                      <td style={{ padding: 6, fontSize: 12 }}>{selo.selo_consulta}</td>
+                      <td style={{ padding: 6, fontSize: 12 }}>{selo.codigo_seguranca}</td>
+                      <td style={{ padding: 6, fontSize: 12 }}>{selo.qtd_atos}</td>
+                      <td style={{ padding: 6, fontSize: 12 }}>{selo.atos_praticados_por}</td>
+                      <td style={{ padding: 6, fontSize: 12 }}>{selo.valores}</td>
+                      <td style={{ padding: 6, fontSize: 12 }}>{selo.criado_em ? new Date(selo.criado_em).toLocaleString() : ''}</td>
+                      <td style={{ padding: 6, fontSize: 12 }}>
+                        <button
+                          style={{
+                            background: '#e74c3c',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: 4,
+                            padding: '4px 10px',
+                            fontSize: 12,
+                            cursor: 'pointer',
+                            fontWeight: 600
+                          }}
+                          title="Excluir selo"
+                          onClick={() => excluirSelo(selo)}
+                        >
+                          Excluir
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
