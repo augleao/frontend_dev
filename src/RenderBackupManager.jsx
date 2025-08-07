@@ -1,6 +1,16 @@
 
+
 import React, { useEffect, useState } from 'react';
 import config from './config';
+
+export default function RenderBackupManager() {
+  const [backups, setBackups] = useState([]);
+  const [backupLoading, setBackupLoading] = useState(false);
+  const [backupMsg, setBackupMsg] = useState('');
+  const [recoveryInfo, setRecoveryInfo] = useState({});
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [exports, setExports] = useState([]);
+
   // Realizar backup lógico (export) via API da Render
   const realizarBackupAgora = async (postgresId) => {
     if (!window.confirm('Deseja realmente realizar um backup lógico (export) agora?')) return;
@@ -33,14 +43,6 @@ import config from './config';
       setBackupMsg('Erro ao solicitar backup lógico: ' + (err.message || err));
     }
   };
-
-export default function RenderBackupManager() {
-  const [backups, setBackups] = useState([]);
-  const [backupLoading, setBackupLoading] = useState(false);
-  const [backupMsg, setBackupMsg] = useState('');
-  const [recoveryInfo, setRecoveryInfo] = useState({});
-  const [recoveryLoading, setRecoveryLoading] = useState(false);
-  const [exports, setExports] = useState([]);
 
   useEffect(() => {
     // Forçar exibição apenas do banco dpg-d13h6lbipnbc73ba1j80-a
