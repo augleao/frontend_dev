@@ -26,7 +26,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         .then(data => setSelos(data.selos || []))
         .catch(() => setSelos([]));
     }
-  }, [protocolo]);
+  }, [protocolo, form.execucao && form.execucao.id]);
 
   // Função para salvar ou alterar execução do serviço
   const salvarOuAlterarExecucao = async () => {
