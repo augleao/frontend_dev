@@ -1,9 +1,11 @@
+
+import React, { useEffect, useState } from 'react';
+import config from './config';
   // Realizar backup lógico (export) via API da Render
   const realizarBackupAgora = async (postgresId) => {
     if (!window.confirm('Deseja realmente realizar um backup lógico (export) agora?')) return;
     setBackupMsg('Iniciando backup lógico...');
     try {
-      // Assegure que as variáveis estejam definidas no ambiente
       const renderToken = process.env.REACT_APP_RENDER_API_TOKEN;
       if (!renderToken) {
         setBackupMsg('Token da API Render não configurado (REACT_APP_RENDER_API_TOKEN)');
@@ -26,14 +28,11 @@
         return;
       }
       setBackupMsg('Backup lógico solicitado com sucesso! Aguarde alguns minutos e atualize a lista de exports.');
-      // Opcional: atualizar lista de exports após um tempo
       setTimeout(() => fetchExports(postgresId, localStorage.getItem('token')), 5000);
     } catch (err) {
       setBackupMsg('Erro ao solicitar backup lógico: ' + (err.message || err));
     }
   };
-import React, { useEffect, useState } from 'react';
-import config from './config';
 
 export default function RenderBackupManager() {
   const [backups, setBackups] = useState([]);
