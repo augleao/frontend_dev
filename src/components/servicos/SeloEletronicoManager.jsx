@@ -52,9 +52,9 @@ export default function SeloEletronicoManager({ protocolo, onSelosChange }) {
           console.log(`[LOG SELAGEM] FormData -> ${pair[0]}: ${pair[1]}`);
         }
       }
-      console.log('[SeloEletronicoManager] Enviando imagem para backend:', { execucao_servico_id: pedidoId, file });
+      console.log('[SeloEletronicoManager] Enviando imagem para backend:', { execucao_servico_id: protocolo, file });
       const token = localStorage.getItem('token');
-      const res = await fetch(`${config.apiURL}/execucaoservico/${pedidoId}/selo`, {
+      const res = await fetch(`${config.apiURL}/execucaoservico/${protocolo}/selo`, {
         method: 'POST',
         body: formData,
         headers: {
@@ -72,8 +72,8 @@ export default function SeloEletronicoManager({ protocolo, onSelosChange }) {
         console.error('[SeloEletronicoManager] Erro ao fazer parse do JSON:', parseErr);
         throw new Error('Resposta inválida do backend.');
       }
-  setSelos(prev => [...prev, data]);
-  if (onSelosChange) onSelosChange(prev => [...(Array.isArray(prev) ? prev : []), data]);
+      setSelos(prev => [...prev, data]);
+      if (onSelosChange) onSelosChange(prev => [...(Array.isArray(prev) ? prev : []), data]);
     } catch (err) {
       console.error('[SeloEletronicoManager] Falha ao processar selo:', err);
       setError('Falha ao processar selo: ' + (err.message || err));
