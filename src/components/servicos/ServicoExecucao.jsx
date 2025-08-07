@@ -81,6 +81,32 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
     return new Date().toISOString().slice(0, 10);
   };
 
+  // Função para excluir selo
+  const excluirSelo = async (selo) => {
+    if (!window.confirm('Tem certeza que deseja excluir este selo?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      // O backend espera execucaoId (id numérico) e seloId
+      const execucaoId = form.execucao && form.execucao.id;
+      if (!execucaoId || !selo.id) {
+        alert('Dados insuficientes para exclusão.');
+        return;
+      }
+      const res = await fetch(`${config.apiURL}/execucao-servico/${execucaoId}/selo/${selo.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert('Erro ao excluir selo: ' + (err.error || res.status));
+        return;
+      }
+      setSelos(prev => prev.filter(s => s.id !== selo.id));
+    } catch (err) {
+      alert('Erro ao excluir selo.');
+    }
+  };
+
   return (
     <div
       style={{
@@ -212,27 +238,42 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
           <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8 }}>
             <thead>
               <tr style={{ background: '#ede1f7' }}>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Imagem</th>
                 <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Selo Consulta</th>
                 <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Código de Segurança</th>
                 <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Qtd. Atos</th>
                 <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Atos praticados por</th>
                 <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Valores</th>
                 <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Data/Hora</th>
+                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Ações</th>
               </tr>
             </thead>
             <tbody>
               {selos.map((selo, idx) => (
                 <tr key={selo.id || idx} style={{ background: idx % 2 === 0 ? '#f8f4fc' : '#fff' }}>
-                  <td style={{ padding: 6 }}>
-                    <img src={selo.imagem_url} alt="Selo" style={{ maxWidth: 80, maxHeight: 60, borderRadius: 4 }} />
-                  </td>
                   <td style={{ padding: 6, fontSize: 12 }}>{selo.selo_consulta}</td>
                   <td style={{ padding: 6, fontSize: 12 }}>{selo.codigo_seguranca}</td>
                   <td style={{ padding: 6, fontSize: 12 }}>{selo.qtd_atos}</td>
                   <td style={{ padding: 6, fontSize: 12 }}>{selo.atos_praticados_por}</td>
                   <td style={{ padding: 6, fontSize: 12 }}>{selo.valores}</td>
                   <td style={{ padding: 6, fontSize: 12 }}>{selo.criado_em ? new Date(selo.criado_em).toLocaleString() : ''}</td>
+                  <td style={{ padding: 6, fontSize: 12 }}>
+                    <button
+                      style={{
+                        background: '#e74c3c',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: 4,
+                        padding: '4px 10px',
+                        fontSize: 12,
+                        cursor: 'pointer',
+                        fontWeight: 600
+                      }}
+                      title="Excluir selo"
+                      onClick={() => excluirSelo(selo)}
+                    >
+                      Excluir
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
