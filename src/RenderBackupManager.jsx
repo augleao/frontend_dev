@@ -16,25 +16,16 @@ export default function RenderBackupManager() {
     if (!window.confirm('Deseja realmente realizar um backup lógico (export) agora?')) return;
     setBackupMsg('Iniciando backup lógico...');
     try {
-      // LOG: Verificando variável de ambiente
-      console.log('[Backup] process.env.REACT_APP_RENDER_API_TOKEN:', process.env.REACT_APP_RENDER_API_TOKEN);
-      const renderToken = localStorage.getItem('token');
-      //const renderToken = process.env.REACT_APP_RENDER_API_TOKEN;
-      if (!renderToken) {
-        console.error('[Backup] Token da API Render não configurado!');
-        setBackupMsg('Token da API Render não configurado (REACT_APP_RENDER_API_TOKEN)');
-        return;
-      }
+      const token = localStorage.getItem('token');
       if (!postgresId) {
-        console.error('[Backup] ID do Postgres não informado!');
         setBackupMsg('ID do Postgres não informado.');
         return;
       }
-      console.log('[Backup] Iniciando export para postgresId:', postgresId);
-      const res = await fetch(`https://api.render.com/v1/postgres/${postgresId}/export`, {
+      console.log('[Backup] Iniciando export para postgresId (via backend):', postgresId);
+      const res = await fetch(`${config.apiURL}/admin/render/postgres/${postgresId}/export`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${renderToken}`,
+          'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
         }
       });
@@ -46,7 +37,7 @@ export default function RenderBackupManager() {
         return;
       }
       setBackupMsg('Backup lógico solicitado com sucesso! Aguarde alguns minutos e atualize a lista de exports.');
-      setTimeout(() => fetchExports(postgresId, localStorage.getItem('token')), 5000);
+      setTimeout(() => fetchExports(postgresId, token), 5000);
     } catch (err) {
       console.error('[Backup] Erro inesperado:', err);
       setBackupMsg('Erro ao solicitar backup lógico: ' + (err.message || err));
