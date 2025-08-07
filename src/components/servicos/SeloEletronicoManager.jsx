@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import config from '../../config';
 
-// pedidoId deve ser o id numérico da execução (form.execucao.id)
-export default function SeloEletronicoManager({ pedidoId, onSelosChange }) {
+// protocolo: string identificador do pedido
+export default function SeloEletronicoManager({ protocolo, onSelosChange }) {
   const [selos, setSelos] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -37,13 +37,13 @@ export default function SeloEletronicoManager({ pedidoId, onSelosChange }) {
     try {
       const formData = new FormData();
       formData.append('imagem', file);
-      // Garante que execucao_servico_id é o id numérico da execução
-      if (!pedidoId || isNaN(Number(pedidoId))) {
-        setError('ID da execução inválido para upload de selo.');
+      // Garante que execucao_servico_id é o protocolo do pedido
+      if (!protocolo || typeof protocolo !== 'string') {
+        setError('Protocolo inválido para upload de selo.');
         setUploading(false);
         return;
       }
-      formData.append('execucao_servico_id', Number(pedidoId));
+      formData.append('execucao_servico_id', protocolo);
       // LOG: Mostra todos os valores do FormData
       for (let pair of formData.entries()) {
         if (pair[0] === 'imagem') {
@@ -72,8 +72,8 @@ export default function SeloEletronicoManager({ pedidoId, onSelosChange }) {
         console.error('[SeloEletronicoManager] Erro ao fazer parse do JSON:', parseErr);
         throw new Error('Resposta inválida do backend.');
       }
-      setSelos(prev => [...prev, data]);
-      if (onSelosChange) onSelosChange([...selos, data]);
+  setSelos(prev => [...prev, data]);
+  if (onSelosChange) onSelosChange(prev => [...(Array.isArray(prev) ? prev : []), data]);
     } catch (err) {
       console.error('[SeloEletronicoManager] Falha ao processar selo:', err);
       setError('Falha ao processar selo: ' + (err.message || err));

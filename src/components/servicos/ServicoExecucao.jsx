@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SeloEletronicoManager from './SeloEletronicoManager';
 import config from '../../config';
 
@@ -12,6 +12,21 @@ const statusExecucao = [
 export default function ServicoExecucao({ form, onChange, pedidoId }) {
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState('');
+  const [selos, setSelos] = useState([]);
+  const protocolo = form.protocolo;
+
+  // Buscar selos do pedido ao montar ou quando protocolo mudar
+  useEffect(() => {
+    if (protocolo) {
+      const token = localStorage.getItem('token');
+      fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocolo)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => setSelos(data.selos || []))
+        .catch(() => setSelos([]));
+    }
+  }, [protocolo]);
 
   // Função para salvar ou alterar execução do serviço
   const salvarOuAlterarExecucao = async () => {
@@ -185,8 +200,44 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         {erroSalvar && <span style={{ color: 'red', marginLeft: 16 }}>{erroSalvar}</span>}
       </div>
       {/* Selos Eletrônicos - só aparece após salvar execução */}
+      {/* Selos Eletrônicos - só aparece após salvar execução */}
       {form.execucao && form.execucao.id && (
-        <SeloEletronicoManager pedidoId={form.execucao.id} />
+        <SeloEletronicoManager protocolo={protocolo} onSelosChange={setSelos} />
+      )}
+
+      {/* Tabela de selos utilizados neste pedido */}
+      {selos.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <h4 style={{ color: '#6c3483', marginBottom: 8 }}>Selos Utilizados neste Pedido</h4>
+          <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8 }}>
+            <thead>
+              <tr style={{ background: '#ede1f7' }}>
+                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Imagem</th>
+                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Selo Consulta</th>
+                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Código de Segurança</th>
+                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Qtd. Atos</th>
+                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Atos praticados por</th>
+                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Valores</th>
+                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Data/Hora</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selos.map((selo, idx) => (
+                <tr key={selo.id || idx} style={{ background: idx % 2 === 0 ? '#f8f4fc' : '#fff' }}>
+                  <td style={{ padding: 6 }}>
+                    <img src={selo.imagem_url} alt="Selo" style={{ maxWidth: 80, maxHeight: 60, borderRadius: 4 }} />
+                  </td>
+                  <td style={{ padding: 6, fontSize: 12 }}>{selo.selo_consulta}</td>
+                  <td style={{ padding: 6, fontSize: 12 }}>{selo.codigo_seguranca}</td>
+                  <td style={{ padding: 6, fontSize: 12 }}>{selo.qtd_atos}</td>
+                  <td style={{ padding: 6, fontSize: 12 }}>{selo.atos_praticados_por}</td>
+                  <td style={{ padding: 6, fontSize: 12 }}>{selo.valores}</td>
+                  <td style={{ padding: 6, fontSize: 12 }}>{selo.criado_em ? new Date(selo.criado_em).toLocaleString() : ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
