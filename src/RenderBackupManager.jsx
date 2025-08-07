@@ -18,7 +18,8 @@ export default function RenderBackupManager() {
     try {
       // LOG: Verificando variável de ambiente
       console.log('[Backup] process.env.REACT_APP_RENDER_API_TOKEN:', process.env.REACT_APP_RENDER_API_TOKEN);
-      const renderToken = process.env.REACT_APP_RENDER_API_TOKEN;
+      const renderToken = localStorage.getItem('token');
+      //const renderToken = process.env.REACT_APP_RENDER_API_TOKEN;
       if (!renderToken) {
         console.error('[Backup] Token da API Render não configurado!');
         setBackupMsg('Token da API Render não configurado (REACT_APP_RENDER_API_TOKEN)');
