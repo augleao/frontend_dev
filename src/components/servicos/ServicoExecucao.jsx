@@ -92,7 +92,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         alert('Dados insuficientes para exclusão.');
         return;
       }
-      const res = await fetch(`${config.apiURL}/execucao-servico/${execucaoId}/selo/${selo.id}`, {
+      const res = await fetch(`${config.apiURL}/execucao-servico/${form.execucao.id}/selo/${selo.id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
