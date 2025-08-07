@@ -86,13 +86,13 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
     if (!window.confirm('Tem certeza que deseja excluir este selo?')) return;
     try {
       const token = localStorage.getItem('token');
-      // O backend espera execucaoId (id numérico) e seloId
-      const execucaoId = form.execucao && form.execucao.id;
+      // O backend espera execucaoId = protocolo (string) e seloId
+      const execucaoId = form.protocolo;
       if (!execucaoId || !selo.id) {
         alert('Dados insuficientes para exclusão.');
         return;
       }
-      const res = await fetch(`${config.apiURL}/execucao-servico/${form.execucao.id}/selo/${selo.id}`, {
+      const res = await fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(execucaoId)}/selo/${selo.id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
