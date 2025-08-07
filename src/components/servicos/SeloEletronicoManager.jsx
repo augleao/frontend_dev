@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import config from '../../config';
 
+// pedidoId deve ser o id numérico da execução (form.execucao.id)
 export default function SeloEletronicoManager({ pedidoId, onSelosChange }) {
   const [selos, setSelos] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -36,7 +37,13 @@ export default function SeloEletronicoManager({ pedidoId, onSelosChange }) {
     try {
       const formData = new FormData();
       formData.append('imagem', file);
-      formData.append('execucao_servico_id', pedidoId);
+      // Garante que execucao_servico_id é o id numérico da execução
+      if (!pedidoId || isNaN(Number(pedidoId))) {
+        setError('ID da execução inválido para upload de selo.');
+        setUploading(false);
+        return;
+      }
+      formData.append('execucao_servico_id', Number(pedidoId));
       // LOG: Mostra todos os valores do FormData
       for (let pair of formData.entries()) {
         if (pair[0] === 'imagem') {
