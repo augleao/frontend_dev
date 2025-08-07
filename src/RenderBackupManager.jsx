@@ -1,3 +1,37 @@
+  // Realizar backup lógico (export) via API da Render
+  const realizarBackupAgora = async (postgresId) => {
+    if (!window.confirm('Deseja realmente realizar um backup lógico (export) agora?')) return;
+    setBackupMsg('Iniciando backup lógico...');
+    try {
+      // Assegure que as variáveis estejam definidas no ambiente
+      const renderToken = process.env.REACT_APP_RENDER_API_TOKEN;
+      if (!renderToken) {
+        setBackupMsg('Token da API Render não configurado (REACT_APP_RENDER_API_TOKEN)');
+        return;
+      }
+      if (!postgresId) {
+        setBackupMsg('ID do Postgres não informado.');
+        return;
+      }
+      const res = await fetch(`https://api.render.com/v1/postgres/${postgresId}/export`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${renderToken}`,
+          'Accept': 'application/json'
+        }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setBackupMsg('Erro ao iniciar backup lógico: ' + (err.error || res.status));
+        return;
+      }
+      setBackupMsg('Backup lógico solicitado com sucesso! Aguarde alguns minutos e atualize a lista de exports.');
+      // Opcional: atualizar lista de exports após um tempo
+      setTimeout(() => fetchExports(postgresId, localStorage.getItem('token')), 5000);
+    } catch (err) {
+      setBackupMsg('Erro ao solicitar backup lógico: ' + (err.message || err));
+    }
+  };
 import React, { useEffect, useState } from 'react';
 import config from './config';
 
@@ -244,6 +278,14 @@ export default function RenderBackupManager() {
                         disabled={backupLoading || recoveryLoading || !recoveryInfo[service.id]?.available}
                       >
                         Disparar Recovery Manual
+                      </button>
+                      <button
+                        onClick={() => realizarBackupAgora(service.id)}
+                        style={{ background: '#1976d2', color: '#fff', fontSize: 12, padding: '6px 12px', border: 'none', borderRadius: 8, fontWeight: 'bold' }}
+                        disabled={backupLoading || recoveryLoading}
+                        title="Solicitar backup lógico (export) agora via API da Render"
+                      >
+                        Realizar Backup Agora
                       </button>
                     </div>
                   </td>
