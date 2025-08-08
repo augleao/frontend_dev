@@ -10,10 +10,34 @@ export default function RenderBackupManager() {
   const [recoveryInfo, setRecoveryInfo] = useState({});
   const [recoveryLoading, setRecoveryLoading] = useState(false);
   const [exports, setExports] = useState([]);
+  // Estado para backup automático
+  const [autoBackupEnabled, setAutoBackupEnabled] = useState(false);
+  const [autoBackupTime, setAutoBackupTime] = useState('02:00'); // padrão 2h da manhã
+
+  // Efeito para agendamento do backup automático
+  useEffect(() => {
+    if (!autoBackupEnabled || !autoBackupTime || backups.length === 0) return;
+
+    let timerId;
+    function scheduleNextBackup() {
+      const now = new Date();
+      const [hh, mm] = autoBackupTime.split(':').map(Number);
+      const next = new Date(now);
+      next.setHours(hh, mm, 0, 0);
+      if (next <= now) next.setDate(next.getDate() + 1); // se já passou hoje, agenda para amanhã
+      const ms = next - now;
+      timerId = setTimeout(() => {
+        realizarBackupAgora(backups[0].id, false); // sem confirmação
+        scheduleNextBackup(); // agenda o próximo
+      }, ms);
+    }
+    scheduleNextBackup();
+    return () => clearTimeout(timerId);
+  }, [autoBackupEnabled, autoBackupTime, backups]);
 
   // Realizar backup lógico (export) via API da Render
-  const realizarBackupAgora = async (postgresId) => {
-    if (!window.confirm('Deseja realmente realizar um backup lógico (export) agora?')) return;
+  const realizarBackupAgora = async (postgresId, confirmar = true) => {
+    if (confirmar && !window.confirm('Deseja realmente realizar um backup lógico (export) agora?')) return;
     setBackupMsg('Iniciando backup lógico...');
     try {
       const token = localStorage.getItem('token');
@@ -213,15 +237,48 @@ export default function RenderBackupManager() {
   return (
     <div style={{ maxWidth: 900, margin: '40px auto', padding: 20, border: '1px solid #ddd', borderRadius: 8 }}>
       <h2 style={{ marginBottom: 24 }}>🗄️ Gerenciamento de Backups (PostgreSQL - Render)</h2>
+
       <button
         onClick={() => {
-          if (backups.length > 0) realizarBackupAgora(backups[0].id);
+          if (backups.length > 0) realizarBackupAgora(backups[0].id, true);
         }}
-        style={{ marginBottom: 16, padding: '8px 18px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 'bold', fontSize: 15 }}
+        style={{ marginBottom: 8, padding: '8px 18px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 'bold', fontSize: 15 }}
         disabled={backupLoading}
       >
         {backupLoading ? 'Processando...' : 'Realizar Backup Agora'}
       </button>
+
+      {/* Elemento de agendamento de backup automático diário */}
+      <div style={{ marginBottom: 18, padding: 12, border: '1px solid #d1ecf1', borderRadius: 8, background: '#f8fafd', maxWidth: 420 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <label style={{ fontWeight: 600, color: '#1976d2' }}>
+            <input
+              type="checkbox"
+              checked={autoBackupEnabled}
+              onChange={e => setAutoBackupEnabled(e.target.checked)}
+              style={{ marginRight: 8 }}
+            />
+            Backup automático diário
+          </label>
+          {autoBackupEnabled && (
+            <>
+              <span style={{ fontSize: 13, color: '#333' }}>Horário:</span>
+              <input
+                type="time"
+                value={autoBackupTime}
+                onChange={e => setAutoBackupTime(e.target.value)}
+                style={{ fontSize: 14, padding: '2px 8px', borderRadius: 4, border: '1px solid #b2bec3' }}
+              />
+            </>
+          )}
+        </div>
+        {autoBackupEnabled && (
+          <div style={{ fontSize: 12, color: '#1976d2', marginTop: 6 }}>
+            O backup será realizado automaticamente todos os dias no horário escolhido.
+          </div>
+        )}
+      </div>
+
 
       {/* Botão de recovery manual está na tabela abaixo */}
       {backupMsg && (
