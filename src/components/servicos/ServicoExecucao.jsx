@@ -194,7 +194,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         </div>
       </div>
       {/* Botão Salvar/Alterar Execução */}
-      <div style={{ margin: '6px 0' }}>
+      <div style={{ margin: '3px 0' }}>
         <button
           type="button"
           onClick={salvarOuAlterarExecucao}
@@ -224,8 +224,8 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
           <SeloEletronicoManager protocolo={protocolo} onSelosChange={setSelos} />
           {/* Tabela de selos utilizados neste pedido */}
           {selos.length > 0 && (
-            <div style={{ marginTop: 12 }}>
-              <h4 style={{ color: '#6c3483', marginBottom: 4 }}>Selos Utilizados neste Pedido</h4>
+            <div style={{ marginTop: 6 }}>
+              <h4 style={{ color: '#6c3483', marginBottom: 2 }}>Selos Utilizados neste Pedido</h4>
               <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8 }}>
                 <thead>
                   <tr style={{ background: '#ede1f7' }}>
