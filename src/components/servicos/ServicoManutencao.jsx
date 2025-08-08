@@ -522,6 +522,10 @@ export default function ServicoManutencao() {
             const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01');
             const temConferenciaConferido = historicoStatus.some(h => h.status && h.status.toLowerCase() === 'conferido');
             const habilitaPagamento = protocoloExiste && temAtoTributario01 && temConferenciaConferido;
+            console.log('[DEBUG PAGAMENTO] protocoloExiste:', protocoloExiste, '| temAtoTributario01:', temAtoTributario01, '| temConferenciaConferido:', temConferenciaConferido, '| habilitaPagamento:', habilitaPagamento);
+            console.log('[DEBUG PAGAMENTO] form.protocolo:', form.protocolo);
+            console.log('[DEBUG PAGAMENTO] atosPedido:', atosPedido);
+            console.log('[DEBUG PAGAMENTO] historicoStatus:', historicoStatus);
             return (
               <div style={!habilitaPagamento ? {
                 pointerEvents: 'none',
