@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import config from './config';
+import { getBackupAgendado, saveBackupAgendado } from './backupAgendadoService';
 
 export default function RenderBackupManager() {
   const [backups, setBackups] = useState([]);
@@ -13,7 +14,9 @@ export default function RenderBackupManager() {
   // Estado para backup automático
   const [autoBackupEnabled, setAutoBackupEnabled] = useState(false);
   const [autoBackupTime, setAutoBackupTime] = useState('02:00'); // padrão 2h da manhã
+  const [autoBackupLoading, setAutoBackupLoading] = useState(false);
 
+  // Efeito para agendamento do backup automático
   // Efeito para agendamento do backup automático
   useEffect(() => {
     if (!autoBackupEnabled || !autoBackupTime || backups.length === 0) return;
@@ -34,6 +37,22 @@ export default function RenderBackupManager() {
     scheduleNextBackup();
     return () => clearTimeout(timerId);
   }, [autoBackupEnabled, autoBackupTime, backups]);
+
+  // Buscar configuração de agendamento ao carregar
+  useEffect(() => {
+    if (backups.length === 0) return;
+    const postgresId = backups[0].id;
+    setAutoBackupLoading(true);
+    getBackupAgendado(postgresId)
+      .then(cfg => {
+        if (cfg && typeof cfg.ativo === 'boolean' && typeof cfg.horario === 'string') {
+          setAutoBackupEnabled(cfg.ativo);
+          setAutoBackupTime(cfg.horario);
+        }
+      })
+      .catch(() => {/* ignora erro, usa padrão */})
+      .finally(() => setAutoBackupLoading(false));
+  }, [backups]);
 
   // Realizar backup lógico (export) via API da Render
   const realizarBackupAgora = async (postgresId, confirmar = true) => {
@@ -255,7 +274,21 @@ export default function RenderBackupManager() {
             <input
               type="checkbox"
               checked={autoBackupEnabled}
-              onChange={e => setAutoBackupEnabled(e.target.checked)}
+              disabled={autoBackupLoading || backups.length === 0}
+              onChange={async e => {
+                const checked = e.target.checked;
+                setAutoBackupEnabled(checked);
+                if (backups.length > 0) {
+                  setAutoBackupLoading(true);
+                  try {
+                    await saveBackupAgendado(backups[0].id, autoBackupTime, checked);
+                  } catch {
+                    setBackupMsg('Erro ao salvar configuração de backup automático');
+                  } finally {
+                    setAutoBackupLoading(false);
+                  }
+                }
+              }}
               style={{ marginRight: 8 }}
             />
             Backup automático diário
@@ -266,7 +299,21 @@ export default function RenderBackupManager() {
               <input
                 type="time"
                 value={autoBackupTime}
-                onChange={e => setAutoBackupTime(e.target.value)}
+                disabled={autoBackupLoading || backups.length === 0}
+                onChange={async e => {
+                  const value = e.target.value;
+                  setAutoBackupTime(value);
+                  if (backups.length > 0) {
+                    setAutoBackupLoading(true);
+                    try {
+                      await saveBackupAgendado(backups[0].id, value, autoBackupEnabled);
+                    } catch {
+                      setBackupMsg('Erro ao salvar configuração de backup automático');
+                    } finally {
+                      setAutoBackupLoading(false);
+                    }
+                  }
+                }}
                 style={{ fontSize: 14, padding: '2px 8px', borderRadius: 4, border: '1px solid #b2bec3' }}
               />
             </>
@@ -276,6 +323,9 @@ export default function RenderBackupManager() {
           <div style={{ fontSize: 12, color: '#1976d2', marginTop: 6 }}>
             O backup será realizado automaticamente todos os dias no horário escolhido.
           </div>
+        )}
+        {autoBackupLoading && (
+          <div style={{ fontSize: 12, color: '#888', marginTop: 6 }}>Salvando configuração...</div>
         )}
       </div>
 
