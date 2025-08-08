@@ -122,6 +122,62 @@ export default function ServicoConferencia({ protocolo, atosPedido = [] }) {
     setSalvando(false);
   }
 
+  // Função para apagar conferência e verificar se deve voltar status para "Aguardando Conferência"
+  async function handleApagarConferencia(conferencia) {
+    if (!window.confirm('Deseja realmente apagar esta conferência?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`${config.apiURL}/conferencias/${conferencia.id}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      
+      // Recarrega a lista de conferências
+      await fetchConferencias();
+      
+      // Verifica se não há mais conferências e volta o status para "Aguardando Conferência"
+      const conferenciaAtualizada = await fetch(
+        `${config.apiURL}/conferencias?protocolo=${encodeURIComponent(protocolo)}`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }
+      );
+      
+      if (conferenciaAtualizada.ok) {
+        const dataConferencia = await conferenciaAtualizada.json();
+        const conferenciasRestantes = dataConferencia.conferencias || [];
+        
+        console.log(`[CONFERENCIA DEBUG] Conferências restantes após exclusão: ${conferenciasRestantes.length}`);
+        
+        // Se não há mais conferências, volta o status para "Aguardando Conferência"
+        if (conferenciasRestantes.length === 0) {
+          try {
+            await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}/status`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+              },
+              body: JSON.stringify({ 
+                status: 'Aguardando Conferência', 
+                usuario: JSON.parse(localStorage.getItem('usuario') || '{}').nome || 'Sistema'
+              })
+            });
+            console.log(`[CONFERENCIA] Status do pedido ${protocolo} voltou para: Aguardando Conferência`);
+          } catch (e) {
+            console.warn('[CONFERENCIA] Erro ao atualizar status do pedido após exclusão:', e);
+          }
+        }
+      }
+    } catch (err) {
+      alert('Erro ao apagar conferência.');
+      console.error('[CONFERENCIA] Erro ao apagar conferência:', err);
+    }
+  }
+
   return (
     <div style={{
       border: '3px solid #f39c12',
@@ -200,20 +256,7 @@ export default function ServicoConferencia({ protocolo, atosPedido = [] }) {
                   <td style={{ padding: 6 }}>
                     <button
                       type="button"
-                      onClick={async () => {
-                        if (window.confirm('Deseja realmente apagar esta conferência?')) {
-                          try {
-                            const token = localStorage.getItem('token');
-                            await fetch(`${config.apiURL}/conferencias/${c.id}`, {
-                              method: 'DELETE',
-                              headers: token ? { Authorization: `Bearer ${token}` } : {}
-                            });
-                            fetchConferencias();
-                          } catch (err) {
-                            alert('Erro ao apagar conferência.');
-                          }
-                        }
-                      }}
+                      onClick={() => handleApagarConferencia(c)}
                       style={{ background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 'bold', fontSize: 13, cursor: 'pointer' }}
                     >
                       Apagar
