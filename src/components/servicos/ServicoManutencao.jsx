@@ -504,22 +504,70 @@ export default function ServicoManutencao() {
             </div>
           </div>
 
-          {/* Novo componente de conferência */}
-          <ServicoConferencia protocolo={form.protocolo} atosPedido={atosPedido} />
-          
-          {/* Exibe ServicoPagamento apenas se houver ato com codigoTributario '01' */}
+          {/* Novo componente de conferência - só habilita se protocolo existir */}
+          <div style={!form.protocolo ? {
+            pointerEvents: 'none',
+            opacity: 0.6,
+            filter: 'grayscale(0.7) contrast(0.7)',
+            background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
+            borderRadius: 12,
+            marginBottom: 12
+          } : {}}>
+            <ServicoConferencia protocolo={form.protocolo} atosPedido={atosPedido} disabled={!form.protocolo} />
+          </div>
+
+          {/* Pagamento só habilita se protocolo existir e houver ato tributário '01' */}
           {atosPedido.some(ato => ato.codigoTributario === '01') && (
-            <ServicoPagamento 
-              form={form} 
-              onChange={handlePagamentoChange} 
-              valorTotal={calcularTotalAtosPagos()}
-              valorAdiantadoDetalhes={form.valorAdiantadoDetalhes || []}
-            />
+            <div style={!form.protocolo ? {
+              pointerEvents: 'none',
+              opacity: 0.6,
+              filter: 'grayscale(0.7) contrast(0.7)',
+              background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
+              borderRadius: 12,
+              marginBottom: 12
+            } : {}}>
+              <ServicoPagamento 
+                form={form} 
+                onChange={handlePagamentoChange} 
+                valorTotal={calcularTotalAtosPagos()}
+                valorAdiantadoDetalhes={form.valorAdiantadoDetalhes || []}
+                disabled={!form.protocolo}
+              />
+            </div>
           )}
-          
-          {/* Sempre renderiza ServicoExecucao, passando o protocolo como pedidoId */}
-          <ServicoExecucao form={form} onChange={handleExecucaoChange} pedidoId={form.protocolo} />
-          <ServicoEntrega form={form} onChange={handleEntregaChange} />
+
+          {/* Execução só habilita se pagamento realizado (status 'pago' ou 'parcial') */}
+          <div style={!(form.pagamento && (form.pagamento.status === 'pago' || form.pagamento.status === 'parcial')) ? {
+            pointerEvents: 'none',
+            opacity: 0.6,
+            filter: 'grayscale(0.7) contrast(0.7)',
+            background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
+            borderRadius: 12,
+            marginBottom: 12
+          } : {}}>
+            <ServicoExecucao 
+              form={form} 
+              onChange={handleExecucaoChange} 
+              pedidoId={form.protocolo} 
+              disabled={!(form.pagamento && (form.pagamento.status === 'pago' || form.pagamento.status === 'parcial'))}
+            />
+          </div>
+
+          {/* Entrega só habilita se execução salva (status diferente de 'em_andamento') */}
+          <div style={!(form.execucao && form.execucao.status && form.execucao.status !== 'em_andamento') ? {
+            pointerEvents: 'none',
+            opacity: 0.6,
+            filter: 'grayscale(0.7) contrast(0.7)',
+            background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
+            borderRadius: 12,
+            marginBottom: 12
+          } : {}}>
+            <ServicoEntrega 
+              form={form} 
+              onChange={handleEntregaChange} 
+              disabled={!(form.execucao && form.execucao.status && form.execucao.status !== 'em_andamento')}
+            />
+          </div>
           {/* Só mostra o botão de excluir se há um pedido carregado */}
           {form.protocolo && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
