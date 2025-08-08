@@ -213,8 +213,14 @@ export default function RenderBackupManager() {
   return (
     <div style={{ maxWidth: 900, margin: '40px auto', padding: 20, border: '1px solid #ddd', borderRadius: 8 }}>
       <h2 style={{ marginBottom: 24 }}>🗄️ Gerenciamento de Backups (PostgreSQL - Render)</h2>
-      <button onClick={fetchBackups} style={{ marginBottom: 16, padding: '8px 18px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 'bold', fontSize: 15 }} disabled={backupLoading}>
-        {backupLoading ? 'Carregando...' : 'Atualizar'}
+      <button
+        onClick={() => {
+          if (backups.length > 0) realizarBackupAgora(backups[0].id);
+        }}
+        style={{ marginBottom: 16, padding: '8px 18px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 'bold', fontSize: 15 }}
+        disabled={backupLoading}
+      >
+        {backupLoading ? 'Processando...' : 'Realizar Backup Agora'}
       </button>
 
       {/* Botão de recovery manual está na tabela abaixo */}
