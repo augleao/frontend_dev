@@ -517,24 +517,22 @@ export default function ServicoManutencao() {
           </div>
 
           {/* Pagamento só habilita se protocolo existir e houver ato tributário '01' */}
-          {atosPedido.some(ato => ato.codigoTributario === '01') && (
-            <div style={!form.protocolo ? {
-              pointerEvents: 'none',
-              opacity: 0.6,
-              filter: 'grayscale(0.7) contrast(0.7)',
-              background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
-              borderRadius: 12,
-              marginBottom: 12
-            } : {}}>
-              <ServicoPagamento 
-                form={form} 
-                onChange={handlePagamentoChange} 
-                valorTotal={calcularTotalAtosPagos()}
-                valorAdiantadoDetalhes={form.valorAdiantadoDetalhes || []}
-                disabled={!form.protocolo}
-              />
-            </div>
-          )}
+          <div style={!(form.protocolo && atosPedido.some(ato => ato.codigoTributario === '01')) ? {
+            pointerEvents: 'none',
+            opacity: 0.6,
+            filter: 'grayscale(0.7) contrast(0.7)',
+            background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
+            borderRadius: 12,
+            marginBottom: 12
+          } : {}}>
+            <ServicoPagamento 
+              form={form} 
+              onChange={handlePagamentoChange} 
+              valorTotal={calcularTotalAtosPagos()}
+              valorAdiantadoDetalhes={form.valorAdiantadoDetalhes || []}
+              disabled={!(form.protocolo && atosPedido.some(ato => ato.codigoTributario === '01'))}
+            />
+          </div>
 
           {/* Execução só habilita se pagamento realizado (status 'pago' ou 'parcial') */}
           <div style={!(form.pagamento && (form.pagamento.status === 'pago' || form.pagamento.status === 'parcial')) ? {
