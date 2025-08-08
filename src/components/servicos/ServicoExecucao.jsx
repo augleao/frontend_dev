@@ -134,26 +134,15 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         marginBottom: 12,
         letterSpacing: 0.5
       }}>Execução do Serviço</h3>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
         <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 140, margin: 0 }}>Responsável:</label>
         <span
           style={{
-            width: 220,
-            display: 'inline-block',
-            border: '1.5px solid #aed6f1',
-            borderRadius: 6,
-            padding: '4px 8px',
-            fontSize: 13,
-            height: 32,
-            boxSizing: 'border-box',
-            background: '#fff',
             color: '#154360',
-            fontWeight: 500,
-            lineHeight: '24px',
-            verticalAlign: 'middle',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis'
+            fontWeight: 600,
+            fontSize: 14,
+            padding: '4px 0',
+            background: 'transparent'
           }}
         >
           {(() => {
@@ -179,9 +168,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
             fontWeight: 500
           }}
         />
-      </div>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
-        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 100, margin: 0, marginTop: 4 }}>Observações:</label>
+        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 100, margin: 0, marginLeft: 16 }}>Observações:</label>
         <textarea
           value={form.execucao.observacoes}
           onChange={e => onChange('observacoes', e.target.value)}
