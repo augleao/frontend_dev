@@ -50,12 +50,40 @@ export default function ServicoConferencia({ protocolo }) {
     setErro(null);
     try {
       const token = localStorage.getItem('token');
+      
+      // Primeiro, verifica se o pedido possui atos pagos (código tributário 01)
+      let statusProximaEtapa = 'Aguardando Execução'; // Padrão para pedidos sem atos pagos
+      
+      try {
+        const resAtos = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}/atos`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        
+        if (resAtos.ok) {
+          const dataAtos = await resAtos.json();
+          const atos = dataAtos.atos || [];
+          
+          // Verifica se existe algum ato com código tributário '01' (atos pagos)
+          const possuiAtosPagos = atos.some(ato => ato.codigoTributario === '01');
+          
+          if (possuiAtosPagos) {
+            statusProximaEtapa = 'Aguardando Pagamento';
+          }
+          
+          console.log(`[CONFERENCIA] Protocolo ${protocolo}: ${atos.length} atos encontrados, possui atos pagos: ${possuiAtosPagos}, próximo status: ${statusProximaEtapa}`);
+        }
+      } catch (errAtos) {
+        console.warn('[CONFERENCIA] Erro ao buscar atos do pedido, usando status padrão:', errAtos);
+        // Mantém o status padrão em caso de erro
+      }
+
       const body = JSON.stringify({
         protocolo,
         usuario,
         status,
         observacao
       });
+      
       // Salva a conferência normalmente
       const res = await fetch(`${config.apiURL}/conferencias`, {
         method: 'POST',
@@ -65,8 +93,9 @@ export default function ServicoConferencia({ protocolo }) {
         },
         body
       });
+      
       if (res.ok) {
-        // Atualiza o status do pedido na tabela pedido_status
+        // Atualiza o status do pedido na tabela pedido_status com o status determinado pela lógica de atos
         try {
           await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}/status`, {
             method: 'POST',
@@ -74,13 +103,16 @@ export default function ServicoConferencia({ protocolo }) {
               'Content-Type': 'application/json',
               ...(token ? { Authorization: `Bearer ${token}` } : {})
             },
-            body: JSON.stringify({ status, usuario })
+            body: JSON.stringify({ status: statusProximaEtapa, usuario })
           });
+          console.log(`[CONFERENCIA] Status do pedido ${protocolo} atualizado para: ${statusProximaEtapa}`);
         } catch (e) {
+          console.warn('[CONFERENCIA] Erro ao atualizar status do pedido:', e);
           // Não bloqueia o fluxo se falhar, mas pode exibir um aviso se desejar
         }
+        
         setObservacao('');
-        setStatus('Conferido');
+        setStatus('Conferido'); // Volta para o padrão após salvar
         fetchConferencias();
       } else {
         setErro('Erro ao salvar conferência.');
