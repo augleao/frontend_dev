@@ -40,11 +40,6 @@ function NavBar() {
         borderBottom: '1px solid #ddd',
       }}
     >
-      {user && user.cargo === 'Registrador' && (
-        <Link to="/admin" style={{ ...buttonStyle, background: '#1976d2' }}>
-          Contas
-        </Link>
-      )}
       {user ? (
         <>
           <span style={{ 
@@ -55,6 +50,11 @@ function NavBar() {
           }}>
             👤 {user.nome || user.email}
           </span>
+          {user.cargo === 'Registrador' && (
+            <Link to="/admin" style={{ ...buttonStyle, background: '#1976d2' }}>
+              Contas
+            </Link>
+          )}
           <button style={buttonStyle} onClick={handleVoltar}>
             Voltar
           </button>
