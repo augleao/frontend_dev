@@ -1,6 +1,6 @@
 // Serviço para persistir e buscar configuração de backup agendado
 // Ajuste a URL conforme seu backend
-import config from '../config';
+import config from './config';
 
 export async function getBackupAgendado(postgresId) {
   const token = localStorage.getItem('token');
