@@ -18,8 +18,8 @@ export default function ServicoEntrega({ form, onChange }) {
       >
         {/* Header */}
         <div style={{
-          padding: '20px 24px 12px 24px',
-          marginBottom: '16px',
+          padding: '16px 24px 8px 24px',
+          marginBottom: '8px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -29,19 +29,41 @@ export default function ServicoEntrega({ form, onChange }) {
           </h2>
         </div>
 
-        {/* Data e Hora da Entrega */}
+        {/* Responsável, Data e Hora da Entrega */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          gridTemplateColumns: '1fr 1fr 1fr',
           gap: '16px',
-          marginBottom: '16px',
+          marginBottom: '8px',
         }}>
-          {/* Data da Entrega */}
+          {/* Responsável */}
           <div style={{
-            padding: '16px',
+            padding: '12px',
             display: 'flex',
             flexDirection: 'column',
-            gap: 6
+            gap: 4
+          }}>
+            <label style={{ color: '#1e8449', fontWeight: 600 }}>Responsável:</label>
+            <span style={{
+              color: '#1e8449',
+              fontWeight: 600,
+              fontSize: 16,
+              padding: '4px 0',
+              background: 'transparent'
+            }}>
+              {(() => {
+                const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+                return usuario.nome || usuario.email || 'Usuário';
+              })()}
+            </span>
+          </div>
+          
+          {/* Data da Entrega */}
+          <div style={{
+            padding: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4
           }}>
             <label style={{ color: '#1e8449', fontWeight: 600 }}>Data da entrega:</label>
             <input 
@@ -61,10 +83,10 @@ export default function ServicoEntrega({ form, onChange }) {
           
           {/* Hora da Entrega */}
           <div style={{
-            padding: '16px',
+            padding: '12px',
             display: 'flex',
             flexDirection: 'column',
-            gap: 6
+            gap: 4
           }}>
             <label style={{ color: '#1e8449', fontWeight: 600 }}>Hora da entrega:</label>
             <input 
@@ -88,16 +110,16 @@ export default function ServicoEntrega({ form, onChange }) {
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: '16px',
-          marginBottom: '16px',
+          marginBottom: '8px',
         }}>
-          {/* Retirado Por */}
+          {/* Retirado Via */}
           <div style={{
-            padding: '16px',
+            padding: '12px',
             display: 'flex',
             flexDirection: 'column',
-            gap: 6
+            gap: 4
           }}>
-            <label style={{ color: '#1e8449', fontWeight: 600 }}>Retirado por:</label>
+            <label style={{ color: '#1e8449', fontWeight: 600 }}>Retirado via:</label>
             <input 
               type="text" 
               value={form.entrega.retiradoPor} 
@@ -113,58 +135,6 @@ export default function ServicoEntrega({ form, onChange }) {
               placeholder="Nome da pessoa que retirou"
             />
           </div>
-          
-          {/* Documento de Retirada */}
-          <div style={{
-            padding: '16px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 6
-          }}>
-            <label style={{ color: '#1e8449', fontWeight: 600 }}>Documento de retirada:</label>
-            <input 
-              type="text" 
-              value={form.entrega.documentoRetirada} 
-              onChange={e => onChange('documentoRetirada', e.target.value)} 
-              style={{
-                width: '100%',
-                border: '1.5px solid #a9dfbf',
-                borderRadius: 6,
-                padding: '8px 12px',
-                fontSize: 16,
-                boxSizing: 'border-box',
-              }}
-              placeholder="CPF, RG ou outro documento"
-            />
-          </div>
-        </div>
-
-        {/* Confirmação Digital */}
-        <div style={{
-          padding: '16px',
-          marginBottom: '16px',
-        }}>
-          <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            color: '#1e8449',
-            fontWeight: 600,
-            fontSize: 16,
-            cursor: 'pointer'
-          }}>
-            <input 
-              type="checkbox" 
-              checked={form.entrega.assinaturaDigital} 
-              onChange={e => onChange('assinaturaDigital', e.target.checked)}
-              style={{
-                width: 18,
-                height: 18,
-                accentColor: '#27ae60'
-              }}
-            />
-            Confirmação de entrega via assinatura digital
-          </label>
         </div>
       </div>
     </div>
