@@ -469,7 +469,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         borderBottom: '2px solid #e53e3e',
         paddingBottom: 8
       }}>💳 Informações de Pagamento</h3>
-      
       {/* Valor a ser pago */}
       <div style={{
         marginBottom: 20,
@@ -680,7 +679,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                         onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
                         onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
                       >
-                        📄 Gerar Recibo de Excesso
+                        📄 Gerar Recibo do Troco
                       </button>
                     )}
                   </div>
@@ -726,32 +725,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           })()}
         </div>
       )}
-      
-      {/* Status atual do pedido */}
-      <div style={{
-        marginBottom: 20,
-        padding: 16,
-        background: statusPedido === 'Pago' ? '#e8f5e8' : '#fff5f5',
-        border: `2px solid ${statusPedido === 'Pago' ? '#38a169' : '#feb2b2'}`,
-        borderRadius: 12,
-        textAlign: 'center'
-      }}>
-        <div style={{
-          fontSize: 14,
-          color: statusPedido === 'Pago' ? '#2d5016' : '#742a2a',
-          marginBottom: 8,
-          fontWeight: '600'
-        }}>
-          Status atual do pedido:
-        </div>
-        <div style={{
-          fontSize: 18,
-          fontWeight: 'bold',
-          color: statusPedido === 'Pago' ? '#38a169' : '#e53e3e'
-        }}>
-          {statusPedido === 'Pago' ? '✅ PAGO' : `📋 ${statusPedido.toUpperCase()}`}
-        </div>
-      </div>
       
       {form.pagamento.status === 'pago' && (
         <div style={{ 
