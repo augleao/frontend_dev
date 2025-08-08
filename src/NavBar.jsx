@@ -52,7 +52,7 @@ function NavBar() {
           </span>
           {user.cargo === 'Registrador' && (
             <Link to="/admin" style={{ ...buttonStyle, background: '#1976d2' }}>
-              Contas
+              Administração
             </Link>
           )}
           <button style={buttonStyle} onClick={handleVoltar}>

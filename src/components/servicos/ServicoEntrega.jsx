@@ -2,29 +2,171 @@ import React from 'react';
 
 export default function ServicoEntrega({ form, onChange }) {
   return (
-    <div
-      style={{
-        border: '2px solid #3498db',
-        borderRadius: 12,
-        padding: 24,
-        background: '#fafcff',
-        boxShadow: '0 2px 8px rgba(52,152,219,0.08)',
-        marginBottom: 24
-      }}
-    >
-      <h3>Entrega do Serviço</h3>
-      <label>Data da entrega:</label>
-      <input type="date" value={form.entrega.data} onChange={e => onChange('data', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
-      <label>Hora da entrega:</label>
-      <input type="time" value={form.entrega.hora} onChange={e => onChange('hora', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
-      <label>Retirado por:</label>
-      <input type="text" value={form.entrega.retiradoPor} onChange={e => onChange('retiradoPor', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
-      <label>Documento de retirada:</label>
-      <input type="text" value={form.entrega.documentoRetirada} onChange={e => onChange('documentoRetirada', e.target.value)} style={{ width: '100%', marginBottom: 8 }} />
-      <label>
-        <input type="checkbox" checked={form.entrega.assinaturaDigital} onChange={e => onChange('assinaturaDigital', e.target.checked)} />
-        Confirmação de entrega via assinatura digital
-      </label>
+    <div style={{ background: '#e8f5e8', padding: '0', borderRadius: '24px', width: '100%', boxSizing: 'border-box' }}>
+      <div
+        style={{
+          width: '100%',
+          margin: '0',
+          padding: 0,
+          borderRadius: '24px',
+          border: '3px solid #27ae60',
+          boxShadow: '0 6px 32px rgba(39,174,96,0.10)',
+          background: '#e8f5e8',
+          overflow: 'hidden',
+          boxSizing: 'border-box'
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '20px 24px 12px 24px',
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 28 }}>
+            Entrega:
+          </h2>
+        </div>
+
+        {/* Data e Hora da Entrega */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '16px',
+          marginBottom: '16px',
+        }}>
+          {/* Data da Entrega */}
+          <div style={{
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6
+          }}>
+            <label style={{ color: '#1e8449', fontWeight: 600 }}>Data da entrega:</label>
+            <input 
+              type="date" 
+              value={form.entrega.data} 
+              onChange={e => onChange('data', e.target.value)} 
+              style={{
+                width: '100%',
+                border: '1.5px solid #a9dfbf',
+                borderRadius: 6,
+                padding: '8px 12px',
+                fontSize: 16,
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          
+          {/* Hora da Entrega */}
+          <div style={{
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6
+          }}>
+            <label style={{ color: '#1e8449', fontWeight: 600 }}>Hora da entrega:</label>
+            <input 
+              type="time" 
+              value={form.entrega.hora} 
+              onChange={e => onChange('hora', e.target.value)} 
+              style={{
+                width: '100%',
+                border: '1.5px solid #a9dfbf',
+                borderRadius: 6,
+                padding: '8px 12px',
+                fontSize: 16,
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Dados de Retirada */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '16px',
+          marginBottom: '16px',
+        }}>
+          {/* Retirado Por */}
+          <div style={{
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6
+          }}>
+            <label style={{ color: '#1e8449', fontWeight: 600 }}>Retirado por:</label>
+            <input 
+              type="text" 
+              value={form.entrega.retiradoPor} 
+              onChange={e => onChange('retiradoPor', e.target.value)} 
+              style={{
+                width: '100%',
+                border: '1.5px solid #a9dfbf',
+                borderRadius: 6,
+                padding: '8px 12px',
+                fontSize: 16,
+                boxSizing: 'border-box',
+              }}
+              placeholder="Nome da pessoa que retirou"
+            />
+          </div>
+          
+          {/* Documento de Retirada */}
+          <div style={{
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6
+          }}>
+            <label style={{ color: '#1e8449', fontWeight: 600 }}>Documento de retirada:</label>
+            <input 
+              type="text" 
+              value={form.entrega.documentoRetirada} 
+              onChange={e => onChange('documentoRetirada', e.target.value)} 
+              style={{
+                width: '100%',
+                border: '1.5px solid #a9dfbf',
+                borderRadius: 6,
+                padding: '8px 12px',
+                fontSize: 16,
+                boxSizing: 'border-box',
+              }}
+              placeholder="CPF, RG ou outro documento"
+            />
+          </div>
+        </div>
+
+        {/* Confirmação Digital */}
+        <div style={{
+          padding: '16px',
+          marginBottom: '16px',
+        }}>
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            color: '#1e8449',
+            fontWeight: 600,
+            fontSize: 16,
+            cursor: 'pointer'
+          }}>
+            <input 
+              type="checkbox" 
+              checked={form.entrega.assinaturaDigital} 
+              onChange={e => onChange('assinaturaDigital', e.target.checked)}
+              style={{
+                width: 18,
+                height: 18,
+                accentColor: '#27ae60'
+              }}
+            />
+            Confirmação de entrega via assinatura digital
+          </label>
+        </div>
+      </div>
     </div>
   );
 }
