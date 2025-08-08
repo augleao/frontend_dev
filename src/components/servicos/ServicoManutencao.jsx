@@ -571,20 +571,28 @@ export default function ServicoManutencao() {
           })()}
 
           {/* Entrega só habilita se execução salva (status diferente de 'em_andamento') */}
-          <div style={!(form.execucao && form.execucao.status && form.execucao.status !== 'em_andamento') ? {
-            pointerEvents: 'none',
-            opacity: 0.6,
-            filter: 'grayscale(0.7) contrast(0.7)',
-            background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
-            borderRadius: 12,
-            marginBottom: 12
-          } : {}}>
-            <ServicoEntrega 
-              form={form} 
-              onChange={handleEntregaChange} 
-              disabled={!(form.execucao && form.execucao.status && form.execucao.status !== 'em_andamento')}
-            />
-          </div>
+          {(() => {
+            const execucaoStatus = form.execucao && form.execucao.status;
+            const habilitaEntrega = execucaoStatus && execucaoStatus !== 'em_andamento';
+            console.log('[DEBUG ENTREGA] form.execucao:', form.execucao);
+            console.log('[DEBUG ENTREGA] execucaoStatus:', execucaoStatus, '| habilitaEntrega:', habilitaEntrega);
+            return (
+              <div style={!habilitaEntrega ? {
+                pointerEvents: 'none',
+                opacity: 0.6,
+                filter: 'grayscale(0.7) contrast(0.7)',
+                background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
+                borderRadius: 12,
+                marginBottom: 12
+              } : {}}>
+                <ServicoEntrega 
+                  form={form} 
+                  onChange={handleEntregaChange} 
+                  disabled={!habilitaEntrega}
+                />
+              </div>
+            );
+          })()}
           {/* Só mostra o botão de excluir se há um pedido carregado */}
           {form.protocolo && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
