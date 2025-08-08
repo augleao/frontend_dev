@@ -546,22 +546,29 @@ export default function ServicoManutencao() {
             );
           })()}
 
-          {/* Execução só habilita se pagamento realizado (status 'pago' ou 'parcial') */}
-          <div style={!(form.pagamento && (form.pagamento.status === 'pago' || form.pagamento.status === 'parcial')) ? {
-            pointerEvents: 'none',
-            opacity: 0.6,
-            filter: 'grayscale(0.7) contrast(0.7)',
-            background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
-            borderRadius: 12,
-            marginBottom: 12
-          } : {}}>
-            <ServicoExecucao 
-              form={form} 
-              onChange={handleExecucaoChange} 
-              pedidoId={form.protocolo} 
-              disabled={!(form.pagamento && (form.pagamento.status === 'pago' || form.pagamento.status === 'parcial'))}
-            />
-          </div>
+          {/* Execução só é bloqueada por pagamento se houver ato tributário '01' e o pagamento não estiver realizado */}
+          {(() => {
+            const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01' || ato.codigoTributario === 1 || ato.codigoTributario === '1');
+            const pagamentoOk = form.pagamento && (form.pagamento.status === 'pago' || form.pagamento.status === 'parcial');
+            const habilitaExecucao = !temAtoTributario01 || pagamentoOk;
+            return (
+              <div style={!habilitaExecucao ? {
+                pointerEvents: 'none',
+                opacity: 0.6,
+                filter: 'grayscale(0.7) contrast(0.7)',
+                background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
+                borderRadius: 12,
+                marginBottom: 12
+              } : {}}>
+                <ServicoExecucao 
+                  form={form} 
+                  onChange={handleExecucaoChange} 
+                  pedidoId={form.protocolo} 
+                  disabled={!habilitaExecucao}
+                />
+              </div>
+            );
+          })()}
 
           {/* Entrega só habilita se execução salva (status diferente de 'em_andamento') */}
           <div style={!(form.execucao && form.execucao.status && form.execucao.status !== 'em_andamento') ? {
