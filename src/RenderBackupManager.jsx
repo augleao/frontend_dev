@@ -275,20 +275,7 @@ export default function RenderBackupManager() {
               type="checkbox"
               checked={autoBackupEnabled}
               disabled={autoBackupLoading || backups.length === 0}
-              onChange={async e => {
-                const checked = e.target.checked;
-                setAutoBackupEnabled(checked);
-                if (backups.length > 0) {
-                  setAutoBackupLoading(true);
-                  try {
-                    await saveBackupAgendado(backups[0].id, autoBackupTime, checked);
-                  } catch {
-                    setBackupMsg('Erro ao salvar configuração de backup automático');
-                  } finally {
-                    setAutoBackupLoading(false);
-                  }
-                }
-              }}
+              onChange={e => setAutoBackupEnabled(e.target.checked)}
               style={{ marginRight: 8 }}
             />
             Backup automático diário
@@ -300,25 +287,31 @@ export default function RenderBackupManager() {
                 type="time"
                 value={autoBackupTime}
                 disabled={autoBackupLoading || backups.length === 0}
-                onChange={async e => {
-                  const value = e.target.value;
-                  setAutoBackupTime(value);
-                  if (backups.length > 0) {
-                    setAutoBackupLoading(true);
-                    try {
-                      await saveBackupAgendado(backups[0].id, value, autoBackupEnabled);
-                    } catch {
-                      setBackupMsg('Erro ao salvar configuração de backup automático');
-                    } finally {
-                      setAutoBackupLoading(false);
-                    }
-                  }
-                }}
+                onChange={e => setAutoBackupTime(e.target.value)}
                 style={{ fontSize: 14, padding: '2px 8px', borderRadius: 4, border: '1px solid #b2bec3' }}
               />
             </>
           )}
         </div>
+        <button
+          style={{ marginTop: 10, padding: '6px 18px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 'bold', fontSize: 14, width: '100%' }}
+          disabled={autoBackupLoading || backups.length === 0}
+          onClick={async () => {
+            if (backups.length > 0) {
+              setAutoBackupLoading(true);
+              try {
+                await saveBackupAgendado(backups[0].id, autoBackupTime, autoBackupEnabled);
+                setBackupMsg('Configuração de backup automático salva com sucesso!');
+              } catch {
+                setBackupMsg('Erro ao salvar configuração de backup automático');
+              } finally {
+                setAutoBackupLoading(false);
+              }
+            }
+          }}
+        >
+          Salvar Configurações
+        </button>
         {autoBackupEnabled && (
           <div style={{ fontSize: 12, color: '#1976d2', marginTop: 6 }}>
             O backup será realizado automaticamente todos os dias no horário escolhido.
