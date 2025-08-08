@@ -505,7 +505,7 @@ export default function ServicoManutencao() {
           </div>
 
           {/* Novo componente de conferência */}
-          <ServicoConferencia protocolo={form.protocolo} />
+          <ServicoConferencia protocolo={form.protocolo} atosPedido={atosPedido} />
           
           {/* Exibe ServicoPagamento apenas se houver ato com codigoTributario '01' */}
           {atosPedido.some(ato => ato.codigoTributario === '01') && (

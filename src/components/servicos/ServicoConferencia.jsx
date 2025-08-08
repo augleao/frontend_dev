@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import config from '../../config';
 
-export default function ServicoConferencia({ protocolo }) {
+export default function ServicoConferencia({ protocolo, atosPedido = [] }) {
   const [usuario, setUsuario] = useState('');
   const [status, setStatus] = useState('Conferido');
   const [observacao, setObservacao] = useState('');
@@ -51,55 +51,30 @@ export default function ServicoConferencia({ protocolo }) {
     try {
       const token = localStorage.getItem('token');
       
-      // Primeiro, verifica se o pedido possui atos pagos (código tributário 01)
-      let statusProximaEtapa = 'Aguardando Execução'; // Padrão para pedidos sem atos pagos
+      // Verifica se o pedido possui atos pagos (código tributário 01) usando os atos já disponíveis
+      console.log(`[CONFERENCIA DEBUG] Verificando atos do protocolo: ${protocolo}`);
+      console.log(`[CONFERENCIA DEBUG] Total de atos disponíveis: ${atosPedido.length}`);
+      console.log(`[CONFERENCIA DEBUG] Detalhes dos atos:`, atosPedido.map(ato => ({
+        id: ato.id,
+        codigo: ato.codigo,
+        codigoTributario: ato.codigoTributario,
+        descricao: ato.descricao,
+        tipo: typeof ato.codigoTributario
+      })));
       
-      try {
-        console.log(`[CONFERENCIA DEBUG] Buscando atos do protocolo: ${protocolo}`);
-        const resAtos = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}/atos`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
-        
-        console.log(`[CONFERENCIA DEBUG] Status da resposta de atos: ${resAtos.status}`);
-        
-        if (resAtos.ok) {
-          const dataAtos = await resAtos.json();
-          const atos = dataAtos.atos || [];
-          
-          console.log(`[CONFERENCIA DEBUG] Dados recebidos:`, dataAtos);
-          console.log(`[CONFERENCIA DEBUG] Total de atos encontrados: ${atos.length}`);
-          console.log(`[CONFERENCIA DEBUG] Detalhes dos atos:`, atos.map(ato => ({
-            id: ato.id,
-            codigo: ato.codigo,
-            codigoTributario: ato.codigoTributario,
-            descricao: ato.descricao,
-            tipo: typeof ato.codigoTributario
-          })));
-          
-          // Verifica se existe algum ato com código tributário '01' (atos pagos)
-          const atosPagos = atos.filter(ato => {
-            const codigo = String(ato.codigoTributario).trim();
-            console.log(`[CONFERENCIA DEBUG] Verificando ato - codigoTributario: '${codigo}' (tipo: ${typeof ato.codigoTributario})`);
-            return codigo === '01';
-          });
-          
-          const possuiAtosPagos = atosPagos.length > 0;
-          
-          console.log(`[CONFERENCIA DEBUG] Atos com código '01':`, atosPagos);
-          console.log(`[CONFERENCIA DEBUG] Possui atos pagos: ${possuiAtosPagos}`);
-          
-          if (possuiAtosPagos) {
-            statusProximaEtapa = 'Aguardando Pagamento';
-          }
-          
-          console.log(`[CONFERENCIA DEBUG] Status definido: ${statusProximaEtapa}`);
-        } else {
-          console.warn(`[CONFERENCIA DEBUG] Erro na requisição de atos - Status: ${resAtos.status}`);
-        }
-      } catch (errAtos) {
-        console.warn('[CONFERENCIA] Erro ao buscar atos do pedido, usando status padrão:', errAtos);
-        // Mantém o status padrão em caso de erro
-      }
+      // Verifica se existe algum ato com código tributário '01' (atos pagos)
+      const atosPagos = atosPedido.filter(ato => {
+        const codigo = String(ato.codigoTributario).trim();
+        console.log(`[CONFERENCIA DEBUG] Verificando ato - codigoTributario: '${codigo}' (tipo: ${typeof ato.codigoTributario})`);
+        return codigo === '01';
+      });
+      
+      const possuiAtosPagos = atosPagos.length > 0;
+      const statusProximaEtapa = possuiAtosPagos ? 'Aguardando Pagamento' : 'Aguardando Execução';
+      
+      console.log(`[CONFERENCIA DEBUG] Atos com código '01':`, atosPagos);
+      console.log(`[CONFERENCIA DEBUG] Possui atos pagos: ${possuiAtosPagos}`);
+      console.log(`[CONFERENCIA DEBUG] Status definido: ${statusProximaEtapa}`);
 
       const body = JSON.stringify({
         protocolo,
