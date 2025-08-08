@@ -24,7 +24,7 @@ export default function ServicoEntrega({ form, onChange }) {
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-          <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 28 }}>
+          <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 18 }}>
             Entrega:
           </h2>
         </div>

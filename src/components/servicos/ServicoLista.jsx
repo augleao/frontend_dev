@@ -42,6 +42,7 @@ export default function ListaServicos() {
   const [statusPedidos, setStatusPedidos] = useState({});
   const [dataInicial, setDataInicial] = useState('');
   const [dataFinal, setDataFinal] = useState('');
+  const [buscaProtocolo, setBuscaProtocolo] = useState('');
   const [statusSelecionados, setStatusSelecionados] = useState({
     'aguardando conferência': true,
     'aguardando pagamento': true,
@@ -91,6 +92,13 @@ export default function ListaServicos() {
   // Função para aplicar filtros de data e status
   const aplicarFiltros = () => {
     let pedidosFiltradosTemp = [...pedidos];
+
+    // Filtro por protocolo/número do pedido
+    if (buscaProtocolo.trim()) {
+      pedidosFiltradosTemp = pedidosFiltradosTemp.filter(pedido => {
+        return pedido.protocolo && pedido.protocolo.toLowerCase().includes(buscaProtocolo.toLowerCase().trim());
+      });
+    }
 
     // Filtro por data
     if (dataInicial || dataFinal) {
@@ -157,6 +165,7 @@ export default function ListaServicos() {
   const limparFiltros = () => {
     setDataInicial('');
     setDataFinal('');
+    setBuscaProtocolo('');
     setStatusSelecionados({
       'aguardando conferência': true,
       'aguardando pagamento': true,
@@ -178,7 +187,7 @@ export default function ListaServicos() {
   // Aplicar filtros sempre que as datas, status ou pedidos mudarem
   useEffect(() => {
     aplicarFiltros();
-  }, [dataInicial, dataFinal, statusSelecionados, pedidos, statusPedidos]);
+  }, [dataInicial, dataFinal, buscaProtocolo, statusSelecionados, pedidos, statusPedidos]);
 
   return (
     <div style={{ /* ...estilos... */ }}>
@@ -215,6 +224,25 @@ export default function ListaServicos() {
           alignItems: 'center',
           gap: 6
         }}>
+          {/* Filtro por Número do Pedido */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Número do Pedido:</label>
+            <input
+              type="text"
+              placeholder="Digite o protocolo..."
+              value={buscaProtocolo}
+              onChange={e => setBuscaProtocolo(e.target.value)}
+              style={{
+                border: '1.5px solid #bdc3c7',
+                borderRadius: 6,
+                padding: '8px 12px',
+                fontSize: 14,
+                minWidth: 160,
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Data Inicial:</label>
             <input
