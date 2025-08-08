@@ -24,7 +24,7 @@ export default function ServicoEntrega({ form, onChange }) {
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-          <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 18 }}>
+          <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 16 }}>
             Entrega:
           </h2>
         </div>
@@ -43,11 +43,11 @@ export default function ServicoEntrega({ form, onChange }) {
             flexDirection: 'column',
             gap: 4
           }}>
-            <label style={{ color: '#1e8449', fontWeight: 600 }}>Responsável:</label>
+            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 14 }}>Responsável:</label>
             <span style={{
               color: '#1e8449',
               fontWeight: 600,
-              fontSize: 16,
+              fontSize: 14,
               padding: '4px 0',
               background: 'transparent'
             }}>
@@ -65,7 +65,7 @@ export default function ServicoEntrega({ form, onChange }) {
             flexDirection: 'column',
             gap: 4
           }}>
-            <label style={{ color: '#1e8449', fontWeight: 600 }}>Data da entrega:</label>
+            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 14 }}>Data da entrega:</label>
             <input 
               type="date" 
               value={form.entrega.data} 
@@ -75,7 +75,7 @@ export default function ServicoEntrega({ form, onChange }) {
                 border: '1.5px solid #a9dfbf',
                 borderRadius: 6,
                 padding: '8px 12px',
-                fontSize: 16,
+                fontSize: 14,
                 boxSizing: 'border-box',
               }}
             />
@@ -88,7 +88,7 @@ export default function ServicoEntrega({ form, onChange }) {
             flexDirection: 'column',
             gap: 4
           }}>
-            <label style={{ color: '#1e8449', fontWeight: 600 }}>Hora da entrega:</label>
+            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 14 }}>Hora da entrega:</label>
             <input 
               type="time" 
               value={form.entrega.hora} 
@@ -98,7 +98,7 @@ export default function ServicoEntrega({ form, onChange }) {
                 border: '1.5px solid #a9dfbf',
                 borderRadius: 6,
                 padding: '8px 12px',
-                fontSize: 16,
+                fontSize: 14,
                 boxSizing: 'border-box',
               }}
             />
@@ -119,7 +119,7 @@ export default function ServicoEntrega({ form, onChange }) {
             flexDirection: 'column',
             gap: 4
           }}>
-            <label style={{ color: '#1e8449', fontWeight: 600 }}>Retirado via:</label>
+            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 14 }}>Retirado via:</label>
             <input 
               type="text" 
               value={form.entrega.retiradoPor} 
@@ -129,7 +129,7 @@ export default function ServicoEntrega({ form, onChange }) {
                 border: '1.5px solid #a9dfbf',
                 borderRadius: 6,
                 padding: '8px 12px',
-                fontSize: 16,
+                fontSize: 14,
                 boxSizing: 'border-box',
               }}
               placeholder="Nome da pessoa que retirou"
