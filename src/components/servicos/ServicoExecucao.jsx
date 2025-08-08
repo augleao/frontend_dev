@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+  import React, { useState, useEffect } from 'react';
 import SeloEletronicoManager from './SeloEletronicoManager';
 import config from '../../config';
 
@@ -134,22 +134,23 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         marginBottom: 12,
         letterSpacing: 0.5
       }}>Execução do Serviço</h3>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
-        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 140, margin: 0 }}>Responsável:</label>
-        <span
-          style={{
-            color: '#154360',
-            fontWeight: 600,
-            fontSize: 14,
-            padding: '4px 0',
-            background: 'transparent'
-          }}
-        >
-          {(() => {
-            const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-            return usuario.nome || usuario.email || 'Usuário';
-          })()}
-        </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, margin: 0 }}>Responsável:</label>
+          <span
+            style={{
+              color: '#2471a3',
+              fontWeight: 600,
+              fontSize: 13,
+              background: 'transparent'
+            }}
+          >
+            {(() => {
+              const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+              return usuario.nome || usuario.email || 'Usuário';
+            })()}
+          </span>
+        </div>
         <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0, marginLeft: 16 }}>Data:</label>
         <input
           type="date"
