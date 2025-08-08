@@ -122,7 +122,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         marginTop: 0,
         display: 'flex',
         flexDirection: 'column',
-        gap: 10,
+        gap: 6,
         boxSizing: 'border-box'
       }}
     >
@@ -131,10 +131,10 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         fontWeight: 700,
         fontSize: 18,
         margin: 0,
-        marginBottom: 12,
+        marginBottom: 6,
         letterSpacing: 0.5
       }}>Execução do Serviço</h3>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 3 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, margin: 0 }}>Responsável:</label>
           <span
@@ -151,46 +151,50 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
             })()}
           </span>
         </div>
-        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0, marginLeft: 16 }}>Data:</label>
-        <input
-          type="date"
-          value={getDataExecucao()}
-          onChange={e => onChange('data', e.target.value)}
-          style={{
-            width: 140,
-            border: '1.5px solid #aed6f1',
-            borderRadius: 6,
-            padding: '4px 8px',
-            fontSize: 13,
-            height: 32,
-            boxSizing: 'border-box',
-            background: '#fff',
-            color: '#154360',
-            fontWeight: 500
-          }}
-        />
-        <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, minWidth: 100, margin: 0, marginLeft: 16 }}>Observações:</label>
-        <textarea
-          value={form.execucao.observacoes}
-          onChange={e => onChange('observacoes', e.target.value)}
-          maxLength={200}
-          style={{
-            width: 220,
-            minHeight: 32,
-            border: '1.5px solid #aed6f1',
-            borderRadius: 6,
-            padding: '4px 8px',
-            fontSize: 13,
-            resize: 'vertical',
-            boxSizing: 'border-box',
-            background: '#fff',
-            color: '#154360',
-            fontWeight: 500
-          }}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 16 }}>
+          <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, margin: 0 }}>Data:</label>
+          <input
+            type="date"
+            value={getDataExecucao()}
+            onChange={e => onChange('data', e.target.value)}
+            style={{
+              width: 140,
+              border: '1.5px solid #aed6f1',
+              borderRadius: 6,
+              padding: '4px 8px',
+              fontSize: 13,
+              height: 32,
+              boxSizing: 'border-box',
+              background: '#fff',
+              color: '#154360',
+              fontWeight: 500
+            }}
+          />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 16 }}>
+          <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, margin: 0 }}>Observações:</label>
+          <textarea
+            value={form.execucao.observacoes}
+            onChange={e => onChange('observacoes', e.target.value)}
+            maxLength={200}
+            style={{
+              width: 220,
+              minHeight: 32,
+              border: '1.5px solid #aed6f1',
+              borderRadius: 6,
+              padding: '4px 8px',
+              fontSize: 13,
+              resize: 'vertical',
+              boxSizing: 'border-box',
+              background: '#fff',
+              color: '#154360',
+              fontWeight: 500
+            }}
+          />
+        </div>
       </div>
       {/* Botão Salvar/Alterar Execução */}
-      <div style={{ margin: '12px 0' }}>
+      <div style={{ margin: '6px 0' }}>
         <button
           type="button"
           onClick={salvarOuAlterarExecucao}
@@ -220,8 +224,8 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
           <SeloEletronicoManager protocolo={protocolo} onSelosChange={setSelos} />
           {/* Tabela de selos utilizados neste pedido */}
           {selos.length > 0 && (
-            <div style={{ marginTop: 24 }}>
-              <h4 style={{ color: '#6c3483', marginBottom: 8 }}>Selos Utilizados neste Pedido</h4>
+            <div style={{ marginTop: 12 }}>
+              <h4 style={{ color: '#6c3483', marginBottom: 4 }}>Selos Utilizados neste Pedido</h4>
               <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8 }}>
                 <thead>
                   <tr style={{ background: '#ede1f7' }}>
