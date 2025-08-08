@@ -55,22 +55,46 @@ export default function ServicoConferencia({ protocolo }) {
       let statusProximaEtapa = 'Aguardando Execução'; // Padrão para pedidos sem atos pagos
       
       try {
+        console.log(`[CONFERENCIA DEBUG] Buscando atos do protocolo: ${protocolo}`);
         const resAtos = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}/atos`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
+        
+        console.log(`[CONFERENCIA DEBUG] Status da resposta de atos: ${resAtos.status}`);
         
         if (resAtos.ok) {
           const dataAtos = await resAtos.json();
           const atos = dataAtos.atos || [];
           
+          console.log(`[CONFERENCIA DEBUG] Dados recebidos:`, dataAtos);
+          console.log(`[CONFERENCIA DEBUG] Total de atos encontrados: ${atos.length}`);
+          console.log(`[CONFERENCIA DEBUG] Detalhes dos atos:`, atos.map(ato => ({
+            id: ato.id,
+            codigo: ato.codigo,
+            codigoTributario: ato.codigoTributario,
+            descricao: ato.descricao,
+            tipo: typeof ato.codigoTributario
+          })));
+          
           // Verifica se existe algum ato com código tributário '01' (atos pagos)
-          const possuiAtosPagos = atos.some(ato => ato.codigoTributario === '01');
+          const atosPagos = atos.filter(ato => {
+            const codigo = String(ato.codigoTributario).trim();
+            console.log(`[CONFERENCIA DEBUG] Verificando ato - codigoTributario: '${codigo}' (tipo: ${typeof ato.codigoTributario})`);
+            return codigo === '01';
+          });
+          
+          const possuiAtosPagos = atosPagos.length > 0;
+          
+          console.log(`[CONFERENCIA DEBUG] Atos com código '01':`, atosPagos);
+          console.log(`[CONFERENCIA DEBUG] Possui atos pagos: ${possuiAtosPagos}`);
           
           if (possuiAtosPagos) {
             statusProximaEtapa = 'Aguardando Pagamento';
           }
           
-          console.log(`[CONFERENCIA] Protocolo ${protocolo}: ${atos.length} atos encontrados, possui atos pagos: ${possuiAtosPagos}, próximo status: ${statusProximaEtapa}`);
+          console.log(`[CONFERENCIA DEBUG] Status definido: ${statusProximaEtapa}`);
+        } else {
+          console.warn(`[CONFERENCIA DEBUG] Erro na requisição de atos - Status: ${resAtos.status}`);
         }
       } catch (errAtos) {
         console.warn('[CONFERENCIA] Erro ao buscar atos do pedido, usando status padrão:', errAtos);
