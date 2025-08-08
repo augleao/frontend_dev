@@ -122,7 +122,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         marginTop: 0,
         display: 'flex',
         flexDirection: 'column',
-        gap: 6,
+        gap: 3,
         boxSizing: 'border-box'
       }}
     >
@@ -131,10 +131,10 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         fontWeight: 700,
         fontSize: 18,
         margin: 0,
-        marginBottom: 6,
+        marginBottom: 3,
         letterSpacing: 0.5
       }}>Execução do Serviço</h3>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 3 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, margin: 0 }}>Responsável:</label>
           <span
