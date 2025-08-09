@@ -359,8 +359,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       
       console.log('[DEBUG] Iniciando confirmação de pagamento...');
       
-      // Atualiza o status para "Pago" no banco de dados
-      const resultado = await atualizarStatusPedido('Pago');
+      // Atualiza o status para "Aguardando Execução" no banco de dados
+      const resultado = await atualizarStatusPedido('Aguardando Execução');
       
       // Se há excesso, gera automaticamente o recibo
       if (excesso > 0) {
@@ -370,7 +370,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       if (resultado && resultado.local) {
         alert('✅ Pagamento confirmado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
       } else {
-        alert('✅ Pagamento confirmado com sucesso! Status atualizado para "Pago".');
+        alert('✅ Pagamento confirmado com sucesso! Status atualizado para "Aguardando Execução".');
       }
     } catch (error) {
       console.error('Erro ao confirmar pagamento:', error);
