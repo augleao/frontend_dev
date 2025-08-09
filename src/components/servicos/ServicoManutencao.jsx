@@ -522,24 +522,29 @@ export default function ServicoManutencao() {
             // Considera '01', 1, '1' como código tributário de ato pago
             const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01' || ato.codigoTributario === 1 || ato.codigoTributario === '1');
             if (!temAtoTributario01) return null;
-         const temConferenciaConferido = historicoStatus.some(h => {
-           const statusNormalizado = h.status ? h.status.toLowerCase().replace(/\s/g, '') : '';
-           console.log('[LOG PAGAMENTO] Status no histórico:', h.status, '| Normalizado:', statusNormalizado);
-           return statusNormalizado === 'conferido';
-         });
-         const habilitaPagamento = protocoloExiste && temAtoTributario01 && temConferenciaConferido;
-         console.log('[DEBUG PAGAMENTO] protocoloExiste:', protocoloExiste);
-         console.log('[DEBUG PAGAMENTO] temAtoTributario01:', temAtoTributario01);
-         console.log('[DEBUG PAGAMENTO] temConferenciaConferido:', temConferenciaConferido);
-         console.log('[DEBUG PAGAMENTO] habilitaPagamento:', habilitaPagamento);
-         console.log('[DEBUG PAGAMENTO] form.protocolo:', form.protocolo);
-         console.log('[DEBUG PAGAMENTO] atosPedido:', atosPedido);
-         console.log('[DEBUG PAGAMENTO] historicoStatus:', historicoStatus);
-         if (!protocoloExiste) console.log('[LOG PAGAMENTO] Protocolo não existe.');
-         if (!temAtoTributario01) console.log('[LOG PAGAMENTO] Não há ato tributário 01.');
-         if (!temConferenciaConferido) console.log('[LOG PAGAMENTO] Pedido ainda não conferido.');
-         if (!habilitaPagamento) console.log('[LOG PAGAMENTO] Pagamento NÃO habilitado.');
-         else console.log('[LOG PAGAMENTO] Pagamento HABILITADO!');
+       const temConferenciaConferido = historicoStatus.some(h => {
+         const statusNormalizado = h.status ? h.status.toLowerCase().replace(/\s/g, '') : '';
+         console.log('[LOG PAGAMENTO] Status no histórico:', h.status, '| Normalizado:', statusNormalizado);
+         return statusNormalizado === 'conferido';
+       });
+       // Considera conferido também se o status atual for 'Aguardando Pagamento'
+       const statusAtualNormalizado = form.status ? form.status.toLowerCase().replace(/\s/g, '') : '';
+       const pedidoConferido = temConferenciaConferido || statusAtualNormalizado === 'aguardandopagamento';
+       const habilitaPagamento = protocoloExiste && temAtoTributario01 && pedidoConferido;
+       console.log('[DEBUG PAGAMENTO] protocoloExiste:', protocoloExiste);
+       console.log('[DEBUG PAGAMENTO] temAtoTributario01:', temAtoTributario01);
+       console.log('[DEBUG PAGAMENTO] temConferenciaConferido:', temConferenciaConferido);
+       console.log('[DEBUG PAGAMENTO] statusAtualNormalizado:', statusAtualNormalizado);
+       console.log('[DEBUG PAGAMENTO] pedidoConferido:', pedidoConferido);
+       console.log('[DEBUG PAGAMENTO] habilitaPagamento:', habilitaPagamento);
+       console.log('[DEBUG PAGAMENTO] form.protocolo:', form.protocolo);
+       console.log('[DEBUG PAGAMENTO] atosPedido:', atosPedido);
+       console.log('[DEBUG PAGAMENTO] historicoStatus:', historicoStatus);
+       if (!protocoloExiste) console.log('[LOG PAGAMENTO] Protocolo não existe.');
+       if (!temAtoTributario01) console.log('[LOG PAGAMENTO] Não há ato tributário 01.');
+       if (!pedidoConferido) console.log('[LOG PAGAMENTO] Pedido ainda não conferido.');
+       if (!habilitaPagamento) console.log('[LOG PAGAMENTO] Pagamento NÃO habilitado.');
+       else console.log('[LOG PAGAMENTO] Pagamento HABILITADO!');
              return (
               <div style={!habilitaPagamento ? {
                 pointerEvents: 'none',
