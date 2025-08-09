@@ -522,7 +522,7 @@ export default function ServicoManutencao() {
             // Considera '01', 1, '1' como código tributário de ato pago
             const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01' || ato.codigoTributario === 1 || ato.codigoTributario === '1');
             if (!temAtoTributario01) return null;
-            const temConferenciaConferido = historicoStatus.some(h => h.status && h.status.toLowerCase() === 'conferido');
+            const temConferenciaConferido = historicoStatus.some(h => h.status && h.status.toLowerCase().replace(/\s/g, '') === 'conferido');
             const habilitaPagamento = protocoloExiste && temAtoTributario01 && temConferenciaConferido;
             console.log('[DEBUG PAGAMENTO] protocoloExiste:', protocoloExiste, '| temAtoTributario01:', temAtoTributario01, '| temConferenciaConferido:', temConferenciaConferido, '| habilitaPagamento:', habilitaPagamento);
             console.log('[DEBUG PAGAMENTO] form.protocolo:', form.protocolo);
