@@ -678,7 +678,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                         />
                         {codigoTributarioIdx === idx && codigoTributarioSuggestions.length > 0 && (
                           <ul style={{
-                            position: 'fixed',
+                            position: 'absolute',
                             background: '#fff',
                             border: '1px solid #ccc',
                             borderRadius: 4,
@@ -687,24 +687,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                             listStyle: 'none',
                             zIndex: 9999,
                             width: 220,
-                            left: (() => {
-                              // Calcula a posição do input na tela
-                              const input = document.querySelectorAll('input[type="text"]')[idx];
-                              if (input) {
-                                const rect = input.getBoundingClientRect();
-                                return rect.left;
-                              }
-                              return 0;
-                            })(),
-                            top: (() => {
-                              const input = document.querySelectorAll('input[type="text"]')[idx];
-                              if (input) {
-                                const rect = input.getBoundingClientRect();
-                                return rect.bottom;
-                              }
-                              return 0;
-                            })(),
-                            fontSize: 10
+                            left: 0,
+                            top: '100%',
+                            fontSize: 10,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
                           }}>
                             {codigoTributarioSuggestions.map(sug => (
                               <li
