@@ -573,20 +573,13 @@ export default function ServicoManutencao() {
 
           {/* Entrega só habilita se execução salva (status diferente de 'em_andamento') */}
           {(() => {
-            // Habilita entrega sempre que houver uma execução salva (objeto execucao com id ou qualquer campo preenchido)
-            const execucaoSalva = form.execucao && Object.keys(form.execucao).length > 0;
-            const habilitaEntrega = !!execucaoSalva;
-            console.log('[DEBUG ENTREGA] form.execucao:', form.execucao);
-            console.log('[DEBUG ENTREGA] execucaoSalva:', execucaoSalva, '| habilitaEntrega:', habilitaEntrega);
+            // Exibe entrega apenas se houver execução salva válida (ex: id ou status diferente de vazio/em_andamento)
+            const execucao = form.execucao || {};
+            const execucaoSalva = !!(execucao.id || (execucao.status && execucao.status !== 'em_andamento' && execucao.status !== ''));
+            if (!execucaoSalva) return null;
+            const habilitaEntrega = true;
             return (
-              <div style={!habilitaEntrega ? {
-                pointerEvents: 'none',
-                opacity: 0.6,
-                filter: 'grayscale(0.7) contrast(0.7)',
-                background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
-                borderRadius: 12,
-                marginBottom: 12
-              } : {}}>
+              <div>
                 <ServicoEntrega 
                   form={form} 
                   onChange={handleEntregaChange} 
