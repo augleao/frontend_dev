@@ -569,7 +569,8 @@ export default function ServicoManutencao() {
           {(() => {
             const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01' || ato.codigoTributario === 1 || ato.codigoTributario === '1');
             const pagamentoOk = form.pagamento && (form.pagamento.status === 'pago' || form.pagamento.status === 'parcial');
-            const habilitaExecucao = !temAtoTributario01 || pagamentoOk;
+            const statusAtualNormalizado = form.status ? form.status.toLowerCase().replace(/\s/g, '') : '';
+            const habilitaExecucao = !temAtoTributario01 || pagamentoOk || statusAtualNormalizado === 'aguardandoexecucao';
             return (
               <div style={!habilitaExecucao ? {
                 pointerEvents: 'none',
