@@ -70,7 +70,8 @@ export default function ServicoConferencia({ protocolo, atosPedido = [] }) {
       });
       
       const possuiAtosPagos = atosPagos.length > 0;
-      const statusProximaEtapa = possuiAtosPagos ? 'Aguardando Pagamento' : 'Aguardando Execução';
+  // Se não houver ato pago (código 01), status deve ser 'Aguardando Execução', senão 'Aguardando Pagamento'
+  const statusProximaEtapa = possuiAtosPagos ? 'Aguardando Pagamento' : 'Aguardando Execução';
       
       console.log(`[CONFERENCIA DEBUG] Atos com código '01':`, atosPagos);
       console.log(`[CONFERENCIA DEBUG] Possui atos pagos: ${possuiAtosPagos}`);

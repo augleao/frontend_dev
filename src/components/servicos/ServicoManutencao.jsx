@@ -516,10 +516,11 @@ export default function ServicoManutencao() {
             <ServicoConferencia protocolo={form.protocolo} atosPedido={atosPedido} disabled={!form.protocolo} />
           </div>
 
-          {/* Pagamento só habilita se protocolo existir, houver ato tributário '01', e houver conferência salva com status 'conferido' */}
+          {/* Pagamento só é exibido se houver ato tributário '01' */}
           {(() => {
             const protocoloExiste = !!form.protocolo;
             const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01');
+            if (!temAtoTributario01) return null;
             const temConferenciaConferido = historicoStatus.some(h => h.status && h.status.toLowerCase() === 'conferido');
             const habilitaPagamento = protocoloExiste && temAtoTributario01 && temConferenciaConferido;
             console.log('[DEBUG PAGAMENTO] protocoloExiste:', protocoloExiste, '| temAtoTributario01:', temAtoTributario01, '| temConferenciaConferido:', temConferenciaConferido, '| habilitaPagamento:', habilitaPagamento);
