@@ -519,7 +519,8 @@ export default function ServicoManutencao() {
           {/* Pagamento só é exibido se houver ato tributário '01' */}
           {(() => {
             const protocoloExiste = !!form.protocolo;
-            const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01');
+            // Considera '01', 1, '1' como código tributário de ato pago
+            const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01' || ato.codigoTributario === 1 || ato.codigoTributario === '1');
             if (!temAtoTributario01) return null;
             const temConferenciaConferido = historicoStatus.some(h => h.status && h.status.toLowerCase() === 'conferido');
             const habilitaPagamento = protocoloExiste && temAtoTributario01 && temConferenciaConferido;
