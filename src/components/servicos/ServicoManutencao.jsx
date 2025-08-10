@@ -294,6 +294,14 @@ export default function ServicoManutencao() {
     }));
   }
 
+    // Função para tratar mudanças na conferência
+    function handleConferenciaChange(field, value) {
+      setForm(f => ({
+        ...f,
+        conferencia: { ...f.conferencia, [field]: value }
+      }));
+    }
+
   // Função para excluir pedido
   const excluirPedido = async () => {
     if (!form.protocolo) {
