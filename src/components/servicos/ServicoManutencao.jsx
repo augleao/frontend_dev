@@ -571,10 +571,9 @@ export default function ServicoManutencao() {
             const protocoloExiste = !!form.protocolo;
             const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01' || ato.codigoTributario === 1 || ato.codigoTributario === '1');
             const conferido = historicoStatus.some(h => (h.status || '').toLowerCase().replace(/\s/g, '') === 'conferido');
-            const pagamentoOk = form.pagamento && (form.pagamento.status === 'pago' || form.pagamento.status === 'parcial');
             const statusAtualNormalizado = form.status ? form.status.toLowerCase().replace(/\s/g, '') : '';
-            // Habilita execução se: (não tem ato 01 e conferido) OU (tem ato 01 e pagamento ok OU status aguardando execucao)
-            const habilitaExecucao = (!temAtoTributario01 && conferido) || (temAtoTributario01 && (pagamentoOk || statusAtualNormalizado === 'aguardandoexecucao'));
+            // Habilita execução se: status do pedido for 'Aguardando Execução' OU (não tem ato 01 e conferido)
+            const habilitaExecucao = statusAtualNormalizado === 'aguardandoexecucao' || (!temAtoTributario01 && conferido);
             return (
               <div style={!habilitaExecucao ? {
                 pointerEvents: 'none', opacity: 0.6, filter: 'grayscale(0.7) contrast(0.7)', background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)', borderRadius: 12, marginBottom: 12
