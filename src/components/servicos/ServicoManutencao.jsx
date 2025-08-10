@@ -1,3 +1,18 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import ServicoEntrada from './ServicoEntrada';
+import ServicoCliente from './ServicoCliente';
+import ServicoPagamento from './ServicoPagamento';
+import ServicoConferencia from './ServicoConferencia';
+import ServicoExecucao from './ServicoExecucao';
+import ServicoEntrega from './ServicoEntrega';
+import ServicoAlertas from './ServicoAlertas';
+import ServicoLista from './ServicoLista';
+import config from '../../config';
+import { fetchComAuth } from '../../utils';
+
+// ...outros códigos, hooks e estados...
+
   // Handler para conferência (ajuste conforme sua lógica real)
   function handleConferenciaChange(novoForm) {
     setForm(f => ({ ...f, ...novoForm }));
