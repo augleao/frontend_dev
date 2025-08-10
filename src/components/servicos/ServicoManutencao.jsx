@@ -1,3 +1,43 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import ServicoEntrada from './ServicoEntrada';
+import ServicoCliente from './ServicoCliente';
+import ServicoPagamento from './ServicoPagamento';
+import ServicoConferencia from './ServicoConferencia';
+import ServicoExecucao from './ServicoExecucao';
+import ServicoEntrega from './ServicoEntrega';
+import ServicoAlertas from './ServicoAlertas';
+import ServicoLista from './ServicoLista';
+import config from '../../config';
+import { fetchComAuth } from '../../utils';
+
+const clientesMock = [
+  { id: 1, nome: 'João Silva', cpf: '123.456.789-00', endereco: 'Rua A, 123', telefone: '99999-9999', email: 'joao@email.com' },
+  { id: 2, nome: 'Maria Souza', cpf: '987.654.321-00', endereco: 'Rua B, 456', telefone: '88888-8888', email: 'maria@email.com' }
+];
+const tiposServico = [
+  'Certidão de Nascimento',
+  'Certidão de Casamento',
+  'Reconhecimento de Firma',
+  'Autenticação de Documento'
+];
+const statusExecucao = [
+  { value: 'em_andamento', label: 'Em andamento', color: '#3498db' },
+  { value: 'aguardando', label: 'Aguardando documentos', color: '#f39c12' },
+  { value: 'concluido', label: 'Concluído', color: '#27ae60' },
+  { value: 'cancelado', label: 'Cancelado', color: '#e74c3c' }
+];
+const statusPagamento = [
+  { value: 'pendente', label: 'Pendente', color: '#f39c12' },
+  { value: 'parcial', label: 'Parcial', color: '#3498db' },
+  { value: 'pago', label: 'Pago', color: '#27ae60' }
+];
+function gerarProtocolo() {
+  return 'PRT-' + Date.now().toString().slice(-6);
+}
+
+export default function ServicoManutencao() {
+  const [servicos, setServicos] = useState([]);
   const [clientes, setClientes] = useState(clientesMock);
   const [alertas, setAlertas] = useState([]);
   const [combosDisponiveis, setCombosDisponiveis] = useState([]);
@@ -16,6 +56,58 @@
     execucao: { status: 'em_andamento', observacoes: '', responsavel: '' },
     entrega: { data: '', hora: '', retiradoPor: '', documentoRetirada: '', assinaturaDigital: false }
   });
+  const [pedidoCarregado, setPedidoCarregado] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Função para extrair o protocolo da query string
+  function getProtocoloFromQuery() {
+    const params = new URLSearchParams(location.search);
+    return params.get('protocolo');
+  }
+
+  function deepEqual(obj1, obj2) {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+  }
+
+  // Função para buscar histórico de status
+  const buscarHistoricoStatus = async (protocolo) => {
+    if (!protocolo) return;
+    
+    try {
+      const response = await fetchComAuth(`${config.apiURL}/pedidoshistoricostatus/${encodeURIComponent(protocolo)}/historico-status`);
+      if (response && response.ok) {
+        const data = await response.json();
+        console.log('[HISTORICO DEBUG] Resposta da API /historico-status:', data);
+        if (Array.isArray(data.historico)) {
+          console.log(`[HISTORICO DEBUG] Quantidade de status recebidos: ${data.historico.length}`);
+          data.historico.forEach((item, idx) => console.log(`[HISTORICO DEBUG] #${idx+1}:`, item));
+        }
+        setHistoricoStatus(data.historico || []);
+      } else {
+        // Se não houver endpoint específico, simula histórico básico
+        setHistoricoStatus([
+          {
+            status: form.status || 'Em Análise',
+            data_alteracao: new Date().toISOString(),
+            responsavel: 'Sistema',
+            observacoes: 'Status atual do pedido'
+          }
+        ]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar histórico de status:', error);
+      // Fallback com dados básicos
+      setHistoricoStatus([
+        {
+          status: form.status || 'Em Análise',
+          data_alteracao: new Date().toISOString(),
+          responsavel: 'Sistema',
+          observacoes: 'Status atual do pedido'
+        }
+      ]);
+    }
+  };
 
 
   useEffect(() => {
