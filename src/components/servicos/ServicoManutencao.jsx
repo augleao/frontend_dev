@@ -564,7 +564,9 @@ export default function ServicoManutencao() {
           {(() => {
             const protocoloExiste = !!form.protocolo;
             const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01' || ato.codigoTributario === 1 || ato.codigoTributario === '1');
-            const conferido = historicoStatus.some(h => (h.status || '').toLowerCase().replace(/\s/g, '') === 'conferido');
+              // Log detalhado do histórico antes do cálculo de conferido
+              console.log('[DEBUG EXECUCAO] historicoStatus para conferido:', historicoStatus);
+              const conferido = historicoStatus.some(h => (h.status || '').toLowerCase().replace(/\s/g, '') === 'conferido');
             const statusAtualNormalizado = form.status ? form.status.toLowerCase().replace(/\s/g, '') : '';
             const habilitaExecucao = statusAtualNormalizado === 'aguardandoexecucao' || (!temAtoTributario01 && conferido);
             console.log('[DEBUG EXECUCAO] protocoloExiste:', protocoloExiste);
