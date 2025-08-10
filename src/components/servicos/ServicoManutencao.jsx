@@ -1,8 +1,3 @@
-  // Handler para conferência
-  function handleConferenciaChange(novoForm) {
-    setForm(f => ({ ...f, ...novoForm }));
-    console.log('[DEBUG] handleConferenciaChange chamado:', novoForm);
-  }
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ServicoEntrada from './ServicoEntrada';
