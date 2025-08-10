@@ -1,43 +1,3 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import ServicoEntrada from './ServicoEntrada';
-import ServicoCliente from './ServicoCliente';
-import ServicoPagamento from './ServicoPagamento';
-import ServicoConferencia from './ServicoConferencia';
-import ServicoExecucao from './ServicoExecucao';
-import ServicoEntrega from './ServicoEntrega';
-import ServicoAlertas from './ServicoAlertas';
-import ServicoLista from './ServicoLista';
-import config from '../../config';
-import { fetchComAuth } from '../../utils';
-          {(() => {
-            // Habilita execução apenas se o status for 'Aguardando Execução', ignorando acentos e espaços
-            function normalizarStatus(str) {
-              return str
-                ? str
-                    .toLowerCase()
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '') // remove acentos
-                    .replace(/\s/g, '')
-                : '';
-            }
-            const statusAtualNormalizado = normalizarStatus(form.status);
-            const habilitaExecucao = statusAtualNormalizado === 'aguardandoexecucao';
-            console.log('[DEBUG EXECUCAO] form.status:', form.status, '| statusAtualNormalizado:', statusAtualNormalizado, '| habilitaExecucao:', habilitaExecucao);
-            if (!form.status) return null;
-            return (
-              <div style={!habilitaExecucao ? {
-                pointerEvents: 'none', opacity: 0.6, filter: 'grayscale(0.7) contrast(0.7)', background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)', borderRadius: 12, marginBottom: 12
-              } : {}}>
-                <ServicoExecucao
-                  form={form}
-                  onChange={handleExecucaoChange}
-                  pedidoId={form.protocolo}
-                  disabled={!habilitaExecucao}
-                />
-              </div>
-            );
-          })()}
   const [clientes, setClientes] = useState(clientesMock);
   const [alertas, setAlertas] = useState([]);
   const [combosDisponiveis, setCombosDisponiveis] = useState([]);
@@ -46,34 +6,6 @@ import { fetchComAuth } from '../../utils';
   const [historicoStatus, setHistoricoStatus] = useState([]);
   const [form, setForm] = useState({
     protocolo: '', // começa vazio
-    tipo: '',
-    descricao: '',
-    prazo: '',
-    clienteId: null, // Use null ao invés de string vazia
-    novoCliente: false,
-    cliente: { nome: '', cpf: '', endereco: '', telefone: '', email: '' },
-    pagamento: { status: 'pendente', valorTotal: '', valorPago: '', data: '', forma: '' },
-    execucao: { status: 'em_andamento', observacoes: '', responsavel: '' },
-    entrega: { data: '', hora: '', retiradoPor: '', documentoRetirada: '', assinaturaDigital: false }
-          {(() => {
-            // Habilita execução apenas se o status for 'Aguardando Execução', ignorando acentos e espaços
-            function normalizarStatus(str) {
-              return str
-                ? str
-                    .toLowerCase()
-                    .normalize('NFD')
-                    .replace(/[00-6f]/g, '') // remove acentos
-                    .replace(/\s/g, '')
-                : '';
-            }
-            const statusAtualNormalizado = normalizarStatus(form.status);
-            const habilitaExecucao = statusAtualNormalizado === 'aguardandoexecucao';
-            console.log('[DEBUG EXECUCAO] form.status:', form.status, '| statusAtualNormalizado:', statusAtualNormalizado, '| habilitaExecucao:', habilitaExecucao);
-            if (!form.status) return null;
-            return (
-              <div style={!habilitaExecucao ? {
-                pointerEvents: 'none', opacity: 0.6, filter: 'grayscale(0.7) contrast(0.7)', background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)', borderRadius: 12, marginBottom: 12
-              } : {}}>
                 <ServicoExecucao
                   form={form}
                   onChange={handleExecucaoChange}
