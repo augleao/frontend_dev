@@ -550,8 +550,17 @@ export default function ServicoManutencao() {
 
           {/* Execução */}
           {(() => {
-            // Habilita execução apenas se o status for 'Aguardando Execução'
-            const statusAtualNormalizado = form.status ? form.status.toLowerCase().replace(/\s/g, '') : '';
+            // Habilita execução apenas se o status for 'Aguardando Execução', ignorando acentos e espaços
+            function normalizarStatus(str) {
+              return str
+                ? str
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[ -]/g, '') // remove acentos
+                    .replace(/\s/g, '')
+                : '';
+            }
+            const statusAtualNormalizado = normalizarStatus(form.status);
             const habilitaExecucao = statusAtualNormalizado === 'aguardandoexecucao';
             return (
               <div style={!habilitaExecucao ? {
