@@ -517,46 +517,33 @@ export default function ServicoManutencao() {
           </div>
 
           {/* Pagamento só é exibido se houver ato tributário '01' */}
+          {/* Conferência */}
+          <div style={!form.protocolo ? {
+            pointerEvents: 'none', opacity: 0.6, filter: 'grayscale(0.7) contrast(0.7)', background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)', borderRadius: 12, marginBottom: 12
+          } : {}}>
+            <ServicoConferencia
+              form={form}
+              onChange={handleConferenciaChange}
+              disabled={!form.protocolo}
+            />
+          </div>
+
+          {/* Pagamento */}
           {(() => {
             const protocoloExiste = !!form.protocolo;
-            // Considera '01', 1, '1' como código tributário de ato pago
             const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01' || ato.codigoTributario === 1 || ato.codigoTributario === '1');
+            // Só exibe se houver ato pago
             if (!temAtoTributario01) return null;
-       const temConferenciaConferido = historicoStatus.some(h => {
-         const statusNormalizado = h.status ? h.status.toLowerCase().replace(/\s/g, '') : '';
-         console.log('[LOG PAGAMENTO] Status no histórico:', h.status, '| Normalizado:', statusNormalizado);
-         return statusNormalizado === 'conferido';
-       });
-       // Considera conferido também se o status atual for 'Aguardando Pagamento'
-       const statusAtualNormalizado = form.status ? form.status.toLowerCase().replace(/\s/g, '') : '';
-       const pedidoConferido = temConferenciaConferido || statusAtualNormalizado === 'aguardandopagamento';
-       const habilitaPagamento = protocoloExiste && temAtoTributario01 && pedidoConferido;
-       console.log('[DEBUG PAGAMENTO] protocoloExiste:', protocoloExiste);
-       console.log('[DEBUG PAGAMENTO] temAtoTributario01:', temAtoTributario01);
-       console.log('[DEBUG PAGAMENTO] temConferenciaConferido:', temConferenciaConferido);
-       console.log('[DEBUG PAGAMENTO] statusAtualNormalizado:', statusAtualNormalizado);
-       console.log('[DEBUG PAGAMENTO] pedidoConferido:', pedidoConferido);
-       console.log('[DEBUG PAGAMENTO] habilitaPagamento:', habilitaPagamento);
-       console.log('[DEBUG PAGAMENTO] form.protocolo:', form.protocolo);
-       console.log('[DEBUG PAGAMENTO] atosPedido:', atosPedido);
-       console.log('[DEBUG PAGAMENTO] historicoStatus:', historicoStatus);
-       if (!protocoloExiste) console.log('[LOG PAGAMENTO] Protocolo não existe.');
-       if (!temAtoTributario01) console.log('[LOG PAGAMENTO] Não há ato tributário 01.');
-       if (!pedidoConferido) console.log('[LOG PAGAMENTO] Pedido ainda não conferido.');
-       if (!habilitaPagamento) console.log('[LOG PAGAMENTO] Pagamento NÃO habilitado.');
-       else console.log('[LOG PAGAMENTO] Pagamento HABILITADO!');
-             return (
+            // Só habilita se protocolo, ato 01 e conferência salva como conferido
+            const conferido = historicoStatus.some(h => (h.status || '').toLowerCase().replace(/\s/g, '') === 'conferido');
+            const habilitaPagamento = protocoloExiste && temAtoTributario01 && conferido;
+            return (
               <div style={!habilitaPagamento ? {
-                pointerEvents: 'none',
-                opacity: 0.6,
-                filter: 'grayscale(0.7) contrast(0.7)',
-                background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
-                borderRadius: 12,
-                marginBottom: 12
+                pointerEvents: 'none', opacity: 0.6, filter: 'grayscale(0.7) contrast(0.7)', background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)', borderRadius: 12, marginBottom: 12
               } : {}}>
-                <ServicoPagamento 
-                  form={form} 
-                  onChange={handlePagamentoChange} 
+                <ServicoPagamento
+                  form={form}
+                  onChange={handlePagamentoChange}
                   valorTotal={calcularTotalAtosPagos()}
                   valorAdiantadoDetalhes={form.valorAdiantadoDetalhes || []}
                   disabled={!habilitaPagamento}
@@ -565,44 +552,39 @@ export default function ServicoManutencao() {
             );
           })()}
 
-          {/* Execução só é bloqueada por pagamento se houver ato tributário '01' e o pagamento não estiver realizado */}
+          {/* Execução */}
           {(() => {
+            const protocoloExiste = !!form.protocolo;
             const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01' || ato.codigoTributario === 1 || ato.codigoTributario === '1');
+            const conferido = historicoStatus.some(h => (h.status || '').toLowerCase().replace(/\s/g, '') === 'conferido');
             const pagamentoOk = form.pagamento && (form.pagamento.status === 'pago' || form.pagamento.status === 'parcial');
-            const statusAtualNormalizado = form.status ? form.status.toLowerCase().replace(/\s/g, '') : '';
-            const habilitaExecucao = !temAtoTributario01 || pagamentoOk || statusAtualNormalizado === 'aguardandoexecucao';
+            // Habilita execução se: (não tem ato 01 e conferido) OU (tem ato 01 e pagamento ok)
+            const habilitaExecucao = (!temAtoTributario01 && conferido) || (temAtoTributario01 && pagamentoOk);
             return (
               <div style={!habilitaExecucao ? {
-                pointerEvents: 'none',
-                opacity: 0.6,
-                filter: 'grayscale(0.7) contrast(0.7)',
-                background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
-                borderRadius: 12,
-                marginBottom: 12
+                pointerEvents: 'none', opacity: 0.6, filter: 'grayscale(0.7) contrast(0.7)', background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)', borderRadius: 12, marginBottom: 12
               } : {}}>
-                <ServicoExecucao 
-                  form={form} 
-                  onChange={handleExecucaoChange} 
-                  pedidoId={form.protocolo} 
+                <ServicoExecucao
+                  form={form}
+                  onChange={handleExecucaoChange}
+                  pedidoId={form.protocolo}
                   disabled={!habilitaExecucao}
                 />
               </div>
             );
           })()}
 
-          {/* Entrega só habilita se execução salva (status diferente de 'em_andamento') */}
+          {/* Entrega */}
           {(() => {
-            // Exibe entrega apenas se houver execução salva válida (ex: id ou status diferente de vazio/em_andamento)
             const execucao = form.execucao || {};
             const execucaoSalva = !!(execucao.id || (execucao.status && execucao.status !== 'em_andamento' && execucao.status !== ''));
             if (!execucaoSalva) return null;
-            const habilitaEntrega = true;
             return (
               <div>
-                <ServicoEntrega 
-                  form={form} 
-                  onChange={handleEntregaChange} 
-                  disabled={!habilitaEntrega}
+                <ServicoEntrega
+                  form={form}
+                  onChange={handleEntregaChange}
+                  disabled={false}
                 />
               </div>
             );
