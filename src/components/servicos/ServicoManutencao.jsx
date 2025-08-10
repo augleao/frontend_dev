@@ -524,18 +524,6 @@ export default function ServicoManutencao() {
             <ServicoConferencia protocolo={form.protocolo} atosPedido={atosPedido} disabled={!form.protocolo} />
           </div>
 
-          {/* Pagamento só é exibido se houver ato tributário '01' */}
-          {/* Conferência */}
-          <div style={!form.protocolo ? {
-            pointerEvents: 'none', opacity: 0.6, filter: 'grayscale(0.7) contrast(0.7)', background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)', borderRadius: 12, marginBottom: 12
-          } : {}}>
-            <ServicoConferencia
-              form={form}
-              onChange={handleConferenciaChange}
-              disabled={!form.protocolo}
-            />
-          </div>
-
           {/* Pagamento */}
           {(() => {
             const protocoloExiste = !!form.protocolo;
