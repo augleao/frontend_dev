@@ -564,19 +564,20 @@ export default function ServicoManutencao() {
           {(() => {
             const protocoloExiste = !!form.protocolo;
             const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01' || ato.codigoTributario === 1 || ato.codigoTributario === '1');
-              // Log detalhado do histórico antes do cálculo de conferido
-              console.log('[DEBUG EXECUCAO] historicoStatus para conferido:', historicoStatus);
-              const conferido = historicoStatus.some(h => (h.status || '').toLowerCase().replace(/\s/g, '') === 'conferido');
+            // Busca conferências salvas no form (exemplo: form.conferencias)
+            const conferencias = form.conferencias || [];
+            const temConferenciaConferida = conferencias.some(c => (c.status || '').toLowerCase().replace(/\s/g, '') === 'conferido');
+            console.log('[DEBUG EXECUCAO] conferencias:', conferencias);
+            console.log('[DEBUG EXECUCAO] temConferenciaConferida:', temConferenciaConferida);
             const statusAtualNormalizado = form.status ? form.status.toLowerCase().replace(/\s/g, '') : '';
-            const habilitaExecucao = statusAtualNormalizado === 'aguardandoexecucao' || (!temAtoTributario01 && conferido);
+            const habilitaExecucao = statusAtualNormalizado === 'aguardandoexecucao' || temConferenciaConferida;
             console.log('[DEBUG EXECUCAO] protocoloExiste:', protocoloExiste);
             console.log('[DEBUG EXECUCAO] temAtoTributario01:', temAtoTributario01);
-            console.log('[DEBUG EXECUCAO] conferido:', conferido);
+            console.log('[DEBUG EXECUCAO] temConferenciaConferida:', temConferenciaConferida);
             console.log('[DEBUG EXECUCAO] statusAtualNormalizado:', statusAtualNormalizado);
             console.log('[DEBUG EXECUCAO] habilitaExecucao:', habilitaExecucao);
             console.log('[DEBUG EXECUCAO] form:', form);
             console.log('[DEBUG EXECUCAO] atosPedido:', atosPedido);
-            console.log('[DEBUG EXECUCAO] historicoStatus:', historicoStatus);
             return (
               <div style={!habilitaExecucao ? {
                 pointerEvents: 'none', opacity: 0.6, filter: 'grayscale(0.7) contrast(0.7)', background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)', borderRadius: 12, marginBottom: 12
