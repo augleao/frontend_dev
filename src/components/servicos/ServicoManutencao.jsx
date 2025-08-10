@@ -6,42 +6,16 @@
   const [historicoStatus, setHistoricoStatus] = useState([]);
   const [form, setForm] = useState({
     protocolo: '', // começa vazio
-                <ServicoExecucao
-                  form={form}
-                  onChange={handleExecucaoChange}
-                  pedidoId={form.protocolo}
-                  disabled={!habilitaExecucao}
-                />
-              </div>
-            );
-          })()}
-          data.historico.forEach((item, idx) => console.log(`[HISTORICO DEBUG] #${idx+1}:`, item));
-        }
-        setHistoricoStatus(data.historico || []);
-      } else {
-        // Se não houver endpoint específico, simula histórico básico
-        setHistoricoStatus([
-          {
-            status: form.status || 'Em Análise',
-            data_alteracao: new Date().toISOString(),
-            responsavel: 'Sistema',
-            observacoes: 'Status atual do pedido'
-          }
-        ]);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar histórico de status:', error);
-      // Fallback com dados básicos
-      setHistoricoStatus([
-        {
-          status: form.status || 'Em Análise',
-          data_alteracao: new Date().toISOString(),
-          responsavel: 'Sistema',
-          observacoes: 'Status atual do pedido'
-        }
-      ]);
-    }
-  };
+    tipo: '',
+    descricao: '',
+    prazo: '',
+    clienteId: null, // Use null ao invés de string vazia
+    novoCliente: false,
+    cliente: { nome: '', cpf: '', endereco: '', telefone: '', email: '' },
+    pagamento: { status: 'pendente', valorTotal: '', valorPago: '', data: '', forma: '' },
+    execucao: { status: 'em_andamento', observacoes: '', responsavel: '' },
+    entrega: { data: '', hora: '', retiradoPor: '', documentoRetirada: '', assinaturaDigital: false }
+  });
 
 
   useEffect(() => {
