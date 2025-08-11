@@ -314,20 +314,20 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       </head>
       <body>
         <div class="protocolo-box">
-          <h2>Recibo de Protocolo nº >${protocolo}</h2>
+          <h2>Recibo de Protocolo nº ${protocolo}</h2>
           <div class="info" style="text-align:center;"><span class="label"></span> <span class="valor">${serventiaHtml}</span></div>
           <div class="info"><span class="label">Protocolo nº</span> <span class="valor">${protocolo}</span></div>
           <div class="info"><span class="label">Data/Hora:</span> <span class="valor">${data}</span></div>
-          <div class="info"><span class="label">Usuário:</span> <span class="valor">${nomeUsuario}</span></div>
+          <div class="info"><span class="label">Escrevente Responsável pelo pedido:</span> <span class="valor">${nomeUsuario}</span></div>
           <div class="info"><span class="label">Cliente:</span> <span class="valor">${clienteNome}</span></div>
-          <div class="info"><span class="label">Doc:</span> <span class="valor">${clienteDoc}</span></div>
+          <div class="info"><span class="label">CPF/CNPJ:</span> <span class="valor">${clienteDoc}</span></div>
           <div class="info"><span class="label">E-mail:</span> <span class="valor">${clienteEmail}</span></div>
           <div class="info"><span class="label">Tel:</span> <span class="valor">${clienteTel}</span></div>
           <div class="info"><span class="label">Descrição:</span> <span class="valor">${form.descricao || ''}</span></div>
           <div class="info"><span class="label">Origem:</span> <span class="valor">${form.origem || ''} ${form.origemInfo ? '(' + form.origemInfo + ')' : ''}</span></div>
           <div class="info"><span class="label">Previsão de Entrega:</span> <span class="valor">${form.prazo || ''}</span></div>
-          <div class="info"><span class="label">Obs:</span> <span class="valor">${form.observacao || ''}</span></div>
           <div class="info"><span class="label">Valor(es) Adiantado(s):</span> <span class="valor">${(valorAdiantadoDetalhes || []).map(v => v.valor ? `R$${parseFloat(v.valor).toLocaleString('pt-BR', {minimumFractionDigits:2})} (${v.forma})` : '').filter(Boolean).join(' | ') || '-'}</span></div>
+          <div class="info"><span class="label">Obs:</span> <span class="valor">${form.observacao || ''}</span></div>
           <table class="atos-table">
             <thead>
               <tr>
