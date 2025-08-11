@@ -161,7 +161,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       // Sempre define status como 'Aguardando Conferência'
       let novoForm = { ...form, status: 'Aguardando Conferência' };
       // Sempre POST para /api/pedidos
-      const url = `${config.apiURL}/pedidos`;
+      const url = `${config.apiURL}/pedidos-criar`;
       const method = 'POST';
       // Converter atosPedido para combos conforme esperado pelo backend
       const combos = atosPedido.map(ato => ({
