@@ -10,22 +10,30 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       let id = form.serventiaId || form.serventia_id || form.serventia || null;
       console.log('[DEBUG] Buscando serventia, id:', id);
       if (!id) {
-        console.log('[DEBUG] Nenhum id de serventia encontrado no form.');
+        console.log('[DEBUG] Nenhum id de serventia encontrado no form. form:', form);
         return;
       }
       try {
         const token = localStorage.getItem('token');
         const url = `${config.apiURL}/serventias/${id}`;
-        console.log('[DEBUG] Fazendo fetch para:', url);
+        console.log('[DEBUG] Fazendo fetch para:', url, '| token:', token);
         const res = await fetch(url, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
+        console.log('[DEBUG] Status da resposta:', res.status, res.statusText);
+        let text = await res.text();
+        console.log('[DEBUG] Corpo da resposta:', text);
+        let data = {};
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch (jsonErr) {
+          console.error('[DEBUG] Erro ao fazer parse do JSON da resposta:', jsonErr);
+        }
         if (res.ok) {
-          const data = await res.json();
-          console.log('[DEBUG] Resposta da API serventia:', data);
+          console.log('[DEBUG] Resposta da API serventia (objeto final):', data);
           setServentiaInfo(data.serventia || data);
         } else {
-          console.log('[DEBUG] Erro ao buscar serventia, status:', res.status);
+          console.log('[DEBUG] Erro ao buscar serventia, status:', res.status, '| corpo:', text);
         }
       } catch (e) {
         console.log('[DEBUG] Erro no fetch da serventia:', e);
