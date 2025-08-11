@@ -303,7 +303,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         <style>
           @page { size: A4; margin: 1cm; }
           body { font-family: 'Times New Roman', serif; font-size: 11pt; color: black; line-height: 1.4; margin: 0; padding: 0; width: 19cm; height: 13.5cm; box-sizing: border-box; }
-          .cabecalho { text-align: center; margin-bottom: 20px; border-bottom: 2px solid black; padding-bottom: 15px; }
           .serventia-bloco { text-align: center; margin-bottom: 10px; }
           .info { margin-bottom: 4px; text-align: center; }
           .label { color: #000; font-weight: bold; }
@@ -314,10 +313,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         </style>
       </head>
       <body>
-        <div class="cabecalho">
-          <div class="serventia-bloco">${serventiaHtml}</div>
-          <h2 style="color: #000; text-align: center; font-size: 15px; margin: 2px 0 8px 0; font-weight: bold;">Recibo de Protocolo nº ${protocolo}</h2>
-        </div>
+        <div class="serventia-bloco">${serventiaHtml}</div>
+        <h2 style="color: #000; text-align: center; font-size: 15px; margin: 2px 0 8px 0; font-weight: bold;">Recibo de Protocolo nº ${protocolo}</h2>
         <div class="info"><span class="label">Protocolo nº</span> <span class="valor">${protocolo}</span></div>
         <div class="info"><span class="label">Data/Hora:</span> <span class="valor">${data}</span></div>
         <div class="info"><span class="label">Usuário:</span> <span class="valor">${nomeUsuario}</span></div>
