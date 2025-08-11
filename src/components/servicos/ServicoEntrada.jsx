@@ -8,9 +8,15 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   useEffect(() => {
     async function fetchServentia() {
       let id = form.serventiaId || form.serventia_id || form.serventia || null;
+      // Se não houver id no form, buscar do usuário logado
+      if (!id) {
+        const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
+        id = usuarioLogado.serventia || usuarioLogado.serventiaId || usuarioLogado.serventia_id || null;
+        console.log('[DEBUG] Buscando serventia do usuario logado:', id, '| usuario:', usuarioLogado);
+      }
       console.log('[DEBUG] Buscando serventia, id:', id);
       if (!id) {
-        console.warn('[DEBUG] Nenhum id de serventia encontrado no form. form completo:', JSON.stringify(form, null, 2));
+        console.warn('[DEBUG] Nenhum id de serventia encontrado no form nem no usuario. form completo:', JSON.stringify(form, null, 2));
         return;
       }
       try {
