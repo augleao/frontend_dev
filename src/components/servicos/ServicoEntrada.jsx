@@ -748,7 +748,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           type="text"
                           value={ato.nomeRegistrados || ''}
                           onChange={e => handleAtoChange(idx, 'nomeRegistrados', e.target.value)}
-                          style={{ width: '100%', maxWidth: 320, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
+                          style={{ width: '100%', maxWidth: 640, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
                           placeholder="Nome(s)"
                         />
                       </td>
