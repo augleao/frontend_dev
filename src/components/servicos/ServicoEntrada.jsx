@@ -685,7 +685,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           min={1}
                           value={ato.quantidade}
                           onChange={e => handleAtoChange(idx, 'quantidade', Number(e.target.value))}
-                          style={{ width: '100%', maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
+                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
                         />
                       </td>
                       <td style={{ padding: 6, position: 'relative', fontSize: 10 }}>
@@ -693,7 +693,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           type="text"
                           value={ato.codigoTributario}
                           onChange={e => handleCodigoTributarioInput(idx, e.target.value)}
-                          style={{ width: '100%', maxWidth: 100, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
+                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
                           autoComplete="off"
                         />
                         {codigoTributarioIdx === idx && codigoTributarioSuggestions.length > 0 && (
@@ -757,7 +757,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           type="text"
                           value={ato.livro || ''}
                           onChange={e => handleAtoChange(idx, 'livro', e.target.value)}
-                          style={{ width: '100%', maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
+                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
                           placeholder="Livro"
                         />
                       </td>
@@ -766,7 +766,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           type="text"
                           value={ato.folha || ''}
                           onChange={e => handleAtoChange(idx, 'folha', e.target.value)}
-                          style={{ width: '100%', maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
+                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
                           placeholder="Folha"
                         />
                       </td>
@@ -775,7 +775,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           type="text"
                           value={ato.termo || ''}
                           onChange={e => handleAtoChange(idx, 'termo', e.target.value)}
-                          style={{ width: '100%', maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
+                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
                           placeholder="Termo"
                         />
                       </td>
