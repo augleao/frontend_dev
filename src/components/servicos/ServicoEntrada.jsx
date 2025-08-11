@@ -168,7 +168,12 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         combo_id: ato.comboId,
         ato_id: ato.atoId,
         quantidade: ato.quantidade,
-        codigo_tributario: ato.codigoTributario
+        codigo_tributario: ato.codigoTributario,
+        tipo_registro: ato.tipoRegistro || '',
+        nome_registrados: ato.nomeRegistrados || '',
+        livro: ato.livro || '',
+        folha: ato.folha || '',
+        termo: ato.termo || ''
       }));
       // Recupera usuário logado do localStorage
       const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
