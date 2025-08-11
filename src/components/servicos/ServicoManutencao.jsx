@@ -38,6 +38,19 @@ function gerarProtocolo() {
 
 export default function ServicoManutencao() {
   const [servicos, setServicos] = useState([]);
+  // Fallback: garante que o form sempre tenha serventiaId se o usuário logado possuir
+  useEffect(() => {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    if (usuario && usuario.serventiaId) {
+      setForm(f => {
+        // Só seta se não houver nenhum id de serventia já presente
+        if (!f.serventiaId && !f.serventia_id && !f.serventia) {
+          return { ...f, serventiaId: usuario.serventiaId };
+        }
+        return f;
+      });
+    }
+  }, []);
   const [clientes, setClientes] = useState(clientesMock);
   const [alertas, setAlertas] = useState([]);
   const [combosDisponiveis, setCombosDisponiveis] = useState([]);
