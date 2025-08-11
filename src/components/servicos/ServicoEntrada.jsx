@@ -1,30 +1,27 @@
 import React, { useEffect, useState } from 'react';
-// Carrega os atos do pedido salvo (edição), incluindo campos extras
-useEffect(() => {
-  // Só executa se form.combos existir (edição de pedido)
-  if (form && Array.isArray(form.combos) && form.combos.length > 0) {
-    // Mapeia os combos do backend para o formato esperado pelo frontend
-    const mappedAtos = form.combos.map(ato => ({
-      comboId: ato.combo_id,
-      comboNome: ato.combo_nome,
-      atoId: ato.ato_id,
-      atoCodigo: ato.ato_codigo,
-      atoDescricao: ato.ato_descricao,
-      valor_final: ato.valor_final,
-      quantidade: ato.quantidade,
-      codigoTributario: ato.codigo_tributario,
-      tipoRegistro: ato.tipo_registro || '',
-      nomeRegistrados: ato.nome_registrados || '',
-      livro: ato.livro || '',
-      folha: ato.folha || '',
-      termo: ato.termo || ''
-    }));
-    setAtosPedido(mappedAtos);
-  }
-  // Se for novo pedido, não faz nada
-  // eslint-disable-next-line
-}, [form.combos]);
 import { useNavigate } from 'react-router-dom';
+  // Carrega os atos do pedido salvo (edição), incluindo campos extras
+  useEffect(() => {
+    if (form && Array.isArray(form.combos) && form.combos.length > 0) {
+      const mappedAtos = form.combos.map(ato => ({
+        comboId: ato.combo_id,
+        comboNome: ato.combo_nome,
+        atoId: ato.ato_id,
+        atoCodigo: ato.ato_codigo,
+        atoDescricao: ato.ato_descricao,
+        valor_final: ato.valor_final,
+        quantidade: ato.quantidade,
+        codigoTributario: ato.codigo_tributario,
+        tipoRegistro: ato.tipo_registro || '',
+        nomeRegistrados: ato.nome_registrados || '',
+        livro: ato.livro || '',
+        folha: ato.folha || '',
+        termo: ato.termo || ''
+      }));
+      setAtosPedido(mappedAtos);
+    }
+    // eslint-disable-next-line
+  }, [form.combos]);
 import config from '../../config';
 
 export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
