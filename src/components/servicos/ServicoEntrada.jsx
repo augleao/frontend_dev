@@ -315,11 +315,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       <body>
         <div class="serventia-bloco">${serventiaHtml}</div>
         <h2 style="color: #000; text-align: center; font-size: 15px; margin: 2px 0 8px 0; font-weight: bold;">Recibo de Protocolo nº ${protocolo}</h2>
-        <div class="info"><span class="label">Protocolo nº</span> <span class="valor">${protocolo}</span></div>
         <div class="info"><span class="label">Data/Hora:</span> <span class="valor">${data}</span></div>
-        <div class="info"><span class="label">Usuário:</span> <span class="valor">${nomeUsuario}</span></div>
+        <div class="info"><span class="label">Escrevente responsável pelo Protocolo:</span> <span class="valor">${nomeUsuario}</span></div>
         <div class="info"><span class="label">Cliente:</span> <span class="valor">${clienteNome}</span></div>
-        <div class="info"><span class="label">Doc:</span> <span class="valor">${clienteDoc}</span></div>
+        <div class="info"><span class="label">CPF/CNPJ:</span> <span class="valor">${clienteDoc}</span></div>
         <div class="info"><span class="label">E-mail:</span> <span class="valor">${clienteEmail}</span></div>
         <div class="info"><span class="label">Tel:</span> <span class="valor">${clienteTel}</span></div>
         <div class="info"><span class="label">Descrição:</span> <span class="valor">${form.descricao || ''}</span></div>
