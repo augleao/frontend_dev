@@ -57,17 +57,20 @@ export default function ServicoManutencao() {
   const [pedidos, setPedidos] = useState([]);
   const [atosPedido, setAtosPedido] = useState([]);
   const [historicoStatus, setHistoricoStatus] = useState([]);
+  // Inicializa o form já tentando pegar o serventiaId do usuário logado
+  const usuarioLocal = JSON.parse(localStorage.getItem('usuario') || '{}');
   const [form, setForm] = useState({
-    protocolo: '', // começa vazio
+    protocolo: '',
     tipo: '',
     descricao: '',
     prazo: '',
-    clienteId: null, // Use null ao invés de string vazia
+    clienteId: null,
     novoCliente: false,
     cliente: { nome: '', cpf: '', endereco: '', telefone: '', email: '' },
     pagamento: { status: 'pendente', valorTotal: '', valorPago: '', data: '', forma: '' },
     execucao: { status: 'em_andamento', observacoes: '', responsavel: '' },
-    entrega: { data: '', hora: '', retiradoPor: '', documentoRetirada: '', assinaturaDigital: false }
+    entrega: { data: '', hora: '', retiradoPor: '', documentoRetirada: '', assinaturaDigital: false },
+    ...(usuarioLocal && usuarioLocal.serventiaId ? { serventiaId: usuarioLocal.serventiaId } : {})
   });
   const [pedidoCarregado, setPedidoCarregado] = useState(false);
   const location = useLocation();
