@@ -257,10 +257,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     const clienteDoc = cliente.cpf || cliente.cnpj || form.clienteCpf || form.clienteCnpj || '-';
     const clienteEmail = cliente.email || form.clienteEmail || '-';
     const clienteTel = cliente.telefone || form.clienteTelefone || '-';
-    // Exibir apenas os campos do banco: nome_completo, endereco, cnpj, telefone, email
+    // Exibir nome_completo, endereco, CNPJ, telefone e email da serventia, se existirem
     let serventiaHtml = '-';
     const s = serventiaInfo || {};
-    if (s && (s.nome_completo || s.endereco || s.cnpj)) {
+    if (s && (s.nome_completo || s.endereco || s.cnpj || s.telefone || s.email)) {
       serventiaHtml = `
         <div><b>${s.nome_completo || ''}</b></div>
         <div>${s.endereco || ''}</div>
