@@ -189,11 +189,11 @@ export default function ServicoManutencao() {
               .then(execRes => {
                 if (!execRes) {
                   console.warn('[EXECUCAO DEBUG] Resposta fetchComAuth nula para execução');
-                  return null;
+                  // Removido: garantir que componentes estejam sempre disponíveis
                 }
                 if (!execRes.ok) {
                   console.warn('[EXECUCAO DEBUG] Execução não encontrada ou erro HTTP:', execRes.status);
-                  return null;
+                  // Removido: garantir que componentes estejam sempre disponíveis
                 }
                 return execRes.json();
               })
