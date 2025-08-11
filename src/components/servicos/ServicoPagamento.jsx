@@ -8,6 +8,30 @@ const statusPagamento = [
 ];
 
 export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes = [] }) {
+  const [serventiaInfo, setServentiaInfo] = useState(null);
+  // Buscar informações completas da serventia ao montar
+  React.useEffect(() => {
+    async function fetchServentia() {
+      let id = form.serventiaId || form.serventia_id || form.serventia || null;
+      if (!id) {
+        const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
+        id = usuarioLogado.serventia || usuarioLogado.serventiaId || usuarioLogado.serventia_id || null;
+      }
+      if (!id) return;
+      try {
+        const token = localStorage.getItem('token');
+        const url = `${config.apiURL}/serventias/${id}`;
+        const res = await fetch(url, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        let text = await res.text();
+        let data = {};
+        try { data = text ? JSON.parse(text) : {}; } catch {}
+        if (res.ok) setServentiaInfo(data.serventia || data);
+      } catch {}
+    }
+    fetchServentia();
+  }, [form.serventiaId, form.serventia_id, form.serventia]);
   const [statusPedido, setStatusPedido] = useState(form.status || 'Em Análise');
   const [processando, setProcessando] = useState(false);
   // Função para calcular o total adiantado
@@ -120,143 +144,48 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
     const cliente = form.cliente || {};
     const dataAtual = new Date().toLocaleDateString('pt-BR');
     const horaAtual = new Date().toLocaleTimeString('pt-BR');
-
+    // Dados da serventia (igual protocolo)
+    const s = serventiaInfo || {};
+    let serventiaHtml = `
+      <div style="text-align:center; margin-bottom:4px;">
+        <img src='/brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png' alt='Brasão da República' style='height:38px; margin-bottom:2px;' />
+      </div>
+      <div><b>${s.nome_completo || ''}</b></div>
+      <div>${s.endereco || ''}</div>
+      <div>CNPJ: ${s.cnpj || ''}</div>
+      <div>Telefone: ${s.telefone || ''}</div>
+      <div>Email: ${s.email || ''}</div>
+    `;
     const reciboHtml = `
       <html>
         <head>
-          <title>Recibo de DevoluçãoExcesso de Pagamento</title>
+          <title>Recibo de Devolução por Excesso de Pagamento</title>
           <style>
-            @page {
-              size: A4;
-              margin: 1cm;
-            }
-            
-            body { 
-              font-family: 'Times New Roman', serif; 
-              font-size: 11pt;
-              color: black;
-              line-height: 1.4;
-              margin: 0;
-              padding: 0;
-              width: 19cm;
-              height: 13.5cm; /* Meia folha A4 */
-              box-sizing: border-box;
-            }
-            
-            .cabecalho {
-              text-align: center;
-              margin-bottom: 20px;
-              border-bottom: 2px solid black;
-              padding-bottom: 15px;
-            }
-            
-            .serventia {
-              font-size: 14pt;
-              font-weight: bold;
-              margin-bottom: 5px;
-            }
-            
-            .endereco {
-              font-size: 10pt;
-              margin-bottom: 3px;
-            }
-            
-            .titulo-recibo {
-              font-size: 16pt;
-              font-weight: bold;
-              margin: 15px 0 10px 0;
-              text-decoration: underline;
-            }
-            
-            .protocolo {
-              font-size: 12pt;
-              font-weight: bold;
-              margin-bottom: 10px;
-            }
-            
-            .secao {
-              margin: 15px 0;
-            }
-            
-            .linha-info {
-              display: flex;
-              justify-content: space-between;
-              margin: 8px 0;
-              border-bottom: 1px dotted black;
-              padding-bottom: 3px;
-            }
-            
-            .label {
-              font-weight: bold;
-              width: 40%;
-            }
-            
-            .valor {
-              text-align: right;
-              width: 55%;
-            }
-            
-            .destaque-excesso {
-              border: 3px double black;
-              padding: 15px;
-              text-align: center;
-              margin: 20px 0;
-              background-color: #f9f9f9;
-            }
-            
-            .valor-excesso {
-              font-size: 20pt;
-              font-weight: bold;
-              margin: 10px 0;
-            }
-            
-            .assinatura {
-              margin-top: 30px;
-              display: flex;
-              justify-content: space-between;
-            }
-            
-            .campo-assinatura {
-              width: 45%;
-              text-align: center;
-              border-top: 1px solid black;
-              padding-top: 5px;
-              margin-top: 40px;
-            }
-            
-            .rodape {
-              margin-top: 25px;
-              font-size: 9pt;
-              text-align: center;
-              border-top: 1px solid black;
-              padding-top: 10px;
-            }
-            
-            .observacoes {
-              margin: 15px 0;
-              font-size: 10pt;
-              font-style: italic;
-            }
-            
-            @media print {
-              body {
-                margin: 0;
-                padding: 0;
-              }
-            }
+            @page { size: A4; margin: 1cm; }
+            body { font-family: 'Times New Roman', serif; font-size: 11pt; color: black; line-height: 1.4; margin: 0; padding: 0; width: 19cm; height: 13.5cm; box-sizing: border-box; }
+            .cabecalho { text-align: center; margin-bottom: 20px; border-bottom: 2px solid black; padding-bottom: 15px; }
+            .serventia-bloco { text-align: center; margin-bottom: 10px; }
+            .titulo-recibo { font-size: 16pt; font-weight: bold; margin: 15px 0 10px 0; text-decoration: underline; }
+            .protocolo { font-size: 12pt; font-weight: bold; margin-bottom: 10px; }
+            .secao { margin: 15px 0; }
+            .linha-info { display: flex; justify-content: space-between; margin: 8px 0; border-bottom: 1px dotted black; padding-bottom: 3px; }
+            .label { font-weight: bold; width: 40%; }
+            .valor { text-align: right; width: 55%; }
+            .destaque-excesso { border: 3px double black; padding: 15px; text-align: center; margin: 20px 0; background-color: #f9f9f9; }
+            .valor-excesso { font-size: 20pt; font-weight: bold; margin: 10px 0; }
+            .assinatura { margin-top: 30px; display: flex; justify-content: space-between; }
+            .campo-assinatura { width: 45%; text-align: center; border-top: 1px solid black; padding-top: 5px; margin-top: 40px; }
+            .rodape { margin-top: 25px; font-size: 9pt; text-align: center; border-top: 1px solid black; padding-top: 10px; }
+            .observacoes { margin: 15px 0; font-size: 10pt; font-style: italic; }
+            @media print { body { margin: 0; padding: 0; } }
           </style>
         </head>
         <body>
           <div class="cabecalho">
-            <div class="serventia">1º OFÍCIO DE REGISTRO DE IMÓVEIS</div>
-            <div class="endereco">Rua das Flores, 123 - Centro - São Paulo/SP - CEP: 01234-567</div>
-            <div class="endereco">Telefone: (11) 1234-5678 | Email: contato@1oficio.sp.gov.br</div>
-            <div class="endereco">CNPJ: 12.345.678/0001-90</div>
-            
+            <div class="serventia-bloco">${serventiaHtml}</div>
             <div class="titulo-recibo">RECIBO DE EXCESSO DE PAGAMENTO</div>
             <div class="protocolo">Protocolo: ${form.protocolo || 'Não informado'}</div>
           </div>
-          
           <div class="secao">
             <div class="linha-info">
               <div class="label">Cliente:</div>
@@ -275,7 +204,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               <div class="valor">${cliente.telefone || 'Não informado'}</div>
             </div>
           </div>
-          
           <div class="secao">
             <div class="linha-info">
               <div class="label">Data da Operação:</div>
@@ -286,7 +214,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               <div class="valor">${horaAtual}</div>
             </div>
           </div>
-          
           <div class="secao">
             <div class="linha-info">
               <div class="label">Valor do Serviço:</div>
@@ -297,28 +224,16 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               <div class="valor">R$ ${totalAdiantado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </div>
           </div>
-          
           <div class="destaque-excesso">
-            <div style="font-size: 14pt; font-weight: bold; margin-bottom: 10px;">
-              VALOR DEVOLVIDO
-            </div>
-            <div class="valor-excesso">
-              R$ ${valorExcesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </div>
-            <div style="font-size: 10pt; margin-top: 10px;">
-              (${valorExcesso.toLocaleString('pt-BR', { 
-                style: 'currency', 
-                currency: 'BRL' 
-              }).replace('R$', '').trim()} por extenso)
-            </div>
+            <div style="font-size: 14pt; font-weight: bold; margin-bottom: 10px;">VALOR DEVOLVIDO</div>
+            <div class="valor-excesso">R$ ${valorExcesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <div style="font-size: 10pt; margin-top: 10px;">(${valorExcesso.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace('R$', '').trim()} por extenso)</div>
           </div>
-          
           <div class="observacoes">
             <strong>Observações:</strong><br>
             • Este recibo comprova a devolução do valor pago em excesso pelo cliente.<br>
             • O valor acima foi devolvido conforme procedimentos internos da serventia.<br>
           </div>
-          
           <div class="assinatura">
             <div class="campo-assinatura">
               <div>Assinatura do Cliente</div>
@@ -329,7 +244,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               <div style="font-size: 9pt; margin-top: 5px;">Serventia</div>
             </div>
           </div>
-          
           <div class="rodape">
             <p>Documento gerado automaticamente pelo sistema em ${dataAtual} às ${horaAtual}</p>
             <p>Este documento possui validade legal e deve ser conservado pelo cliente</p>
