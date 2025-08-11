@@ -10,7 +10,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       let id = form.serventiaId || form.serventia_id || form.serventia || null;
       console.log('[DEBUG] Buscando serventia, id:', id);
       if (!id) {
-        console.log('[DEBUG] Nenhum id de serventia encontrado no form. form:', form);
+        console.warn('[DEBUG] Nenhum id de serventia encontrado no form. form completo:', JSON.stringify(form, null, 2));
         return;
       }
       try {
