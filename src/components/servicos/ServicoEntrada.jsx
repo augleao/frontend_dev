@@ -665,6 +665,11 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                     <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Descrição do Ato</th>
                     <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Quantidade</th>
                     <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Código Tributário</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Tipo de Registro</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Nome do(s) Registrado(s)</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Livro</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Folha</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Termo</th>
                     <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Ações</th>
                   </tr>
                 </thead>
@@ -722,6 +727,57 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                             ))}
                           </ul>
                         )}
+                      </td>
+                      <td style={{ padding: 6, fontSize: 10 }}>
+                        <select
+                          value={ato.tipoRegistro || ''}
+                          onChange={e => handleAtoChange(idx, 'tipoRegistro', e.target.value)}
+                          style={{ width: '100%', maxWidth: 120, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
+                        >
+                          <option value="">Selecione...</option>
+                          <option value="Livro E">Livro E</option>
+                          <option value="Nascimento">Nascimento</option>
+                          <option value="Casamento">Casamento</option>
+                          <option value="Casamento Religioso com Efeito Civil">Casamento Religioso com Efeito Civil</option>
+                          <option value="Obito">Óbito</option>
+                          <option value="Natimorto">Natimorto</option>
+                        </select>
+                      </td>
+                      <td style={{ padding: 6, fontSize: 10 }}>
+                        <input
+                          type="text"
+                          value={ato.nomeRegistrados || ''}
+                          onChange={e => handleAtoChange(idx, 'nomeRegistrados', e.target.value)}
+                          style={{ width: '100%', maxWidth: 160, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
+                          placeholder="Nome(s)"
+                        />
+                      </td>
+                      <td style={{ padding: 6, fontSize: 10 }}>
+                        <input
+                          type="text"
+                          value={ato.livro || ''}
+                          onChange={e => handleAtoChange(idx, 'livro', e.target.value)}
+                          style={{ width: '100%', maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
+                          placeholder="Livro"
+                        />
+                      </td>
+                      <td style={{ padding: 6, fontSize: 10 }}>
+                        <input
+                          type="text"
+                          value={ato.folha || ''}
+                          onChange={e => handleAtoChange(idx, 'folha', e.target.value)}
+                          style={{ width: '100%', maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
+                          placeholder="Folha"
+                        />
+                      </td>
+                      <td style={{ padding: 6, fontSize: 10 }}>
+                        <input
+                          type="text"
+                          value={ato.termo || ''}
+                          onChange={e => handleAtoChange(idx, 'termo', e.target.value)}
+                          style={{ width: '100%', maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
+                          placeholder="Termo"
+                        />
                       </td>
                       <td style={{ padding: 6, fontSize: 10 }}>
                         <button
