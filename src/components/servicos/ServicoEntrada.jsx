@@ -356,6 +356,127 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       </body>
       </html>
     `;
+  const win = window.open('', '_blank', 'width=794,height=550'); // Tamanho aproximado de meia folha A4
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 500);
+  };
+
+  return (
+    <div style={{ background: '#f5e6fa', padding: '0', borderRadius: '16px', width: '100%', boxSizing: 'border-box', display: 'flex', justifyContent: 'center' }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '100%',
+        margin: '32px 0',
+        padding: '24px 32px',
+        borderRadius: '16px',
+        border: '2px solid #9b59b6',
+        boxShadow: '0 2px 12px rgba(155,89,182,0.10)',
+        background: '#f5e6fa',
+        overflow: 'hidden',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'stretch'
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '10px 16px 6px 16px',
+          marginBottom: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 18 }}>
+            Informações do Serviço:
+          </h2>
+        </div>
+
+
+        {/* Descrição do Serviço, Origem, campo condicional e Prazo na mesma linha */}
+        <div style={{
+          padding: '8px 12px',
+          margin: '0 0 8px 0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          flexWrap: 'wrap'
+        }}>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 120, margin: 0 }}>Descrição do Serviço:</label>
+          <input
+            type="text"
+            value={form.descricao || ''}
+            onChange={e => onChange('descricao', e.target.value)}
+            maxLength={200}
+            style={{
+              width: 160,
+              border: '1.5px solid #d6d6f5',
+              borderRadius: 6,
+              padding: '4px 8px',
+              fontSize: 13,
+              height: 32,
+              boxSizing: 'border-box',
+            }}
+            placeholder="Descreva o serviço..."
+          />
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>Origem:</label>
+          <select
+            value={form.origem || ''}
+            onChange={e => onChange('origem', e.target.value)}
+            style={{
+              width: 110,
+              border: '1.5px solid #d6d6f5',
+              borderRadius: 6,
+              padding: '4px 8px',
+              fontSize: 13,
+              height: 32,
+              boxSizing: 'border-box',
+            }}
+          >
+            <option value="">Selecione a origem...</option>
+            <option value="Balcão">Balcão</option>
+            <option value="CRC">CRC</option>
+            <option value="email">email</option>
+            <option value="Whatsapp">Whatsapp</option>
+            <option value="Malote Digital">Malote Digital</option>
+            <option value="PJE">PJE</option>
+          </select>
+          {/* Campo condicional logo após Origem, exceto para Balcão */}
+          {form.origem && form.origem !== 'Balcão' && (
+            <>
+              <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>
+                {form.origem === 'CRC' ? 'Protocolo CRC:' :
+                  form.origem === 'email' ? 'E-mail:' :
+                  form.origem === 'Whatsapp' ? 'Telefone Whatsapp:' :
+                  form.origem === 'Malote Digital' ? 'Nº de Rastreabilidade:' :
+                  form.origem === 'PJE' ? 'Nº do Processo PJE:' : ''}
+              </label>
+              <input
+                type={form.origem === 'email' ? 'email' : 'text'}
+                value={form.origemInfo || ''}
+                onChange={e => onChange('origemInfo', e.target.value)}
+                style={{
+                  width: 180,
+                  border: '1.5px solid #d6d6f5',
+                  borderRadius: 6,
+                  padding: '4px 8px',
+                  fontSize: 13,
+                  height: 32,
+                  boxSizing: 'border-box',
+                }}
+                placeholder={
+                  form.origem === 'CRC' ? 'Digite o protocolo CRC' :
+                  form.origem === 'email' ? 'Digite o e-mail de origem' :
+                  form.origem === 'Whatsapp' ? 'Digite o telefone do Whatsapp' :
+                  form.origem === 'Malote Digital' ? 'Digite o número de rastreabilidade' :
+                  form.origem === 'PJE' ? 'Digite o número do processo PJE' : ''
+                }
+              />
+            </>
+          )}
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 80, margin: 0 }}>Prazo estimado:</label>
+          <input
             type="date"
             value={form.prazo}
             onChange={e => onChange('prazo', e.target.value)}
