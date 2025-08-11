@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import config from '../../config';
+
+export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
   // Carrega os atos do pedido salvo (edição), incluindo campos extras
   useEffect(() => {
     if (form && Array.isArray(form.combos) && form.combos.length > 0) {
@@ -22,9 +25,6 @@ import { useNavigate } from 'react-router-dom';
     }
     // eslint-disable-next-line
   }, [form.combos]);
-import config from '../../config';
-
-export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
   const [serventiaInfo, setServentiaInfo] = useState(null);
   // Buscar informações completas da serventia ao montar
   useEffect(() => {
