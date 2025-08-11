@@ -266,15 +266,13 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     const clienteDoc = cliente.cpf || cliente.cnpj || form.clienteCpf || form.clienteCnpj || '-';
     const clienteEmail = cliente.email || form.clienteEmail || '-';
     const clienteTel = cliente.telefone || form.clienteTelefone || '-';
-    // Sempre tenta usar as informações completas da serventia vindas do DB
+    // Exibir apenas os campos do banco: nome_completo, endereco, cnpj, telefone, email
     let serventiaHtml = '-';
     const s = serventiaInfo || {};
-    if (s && (s.nome || s.endereco || s.bairro || s.cidade || s.uf || s.cep || s.cnpj)) {
+    if (s && (s.nome_completo || s.endereco || s.cnpj)) {
       serventiaHtml = `
-        <div><b>${s.nome || ''}</b></div>
-        <div>${s.endereco || ''}${s.numero ? ', ' + s.numero : ''}</div>
-        <div>${s.bairro || ''} - ${s.cidade || ''} - ${s.uf || ''}</div>
-        <div>CEP: ${s.cep || ''}</div>
+        <div><b>${s.nome_completo || ''}</b></div>
+        <div>${s.endereco || ''}</div>
         <div>CNPJ: ${s.cnpj || ''}</div>
         <div>Telefone: ${s.telefone || ''}</div>
         <div>Email: ${s.email || ''}</div>
@@ -349,17 +347,21 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   };
 
   return (
-    <div style={{ background: '#f5e6fa', padding: '0', borderRadius: '16px', width: '100%', boxSizing: 'border-box' }}>
+    <div style={{ background: '#f5e6fa', padding: '0', borderRadius: '16px', width: '100%', boxSizing: 'border-box', display: 'flex', justifyContent: 'center' }}>
       <div style={{
         width: '100%',
-        margin: '0',
-        padding: 0,
+        maxWidth: '800px',
+        margin: '32px 0',
+        padding: '24px 32px',
         borderRadius: '16px',
         border: '2px solid #9b59b6',
         boxShadow: '0 2px 12px rgba(155,89,182,0.10)',
         background: '#f5e6fa',
         overflow: 'hidden',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'stretch'
       }}>
         {/* Header */}
         <div style={{
