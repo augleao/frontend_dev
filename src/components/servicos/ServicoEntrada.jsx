@@ -41,9 +41,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     }
     fetchServentia();
   }, [form.serventiaId, form.serventia_id, form.serventia]);
-  console.log('PROPS atosPedido recebidos em ServicoEntrada:', atosPedido);
-  console.log('[LOG] form recebido em ServicoEntrada:', form);
-  console.log('[LOG] form.valorAdiantadoDetalhes recebido:', form.valorAdiantadoDetalhes);
   const [comboSelecionado, setComboSelecionado] = useState('');
   const [codigoTributarioSuggestions, setCodigoTributarioSuggestions] = useState([]);
   const [loadingCodigoTributario, setLoadingCodigoTributario] = useState(false);
@@ -54,7 +51,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   );
 
   useEffect(() => {
-    console.log('[LOG] useEffect - form.valorAdiantadoDetalhes mudou:', form.valorAdiantadoDetalhes);
     setValorAdiantadoDetalhes(form.valorAdiantadoDetalhes || [ { valor: '', forma: '' } ]);
   }, [form.valorAdiantadoDetalhes]);
   const navigate = useNavigate();
@@ -125,13 +121,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   // Função para calcular a soma dos valores dos atos pagos (código tributário "01")
   const calcularTotalAtosPagos = () => {
     const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
-    console.log('Atos filtrados para código tributário 01:', atosFiltrados);
     const total = atosFiltrados.reduce((total, ato) => {
       const valor = parseFloat(ato.valor_final || 0);
-      console.log(`Ato:`, ato, `Valor considerado:`, valor, `Quantidade:`, ato.quantidade);
       return total + (valor * (ato.quantidade || 1));
     }, 0);
-    console.log('Total calculado dos atos pagos:', total);
     return total;
   };
 
@@ -184,21 +177,17 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         valorAdiantadoDetalhes,
         combos
       });
-      console.log('[handleSubmit] Nome do usuário logado enviado no pedido:', nomeUsuario);
       const token = localStorage.getItem('token');
       const headers = {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       };
-      console.log('[handleSubmit] Enviando pedido:', { url, method, body });
       const res = await fetch(url, {
         method,
         headers,
         body
       });
-      console.log('[handleSubmit] Status da resposta:', res.status, res.statusText);
       const responseText = await res.text();
-      console.log('[handleSubmit] Texto da resposta:', responseText);
       let data = {};
       try {
         data = responseText ? JSON.parse(responseText) : {};
@@ -208,7 +197,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       // Após salvar o pedido, grava o status 'Aguardando Conferência' no DB
       if (res.ok) {
         // Pedido enviado com sucesso
-        console.log('Operação realizada com sucesso:', data);
         // Grava status 'Aguardando Conferência' na tabela de status
         const protocoloParaStatus = data.protocolo || form.protocolo;
         if (protocoloParaStatus) {
@@ -219,9 +207,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               status: 'Aguardando Conferência',
               usuario: nomeUsuario
             };
-            console.log('[Status POST] Protocolo:', protocoloParaStatus);
-            console.log('[Status POST] Usuário:', usuario);
-            console.log('[Status POST] Body:', statusBody);
             const statusRes = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(protocoloParaStatus)}/status`, {
               method: 'POST',
               headers: {
@@ -231,8 +216,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               body: JSON.stringify(statusBody)
             });
             const statusText = await statusRes.text();
-            console.log('[Status POST] Status da resposta:', statusRes.status, statusRes.statusText);
-            console.log('[Status POST] Texto da resposta:', statusText);
             if (!statusRes.ok) {
               console.error('[Status POST] Erro ao gravar status:', statusRes.status, statusRes.statusText, statusText);
             }
