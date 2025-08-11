@@ -275,7 +275,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     }
     let serventiaHtml = `
       <div style="text-align:center; margin-bottom:4px;">
-        <img src='/brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png' alt='Brasão da República' style='height:38px; margin-bottom:2px;' />
+        <img src='/../../../brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png' alt='Brasão da República' style='height:38px; margin-bottom:2px;' />
       </div>
       <div><b>${s.nome_completo || ''}</b></div>
       <div>${s.endereco || ''}</div>
