@@ -299,7 +299,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     const html = `
       <html>
       <head>
-        <title>Protocolo de Entrada</title>
+        <title>Recibo de Protocolo</title>
         <style>
           body { font-family: Arial, sans-serif; margin: 4px; font-size: 11px; color: #000; background: #fff; }
           .protocolo-box { border: 1px solid #000; border-radius: 6px; padding: 8px 8px 4px 8px; max-width: 420px; margin: 0 auto; }
@@ -314,8 +314,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       </head>
       <body>
         <div class="protocolo-box">
-          <h2>Recibo de Protocolo</h2>
-          <div class="info"><span class="label"></span> <span class="valor">${serventiaHtml}</span></div>
+          <h2>Recibo de Protocolo nº >${protocolo}</h2>
+          <div class="info" style="text-align:center;"><span class="label"></span> <span class="valor">${serventiaHtml}</span></div>
           <div class="info"><span class="label">Protocolo nº</span> <span class="valor">${protocolo}</span></div>
           <div class="info"><span class="label">Data/Hora:</span> <span class="valor">${data}</span></div>
           <div class="info"><span class="label">Usuário:</span> <span class="valor">${nomeUsuario}</span></div>
