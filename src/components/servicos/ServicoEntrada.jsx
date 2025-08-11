@@ -302,10 +302,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         <title>Recibo de Protocolo</title>
         <style>
           @page { size: A4; margin: 1cm; }
-          body { font-family: Arial, sans-serif; margin: 4px; font-size: 11px; color: #000; background: #fff; }
-          .protocolo-box { border: 1px solid #000; border-radius: 6px; padding: 8px 8px 4px 8px; max-width: 420px; margin: 0 auto; }
-          h2 { color: #000; text-align: center; font-size: 15px; margin: 2px 0 8px 0; font-weight: bold; }
-          .info { margin-bottom: 4px; }
+          body { font-family: 'Times New Roman', serif; font-size: 11pt; color: black; line-height: 1.4; margin: 0; padding: 0; width: 19cm; height: 13.5cm; box-sizing: border-box; }
+          .cabecalho { text-align: center; margin-bottom: 20px; border-bottom: 2px solid black; padding-bottom: 15px; }
+          .serventia-bloco { text-align: center; margin-bottom: 10px; }
+          .info { margin-bottom: 4px; text-align: center; }
           .label { color: #000; font-weight: bold; }
           .valor { color: #000; }
           .atos-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
@@ -314,169 +314,48 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         </style>
       </head>
       <body>
-        <div class="protocolo-box">
-          <h2>Recibo de Protocolo nº ${protocolo}</h2>
-          <div class="info" style="text-align:center;"><span class="label"></span> <span class="valor">${serventiaHtml}</span></div>
-          <div class="info"><span class="label">Protocolo nº</span> <span class="valor">${protocolo}</span></div>
-          <div class="info"><span class="label">Data/Hora:</span> <span class="valor">${data}</span></div>
-          <div class="info"><span class="label">Escrevente Responsável pelo pedido:</span> <span class="valor">${nomeUsuario}</span></div>
-          <div class="info"><span class="label">Cliente:</span> <span class="valor">${clienteNome}</span></div>
-          <div class="info"><span class="label">CPF/CNPJ:</span> <span class="valor">${clienteDoc}</span></div>
-          <div class="info"><span class="label">E-mail:</span> <span class="valor">${clienteEmail}</span></div>
-          <div class="info"><span class="label">Tel:</span> <span class="valor">${clienteTel}</span></div>
-          <div class="info"><span class="label">Descrição:</span> <span class="valor">${form.descricao || ''}</span></div>
-          <div class="info"><span class="label">Origem:</span> <span class="valor">${form.origem || ''} ${form.origemInfo ? '(' + form.origemInfo + ')' : ''}</span></div>
-          <div class="info"><span class="label">Previsão de Entrega:</span> <span class="valor">${form.prazo || ''}</span></div>
-          <div class="info"><span class="label">Valor(es) Adiantado(s):</span> <span class="valor">${(valorAdiantadoDetalhes || []).map(v => v.valor ? `R$${parseFloat(v.valor).toLocaleString('pt-BR', {minimumFractionDigits:2})} (${v.forma})` : '').filter(Boolean).join(' | ') || '-'}</span></div>
-          <div class="info"><span class="label">Obs:</span> <span class="valor">${form.observacao || ''}</span></div>
-          <table class="atos-table">
-            <thead>
-              <tr>
-                <th>Combo</th>
-                <th>Cód.</th>
-                <th>Desc.</th>
-                <th>Qtd</th>
-                <th>Trib.</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${(atosPedido || []).map(ato => `
-                <tr>
-                  <td>${ato.comboNome || ''}</td>
-                  <td>${ato.atoCodigo || ''}</td>
-                  <td>${ato.atoDescricao ? ato.atoDescricao.slice(0, 18) : ''}</td>
-                  <td>${ato.quantidade || 1}</td>
-                  <td>${ato.codigoTributario || ''}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+        <div class="cabecalho">
+          <div class="serventia-bloco">${serventiaHtml}</div>
+          <h2 style="color: #000; text-align: center; font-size: 15px; margin: 2px 0 8px 0; font-weight: bold;">Recibo de Protocolo nº ${protocolo}</h2>
         </div>
+        <div class="info"><span class="label">Protocolo nº</span> <span class="valor">${protocolo}</span></div>
+        <div class="info"><span class="label">Data/Hora:</span> <span class="valor">${data}</span></div>
+        <div class="info"><span class="label">Usuário:</span> <span class="valor">${nomeUsuario}</span></div>
+        <div class="info"><span class="label">Cliente:</span> <span class="valor">${clienteNome}</span></div>
+        <div class="info"><span class="label">Doc:</span> <span class="valor">${clienteDoc}</span></div>
+        <div class="info"><span class="label">E-mail:</span> <span class="valor">${clienteEmail}</span></div>
+        <div class="info"><span class="label">Tel:</span> <span class="valor">${clienteTel}</span></div>
+        <div class="info"><span class="label">Descrição:</span> <span class="valor">${form.descricao || ''}</span></div>
+        <div class="info"><span class="label">Origem:</span> <span class="valor">${form.origem || ''} ${form.origemInfo ? '(' + form.origemInfo + ')' : ''}</span></div>
+        <div class="info"><span class="label">Previsão de Entrega:</span> <span class="valor">${form.prazo || ''}</span></div>
+        <div class="info"><span class="label">Obs:</span> <span class="valor">${form.observacao || ''}</span></div>
+        <div class="info"><span class="label">Valor(es) Adiantado(s):</span> <span class="valor">${(valorAdiantadoDetalhes || []).map(v => v.valor ? `R$${parseFloat(v.valor).toLocaleString('pt-BR', {minimumFractionDigits:2})} (${v.forma})` : '').filter(Boolean).join(' | ') || '-'}</span></div>
+        <table class="atos-table">
+          <thead>
+            <tr>
+              <th>Combo</th>
+              <th>Cód.</th>
+              <th>Desc.</th>
+              <th>Qtd</th>
+              <th>Trib.</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(atosPedido || []).map(ato => `
+              <tr>
+                <td>${ato.comboNome || ''}</td>
+                <td>${ato.atoCodigo || ''}</td>
+                <td>${ato.atoDescricao ? ato.atoDescricao.slice(0, 18) : ''}</td>
+                <td>${ato.quantidade || 1}</td>
+                <td>${ato.codigoTributario || ''}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
         <script>window.onload = function() { window.print(); }</script>
       </body>
       </html>
     `;
-  const win = window.open('', '_blank', 'width=794,height=550'); // Tamanho aproximado de meia folha A4
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => { win.print(); }, 500);
-  };
-
-  return (
-    <div style={{ background: '#f5e6fa', padding: '0', borderRadius: '16px', width: '100%', boxSizing: 'border-box', display: 'flex', justifyContent: 'center' }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '100%',
-        margin: '32px 0',
-        padding: '24px 32px',
-        borderRadius: '16px',
-        border: '2px solid #9b59b6',
-        boxShadow: '0 2px 12px rgba(155,89,182,0.10)',
-        background: '#f5e6fa',
-        overflow: 'hidden',
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'stretch'
-      }}>
-        {/* Header */}
-        <div style={{
-          padding: '10px 16px 6px 16px',
-          marginBottom: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-          <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 18 }}>
-            Informações do Serviço:
-          </h2>
-        </div>
-
-
-        {/* Descrição do Serviço, Origem, campo condicional e Prazo na mesma linha */}
-        <div style={{
-          padding: '8px 12px',
-          margin: '0 0 8px 0',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          flexWrap: 'wrap'
-        }}>
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 120, margin: 0 }}>Descrição do Serviço:</label>
-          <input
-            type="text"
-            value={form.descricao || ''}
-            onChange={e => onChange('descricao', e.target.value)}
-            maxLength={200}
-            style={{
-              width: 160,
-              border: '1.5px solid #d6d6f5',
-              borderRadius: 6,
-              padding: '4px 8px',
-              fontSize: 13,
-              height: 32,
-              boxSizing: 'border-box',
-            }}
-            placeholder="Descreva o serviço..."
-          />
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>Origem:</label>
-          <select
-            value={form.origem || ''}
-            onChange={e => onChange('origem', e.target.value)}
-            style={{
-              width: 110,
-              border: '1.5px solid #d6d6f5',
-              borderRadius: 6,
-              padding: '4px 8px',
-              fontSize: 13,
-              height: 32,
-              boxSizing: 'border-box',
-            }}
-          >
-            <option value="">Selecione a origem...</option>
-            <option value="Balcão">Balcão</option>
-            <option value="CRC">CRC</option>
-            <option value="email">email</option>
-            <option value="Whatsapp">Whatsapp</option>
-            <option value="Malote Digital">Malote Digital</option>
-            <option value="PJE">PJE</option>
-          </select>
-          {/* Campo condicional logo após Origem, exceto para Balcão */}
-          {form.origem && form.origem !== 'Balcão' && (
-            <>
-              <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>
-                {form.origem === 'CRC' ? 'Protocolo CRC:' :
-                  form.origem === 'email' ? 'E-mail:' :
-                  form.origem === 'Whatsapp' ? 'Telefone Whatsapp:' :
-                  form.origem === 'Malote Digital' ? 'Nº de Rastreabilidade:' :
-                  form.origem === 'PJE' ? 'Nº do Processo PJE:' : ''}
-              </label>
-              <input
-                type={form.origem === 'email' ? 'email' : 'text'}
-                value={form.origemInfo || ''}
-                onChange={e => onChange('origemInfo', e.target.value)}
-                style={{
-                  width: 180,
-                  border: '1.5px solid #d6d6f5',
-                  borderRadius: 6,
-                  padding: '4px 8px',
-                  fontSize: 13,
-                  height: 32,
-                  boxSizing: 'border-box',
-                }}
-                placeholder={
-                  form.origem === 'CRC' ? 'Digite o protocolo CRC' :
-                  form.origem === 'email' ? 'Digite o e-mail de origem' :
-                  form.origem === 'Whatsapp' ? 'Digite o telefone do Whatsapp' :
-                  form.origem === 'Malote Digital' ? 'Digite o número de rastreabilidade' :
-                  form.origem === 'PJE' ? 'Digite o número do processo PJE' : ''
-                }
-              />
-            </>
-          )}
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 80, margin: 0 }}>Prazo estimado:</label>
-          <input
             type="date"
             value={form.prazo}
             onChange={e => onChange('prazo', e.target.value)}
