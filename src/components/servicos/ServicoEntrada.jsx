@@ -364,7 +364,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     <div style={{ background: '#f5e6fa', padding: '0', borderRadius: '16px', width: '100%', boxSizing: 'border-box', display: 'flex', justifyContent: 'center' }}>
       <div style={{
         width: '100%',
-        maxWidth: '800px',
+        maxWidth: '100%',
         margin: '32px 0',
         padding: '24px 32px',
         borderRadius: '16px',
