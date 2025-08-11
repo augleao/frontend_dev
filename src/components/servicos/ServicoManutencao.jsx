@@ -78,10 +78,7 @@ export default function ServicoManutencao() {
       const response = await fetchComAuth(`${config.apiURL}/pedidoshistoricostatus/${encodeURIComponent(protocolo)}/historico-status`);
       if (response && response.ok) {
         const data = await response.json();
-        console.log('[HISTORICO DEBUG] Resposta da API /historico-status:', data);
         if (Array.isArray(data.historico)) {
-          console.log(`[HISTORICO DEBUG] Quantidade de status recebidos: ${data.historico.length}`);
-          data.historico.forEach((item, idx) => console.log(`[HISTORICO DEBUG] #${idx+1}:`, item));
         }
         setHistoricoStatus(data.historico || []);
       } else {
@@ -96,7 +93,6 @@ export default function ServicoManutencao() {
         ]);
       }
     } catch (error) {
-      console.error('Erro ao buscar histórico de status:', error);
       // Fallback com dados básicos
       setHistoricoStatus([
         {
@@ -111,9 +107,7 @@ export default function ServicoManutencao() {
 
 
   useEffect(() => {
-    console.log('useEffect [location.search] disparado');
     const protocolo = getProtocoloFromQuery();
-    console.log('Protocolo extraído:', protocolo);
     
     // Se não há protocolo, limpa o estado e sai
     if (!protocolo) {
@@ -127,18 +121,14 @@ export default function ServicoManutencao() {
     
     // Se já carregou este protocolo específico, não recarrega
     if (form.protocolo === protocolo && pedidoCarregado) {
-      console.log('Protocolo já carregado, pulando...');
       return;
     }
 
-    console.log('Carregando protocolo:', protocolo);
     const token = localStorage.getItem('token');
     fetchComAuth(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`)
       .then(res => res && res.json())
       .then(data => {
-        console.log('Dados recebidos do backend:', data);
-        if (data.pedido) {
-          console.log('[DEBUG] Status recebido do backend:', data.pedido.status);
+  if (data.pedido) {
           let prazoFormatado = '';
           if (data.pedido.prazo) {
             const d = new Date(data.pedido.prazo);
@@ -150,9 +140,6 @@ export default function ServicoManutencao() {
             data.pedido.valor_adiantado_detalhes ||
             [{ valor: '', forma: '' }];
           // LOGS DE DEPURAÇÃO PARA SERVANTIA
-          console.log('[DEBUG] data.pedido.serventia:', data.pedido.serventia);
-          console.log('[DEBUG] data.pedido.serventiaId:', data.pedido.serventiaId);
-          console.log('[DEBUG] data.pedido.serventia_id:', data.pedido.serventia_id);
           setForm(f => ({
             ...f,
             ...data.pedido,
@@ -184,21 +171,17 @@ export default function ServicoManutencao() {
 
           // Após carregar o pedido, buscar execução salva (se existir) e atualizar o form
           if (data.pedido && data.pedido.protocolo) {
-            console.log('[EXECUCAO DEBUG] Buscando execução do serviço para protocolo:', data.pedido.protocolo);
             fetchComAuth(`${config.apiURL}/execucao-servico/${encodeURIComponent(data.pedido.protocolo)}`)
               .then(execRes => {
                 if (!execRes) {
-                  console.warn('[EXECUCAO DEBUG] Resposta fetchComAuth nula para execução');
                   // Removido: garantir que componentes estejam sempre disponíveis
                 }
                 if (!execRes.ok) {
-                  console.warn('[EXECUCAO DEBUG] Execução não encontrada ou erro HTTP:', execRes.status);
                   // Removido: garantir que componentes estejam sempre disponíveis
                 }
                 return execRes.json();
               })
               .then(execData => {
-                console.log('[EXECUCAO DEBUG] Dados recebidos da execução:', execData);
                 if (execData) {
                   setForm(f => ({
                     ...f,
@@ -207,9 +190,7 @@ export default function ServicoManutencao() {
                       ...execData    // sobrescreve pelos do backend
                     }
                   }));
-                  console.log('[EXECUCAO DEBUG] Execução do serviço carregada no form:', execData);
                 } else {
-                  console.log('[EXECUCAO DEBUG] Nenhuma execução encontrada para o protocolo:', data.pedido.protocolo);
                 }
               });
           }
@@ -234,7 +215,6 @@ export default function ServicoManutencao() {
         }
       })
       .catch(err => {
-        console.error('Erro ao buscar pedido por protocolo:', err);
         setPedidoCarregado(true);
       });
   }, [location.search, form.protocolo]); // Adiciona form.protocolo às dependências
@@ -305,7 +285,6 @@ export default function ServicoManutencao() {
   // Função para excluir pedido
   const excluirPedido = async () => {
     if (!form.protocolo) {
-      alert('Nenhum pedido carregado para excluir.');
       return;
     }
 
@@ -320,7 +299,6 @@ export default function ServicoManutencao() {
       });
 
       if (res.ok) {
-        alert(`Pedido ${form.protocolo} excluído com sucesso!`);
         // Limpa o formulário e redireciona
         setForm({
           protocolo: '',
@@ -340,12 +318,8 @@ export default function ServicoManutencao() {
         navigate('/servicos');
       } else {
         const errorText = await res.text();
-        console.error('Erro ao excluir pedido:', res.status, errorText);
-        alert(`Erro ao excluir pedido: ${res.status}`);
       }
     } catch (error) {
-      console.error('Erro ao excluir pedido:', error);
-      alert('Erro ao excluir pedido. Tente novamente.');
     }
   };
 
@@ -437,7 +411,6 @@ export default function ServicoManutencao() {
               {form.protocolo || 'Novo Pedido'}
             </span>
           </h2>
-          {console.log('[DEBUG] form.status:', form.status, '| form:', form)}
           {form.status && (
             <span style={{
               display: 'flex',

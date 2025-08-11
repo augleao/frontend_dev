@@ -52,20 +52,10 @@ export default function ServicoConferencia({ protocolo, atosPedido = [] }) {
       const token = localStorage.getItem('token');
       
       // Verifica se o pedido possui atos pagos (código tributário 01) usando os atos já disponíveis
-      console.log(`[CONFERENCIA DEBUG] Verificando atos do protocolo: ${protocolo}`);
-      console.log(`[CONFERENCIA DEBUG] Total de atos disponíveis: ${atosPedido.length}`);
-      console.log(`[CONFERENCIA DEBUG] Detalhes dos atos:`, atosPedido.map(ato => ({
-        id: ato.id,
-        codigo: ato.codigo,
-        codigoTributario: ato.codigoTributario,
-        descricao: ato.descricao,
-        tipo: typeof ato.codigoTributario
-      })));
       
       // Verifica se existe algum ato com código tributário '01' (atos pagos)
       const atosPagos = atosPedido.filter(ato => {
         const codigo = String(ato.codigoTributario).trim();
-        console.log(`[CONFERENCIA DEBUG] Verificando ato - codigoTributario: '${codigo}' (tipo: ${typeof ato.codigoTributario})`);
         return codigo === '01';
       });
       
@@ -73,9 +63,6 @@ export default function ServicoConferencia({ protocolo, atosPedido = [] }) {
   // Se não houver ato pago (código 01), status deve ser 'Aguardando Execução', senão 'Aguardando Pagamento'
   const statusProximaEtapa = possuiAtosPagos ? 'Aguardando Pagamento' : 'Aguardando Execução';
       
-      console.log(`[CONFERENCIA DEBUG] Atos com código '01':`, atosPagos);
-      console.log(`[CONFERENCIA DEBUG] Possui atos pagos: ${possuiAtosPagos}`);
-      console.log(`[CONFERENCIA DEBUG] Status definido: ${statusProximaEtapa}`);
 
       const body = JSON.stringify({
         protocolo,
@@ -105,9 +92,7 @@ export default function ServicoConferencia({ protocolo, atosPedido = [] }) {
             },
             body: JSON.stringify({ status: statusProximaEtapa, usuario })
           });
-          console.log(`[CONFERENCIA] Status do pedido ${protocolo} atualizado para: ${statusProximaEtapa}`);
-        } catch (e) {
-          console.warn('[CONFERENCIA] Erro ao atualizar status do pedido:', e);
+  } catch (e) {
           // Não bloqueia o fluxo se falhar, mas pode exibir um aviso se desejar
         }
         
@@ -151,7 +136,6 @@ export default function ServicoConferencia({ protocolo, atosPedido = [] }) {
         const dataConferencia = await conferenciaAtualizada.json();
         const conferenciasRestantes = dataConferencia.conferencias || [];
         
-        console.log(`[CONFERENCIA DEBUG] Conferências restantes após exclusão: ${conferenciasRestantes.length}`);
         
         // Se não há mais conferências, volta o status para "Aguardando Conferência"
         if (conferenciasRestantes.length === 0) {
@@ -167,15 +151,11 @@ export default function ServicoConferencia({ protocolo, atosPedido = [] }) {
                 usuario: JSON.parse(localStorage.getItem('usuario') || '{}').nome || 'Sistema'
               })
             });
-            console.log(`[CONFERENCIA] Status do pedido ${protocolo} voltou para: Aguardando Conferência`);
           } catch (e) {
-            console.warn('[CONFERENCIA] Erro ao atualizar status do pedido após exclusão:', e);
           }
         }
       }
     } catch (err) {
-      alert('Erro ao apagar conferência.');
-      console.error('[CONFERENCIA] Erro ao apagar conferência:', err);
     }
   }
 
