@@ -275,7 +275,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     }
     let serventiaHtml = `
       <div style="text-align:center; margin-bottom:4px;">
-        <img src='/../../../brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png' alt='Brasão da República' style='height:38px; margin-bottom:2px;' />
+        <img src='/../../brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png' alt='Brasão da República' style='height:38px; margin-bottom:2px;' />
       </div>
       <div><b>${s.nome_completo || ''}</b></div>
       <div>${s.endereco || ''}</div>
@@ -303,8 +303,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       <body>
         <div class="protocolo-box">
           <h2>Recibo de Protocolo</h2>
-          <div class="info"><span class="label">Protocolo nº</span> <span class="valor">${protocolo}</span></div>
           <div class="info"><span class="label"></span> <span class="valor">${serventiaHtml}</span></div>
+          <div class="info"><span class="label">Protocolo nº</span> <span class="valor">${protocolo}</span></div>
           <div class="info"><span class="label">Data/Hora:</span> <span class="valor">${data}</span></div>
           <div class="info"><span class="label">Usuário:</span> <span class="valor">${nomeUsuario}</span></div>
           <div class="info"><span class="label">Cliente:</span> <span class="valor">${clienteNome}</span></div>
