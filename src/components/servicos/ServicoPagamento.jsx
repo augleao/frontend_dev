@@ -183,7 +183,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         <body>
           <div class="cabecalho">
             <div class="serventia-bloco">${serventiaHtml}</div>
-            <div class="titulo-recibo">RECIBO DE EXCESSO DE PAGAMENTO</div>
+            <div class="titulo-recibo">RECIBO DE DEVOLUÇÃO POR EXCESSO DE PAGAMENTO</div>
             <div class="protocolo">Protocolo: ${form.protocolo || 'Não informado'}</div>
           </div>
           <div class="secao">

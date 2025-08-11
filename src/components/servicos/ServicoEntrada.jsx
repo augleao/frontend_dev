@@ -301,6 +301,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       <head>
         <title>Recibo de Protocolo</title>
         <style>
+          @page { size: A4; margin: 1cm; }
           body { font-family: Arial, sans-serif; margin: 4px; font-size: 11px; color: #000; background: #fff; }
           .protocolo-box { border: 1px solid #000; border-radius: 6px; padding: 8px 8px 4px 8px; max-width: 420px; margin: 0 auto; }
           h2 { color: #000; text-align: center; font-size: 15px; margin: 2px 0 8px 0; font-weight: bold; }
@@ -355,9 +356,11 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       </body>
       </html>
     `;
-    const win = window.open('', '_blank');
-    win.document.write(html);
-    win.document.close();
+  const win = window.open('', '_blank', 'width=794,height=550'); // Tamanho aproximado de meia folha A4
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 500);
   };
 
   return (
