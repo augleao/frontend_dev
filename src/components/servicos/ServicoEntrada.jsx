@@ -257,21 +257,23 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     const clienteDoc = cliente.cpf || cliente.cnpj || form.clienteCpf || form.clienteCnpj || '-';
     const clienteEmail = cliente.email || form.clienteEmail || '-';
     const clienteTel = cliente.telefone || form.clienteTelefone || '-';
-    // Exibir nome_completo, endereco, CNPJ, telefone e email da serventia, se existirem
-    let serventiaHtml = '-';
+    // Sempre exibir bloco completo da serventia, mesmo que alguns campos estejam vazios
     const s = serventiaInfo || {};
-    if (s && (s.nome_completo || s.endereco || s.cnpj || s.telefone || s.email)) {
-      serventiaHtml = `
-        <div><b>${s.nome_completo || ''}</b></div>
-        <div>${s.endereco || ''}</div>
-        <div>CNPJ: ${s.cnpj || ''}</div>
-        <div>Telefone: ${s.telefone || ''}</div>
-        <div>Email: ${s.email || ''}</div>
-      `;
-    } else {
-      // fallback para string simples
-      serventiaHtml = form.serventia || usuario.serventia || '-';
+    // LOG para rastrear dados recebidos da serventia
+    console.log('[PROTOCOLO LOG] Dados da serventia recebidos para impressão:', s);
+    if (!s || typeof s !== 'object') {
+      console.warn('[PROTOCOLO LOG] serventiaInfo está indefinido ou não é objeto:', s);
     }
+    if (!s.nome_completo) {
+      console.warn('[PROTOCOLO LOG] nome_completo ausente na serventia:', s);
+    }
+    let serventiaHtml = `
+      <div><b>${s.nome_completo || ''}</b></div>
+      <div>${s.endereco || ''}</div>
+      <div>CNPJ: ${s.cnpj || ''}</div>
+      <div>Telefone: ${s.telefone || ''}</div>
+      <div>Email: ${s.email || ''}</div>
+    `;
     // Monta HTML do protocolo para impressora térmica 80 colunas, apenas preto
     const html = `
       <html>
@@ -291,9 +293,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       </head>
       <body>
         <div class="protocolo-box">
-          <h2>PROTOCOLO DE ENTRADA</h2>
+          <h2>Recibo de Protocolo</h2>
           <div class="info"><span class="label">Serventia:</span> <span class="valor">${serventiaHtml}</span></div>
-          <div class="info"><span class="label">Protocolo:</span> <span class="valor">${protocolo}</span></div>
+          <div class="info"><span class="label">Protocolo nº</span> <span class="valor">${protocolo}</span></div>
           <div class="info"><span class="label">Data/Hora:</span> <span class="valor">${data}</span></div>
           <div class="info"><span class="label">Usuário:</span> <span class="valor">${nomeUsuario}</span></div>
           <div class="info"><span class="label">Cliente:</span> <span class="valor">${clienteNome}</span></div>
