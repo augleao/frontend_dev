@@ -254,7 +254,19 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     console.log('[PROTOCOLO DEBUG] serventiaInfo:', serventiaInfo);
     // Dados principais do protocolo
     const protocolo = form.protocolo || '(sem número)';
-    const data = new Date().toLocaleString('pt-BR');
+    // Usa a data/hora do salvamento do pedido (form.criado_em), se disponível
+    let data = '-';
+    if (form.criado_em) {
+      try {
+        const d = new Date(form.criado_em);
+        data = d.toLocaleString('pt-BR');
+      } catch (e) {
+        console.warn('[PROTOCOLO LOG] Erro ao converter form.criado_em:', form.criado_em, e);
+        data = form.criado_em;
+      }
+    } else {
+      data = new Date().toLocaleString('pt-BR');
+    }
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     const nomeUsuario = usuario.nome || usuario.email || 'Usuário';
     // Dados do cliente
@@ -275,7 +287,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     }
     let serventiaHtml = `
       <div style="text-align:center; margin-bottom:4px;">
-        <img src='/../../brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png' alt='Brasão da República' style='height:38px; margin-bottom:2px;' />
+        <img src='/brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png' alt='Brasão da República' style='height:38px; margin-bottom:2px;' />
       </div>
       <div><b>${s.nome_completo || ''}</b></div>
       <div>${s.endereco || ''}</div>
