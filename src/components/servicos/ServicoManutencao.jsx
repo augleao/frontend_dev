@@ -512,85 +512,40 @@ export default function ServicoManutencao() {
             </div>
           </div>
 
-          {/* Novo componente de conferência - só habilita se protocolo existir */}
-          <div style={!form.protocolo ? {
-            pointerEvents: 'none',
-            opacity: 0.6,
-            filter: 'grayscale(0.7) contrast(0.7)',
-            background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)',
-            borderRadius: 12,
-            marginBottom: 12
-          } : {}}>
-            <ServicoConferencia protocolo={form.protocolo} atosPedido={atosPedido} disabled={!form.protocolo} />
+          {/* Novo componente de conferência - sempre habilitado */}
+          <div>
+            <ServicoConferencia protocolo={form.protocolo} atosPedido={atosPedido} disabled={false} />
           </div>
 
-          {/* Pagamento */}
-          {(() => {
-            const protocoloExiste = !!form.protocolo;
-            const temAtoTributario01 = atosPedido.some(ato => ato.codigoTributario === '01' || ato.codigoTributario === 1 || ato.codigoTributario === '1');
-            // Só exibe se houver ato pago
-            if (!temAtoTributario01) return null;
-            // Só habilita se protocolo, ato 01 e conferência salva como conferido
-            const conferido = historicoStatus.some(h => (h.status || '').toLowerCase().replace(/\s/g, '') === 'conferido');
-            const habilitaPagamento = protocoloExiste && temAtoTributario01 && conferido;
-            return (
-              <div style={!habilitaPagamento ? {
-                pointerEvents: 'none', opacity: 0.6, filter: 'grayscale(0.7) contrast(0.7)', background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)', borderRadius: 12, marginBottom: 12
-              } : {}}>
-                <ServicoPagamento
-                  form={form}
-                  onChange={handlePagamentoChange}
-                  valorTotal={calcularTotalAtosPagos()}
-                  valorAdiantadoDetalhes={form.valorAdiantadoDetalhes || []}
-                  disabled={!habilitaPagamento}
-                />
-              </div>
-            );
-          })()}
+          {/* Pagamento - sempre habilitado e visível */}
+          <div>
+            <ServicoPagamento
+              form={form}
+              onChange={handlePagamentoChange}
+              valorTotal={calcularTotalAtosPagos()}
+              valorAdiantadoDetalhes={form.valorAdiantadoDetalhes || []}
+              disabled={false}
+            />
+          </div>
 
-          {/* Execução */}
-          {(() => {
-            // Habilita execução apenas se o status for 'Aguardando Execução', ignorando acentos e espaços
-            function normalizarStatus(str) {
-              return str
-                ? str
-                    .toLowerCase()
-                    .normalize('NFD')
-                    .replace(/[ -]/g, '') // remove acentos
-                    .replace(/\s/g, '')
-                : '';
-            }
-            const statusAtualNormalizado = normalizarStatus(form.status);
-            const habilitaExecucao = statusAtualNormalizado === 'aguardandoexecucao';
-            return (
-              <div style={!habilitaExecucao ? {
-                pointerEvents: 'none', opacity: 0.6, filter: 'grayscale(0.7) contrast(0.7)', background: 'repeating-linear-gradient(135deg, #eee 0 8px, #fff 8px 16px)', borderRadius: 12, marginBottom: 12
-              } : {}}>
-                <ServicoExecucao
-                  form={form}
-                  onChange={handleExecucaoChange}
-                  pedidoId={form.protocolo}
-                  disabled={!habilitaExecucao}
-                />
-              </div>
-            );
-          })()}
+          {/* Execução - sempre habilitado */}
+          <div>
+            <ServicoExecucao
+              form={form}
+              onChange={handleExecucaoChange}
+              pedidoId={form.protocolo}
+              disabled={false}
+            />
+          </div>
 
-          {/* Entrega */}
-          {(() => {
-            const execucao = form.execucao || {};
-            const execucaoSalva = !!(execucao.id || (execucao.status && execucao.status !== 'em_andamento' && execucao.status !== ''));
-            if (!execucaoSalva) return null;
-            return (
-              <div>
-                <ServicoEntrega
-                  form={form}
-                  onChange={handleEntregaChange}
-                  disabled={false}
-                />
-              </div>
-            );
-          })()}
+          {/* Entrega - sempre habilitado e visível */}
+          <div>
+            <ServicoEntrega
+              form={form}
+              onChange={handleEntregaChange}
+              disabled={false}
+            />
+          </div>
           {/* Só mostra o botão de excluir se há um pedido carregado */}
           {form.protocolo && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
