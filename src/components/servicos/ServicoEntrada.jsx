@@ -11,6 +11,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const [modalLivro, setModalLivro] = useState('');
   const [modalFolha, setModalFolha] = useState('');
   const [modalTermo, setModalTermo] = useState('');
+  const [modalCodigoTributario, setModalCodigoTributario] = useState('');
   // Carrega os atos do pedido salvo (edição), incluindo campos extras
   useEffect(() => {
     if (form && Array.isArray(form.combos) && form.combos.length > 0) {
@@ -178,7 +179,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         atoCodigo: ato.codigo,
         atoDescricao: ato.descricao,
         quantidade: 1,
-        codigoTributario: '',
+        codigoTributario: modalCodigoTributario,
         tipoRegistro: modalTipoRegistro,
         nomeRegistrados: modalNomeRegistrados,
         livro: modalLivro,
@@ -193,6 +194,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     setModalLivro('');
     setModalFolha('');
     setModalTermo('');
+    setModalCodigoTributario('');
   };
       
 
@@ -695,6 +697,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                     <option key={c.id} value={c.id}>{c.nome}</option>
                   ))}
                 </select>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Código Tributário:</label>
+                <input type="text" value={modalCodigoTributario} onChange={e => setModalCodigoTributario(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Código Tributário" />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Tipo de Registro:</label>
