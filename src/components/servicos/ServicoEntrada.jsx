@@ -1,4 +1,12 @@
 import React, { useEffect, useState } from 'react';
+  // Estado para controlar popup/modal de adicionar atos
+  const [showAdicionarAtosModal, setShowAdicionarAtosModal] = useState(false);
+  const [modalComboSelecionado, setModalComboSelecionado] = useState('');
+  const [modalTipoRegistro, setModalTipoRegistro] = useState('');
+  const [modalNomeRegistrados, setModalNomeRegistrados] = useState('');
+  const [modalLivro, setModalLivro] = useState('');
+  const [modalFolha, setModalFolha] = useState('');
+  const [modalTermo, setModalTermo] = useState('');
 import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 
@@ -156,10 +164,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     return total;
   };
 
-  // Adiciona todos os atos do combo ao pedido
-  const handleAdicionarCombo = () => {
-    if (!comboSelecionado) return;
-    const combo = combosDisponiveis.find(c => c.id === Number(comboSelecionado));
+  // Adiciona todos os atos do combo ao pedido (usando dados do modal)
+  const handleAdicionarComboModal = () => {
+    if (!modalComboSelecionado) return;
+    const combo = combosDisponiveis.find(c => c.id === Number(modalComboSelecionado));
     if (!combo || !Array.isArray(combo.atos)) return;
     setAtosPedido(prev => [
       ...prev,
@@ -170,10 +178,22 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         atoCodigo: ato.codigo,
         atoDescricao: ato.descricao,
         quantidade: 1,
-        codigoTributario: ''
+        codigoTributario: '',
+        tipoRegistro: modalTipoRegistro,
+        nomeRegistrados: modalNomeRegistrados,
+        livro: modalLivro,
+        folha: modalFolha,
+        termo: modalTermo
       }))
     ]);
-    setComboSelecionado('');
+    // Limpa campos do modal e fecha
+    setModalComboSelecionado('');
+    setModalTipoRegistro('');
+    setModalNomeRegistrados('');
+    setModalLivro('');
+    setModalFolha('');
+    setModalTermo('');
+    setShowAdicionarAtosModal(false);
   };
       
 
@@ -604,33 +624,131 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           </div>
         </div>
 
-        {/* Adicionar Combo Card */}
-        <div style={{
-          padding: '6px 8px',
-          marginBottom: '8px',
-        }}>
-          <label style={{ fontWeight: 600, color: '#6c3483', marginRight: 8, fontSize: 13 }}>Adicionar Combo:</label>
-          <select value={comboSelecionado} onChange={e => setComboSelecionado(e.target.value)} style={{ width: '55%', maxWidth: '100%', marginRight: 8, borderRadius: 6, padding: '3px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 28 }}>
-            <option value="">Selecione um combo...</option>
-            {combosDisponiveis.map(c => (
-              <option key={c.id} value={c.id}>{c.nome}</option>
-            ))}
-          </select>
-          <button type="button" onClick={handleAdicionarCombo} style={{
-            padding: '4px 12px',
-            background: '#9b59b6',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            fontWeight: 'bold',
-            fontSize: 13,
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            height: 28
-          }}>
-            ➕ Adicionar
+        {/* Botão para abrir modal de adicionar atos */}
+        <div style={{ padding: '6px 8px', marginBottom: '8px' }}>
+          <button
+            type="button"
+            onClick={() => setShowAdicionarAtosModal(true)}
+            style={{
+              padding: '6px 18px',
+              background: '#9b59b6',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 'bold',
+              fontSize: 15,
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            ➕ Adicionar Atos
           </button>
         </div>
+
+        {/* Modal/Popup para adicionar atos do combo */}
+        {showAdicionarAtosModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0,0,0,0.25)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <div style={{
+              background: '#fff',
+              borderRadius: 12,
+              boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+              padding: 32,
+              minWidth: 420,
+              maxWidth: 600,
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 16,
+              position: 'relative'
+            }}>
+              <button
+                onClick={() => setShowAdicionarAtosModal(false)}
+                style={{
+                  position: 'absolute',
+                  top: 12,
+                  right: 16,
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: 22,
+                  color: '#9b59b6',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+                title="Fechar"
+              >×</button>
+              <h2 style={{ color: '#6c3483', fontWeight: 700, fontSize: 18, margin: 0 }}>Adicionar Atos do Combo</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Adicionar Combo:</label>
+                <select value={modalComboSelecionado} onChange={e => setModalComboSelecionado(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
+                  <option value="">Selecione um combo...</option>
+                  {combosDisponiveis.map(c => (
+                    <option key={c.id} value={c.id}>{c.nome}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Tipo de Registro:</label>
+                <select value={modalTipoRegistro} onChange={e => setModalTipoRegistro(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
+                  <option value="">Selecione...</option>
+                  <option value="Livro E">Livro E</option>
+                  <option value="Nascimento">Nascimento</option>
+                  <option value="Casamento">Casamento</option>
+                  <option value="Casamento Religioso com Efeito Civil">Casamento Religioso com Efeito Civil</option>
+                  <option value="Obito">Óbito</option>
+                  <option value="Natimorto">Natimorto</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Nome do(s) Registrado(s):</label>
+                <input type="text" value={modalNomeRegistrados} onChange={e => setModalNomeRegistrados(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Nome(s)" />
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Livro:</label>
+                  <input type="text" value={modalLivro} onChange={e => setModalLivro(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Livro" />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Folha:</label>
+                  <input type="text" value={modalFolha} onChange={e => setModalFolha(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Folha" />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Termo:</label>
+                  <input type="text" value={modalTermo} onChange={e => setModalTermo(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Termo" />
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleAdicionarComboModal}
+                style={{
+                  marginTop: 18,
+                  padding: '8px 0',
+                  background: '#2ecc71',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  fontWeight: 'bold',
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  width: '100%'
+                }}
+              >
+                ADICIONAR
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Atos Table Card */}
         {atosPedido.length > 0 && (
