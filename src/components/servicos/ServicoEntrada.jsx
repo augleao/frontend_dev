@@ -1,4 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import config from '../../config';
+
+export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
   // Estado para controlar popup/modal de adicionar atos
   const [showAdicionarAtosModal, setShowAdicionarAtosModal] = useState(false);
   const [modalComboSelecionado, setModalComboSelecionado] = useState('');
@@ -7,8 +11,6 @@ import React, { useEffect, useState } from 'react';
   const [modalLivro, setModalLivro] = useState('');
   const [modalFolha, setModalFolha] = useState('');
   const [modalTermo, setModalTermo] = useState('');
-import { useNavigate } from 'react-router-dom';
-import config from '../../config';
 
 export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
   // Carrega os atos do pedido salvo (edição), incluindo campos extras
