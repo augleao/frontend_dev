@@ -11,8 +11,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const [modalLivro, setModalLivro] = useState('');
   const [modalFolha, setModalFolha] = useState('');
   const [modalTermo, setModalTermo] = useState('');
-
-export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
   // Carrega os atos do pedido salvo (edição), incluindo campos extras
   useEffect(() => {
     if (form && Array.isArray(form.combos) && form.combos.length > 0) {
