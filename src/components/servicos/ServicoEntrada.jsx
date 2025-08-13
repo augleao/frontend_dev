@@ -164,11 +164,11 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     return total;
   };
 
-  // Adiciona todos os atos do combo ao pedido (usando dados do modal)
+  // Adiciona TODOS os atos do combo selecionado ao pedido, cada um com os campos extras preenchidos
   const handleAdicionarComboModal = () => {
     if (!modalComboSelecionado) return;
     const combo = combosDisponiveis.find(c => c.id === Number(modalComboSelecionado));
-    if (!combo || !Array.isArray(combo.atos)) return;
+    if (!combo || !Array.isArray(combo.atos) || combo.atos.length === 0) return;
     setAtosPedido(prev => [
       ...prev,
       ...combo.atos.map(ato => ({
@@ -186,14 +186,13 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         termo: modalTermo
       }))
     ]);
-    // Limpa campos do modal e fecha
+    // Limpa campos do modal, mas mantém o popup aberto para adicionar mais combos/atos
     setModalComboSelecionado('');
     setModalTipoRegistro('');
     setModalNomeRegistrados('');
     setModalLivro('');
     setModalFolha('');
     setModalTermo('');
-    setShowAdicionarAtosModal(false);
   };
       
 
@@ -645,7 +644,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           </button>
         </div>
 
-        {/* Modal/Popup para adicionar atos do combo */}
+        {/* Modal/Popup para adicionar UM ato do combo */}
         {showAdicionarAtosModal && (
           <div style={{
             position: 'fixed',
@@ -687,7 +686,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 }}
                 title="Fechar"
               >×</button>
-              <h2 style={{ color: '#6c3483', fontWeight: 700, fontSize: 18, margin: 0 }}>Adicionar Atos do Combo</h2>
+              <h2 style={{ color: '#6c3483', fontWeight: 700, fontSize: 18, margin: 0 }}>Adicionar Ato do Combo</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Adicionar Combo:</label>
                 <select value={modalComboSelecionado} onChange={e => setModalComboSelecionado(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
