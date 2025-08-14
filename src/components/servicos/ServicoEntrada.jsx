@@ -147,7 +147,14 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
   // Seleciona sugestão de código tributário
   const handleSelectCodigoTributario = (sug) => {
-    if (codigoTributarioIdx !== null) {
+    if (codigoTributarioIdx === 'modal') {
+      // Para o modal
+      setModalCodigoTributario(sug.codigo);
+      setCodigoTributarioSuggestions([]);
+      setCodigoTributarioIdx(null);
+      setCodigoTributarioTerm('');
+    } else if (codigoTributarioIdx !== null) {
+      // Para a tabela
       setAtosPedido(prev => prev.map((ato, i) => i === codigoTributarioIdx ? { ...ato, codigoTributario: sug.codigo } : ato));
       setCodigoTributarioSuggestions([]);
       setCodigoTributarioIdx(null);
@@ -609,7 +616,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               border: 'none',
               borderRadius: 8,
               fontWeight: 'bold',
-              fontSize: 15,
+              fontSize: 13,
               cursor: 'pointer',
               transition: 'all 0.3s ease'
             }}
@@ -890,7 +897,87 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Código Tributário:</label>
-                <input type="text" value={modalCodigoTributario} onChange={e => setModalCodigoTributario(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Código Tributário" />
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type="text" 
+                    value={modalCodigoTributario} 
+                    onChange={async (e) => {
+                      const value = e.target.value;
+                      setModalCodigoTributario(value);
+                      // Busca sugestões se houver pelo menos 1 caractere
+                      if (value.length >= 1) {
+                        setLoadingCodigoTributario(true);
+                        try {
+                          const res = await fetch(`${config.apiUrl || config.apiURL}/codigos-tributarios?s=${encodeURIComponent(value)}`);
+                          if (res.ok) {
+                            const data = await res.json();
+                            setCodigoTributarioSuggestions(data.sugestoes || []);
+                            setCodigoTributarioIdx('modal'); // Identificador especial para o modal
+                          } else {
+                            setCodigoTributarioSuggestions([]);
+                          }
+                        } catch (err) {
+                          setCodigoTributarioSuggestions([]);
+                        }
+                        setLoadingCodigoTributario(false);
+                      } else {
+                        setCodigoTributarioSuggestions([]);
+                        setCodigoTributarioIdx(null);
+                      }
+                    }}
+                    style={{ 
+                      width: '100%', 
+                      borderRadius: 6, 
+                      padding: '6px 8px', 
+                      border: '1.5px solid #d6d6f5', 
+                      fontSize: 13, 
+                      boxSizing: 'border-box', 
+                      height: 32 
+                    }} 
+                    placeholder="Código Tributário" 
+                    autoComplete="off"
+                  />
+                  {codigoTributarioIdx === 'modal' && codigoTributarioSuggestions.length > 0 && (
+                    <ul style={{
+                      position: 'absolute',
+                      background: '#fff',
+                      border: '1px solid #ccc',
+                      borderRadius: 4,
+                      margin: 0,
+                      padding: '4px 0',
+                      listStyle: 'none',
+                      zIndex: 10000,
+                      width: '100%',
+                      left: 0,
+                      top: '100%',
+                      fontSize: 13,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                      maxHeight: 200,
+                      overflowY: 'auto'
+                    }}>
+                      {codigoTributarioSuggestions.map(sug => (
+                        <li
+                          key={sug.codigo}
+                          style={{
+                            padding: '8px 12px',
+                            cursor: 'pointer',
+                            fontSize: 13,
+                            borderBottom: '1px solid #f0f0f0'
+                          }}
+                          onClick={() => {
+                            setModalCodigoTributario(sug.codigo);
+                            setCodigoTributarioSuggestions([]);
+                            setCodigoTributarioIdx(null);
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        >
+                          {sug.codigo} - {sug.descricao}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Tipo de Registro:</label>
@@ -955,7 +1042,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              margin: '0 0 16px 0',
+              margin: '0 0 4px 0',
               paddingBottom: '10px',
             }}>
               <h3 style={{color: '#6c3483', fontWeight: 600, fontSize: 14 }}>
