@@ -956,18 +956,12 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               alignItems: 'center',
               justifyContent: 'space-between',
               margin: '0 0 16px 0',
-              borderBottom: '2px solid #9b59b6',
               paddingBottom: '10px',
             }}>
               <h3 style={{color: '#6c3483', fontWeight: 600, fontSize: 14 }}>
                 📋 Atos adicionados ao pedido
               </h3>
-              <span style={{
-                color: '#2c3e50',
-                fontSize: '16px',
-                fontWeight: '600',
-                letterSpacing: 0.5
-              }}>
+              <span style={{color: '#6c3483', fontWeight: 600, fontSize: 14  }}>
                 Valor dos atos: {(() => {
                   const total = calcularTotalAtosPagos();
                   return `R$${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -978,7 +972,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               overflowX: 'auto',
               background: '#f5e6fa',
               borderRadius: 8,
-              border: '2px solid #9b59b6',
               boxShadow: '0 2px 8px rgba(155,89,182,0.06)',
               padding: '8px 0',
             }}>
