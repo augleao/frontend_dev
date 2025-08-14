@@ -216,63 +216,88 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
       </div>
       {/* Botões de ação Execução */}
       <div style={{ margin: '3px 0', display: 'flex', gap: 12 }}>
-        <button
-          type="button"
-          onClick={salvarOuAlterarExecucao}
-          disabled={salvando}
-          style={{
-            padding: '10px 28px',
-            background: form.execucao && form.execucao.id ? '#f39c12' : '#3498db',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '15px',
-            fontWeight: '600',
-            cursor: salvando ? 'not-allowed' : 'pointer',
-            boxShadow: '0 2px 8px rgba(52,152,219,0.2)'
-          }}
-        >
-          {salvando
-            ? (form.execucao && form.execucao.id ? 'Alterando...' : 'Salvando...')
-            : (form.execucao && form.execucao.id ? 'Desfazer Execução' : 'Salvar Execução')}
-        </button>
-        <button
-          type="button"
-          onClick={async () => {
-            const token = localStorage.getItem('token');
-            const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-            const usuarioNome = usuario.nome || usuario.email || 'Usuário';
-            try {
-              await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(pedidoId)}/status`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                  status: 'Aguardando Execução',
-                  usuario: usuarioNome
-                })
-              });
-              alert('Status do pedido alterado para "Aguardando Execução".');
-            } catch (e) {
-              alert('Erro ao atualizar status do pedido.');
-            }
-          }}
-          style={{
-            padding: '10px 28px',
-            background: '#e74c3c',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '15px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(231,76,60,0.2)'
-          }}
-        >
-          Cancelar Execução
-        </button>
+        {!(form.execucao && form.execucao.id) ? (
+          <button
+            type="button"
+            onClick={salvarOuAlterarExecucao}
+            disabled={salvando}
+            style={{
+              padding: '10px 28px',
+              background: '#3498db',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '15px',
+              fontWeight: '600',
+              cursor: salvando ? 'not-allowed' : 'pointer',
+              boxShadow: '0 2px 8px rgba(52,152,219,0.2)'
+            }}
+          >
+            {salvando ? 'Salvando...' : 'Salvar Execução'}
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={salvarOuAlterarExecucao}
+              disabled={salvando}
+              style={{
+                padding: '10px 28px',
+                background: '#f39c12',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '15px',
+                fontWeight: '600',
+                cursor: salvando ? 'not-allowed' : 'pointer',
+                boxShadow: '0 2px 8px rgba(52,152,219,0.2)'
+              }}
+            >
+              {salvando ? 'Alterando...' : 'Desfazer Execução'}
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                const token = localStorage.getItem('token');
+                const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+                const usuarioNome = usuario.nome || usuario.email || 'Usuário';
+                try {
+                  await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(pedidoId)}/status`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                      status: 'Aguardando Execução',
+                      usuario: usuarioNome
+                    })
+                  });
+                  // Limpa a execução do form para reabilitar o botão salvar
+                  if (typeof onChange === 'function') {
+                    onChange('execucao', {});
+                  }
+                  alert('Status do pedido alterado para "Aguardando Execução".');
+                } catch (e) {
+                  alert('Erro ao atualizar status do pedido.');
+                }
+              }}
+              style={{
+                padding: '10px 28px',
+                background: '#e74c3c',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '15px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(231,76,60,0.2)'
+              }}
+            >
+              Cancelar Execução
+            </button>
+          </>
+        )}
         {erroSalvar && <span style={{ color: 'red', marginLeft: 16 }}>{erroSalvar}</span>}
       </div>
       {/* Selos Eletrônicos - só aparece após salvar execução */}
