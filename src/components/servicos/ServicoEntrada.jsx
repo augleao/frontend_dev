@@ -948,7 +948,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                   setModalAtoSelecionado(e.target.value);
                   // Limpa combo selecionado se ato for selecionado
                   if (e.target.value) setModalComboSelecionado('');
-                }} style={{ flex: 1, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
+                }} style={{ width: 'calc(100% - 132px)', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
                   <option value="">Selecione um ato individual...</option>
                   {atosDisponiveis.map(ato => (
                     <option key={ato.id} value={ato.id}>{ato.codigo} - {ato.descricao}</option>
@@ -962,7 +962,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                   setModalComboSelecionado(e.target.value);
                   // Limpa ato selecionado se combo for selecionado
                   if (e.target.value) setModalAtoSelecionado('');
-                }} style={{ flex: 1, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
+                }} style={{ width: 'calc(100% - 132px)', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
                   <option value="">Selecione um combo...</option>
                   {combosDisponiveis.map(c => (
                     <option key={c.id} value={c.id}>{c.nome}</option>
