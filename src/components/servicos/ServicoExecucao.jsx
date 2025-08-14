@@ -74,7 +74,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
               'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-              status: 'aguardando_entrega',
+              status: 'Aguardando Entrega',
               usuario: usuarioNome
             })
           });
