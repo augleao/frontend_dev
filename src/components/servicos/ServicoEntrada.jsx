@@ -444,10 +444,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           margin: '0 0 8px 0',
           display: 'flex',
           alignItems: 'center',
-          gap: 12,
+          gap: 6,
           flexWrap: 'wrap'
         }}>
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 120, margin: 0 }}>Descrição do Serviço:</label>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 100, margin: 0 }}>Descrição do Serviço:</label>
           <input
             type="text"
             value={form.descricao || ''}
@@ -464,7 +464,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             }}
             placeholder="Descreva o serviço..."
           />
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>Origem:</label>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 50, margin: 0 }}>Origem:</label>
           <select
             value={form.origem || ''}
             onChange={e => onChange('origem', e.target.value)}
@@ -489,7 +489,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           {/* Campo condicional logo após Origem, exceto para Balcão */}
           {form.origem && form.origem !== 'Balcão' && (
             <>
-              <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0 }}>
+              <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 50, margin: 0 }}>
                 {form.origem === 'CRC' ? 'Protocolo CRC:' :
                   form.origem === 'email' ? 'E-mail:' :
                   form.origem === 'Whatsapp' ? 'Telefone Whatsapp:' :
@@ -519,7 +519,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               />
             </>
           )}
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 80, margin: 0 }}>Prazo estimado:</label>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 65, margin: 0 }}>Prazo estimado:</label>
           <input
             type="date"
             value={form.prazo}
@@ -534,7 +534,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               boxSizing: 'border-box',
             }}
           />
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 80, margin: 0 }}>Observação:</label>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>Observação:</label>
           <input
             type="text"
             value={form.observacao || ''}
