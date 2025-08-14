@@ -64,10 +64,18 @@ export default function SeloEletronicoManager({ protocolo, onSelosChange }) {
       console.log('[SeloEletronicoManager] Status da resposta:', res.status);
       const text = await res.text();
       console.log('[SeloEletronicoManager] Resposta bruta:', text);
+      
       if (!res.ok) throw new Error('Erro ao processar selo.');
+      
       let data = {};
       try {
         data = text ? JSON.parse(text) : {};
+        console.log('[SeloEletronicoManager] Dados parseados do JSON:', JSON.stringify(data, null, 2));
+        console.log('[SeloEletronicoManager] Propriedades do objeto data:', Object.keys(data));
+        console.log('[SeloEletronicoManager] qtd_atos:', data.qtd_atos);
+        console.log('[SeloEletronicoManager] atos_praticados_por:', data.atos_praticados_por);
+        console.log('[SeloEletronicoManager] selo_consulta:', data.selo_consulta);
+        console.log('[SeloEletronicoManager] codigo_seguranca:', data.codigo_seguranca);
       } catch (parseErr) {
         console.error('[SeloEletronicoManager] Erro ao fazer parse do JSON:', parseErr);
         throw new Error('Resposta inválida do backend.');
@@ -83,7 +91,13 @@ export default function SeloEletronicoManager({ protocolo, onSelosChange }) {
         valores: data.valores || ''
       };
       
+      console.log('[SeloEletronicoManager] Dados originais do backend:', data);
       console.log('[SeloEletronicoManager] Dados mapeados:', seloMapeado);
+      console.log('[SeloEletronicoManager] Verificação de mapeamento:');
+      console.log('  - qtd_atos (original):', data.qtd_atos, '-> qtdAtos (mapeado):', seloMapeado.qtdAtos);
+      console.log('  - atos_praticados_por (original):', data.atos_praticados_por, '-> atosPraticadosPor (mapeado):', seloMapeado.atosPraticadosPor);
+      console.log('  - selo_consulta (original):', data.selo_consulta, '-> seloConsulta (mapeado):', seloMapeado.seloConsulta);
+      console.log('  - codigo_seguranca (original):', data.codigo_seguranca, '-> codigoSeguranca (mapeado):', seloMapeado.codigoSeguranca);
       
       setSelos(prev => [...prev, seloMapeado]);
       if (onSelosChange) onSelosChange(prev => [...(Array.isArray(prev) ? prev : []), seloMapeado]);
