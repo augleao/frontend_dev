@@ -453,7 +453,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-          <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 18 }}>
+          <h2 style={{ margin: 0, color: '#6c3483', fontWeight: 700, fontSize: 18 }}>
             Informações do Serviço:
           </h2>
         </div>
@@ -574,8 +574,51 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           />
         </div>
 
+        {/* Botões de Adicionar Pagamento e Atos */}
+        <div style={{
+          padding: '6px 8px',
+          marginBottom: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12
+        }}>
+          <button
+            type="button"
+            onClick={() => setShowAdicionarPagamentoModal(true)}
+            style={{
+              padding: '6px 18px',
+              background: '#2874a6',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 'bold',
+              fontSize: 13,
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            ➕ Adicionar Pagamento
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowAdicionarAtosModal(true)}
+            style={{
+              padding: '6px 18px',
+              background: '#9b59b6',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 'bold',
+              fontSize: 15,
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            ➕ Adicionar Atos
+          </button>
+        </div>
 
-        {/* Valor Adiantado - Botão e Tabela */}
+        {/* Valor Adiantado - Tabela */}
         <div style={{
           display: 'flex',
           justifyContent: 'flex-start',
@@ -589,25 +632,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             gap: 8,
             width: '100%'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <label style={{ color: '#2874a6', fontWeight: 600, fontSize: 14 }}>💰 Valores Adiantados pelo Usuário:</label>
-              <button
-                type="button"
-                onClick={() => setShowAdicionarPagamentoModal(true)}
-                style={{
-                  padding: '6px 18px',
-                  background: '#2874a6',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontWeight: 'bold',
-                  fontSize: 13,
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                ➕ Adicionar Pagamento
-              </button>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+              <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 14 }}>💰 Valores Adiantados pelo Usuário:</label>
             </div>
             
             {/* Tabela de Pagamentos */}
@@ -693,27 +719,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               </div>
             )}
           </div>
-        </div>
-
-        {/* Botão para abrir modal de adicionar atos */}
-        <div style={{ padding: '6px 8px', marginBottom: '8px' }}>
-          <button
-            type="button"
-            onClick={() => setShowAdicionarAtosModal(true)}
-            style={{
-              padding: '6px 18px',
-              background: '#9b59b6',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              fontWeight: 'bold',
-              fontSize: 15,
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            ➕ Adicionar Atos
-          </button>
         </div>
 
         {/* Modal/Popup para adicionar pagamento */}
