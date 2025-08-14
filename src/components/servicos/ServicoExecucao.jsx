@@ -35,9 +35,10 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
     try {
       const token = localStorage.getItem('token');
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      const usuarioNome = usuario.nome || usuario.email || 'Usuário';
       const body = {
         protocolo: pedidoId,
-        usuario: usuario.nome || usuario.email || 'Usuário',
+        usuario: usuarioNome,
         ...form.execucao,
         pedidoId: pedidoId
       };
@@ -61,6 +62,26 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
       } else if (data && data.execucaoId && typeof onChange === 'function') {
         // fallback para casos antigos
         onChange('execucao', { ...form.execucao, id: data.execucaoId });
+      }
+
+      // Após salvar execução, registra status 'aguardando_entrega' na tabela pedido_status
+      if (pedidoId) {
+        try {
+          await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(pedidoId)}/status`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              status: 'aguardando_entrega',
+              usuario: usuarioNome
+            })
+          });
+        } catch (e) {
+          // Apenas loga, não bloqueia o fluxo
+          console.error('[Execucao] Erro ao registrar status aguardando_entrega:', e);
+        }
       }
     } catch (err) {
       setErroSalvar(err.message || 'Erro desconhecido');
