@@ -64,9 +64,12 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         onChange('execucao', { ...form.execucao, id: data.execucaoId });
       }
 
-      // Após salvar execução, registra status 'aguardando_entrega' na tabela pedido_status
+      // Após salvar execução, registra status conforme operação
       if (pedidoId) {
         try {
+          // Se for alteração (PUT), status = aguardando_execucao
+          // Se for novo (POST), status = aguardando_entrega
+          const novoStatus = method === 'PUT' ? 'aguardando_execucao' : 'aguardando_entrega';
           await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(pedidoId)}/status`, {
             method: 'POST',
             headers: {
@@ -74,13 +77,13 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
               'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-              status: 'aguardando_entrega',
+              status: novoStatus,
               usuario: usuarioNome
             })
           });
         } catch (e) {
           // Apenas loga, não bloqueia o fluxo
-          console.error('[Execucao] Erro ao registrar status aguardando_entrega:', e);
+          console.error('[Execucao] Erro ao registrar status do pedido:', e);
         }
       }
     } catch (err) {
