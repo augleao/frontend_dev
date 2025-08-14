@@ -214,8 +214,8 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
           />
         </div>
       </div>
-      {/* Botão Salvar/Alterar Execução */}
-      <div style={{ margin: '3px 0' }}>
+      {/* Botões de ação Execução */}
+      <div style={{ margin: '3px 0', display: 'flex', gap: 12 }}>
         <button
           type="button"
           onClick={salvarOuAlterarExecucao}
@@ -234,7 +234,44 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         >
           {salvando
             ? (form.execucao && form.execucao.id ? 'Alterando...' : 'Salvando...')
-            : (form.execucao && form.execucao.id ? 'Alterar Execução' : 'Salvar Execução')}
+            : (form.execucao && form.execucao.id ? 'Desfazer Execução' : 'Salvar Execução')}
+        </button>
+        <button
+          type="button"
+          onClick={async () => {
+            const token = localStorage.getItem('token');
+            const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+            const usuarioNome = usuario.nome || usuario.email || 'Usuário';
+            try {
+              await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(pedidoId)}/status`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  status: 'Aguardando Execução',
+                  usuario: usuarioNome
+                })
+              });
+              alert('Status do pedido alterado para "Aguardando Execução".');
+            } catch (e) {
+              alert('Erro ao atualizar status do pedido.');
+            }
+          }}
+          style={{
+            padding: '10px 28px',
+            background: '#e74c3c',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '15px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(231,76,60,0.2)'
+          }}
+        >
+          Cancelar Execução
         </button>
         {erroSalvar && <span style={{ color: 'red', marginLeft: 16 }}>{erroSalvar}</span>}
       </div>
