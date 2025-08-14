@@ -89,11 +89,11 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const [codigoTributarioTerm, setCodigoTributarioTerm] = useState('');
   const [codigoTributarioIdx, setCodigoTributarioIdx] = useState(null);
   const [valorAdiantadoDetalhes, setValorAdiantadoDetalhes] = useState(
-    form.valorAdiantadoDetalhes || [ { valor: '', forma: '' } ]
+    form.valorAdiantadoDetalhes || []
   );
 
   useEffect(() => {
-    setValorAdiantadoDetalhes(form.valorAdiantadoDetalhes || [ { valor: '', forma: '' } ]);
+    setValorAdiantadoDetalhes(form.valorAdiantadoDetalhes || []);
   }, [form.valorAdiantadoDetalhes]);
   const navigate = useNavigate();
 
@@ -611,7 +611,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             </div>
             
             {/* Tabela de Pagamentos */}
-            {valorAdiantadoDetalhes.length > 0 && (
+            {valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
               <div style={{
                 overflowX: 'auto',
                 background: '#e8f4fd',
@@ -637,40 +637,49 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                     </tr>
                   </thead>
                   <tbody>
-                    {valorAdiantadoDetalhes.map((item, idx) => (
-                      <tr key={idx} style={{ background: idx % 2 === 0 ? '#f8fcff' : 'transparent' }}>
-                        <td style={{ padding: 8, fontSize: 12 }}>
-                          R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </td>
-                        <td style={{ padding: 8, fontSize: 12 }}>{item.forma || '-'}</td>
-                        <td style={{ padding: 8, textAlign: 'center' }}>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveValorAdiantadoDetalhe(idx)}
-                            style={{
-                              background: '#e74c3c',
-                              color: '#fff',
-                              border: 'none',
-                              borderRadius: 6,
-                              padding: '4px 8px',
-                              fontWeight: 'bold',
-                              fontSize: 10,
-                              cursor: 'pointer',
-                              transition: 'all 0.3s ease'
-                            }}
-                          >
-                            Remover
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {valorAdiantadoDetalhes
+                      .filter(item => item.valor && item.forma)
+                      .map((item, idx) => (
+                        <tr key={idx} style={{ background: idx % 2 === 0 ? '#f8fcff' : 'transparent' }}>
+                          <td style={{ padding: 8, fontSize: 12 }}>
+                            R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: 8, fontSize: 12 }}>{item.forma || '-'}</td>
+                          <td style={{ padding: 8, textAlign: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const originalIndex = valorAdiantadoDetalhes.findIndex(originalItem => 
+                                  originalItem.valor === item.valor && originalItem.forma === item.forma
+                                );
+                                if (originalIndex !== -1) {
+                                  handleRemoveValorAdiantadoDetalhe(originalIndex);
+                                }
+                              }}
+                              style={{
+                                background: '#e74c3c',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: 6,
+                                padding: '4px 8px',
+                                fontWeight: 'bold',
+                                fontSize: 10,
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease'
+                              }}
+                            >
+                              Remover
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
             )}
             
             {/* Mensagem quando não há pagamentos */}
-            {valorAdiantadoDetalhes.length === 0 && (
+            {(!valorAdiantadoDetalhes.length || !valorAdiantadoDetalhes.some(item => item.valor && item.forma)) && (
               <div style={{
                 padding: 16,
                 textAlign: 'center',
