@@ -534,14 +534,30 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               boxSizing: 'border-box',
             }}
           />
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 80, margin: 0 }}>Observação:</label>
+          <input
+            type="text"
+            value={form.observacao || ''}
+            onChange={e => onChange('observacao', e.target.value)}
+            maxLength={150}
+            style={{
+              width: 200,
+              border: '1.5px solid #d6d6f5',
+              borderRadius: 6,
+              padding: '4px 8px',
+              fontSize: 13,
+              height: 32,
+              boxSizing: 'border-box',
+            }}
+            placeholder="Observações..."
+          />
         </div>
 
 
-        {/* Valores e Observação */}
+        {/* Apenas Valor Adiantado */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '8px',
+          display: 'flex',
+          justifyContent: 'flex-start',
           marginBottom: '8px',
         }}>
           {/* Valor Adiantado Card */}
@@ -549,7 +565,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             padding: '8px',
             display: 'flex',
             flexDirection: 'column',
-            gap: 3
+            gap: 3,
+            width: '50%'
           }}>
             <label style={{ color: '#2874a6', fontWeight: 600, fontSize: 12, marginBottom: 2 }}>Valor Adiantado pelo Usuário:</label>
             {valorAdiantadoDetalhes.map((item, idx) => (
@@ -597,31 +614,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               </div>
             ))}
             <button type="button" onClick={handleAddValorAdiantadoDetalhe} style={{ background: '#9b59b6', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', fontWeight: 'bold', cursor: 'pointer', marginTop: 2, fontSize: 12, height: 26 }}>Adicionar Pagamento</button>
-          </div>
-          {/* Observação Card */}
-          <div style={{
-            padding: '8px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 3
-          }}>
-            <label style={{ color: '#884ea0', fontWeight: 600, fontSize: 12, marginBottom: 2 }}>Observação:</label>
-            <textarea
-              value={form.observacao || ''}
-              onChange={e => onChange('observacao', e.target.value)}
-              maxLength={150}
-              style={{
-                width: '100%',
-                maxWidth: '100%',
-                border: '1.5px solid #d2b4de',
-                borderRadius: 6,
-                padding: '3px 6px',
-                fontSize: 12,
-                resize: 'vertical',
-                minHeight: 26,
-                boxSizing: 'border-box',
-              }}
-            />
           </div>
         </div>
 
