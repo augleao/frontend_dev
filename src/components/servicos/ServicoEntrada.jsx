@@ -886,18 +886,20 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 title="Fechar"
               >×</button>
               <h2 style={{ color: '#6c3483', fontWeight: 700, fontSize: 18, margin: 0 }}>Adicionar Ato do Combo</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Adicionar Combo:</label>
-                <select value={modalComboSelecionado} onChange={e => setModalComboSelecionado(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Adicionar Combo:</label>
+                <select value={modalComboSelecionado} onChange={e => setModalComboSelecionado(e.target.value)} style={{ flex: 1, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
                   <option value="">Selecione um combo...</option>
                   {combosDisponiveis.map(c => (
                     <option key={c.id} value={c.id}>{c.nome}</option>
                   ))}
                 </select>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Código Tributário:</label>
-                <div style={{ position: 'relative' }}>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Código Tributário:</label>
+                <div style={{ position: 'relative', flex: 1 }}>
                   <input 
                     type="text" 
                     value={modalCodigoTributario} 
@@ -979,9 +981,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                   )}
                 </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Tipo de Registro:</label>
-                <select value={modalTipoRegistro} onChange={e => setModalTipoRegistro(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Tipo de Registro:</label>
+                <select value={modalTipoRegistro} onChange={e => setModalTipoRegistro(e.target.value)} style={{ flex: 1, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
                   <option value="">Selecione...</option>
                   <option value="Livro E">Livro E</option>
                   <option value="Nascimento">Nascimento</option>
@@ -991,23 +994,19 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                   <option value="Natimorto">Natimorto</option>
                 </select>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Nome do(s) Registrado(s):</label>
-                <input type="text" value={modalNomeRegistrados} onChange={e => setModalNomeRegistrados(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Nome(s)" />
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Nome do(s) Registrado(s):</label>
+                <input type="text" value={modalNomeRegistrados} onChange={e => setModalNomeRegistrados(e.target.value)} style={{ flex: 1, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Nome(s)" />
               </div>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Livro:</label>
-                  <input type="text" value={modalLivro} onChange={e => setModalLivro(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Livro" />
-                </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Folha:</label>
-                  <input type="text" value={modalFolha} onChange={e => setModalFolha(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Folha" />
-                </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13 }}>Termo:</label>
-                  <input type="text" value={modalTermo} onChange={e => setModalTermo(e.target.value)} style={{ width: '100%', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Termo" />
-                </div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Livro:</label>
+                <input type="text" value={modalLivro} onChange={e => setModalLivro(e.target.value)} style={{ width: 80, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Livro" />
+                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, marginLeft: 16 }}>Folha:</label>
+                <input type="text" value={modalFolha} onChange={e => setModalFolha(e.target.value)} style={{ width: 80, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Folha" />
+                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, marginLeft: 16 }}>Termo:</label>
+                <input type="text" value={modalTermo} onChange={e => setModalTermo(e.target.value)} style={{ width: 80, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Termo" />
               </div>
               <button
                 type="button"
