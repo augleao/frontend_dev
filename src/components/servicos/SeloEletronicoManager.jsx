@@ -72,8 +72,21 @@ export default function SeloEletronicoManager({ protocolo, onSelosChange }) {
         console.error('[SeloEletronicoManager] Erro ao fazer parse do JSON:', parseErr);
         throw new Error('Resposta inválida do backend.');
       }
-      setSelos(prev => [...prev, data]);
-      if (onSelosChange) onSelosChange(prev => [...(Array.isArray(prev) ? prev : []), data]);
+      
+      // Mapeia os campos do backend para o formato esperado pelo frontend
+      const seloMapeado = {
+        ...data,
+        seloConsulta: data.selo_consulta || data.seloConsulta || '',
+        codigoSeguranca: data.codigo_seguranca || data.codigoSeguranca || '',
+        qtdAtos: data.qtd_atos || data.qtdAtos || '',
+        atosPraticadosPor: data.atos_praticados_por || data.atosPraticadosPor || '',
+        valores: data.valores || ''
+      };
+      
+      console.log('[SeloEletronicoManager] Dados mapeados:', seloMapeado);
+      
+      setSelos(prev => [...prev, seloMapeado]);
+      if (onSelosChange) onSelosChange(prev => [...(Array.isArray(prev) ? prev : []), seloMapeado]);
     } catch (err) {
       console.error('[SeloEletronicoManager] Falha ao processar selo:', err);
       setError('Falha ao processar selo: ' + (err.message || err));

@@ -241,11 +241,11 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
                 <tbody>
                   {selos.map((selo, idx) => (
                     <tr key={selo.id || idx} style={{ background: idx % 2 === 0 ? '#f8f4fc' : '#fff' }}>
-                      <td style={{ padding: 6, fontSize: 12 }}>{selo.selo_consulta}</td>
-                      <td style={{ padding: 6, fontSize: 12 }}>{selo.codigo_seguranca}</td>
-                      <td style={{ padding: 6, fontSize: 12 }}>{selo.qtd_atos}</td>
-                      <td style={{ padding: 6, fontSize: 12 }}>{selo.atos_praticados_por}</td>
-                      <td style={{ padding: 6, fontSize: 12 }}>{selo.valores}</td>
+                      <td style={{ padding: 6, fontSize: 12 }}>{selo.selo_consulta || selo.seloConsulta || ''}</td>
+                      <td style={{ padding: 6, fontSize: 12 }}>{selo.codigo_seguranca || selo.codigoSeguranca || ''}</td>
+                      <td style={{ padding: 6, fontSize: 12 }}>{selo.qtd_atos || selo.qtdAtos || ''}</td>
+                      <td style={{ padding: 6, fontSize: 12 }}>{selo.atos_praticados_por || selo.atosPraticadosPor || ''}</td>
+                      <td style={{ padding: 6, fontSize: 12 }}>{selo.valores || ''}</td>
                       <td style={{ padding: 6, fontSize: 12 }}>{selo.criado_em ? new Date(selo.criado_em).toLocaleString() : ''}</td>
                       <td style={{ padding: 6, fontSize: 12 }}>
                         <button
