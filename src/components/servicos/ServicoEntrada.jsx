@@ -6,6 +6,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   // Estado para controlar popup/modal de adicionar atos
   const [showAdicionarAtosModal, setShowAdicionarAtosModal] = useState(false);
   const [modalComboSelecionado, setModalComboSelecionado] = useState('');
+  const [modalAtoSelecionado, setModalAtoSelecionado] = useState('');
+  const [atosDisponiveis, setAtosDisponiveis] = useState([]);
   const [modalTipoRegistro, setModalTipoRegistro] = useState('');
   const [modalNomeRegistrados, setModalNomeRegistrados] = useState('');
   const [modalLivro, setModalLivro] = useState('');
@@ -95,6 +97,30 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   useEffect(() => {
     setValorAdiantadoDetalhes(form.valorAdiantadoDetalhes || []);
   }, [form.valorAdiantadoDetalhes]);
+
+  // Carrega atos disponíveis quando o modal for aberto
+  useEffect(() => {
+    if (showAdicionarAtosModal) {
+      const fetchAtos = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await fetch(`${config.apiURL}/atos?search=`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setAtosDisponiveis(data.atos || []);
+          } else {
+            setAtosDisponiveis([]);
+          }
+        } catch (err) {
+          console.error('Erro ao buscar atos:', err);
+          setAtosDisponiveis([]);
+        }
+      };
+      fetchAtos();
+    }
+  }, [showAdicionarAtosModal]);
   const navigate = useNavigate();
 
   // Manipula mudança em um item de valor adiantado (valor ou forma)
@@ -177,30 +203,59 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     return total;
   };
 
-  // Adiciona TODOS os atos do combo selecionado ao pedido, cada um com os campos extras preenchidos
+  // Adiciona TODOS os atos do combo selecionado ao pedido OU adiciona um ato individual
   const handleAdicionarComboModal = () => {
-    if (!modalComboSelecionado) return;
-    const combo = combosDisponiveis.find(c => c.id === Number(modalComboSelecionado));
-    if (!combo || !Array.isArray(combo.atos) || combo.atos.length === 0) return;
-    setAtosPedido(prev => [
-      ...prev,
-      ...combo.atos.map(ato => ({
-        comboId: combo.id,
-        comboNome: combo.nome,
-        atoId: ato.id,
-        atoCodigo: ato.codigo,
-        atoDescricao: ato.descricao,
-        quantidade: 1,
-        codigoTributario: modalCodigoTributario,
-        tipoRegistro: modalTipoRegistro,
-        nomeRegistrados: modalNomeRegistrados,
-        livro: modalLivro,
-        folha: modalFolha,
-        termo: modalTermo
-      }))
-    ]);
+    // Se foi selecionado um ato individual
+    if (modalAtoSelecionado && !modalComboSelecionado) {
+      const ato = atosDisponiveis.find(a => a.id === Number(modalAtoSelecionado));
+      if (!ato) return;
+      
+      setAtosPedido(prev => [
+        ...prev,
+        {
+          comboId: null,
+          comboNome: 'Ato Individual',
+          atoId: ato.id,
+          atoCodigo: ato.codigo,
+          atoDescricao: ato.descricao,
+          valor_final: ato.valor_final,
+          quantidade: 1,
+          codigoTributario: modalCodigoTributario,
+          tipoRegistro: modalTipoRegistro,
+          nomeRegistrados: modalNomeRegistrados,
+          livro: modalLivro,
+          folha: modalFolha,
+          termo: modalTermo
+        }
+      ]);
+    }
+    // Se foi selecionado um combo
+    else if (modalComboSelecionado && !modalAtoSelecionado) {
+      const combo = combosDisponiveis.find(c => c.id === Number(modalComboSelecionado));
+      if (!combo || !Array.isArray(combo.atos) || combo.atos.length === 0) return;
+      
+      setAtosPedido(prev => [
+        ...prev,
+        ...combo.atos.map(ato => ({
+          comboId: combo.id,
+          comboNome: combo.nome,
+          atoId: ato.id,
+          atoCodigo: ato.codigo,
+          atoDescricao: ato.descricao,
+          quantidade: 1,
+          codigoTributario: modalCodigoTributario,
+          tipoRegistro: modalTipoRegistro,
+          nomeRegistrados: modalNomeRegistrados,
+          livro: modalLivro,
+          folha: modalFolha,
+          termo: modalTermo
+        }))
+      ]);
+    }
+    
     // Limpa campos do modal, mas mantém o popup aberto para adicionar mais combos/atos
     setModalComboSelecionado('');
+    setModalAtoSelecionado('');
     setModalTipoRegistro('');
     setModalNomeRegistrados('');
     setModalLivro('');
@@ -888,8 +943,26 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               <h2 style={{ color: '#6c3483', fontWeight: 700, fontSize: 18, margin: 0 }}>Adicionar Ato do Combo</h2>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Adicionar Ato:</label>
+                <select value={modalAtoSelecionado} onChange={e => {
+                  setModalAtoSelecionado(e.target.value);
+                  // Limpa combo selecionado se ato for selecionado
+                  if (e.target.value) setModalComboSelecionado('');
+                }} style={{ flex: 1, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
+                  <option value="">Selecione um ato individual...</option>
+                  {atosDisponiveis.map(ato => (
+                    <option key={ato.id} value={ato.id}>{ato.codigo} - {ato.descricao}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Adicionar Combo:</label>
-                <select value={modalComboSelecionado} onChange={e => setModalComboSelecionado(e.target.value)} style={{ flex: 1, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
+                <select value={modalComboSelecionado} onChange={e => {
+                  setModalComboSelecionado(e.target.value);
+                  // Limpa ato selecionado se combo for selecionado
+                  if (e.target.value) setModalAtoSelecionado('');
+                }} style={{ flex: 1, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
                   <option value="">Selecione um combo...</option>
                   {combosDisponiveis.map(c => (
                     <option key={c.id} value={c.id}>{c.nome}</option>
@@ -1011,16 +1084,17 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               <button
                 type="button"
                 onClick={handleAdicionarComboModal}
+                disabled={!modalAtoSelecionado && !modalComboSelecionado}
                 style={{
                   marginTop: 18,
                   padding: '8px 0',
-                  background: '#2ecc71',
+                  background: (modalAtoSelecionado || modalComboSelecionado) ? '#2ecc71' : '#ccc',
                   color: '#fff',
                   border: 'none',
                   borderRadius: 8,
                   fontWeight: 'bold',
                   fontSize: 16,
-                  cursor: 'pointer',
+                  cursor: (modalAtoSelecionado || modalComboSelecionado) ? 'pointer' : 'not-allowed',
                   transition: 'all 0.3s ease',
                   width: '100%'
                 }}
