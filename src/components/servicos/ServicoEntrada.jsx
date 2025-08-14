@@ -959,13 +959,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               borderBottom: '2px solid #9b59b6',
               paddingBottom: '10px',
             }}>
-              <h3 style={{
-                margin: 0,
-                color: '#2c3e50',
-                fontSize: '16px',
-                fontWeight: '600',
-                letterSpacing: 0.5
-              }}>
+              <h3 style={{color: '#6c3483', fontWeight: 600, fontSize: 14 }}>
                 📋 Atos adicionados ao pedido
               </h3>
               <span style={{
