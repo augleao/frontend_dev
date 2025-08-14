@@ -972,6 +972,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               overflowX: 'auto',
               background: '#f5e6fa',
               borderRadius: 8,
+              border: '2px solid #9b59b6',
               boxShadow: '0 2px 8px rgba(155,89,182,0.06)',
               padding: '8px 0',
             }}>
