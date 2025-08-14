@@ -12,6 +12,11 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const [modalFolha, setModalFolha] = useState('');
   const [modalTermo, setModalTermo] = useState('');
   const [modalCodigoTributario, setModalCodigoTributario] = useState('');
+  
+  // Estado para controlar popup/modal de adicionar pagamentos
+  const [showAdicionarPagamentoModal, setShowAdicionarPagamentoModal] = useState(false);
+  const [modalValorPagamento, setModalValorPagamento] = useState('');
+  const [modalFormaPagamento, setModalFormaPagamento] = useState('');
   // Carrega os atos do pedido salvo (edição), incluindo campos extras
   useEffect(() => {
     if (form && Array.isArray(form.combos) && form.combos.length > 0) {
@@ -195,6 +200,22 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     setModalFolha('');
     setModalTermo('');
     setModalCodigoTributario('');
+  };
+
+  // Adiciona pagamento adiantado através do modal
+  const handleAdicionarPagamentoModal = () => {
+    if (!modalValorPagamento || !modalFormaPagamento) return;
+    
+    const novoPagamento = {
+      valor: modalValorPagamento,
+      forma: modalFormaPagamento
+    };
+    
+    setValorAdiantadoDetalhes(prev => [...prev, novoPagamento]);
+    
+    // Limpa campos do modal
+    setModalValorPagamento('');
+    setModalFormaPagamento('');
   };
       
 
@@ -554,7 +575,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         </div>
 
 
-        {/* Apenas Valor Adiantado */}
+        {/* Valor Adiantado - Botão e Tabela */}
         <div style={{
           display: 'flex',
           justifyContent: 'flex-start',
@@ -565,55 +586,103 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             padding: '8px',
             display: 'flex',
             flexDirection: 'column',
-            gap: 3,
-            width: '50%'
+            gap: 8,
+            width: '100%'
           }}>
-            <label style={{ color: '#2874a6', fontWeight: 600, fontSize: 12, marginBottom: 2 }}>Valor Adiantado pelo Usuário:</label>
-            {valorAdiantadoDetalhes.map((item, idx) => (
-              <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 3 }}>
-                <input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={item.valor}
-                  onChange={e => handleValorAdiantadoDetalheChange(idx, 'valor', e.target.value)}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <label style={{ color: '#2874a6', fontWeight: 600, fontSize: 14 }}>💰 Valores Adiantados pelo Usuário:</label>
+              <button
+                type="button"
+                onClick={() => setShowAdicionarPagamentoModal(true)}
+                style={{
+                  padding: '6px 18px',
+                  background: '#2874a6',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  fontWeight: 'bold',
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                ➕ Adicionar Pagamento
+              </button>
+            </div>
+            
+            {/* Tabela de Pagamentos */}
+            {valorAdiantadoDetalhes.length > 0 && (
+              <div style={{
+                overflowX: 'auto',
+                background: '#e8f4fd',
+                borderRadius: 8,
+                border: '2px solid #2874a6',
+                boxShadow: '0 2px 8px rgba(40,116,166,0.06)',
+                padding: '8px 0',
+              }}>
+                <table
                   style={{
-                    width: '50%',
-                    border: '1.5px solid #aed6f1',
-                    borderRadius: 6,
-                    padding: '3px 6px',
-                    fontSize: 12,
-                    height: 26,
-                    boxSizing: 'border-box',
-                  }}
-                  placeholder="Valor"
-                />
-                <select
-                  value={item.forma}
-                  onChange={e => handleValorAdiantadoDetalheChange(idx, 'forma', e.target.value)}
-                  style={{
-                    width: '40%',
-                    border: '1.5px solid #aed6f1',
-                    borderRadius: 6,
-                    padding: '3px 6px',
-                    fontSize: 12,
-                    height: 26,
-                    boxSizing: 'border-box',
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    marginBottom: 0,
+                    fontSize: 13,
+                    background: 'transparent',
                   }}
                 >
-                  <option value="">Forma de Pagamento</option>
-                  <option value="Dinheiro">Dinheiro</option>
-                  <option value="Cartão">Cartão</option>
-                  <option value="Pix">Pix</option>
-                  <option value="CRC">CRC</option>
-                  <option value="Depósito Prévio">Depósito Prévio</option>
-                </select>
-                {valorAdiantadoDetalhes.length > 1 && (
-                  <button type="button" onClick={() => handleRemoveValorAdiantadoDetalhe(idx)} style={{ background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 6, padding: '2px 6px', fontWeight: 'bold', cursor: 'pointer', fontSize: 12, height: 24 }}>-</button>
-                )}
+                  <thead>
+                    <tr style={{ background: '#d1ecf1' }}>
+                      <th style={{ padding: 8, color: '#2874a6', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Valor</th>
+                      <th style={{ padding: 8, color: '#2874a6', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Forma de Pagamento</th>
+                      <th style={{ padding: 8, color: '#2874a6', fontWeight: 700, fontSize: 12, textAlign: 'center' }}>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {valorAdiantadoDetalhes.map((item, idx) => (
+                      <tr key={idx} style={{ background: idx % 2 === 0 ? '#f8fcff' : 'transparent' }}>
+                        <td style={{ padding: 8, fontSize: 12 }}>
+                          R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </td>
+                        <td style={{ padding: 8, fontSize: 12 }}>{item.forma || '-'}</td>
+                        <td style={{ padding: 8, textAlign: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveValorAdiantadoDetalhe(idx)}
+                            style={{
+                              background: '#e74c3c',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: 6,
+                              padding: '4px 8px',
+                              fontWeight: 'bold',
+                              fontSize: 10,
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease'
+                            }}
+                          >
+                            Remover
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ))}
-            <button type="button" onClick={handleAddValorAdiantadoDetalhe} style={{ background: '#9b59b6', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', fontWeight: 'bold', cursor: 'pointer', marginTop: 2, fontSize: 12, height: 26 }}>Adicionar Pagamento</button>
+            )}
+            
+            {/* Mensagem quando não há pagamentos */}
+            {valorAdiantadoDetalhes.length === 0 && (
+              <div style={{
+                padding: 16,
+                textAlign: 'center',
+                color: '#6c757d',
+                background: '#f8f9fa',
+                borderRadius: 8,
+                border: '1px dashed #dee2e6',
+                fontSize: 12
+              }}>
+                Nenhum pagamento adiantado adicionado ainda. Clique em "Adicionar Pagamento" para começar.
+              </div>
+            )}
           </div>
         </div>
 
@@ -637,6 +706,121 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             ➕ Adicionar Atos
           </button>
         </div>
+
+        {/* Modal/Popup para adicionar pagamento */}
+        {showAdicionarPagamentoModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0,0,0,0.25)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <div style={{
+              background: '#fff',
+              borderRadius: 12,
+              boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+              padding: 32,
+              minWidth: 420,
+              maxWidth: 500,
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 16,
+              position: 'relative'
+            }}>
+              <button
+                onClick={() => setShowAdicionarPagamentoModal(false)}
+                style={{
+                  position: 'absolute',
+                  top: 12,
+                  right: 16,
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: 22,
+                  color: '#2874a6',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+                title="Fechar"
+              >×</button>
+              <h2 style={{ color: '#2874a6', fontWeight: 700, fontSize: 18, margin: 0 }}>💰 Adicionar Pagamento Adiantado</h2>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <label style={{ fontWeight: 600, color: '#2874a6', fontSize: 13 }}>Valor:</label>
+                <input 
+                  type="number" 
+                  min={0}
+                  step="0.01"
+                  value={modalValorPagamento} 
+                  onChange={e => setModalValorPagamento(e.target.value)} 
+                  style={{ 
+                    width: '100%', 
+                    borderRadius: 6, 
+                    padding: '8px 12px', 
+                    border: '1.5px solid #aed6f1', 
+                    fontSize: 14, 
+                    boxSizing: 'border-box', 
+                    height: 40 
+                  }} 
+                  placeholder="Digite o valor..." 
+                />
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <label style={{ fontWeight: 600, color: '#2874a6', fontSize: 13 }}>Forma de Pagamento:</label>
+                <select 
+                  value={modalFormaPagamento} 
+                  onChange={e => setModalFormaPagamento(e.target.value)} 
+                  style={{ 
+                    width: '100%', 
+                    borderRadius: 6, 
+                    padding: '8px 12px', 
+                    border: '1.5px solid #aed6f1', 
+                    fontSize: 14, 
+                    boxSizing: 'border-box', 
+                    height: 40 
+                  }}
+                >
+                  <option value="">Selecione a forma de pagamento...</option>
+                  <option value="Dinheiro">Dinheiro</option>
+                  <option value="Cartão">Cartão</option>
+                  <option value="Pix">Pix</option>
+                  <option value="CRC">CRC</option>
+                  <option value="Depósito Prévio">Depósito Prévio</option>
+                  <option value="Transferência">Transferência</option>
+                  <option value="Cheque">Cheque</option>
+                </select>
+              </div>
+              
+              <button
+                type="button"
+                onClick={handleAdicionarPagamentoModal}
+                disabled={!modalValorPagamento || !modalFormaPagamento}
+                style={{
+                  marginTop: 18,
+                  padding: '12px 0',
+                  background: modalValorPagamento && modalFormaPagamento ? '#28a745' : '#ccc',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  fontWeight: 'bold',
+                  fontSize: 16,
+                  cursor: modalValorPagamento && modalFormaPagamento ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.3s ease',
+                  width: '100%'
+                }}
+              >
+                ✅ ADICIONAR PAGAMENTO
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Modal/Popup para adicionar UM ato do combo */}
         {showAdicionarAtosModal && (
