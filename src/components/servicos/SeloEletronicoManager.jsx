@@ -61,21 +61,15 @@ export default function SeloEletronicoManager({ protocolo, onSelosChange }) {
           'Authorization': `Bearer ${token}`
         }
       });
-      console.log('[SeloEletronicoManager] Status da resposta:', res.status);
+      
       const text = await res.text();
-      console.log('[SeloEletronicoManager] Resposta bruta:', text);
+      console.log('[SeloEletronicoManager] Resposta do backend:', text);
       
       if (!res.ok) throw new Error('Erro ao processar selo.');
       
       let data = {};
       try {
         data = text ? JSON.parse(text) : {};
-        console.log('[SeloEletronicoManager] Dados parseados do JSON:', JSON.stringify(data, null, 2));
-        console.log('[SeloEletronicoManager] Propriedades do objeto data:', Object.keys(data));
-        console.log('[SeloEletronicoManager] qtd_atos:', data.qtd_atos);
-        console.log('[SeloEletronicoManager] atos_praticados_por:', data.atos_praticados_por);
-        console.log('[SeloEletronicoManager] selo_consulta:', data.selo_consulta);
-        console.log('[SeloEletronicoManager] codigo_seguranca:', data.codigo_seguranca);
       } catch (parseErr) {
         console.error('[SeloEletronicoManager] Erro ao fazer parse do JSON:', parseErr);
         throw new Error('Resposta inválida do backend.');
@@ -91,13 +85,7 @@ export default function SeloEletronicoManager({ protocolo, onSelosChange }) {
         valores: data.valores || ''
       };
       
-      console.log('[SeloEletronicoManager] Dados originais do backend:', data);
-      console.log('[SeloEletronicoManager] Dados mapeados:', seloMapeado);
-      console.log('[SeloEletronicoManager] Verificação de mapeamento:');
-      console.log('  - qtd_atos (original):', data.qtd_atos, '-> qtdAtos (mapeado):', seloMapeado.qtdAtos);
-      console.log('  - atos_praticados_por (original):', data.atos_praticados_por, '-> atosPraticadosPor (mapeado):', seloMapeado.atosPraticadosPor);
-      console.log('  - selo_consulta (original):', data.selo_consulta, '-> seloConsulta (mapeado):', seloMapeado.seloConsulta);
-      console.log('  - codigo_seguranca (original):', data.codigo_seguranca, '-> codigoSeguranca (mapeado):', seloMapeado.codigoSeguranca);
+      console.log('[SeloEletronicoManager] Campos extraídos - qtd_atos:', data.qtd_atos, 'atos_praticados_por:', data.atos_praticados_por || 'VAZIO');
       
       setSelos(prev => [...prev, seloMapeado]);
       if (onSelosChange) onSelosChange(prev => [...(Array.isArray(prev) ? prev : []), seloMapeado]);
@@ -159,11 +147,17 @@ export default function SeloEletronicoManager({ protocolo, onSelosChange }) {
                 <td style={{ padding: 6 }}>
                   <img src={selo.imagemUrl} alt="Selo" style={{ maxWidth: 80, maxHeight: 60, borderRadius: 4 }} />
                 </td>
-                <td style={{ padding: 6, fontSize: 12 }}>{selo.seloConsulta}</td>
-                <td style={{ padding: 6, fontSize: 12 }}>{selo.codigoSeguranca}</td>
-                <td style={{ padding: 6, fontSize: 12 }}>{selo.qtdAtos}</td>
-                <td style={{ padding: 6, fontSize: 12 }}>{selo.atosPraticadosPor}</td>
-                <td style={{ padding: 6, fontSize: 12 }}>{selo.valores}</td>
+                <td style={{ padding: 6, fontSize: 12 }}>{selo.seloConsulta || selo.selo_consulta || '-'}</td>
+                <td style={{ padding: 6, fontSize: 12 }}>{selo.codigoSeguranca || selo.codigo_seguranca || '-'}</td>
+                <td style={{ padding: 6, fontSize: 12, color: selo.qtdAtos || selo.qtd_atos ? '#000' : '#999' }}>
+                  {selo.qtdAtos || selo.qtd_atos || 'Não identificado'}
+                </td>
+                <td style={{ padding: 6, fontSize: 12, color: (selo.atosPraticadosPor || selo.atos_praticados_por) ? '#000' : '#999' }}>
+                  {selo.atosPraticadosPor || selo.atos_praticados_por || 'Não identificado'}
+                </td>
+                <td style={{ padding: 6, fontSize: 12, color: selo.valores ? '#000' : '#999' }}>
+                  {selo.valores || 'Não identificado'}
+                </td>
               </tr>
             ))}
           </tbody>
