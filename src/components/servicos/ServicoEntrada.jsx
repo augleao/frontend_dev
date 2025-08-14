@@ -7,7 +7,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const [showAdicionarAtosModal, setShowAdicionarAtosModal] = useState(false);
   const [modalComboSelecionado, setModalComboSelecionado] = useState('');
   const [modalAtoSelecionado, setModalAtoSelecionado] = useState('');
+  const [modalAtoTerm, setModalAtoTerm] = useState('');
   const [atosDisponiveis, setAtosDisponiveis] = useState([]);
+  const [atosSuggestions, setAtosSuggestions] = useState([]);
+  const [loadingAtos, setLoadingAtos] = useState(false);
   const [modalTipoRegistro, setModalTipoRegistro] = useState('');
   const [modalNomeRegistrados, setModalNomeRegistrados] = useState('');
   const [modalLivro, setModalLivro] = useState('');
@@ -97,30 +100,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   useEffect(() => {
     setValorAdiantadoDetalhes(form.valorAdiantadoDetalhes || []);
   }, [form.valorAdiantadoDetalhes]);
-
-  // Carrega atos disponíveis quando o modal for aberto
-  useEffect(() => {
-    if (showAdicionarAtosModal) {
-      const fetchAtos = async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const res = await fetch(`${config.apiURL}/atos?search=`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {}
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setAtosDisponiveis(data.atos || []);
-          } else {
-            setAtosDisponiveis([]);
-          }
-        } catch (err) {
-          console.error('Erro ao buscar atos:', err);
-          setAtosDisponiveis([]);
-        }
-      };
-      fetchAtos();
-    }
-  }, [showAdicionarAtosModal]);
   const navigate = useNavigate();
 
   // Manipula mudança em um item de valor adiantado (valor ou forma)
@@ -171,6 +150,43 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     }
   };
 
+  // Manipula input de busca de atos (com sugestões)
+  const handleAtoSearchInput = async (value) => {
+    setModalAtoTerm(value);
+    // Limpa combo selecionado se ato estiver sendo buscado
+    if (value) setModalComboSelecionado('');
+    
+    // Busca sugestões se houver pelo menos 1 caractere
+    if (value.length >= 1) {
+      setLoadingAtos(true);
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${config.apiURL}/atos?search=${encodeURIComponent(value)}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setAtosSuggestions(data.atos || []);
+        } else {
+          setAtosSuggestions([]);
+        }
+      } catch (err) {
+        console.error('Erro ao buscar atos:', err);
+        setAtosSuggestions([]);
+      }
+      setLoadingAtos(false);
+    } else {
+      setAtosSuggestions([]);
+    }
+  };
+
+  // Seleciona um ato da busca
+  const handleSelectAto = (ato) => {
+    setModalAtoSelecionado(ato.id);
+    setModalAtoTerm(`${ato.codigo} - ${ato.descricao}`);
+    setAtosSuggestions([]);
+  };
+
   // Seleciona sugestão de código tributário
   const handleSelectCodigoTributario = (sug) => {
     if (codigoTributarioIdx === 'modal') {
@@ -207,7 +223,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const handleAdicionarComboModal = () => {
     // Se foi selecionado um ato individual
     if (modalAtoSelecionado && !modalComboSelecionado) {
-      const ato = atosDisponiveis.find(a => a.id === Number(modalAtoSelecionado));
+      const ato = atosSuggestions.find(a => a.id === Number(modalAtoSelecionado));
       if (!ato) return;
       
       setAtosPedido(prev => [
@@ -256,6 +272,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     // Limpa campos do modal, mas mantém o popup aberto para adicionar mais combos/atos
     setModalComboSelecionado('');
     setModalAtoSelecionado('');
+    setModalAtoTerm('');
+    setAtosSuggestions([]);
     setModalTipoRegistro('');
     setModalNomeRegistrados('');
     setModalLivro('');
@@ -944,16 +962,60 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Adicionar Ato:</label>
-                <select value={modalAtoSelecionado} onChange={e => {
-                  setModalAtoSelecionado(e.target.value);
-                  // Limpa combo selecionado se ato for selecionado
-                  if (e.target.value) setModalComboSelecionado('');
-                }} style={{ width: 'calc(100% - 132px)', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
-                  <option value="">Selecione um ato individual...</option>
-                  {atosDisponiveis.map(ato => (
-                    <option key={ato.id} value={ato.id}>{ato.codigo} - {ato.descricao}</option>
-                  ))}
-                </select>
+                <div style={{ position: 'relative', width: 'calc(100% - 132px)' }}>
+                  <input
+                    type="text"
+                    value={modalAtoTerm}
+                    onChange={(e) => handleAtoSearchInput(e.target.value)}
+                    style={{ 
+                      width: '100%', 
+                      borderRadius: 6, 
+                      padding: '6px 8px', 
+                      border: '1.5px solid #d6d6f5', 
+                      fontSize: 13, 
+                      boxSizing: 'border-box', 
+                      height: 32 
+                    }}
+                    placeholder="Digite código ou descrição do ato..."
+                    autoComplete="off"
+                  />
+                  {atosSuggestions.length > 0 && (
+                    <ul style={{
+                      position: 'absolute',
+                      background: '#fff',
+                      border: '1px solid #ccc',
+                      borderRadius: 4,
+                      margin: 0,
+                      padding: '4px 0',
+                      listStyle: 'none',
+                      zIndex: 10000,
+                      width: '100%',
+                      left: 0,
+                      top: '100%',
+                      fontSize: 13,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                      maxHeight: 200,
+                      overflowY: 'auto'
+                    }}>
+                      {atosSuggestions.map(ato => (
+                        <li
+                          key={ato.id}
+                          style={{
+                            padding: '8px 12px',
+                            cursor: 'pointer',
+                            fontSize: 13,
+                            borderBottom: '1px solid #f0f0f0'
+                          }}
+                          onClick={() => handleSelectAto(ato)}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        >
+                          {ato.codigo} - {ato.descricao}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
