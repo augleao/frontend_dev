@@ -156,7 +156,8 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 6
+        gap: 6,
+        position: 'relative'
       }}>
         {/* Nome e CPF/CNPJ na mesma linha, input nome maior */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -184,19 +185,28 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             background: '#fff',
             border: '1px solid #ccc',
             borderRadius: 4,
-            margin: 0,
+            margin: '4px 0 0 0',
             padding: '2px 0',
             listStyle: 'none',
             zIndex: 10,
             width: '100%',
-            position: 'absolute',
-            fontSize: 13
+            fontSize: 13,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            maxHeight: '150px',
+            overflowY: 'auto'
           }}>
             {suggestions.map(c => (
               <li
                 key={c.id}
-                style={{ padding: '2px 6px', cursor: 'pointer', fontSize: 13 }}
+                style={{ 
+                  padding: '8px 12px', 
+                  cursor: 'pointer', 
+                  fontSize: 13,
+                  borderBottom: '1px solid #f0f0f0'
+                }}
                 onClick={() => handleSelectCliente(c)}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               >
                 {c.nome} ({c.cpf})
               </li>
