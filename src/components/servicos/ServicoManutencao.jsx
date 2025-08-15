@@ -532,6 +532,7 @@ export default function ServicoManutencao() {
             <ServicoEntrega
               form={form}
               onChange={handleEntregaChange}
+              pedidoId={form.protocolo}
               disabled={false}
             />
           </div>
