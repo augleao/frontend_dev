@@ -377,43 +377,45 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           }
         }
 
-        // NOVO: Lançar entrada no caixa se houver pagamento em dinheiro
-        const pagamentosDinheiro = (valorAdiantadoDetalhes || []).filter(p => p.forma && p.forma.toLowerCase() === 'dinheiro' && p.valor && parseFloat(p.valor) > 0);
-        if (pagamentosDinheiro.length > 0) {
-          try {
-            const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-            for (const pagamento of pagamentosDinheiro) {
-              const agora = new Date();
-              const dataStr = agora.toISOString().slice(0, 10); // YYYY-MM-DD
-              const horaStr = agora.toTimeString().slice(0, 8); // HH:mm:ss
-              const caixaBody = {
-                data: dataStr,
-                hora: horaStr,
-                codigo: '0003',
-                descricao: `Entrada de dinheiro referente ao pedido ${data.protocolo || form.protocolo || ''}`,
-                quantidade: 1,
-                valor_unitario: parseFloat(pagamento.valor),
-                pagamentos: JSON.stringify(['Dinheiro']),
-                usuario: usuario.nome || usuario.email || 'Sistema'
-              };
-              console.log('[CAIXA][POST] Enviando entrada de dinheiro para atos_pagos (objeto):', caixaBody);
-              console.log('[CAIXA][POST] Enviando para backend (JSON):', JSON.stringify(caixaBody));
-              const caixaRes = await fetch(`${config.apiURL}/atos-pagos`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  ...(token ? { Authorization: `Bearer ${token}` } : {})
-                },
-                body: JSON.stringify(caixaBody)
-              });
-              const caixaResText = await caixaRes.text();
-              console.log('[CAIXA][POST] Resposta do backend:', caixaRes.status, caixaRes.statusText, caixaResText);
-              if (!caixaRes.ok) {
-                console.error('[CAIXA][POST] Erro ao lançar entrada no caixa:', caixaRes.status, caixaRes.statusText, caixaResText);
+        // Só lança entrada no caixa se for novo pedido (protocolo vazio ou inexistente)
+        if (!form.protocolo || form.protocolo.trim() === '') {
+          const pagamentosDinheiro = (valorAdiantadoDetalhes || []).filter(p => p.forma && p.forma.toLowerCase() === 'dinheiro' && p.valor && parseFloat(p.valor) > 0);
+          if (pagamentosDinheiro.length > 0) {
+            try {
+              const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+              for (const pagamento of pagamentosDinheiro) {
+                const agora = new Date();
+                const dataStr = agora.toISOString().slice(0, 10); // YYYY-MM-DD
+                const horaStr = agora.toTimeString().slice(0, 8); // HH:mm:ss
+                const caixaBody = {
+                  data: dataStr,
+                  hora: horaStr,
+                  codigo: '0003',
+                  descricao: `Entrada de dinheiro referente ao pedido ${data.protocolo || form.protocolo || ''}`,
+                  quantidade: 1,
+                  valor_unitario: parseFloat(pagamento.valor),
+                  pagamentos: JSON.stringify(['Dinheiro']),
+                  usuario: usuario.nome || usuario.email || 'Sistema'
+                };
+                console.log('[CAIXA][POST] Enviando entrada de dinheiro para atos_pagos (objeto):', caixaBody);
+                console.log('[CAIXA][POST] Enviando para backend (JSON):', JSON.stringify(caixaBody));
+                const caixaRes = await fetch(`${config.apiURL}/atos-pagos`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                  },
+                  body: JSON.stringify(caixaBody)
+                });
+                const caixaResText = await caixaRes.text();
+                console.log('[CAIXA][POST] Resposta do backend:', caixaRes.status, caixaRes.statusText, caixaResText);
+                if (!caixaRes.ok) {
+                  console.error('[CAIXA][POST] Erro ao lançar entrada no caixa:', caixaRes.status, caixaRes.statusText, caixaResText);
+                }
               }
+            } catch (errCaixa) {
+              console.error('Erro ao lançar entrada no caixa (atos_pagos):', errCaixa);
             }
-          } catch (errCaixa) {
-            console.error('Erro ao lançar entrada no caixa (atos_pagos):', errCaixa);
           }
         }
 
