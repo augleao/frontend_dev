@@ -284,10 +284,17 @@ export default function ServicoManutencao() {
     }
   }
   function handleEntregaChange(field, value) {
-    setForm(f => ({
-      ...f,
-      entrega: { ...f.entrega, [field]: value }
-    }));
+    if (field === 'entrega' && value && typeof value === 'object') {
+      setForm(f => ({
+        ...f,
+        entrega: { ...value }
+      }));
+    } else {
+      setForm(f => ({
+        ...f,
+        entrega: { ...f.entrega, [field]: value }
+      }));
+    }
   }
 
     // Função para tratar mudanças na conferência
