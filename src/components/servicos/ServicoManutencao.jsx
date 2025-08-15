@@ -144,7 +144,9 @@ export default function ServicoManutencao() {
     fetchComAuth(`${config.apiURL}/pedidos/${encodeURIComponent(protocolo)}`)
       .then(res => res && res.json())
       .then(data => {
-  if (data.pedido) {
+        if (data.pedido) {
+          // LOG DE DEPURAÇÃO: Mostra o que veio do backend
+          console.log('Pedido carregado do backend:', data.pedido);
           let prazoFormatado = '';
           if (data.pedido.prazo) {
             const d = new Date(data.pedido.prazo);
