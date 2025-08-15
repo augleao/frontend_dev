@@ -216,8 +216,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     // Se foi selecionado um ato individual
     if (modalAtoSelecionado && !modalComboSelecionado) {
       const ato = atosSuggestions.find(a => a.id === Number(modalAtoSelecionado));
+      console.log('[DEBUG] handleAdicionarComboModal', { ato, modalAtoSelecionado, atosSuggestions });
       if (!ato) return;
-      
       setAtosPedido(prev => [
         ...prev,
         {
@@ -390,7 +390,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 pagamentos: 'Dinheiro',
                 usuario: usuario.nome || usuario.email || 'Sistema'
               };
-              await fetch(`${config.apiURL}/atos-pagos`, {
+              console.log('[CAIXA][POST] Enviando entrada de dinheiro para atos_pagos:', caixaBody);
+              const caixaRes = await fetch(`${config.apiURL}/atos-pagos`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -398,6 +399,11 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 },
                 body: JSON.stringify(caixaBody)
               });
+              const caixaResText = await caixaRes.text();
+              console.log('[CAIXA][POST] Resposta do backend:', caixaRes.status, caixaRes.statusText, caixaResText);
+              if (!caixaRes.ok) {
+                console.error('[CAIXA][POST] Erro ao lançar entrada no caixa:', caixaRes.status, caixaRes.statusText, caixaResText);
+              }
             }
           } catch (errCaixa) {
             console.error('Erro ao lançar entrada no caixa (atos_pagos):', errCaixa);
