@@ -130,10 +130,6 @@ function Login() {
 
       <div style={{ textAlign: 'center', marginTop: '15px' }}>
         <p>
-          Não tem uma conta?{' '}
-          <Link to="/signup" style={{ color: '#4CAF50', textDecoration: 'none' }}>
-            Cadastre-se
-          </Link>
         </p>
       </div>
     </div>
