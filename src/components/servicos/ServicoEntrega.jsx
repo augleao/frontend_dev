@@ -134,45 +134,29 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
           </h2>
         </div>
 
-        {/* Responsável, Data e Hora da Entrega */}
+        {/* Linha única com todos os campos de entrega */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
-          gap: '16px',
+          display: 'flex',
+          flexDirection: 'row',
+          gap: '24px',
           marginBottom: '8px',
+          alignItems: 'center',
         }}>
           {/* Responsável */}
-          <div style={{
-            padding: '12px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 4
-          }}>
-            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 13 }}>Responsável:</label>
-            <span style={{
-              color: '#1e8449',
-              fontWeight: 600,
-              fontSize: 13,
-              padding: '4px 0',
-              background: 'transparent'
-            }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 13, marginRight: 4 }}>Responsável:</label>
+            <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13 }}>
               {(() => {
                 const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
                 return usuario.nome || usuario.email || 'Usuário';
               })()}
             </span>
           </div>
-          
           {/* Data da Entrega */}
-          <div style={{
-            padding: '12px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 4
-          }}>
-            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 14 }}>Data da entrega:</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 14, marginRight: 4 }}>Data da entrega:</label>
             {form.entrega && form.entrega.id ? (
-              <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13, padding: '4px 0' }}>
+              <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13 }}>
                 {form.entrega.data
                   ? (typeof form.entrega.data === 'string' && form.entrega.data.includes('T')
                       ? form.entrega.data.slice(0, 10)
@@ -185,7 +169,6 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
                 value={form.entrega.data} 
                 onChange={e => onChange('data', e.target.value)} 
                 style={{
-                  width: '100%',
                   border: '1.5px solid #a9dfbf',
                   borderRadius: 6,
                   padding: '8px 12px',
@@ -195,17 +178,11 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
               />
             )}
           </div>
-          
           {/* Hora da Entrega */}
-          <div style={{
-            padding: '12px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 4
-          }}>
-            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 13 }}>Hora da entrega:</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 13, marginRight: 4 }}>Hora da entrega:</label>
             {form.entrega && form.entrega.id ? (
-              <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13, padding: '4px 0' }}>
+              <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13 }}>
                 {form.entrega.hora || '-'}
               </span>
             ) : (
@@ -214,7 +191,6 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
                 value={form.entrega.hora} 
                 onChange={e => onChange('hora', e.target.value)} 
                 style={{
-                  width: '100%',
                   border: '1.5px solid #a9dfbf',
                   borderRadius: 6,
                   padding: '8px 12px',
@@ -224,25 +200,11 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
               />
             )}
           </div>
-        </div>
-
-        {/* Dados de Retirada */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '16px',
-          marginBottom: '8px',
-        }}>
-          {/* Retirado Via */}
-          <div style={{
-            padding: '12px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 4
-          }}>
-            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 13 }}>Método de Entrega:</label>
+          {/* Método de Entrega */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 13, marginRight: 4 }}>Método de Entrega:</label>
             {form.entrega && form.entrega.id ? (
-              <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13, padding: '4px 0' }}>
+              <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13 }}>
                 {form.entrega.retiradoPor || '-'}
               </span>
             ) : (
@@ -251,7 +213,6 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
                 value={form.entrega.retiradoPor} 
                 onChange={e => onChange('retiradoPor', e.target.value)} 
                 style={{
-                  width: '100%',
                   border: '1.5px solid #a9dfbf',
                   borderRadius: 6,
                   padding: '8px 12px',
