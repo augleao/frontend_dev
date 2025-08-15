@@ -376,19 +376,21 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         if (pagamentosDinheiro.length > 0) {
           try {
             const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-            const serventiaId = form.serventiaId || form.serventia_id || form.serventia || usuario.serventia || usuario.serventiaId || usuario.serventia_id;
             for (const pagamento of pagamentosDinheiro) {
+              const agora = new Date();
+              const dataStr = agora.toISOString().slice(0, 10); // YYYY-MM-DD
+              const horaStr = agora.toTimeString().slice(0, 8); // HH:mm:ss
               const caixaBody = {
-                valor: parseFloat(pagamento.valor),
-                forma_pagamento: 'Dinheiro',
-                tipo: 'entrada',
+                data: dataStr,
+                hora: horaStr,
+                codigo: '0003',
                 descricao: `Entrada de dinheiro referente ao pedido ${data.protocolo || form.protocolo || ''}`,
-                usuario: usuario.nome || usuario.email || 'Sistema',
-                protocolo: data.protocolo || form.protocolo || '',
-                serventia: serventiaId,
-                data: new Date().toISOString()
+                quantidade: 1,
+                valor_unitario: parseFloat(pagamento.valor),
+                pagamentos: 'Dinheiro',
+                usuario: usuario.nome || usuario.email || 'Sistema'
               };
-              await fetch(`${config.apiURL}/atos-pagos`, {
+              await fetch(`${config.apiURL}/api/atos-pagos`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
