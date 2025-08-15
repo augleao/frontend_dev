@@ -195,8 +195,8 @@ export default function ListaServicos() {
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        marginBottom: 24,
-        padding: '16px 24px',
+        marginBottom: 12,
+        padding: '8px 12px',
         background: '#ffffff',
         borderRadius: 12,
         boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
