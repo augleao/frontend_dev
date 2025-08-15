@@ -1,19 +1,14 @@
 
 
-import React from 'react';
 import './AdminDashboard.css';
 import { FaBoxOpen, FaCashRegister, FaUsers, FaChartBar, FaCog, FaSignOutAlt, FaPlus } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-
+import ConfigurarServentia from './ConfigurarServentia';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
-  // Mock de dados de resumo
-  const resumo = [
-    { label: 'Pedidos', value: 128, icon: <FaBoxOpen color="#8e44ad" /> },
-    { label: 'Caixa do Dia', value: 'R$ 2.350,00', icon: <FaCashRegister color="#2874a6" /> },
-    { label: 'Usuários Ativos', value: 12, icon: <FaUsers color="#27ae60" /> },
-    { label: 'Relatórios', value: 7, icon: <FaChartBar color="#e67e22" /> },
-  ];
+  const navigate = useNavigate();
+  const [showConfigurar, setShowConfigurar] = useState(false);
 
   const atalhoLinks = [
     { label: 'Pedidos/Serviços', icon: <FaBoxOpen />, to: '/manutencao-servicos' },
@@ -21,65 +16,136 @@ export default function AdminDashboard() {
     { label: 'Usuários/Admin', icon: <FaUsers />, to: '/usuarios-admin' },
     { label: 'Relatórios', icon: <FaChartBar />, to: '/relatorios' },
     { label: 'Configurações', icon: <FaCog />, to: '/configurar-serventia' },
-    { label: 'Editar Combos', icon: <FaPlus />, to: '/admin/editar-combos' },
-    { label: 'Editar Atos', icon: <FaPlus />, to: '/admin/importar-atos' },
-    { label: 'Backup', icon: <FaPlus />, to: '/admin/backup' },
   ];
 
+  // Estilos dos botões (mesmo padrão do ImportarAtos)
+  const buttonStyle = {
+    padding: '10px 24px',
+    background: '#1976d2',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: 16,
+    transition: 'background 0.2s',
+  };
   return (
-    <div className="dashboard-root">
-      {/* Sidebar */}
-      <aside className="dashboard-sidebar">
-        <div className="sidebar-logo">Bibliofilia</div>
-        <nav className="sidebar-nav">
-          {atalhoLinks.map(link => (
-            <Link key={link.label} to={link.to} className="sidebar-link">
-              {link.icon}
-              <span>{link.label}</span>
-            </Link>
-          ))}
-        </nav>
-        <div className="sidebar-logout">
-          <button className="logout-btn"><FaSignOutAlt /> Sair</button>
+    <div
+      style={{
+        maxWidth: 1200,
+        margin: '40px auto',
+        padding: 20,
+        border: '1px solid #ddd',
+        borderRadius: 8,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ display: 'flex', gap: 12 }}>
+          <Link
+            to="/admin/editar-combos"
+            style={{
+              padding: '10px 20px',
+              background: '#8e44ad',
+              color: '#fff',
+              borderRadius: 8,
+              textDecoration: 'none',
+              fontWeight: 'bold',
+              fontSize: 16,
+            }}
+          >
+            Editar Combos
+          </Link>
+          <Link
+            to="/admin/importar-atos"
+            style={{
+              padding: '10px 20px',
+              background: '#1976d2',
+              color: '#fff',
+              borderRadius: 8,
+              textDecoration: 'none',
+              fontWeight: 'bold',
+              fontSize: 16,
+            }}
+          >
+            Editar Atos (Tabelas 07/08)
+          </Link>
+          <button
+            style={{
+              padding: '10px 20px',
+              background: '#ff9800',
+              color: '#fff',
+              borderRadius: 8,
+              border: 'none',
+              fontWeight: 'bold',
+              fontSize: 16,
+              cursor: 'pointer',
+            }}
+            onClick={() => navigate('/admin/backup')}
+          >
+            Backup
+          </button>
+          <button
+            style={{
+              padding: '10px 20px',
+              background: '#607d8b',
+              color: '#fff',
+              borderRadius: 8,
+              border: 'none',
+              fontWeight: 'bold',
+              fontSize: 16,
+              cursor: 'pointer',
+            }}
+            onClick={() => navigate('/admin/usuarios')}
+          >
+            Usuários
+          </button>
+          <button
+            style={{
+              padding: '10px 20px',
+              background: '#27ae60',
+              color: '#fff',
+              borderRadius: 8,
+              border: 'none',
+              fontWeight: 'bold',
+              fontSize: 16,
+              cursor: 'pointer',
+            }}
+            onClick={() => setShowConfigurar(true)}
+          >
+            Configurar Serventia
+          </button>
         </div>
-      </aside>
+        <h2 style={{ margin: 0 }}>Painel de Administração</h2>
+      </div>
 
-      {/* Main content */}
-      <div className="dashboard-main">
-        {/* Topbar */}
-        <header className="dashboard-topbar">
-          <div className="topbar-title">Painel Administrativo</div>
-          <div className="topbar-user">Olá, Administrador</div>
-        </header>
-
-        {/* Cards de resumo */}
-        <div className="dashboard-cards">
-          {resumo.map(card => (
-            <div className="dashboard-card" key={card.label}>
-              <div className="card-icon">{card.icon}</div>
-              <div className="card-info">
-                <div className="card-label">{card.label}</div>
-                <div className="card-value">{card.value}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Atalhos rápidos */}
-        <div className="dashboard-actions">
-          <Link to="/manutencao-servicos" className="action-btn"><FaPlus /> Novo Pedido</Link>
-          <Link to="/caixa-diario" className="action-btn"><FaCashRegister /> Caixa Diário</Link>
-          <Link to="/relatorios" className="action-btn"><FaChartBar /> Relatórios</Link>
-        </div>
-
-        {/* Espaço para gráficos ou lista de atividades recentes */}
-        <div className="dashboard-extra">
-          <div className="extra-placeholder">
-            {/* Aqui você pode adicionar gráficos, tabelas ou atividades recentes */}
-            <span style={{ color: '#aaa' }}>[Gráficos e atividades recentes]</span>
-          </div>
+      {/* Seção de Gerenciamento de Backups foi movida para outro componente */}
+      {/* Seção de Administração de Usuários foi movida para outro componente */}
+    {showConfigurar && (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        background: 'rgba(0,0,0,0.25)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000
+      }}>
+        <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 4px 24px rgba(44,62,80,0.12)' }}>
+          <ConfigurarServentia onClose={() => setShowConfigurar(false)} />
         </div>
       </div>
-    </div>
+    )}
+  </div>
   );
 }
