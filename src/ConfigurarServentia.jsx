@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { AuthContext } from './AuthContext';
 
 
 export default function ConfigurarServentia({ onClose }) {
+  const { user } = useContext(AuthContext);
   const [caixaUnificado, setCaixaUnificado] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -10,9 +12,14 @@ export default function ConfigurarServentia({ onClose }) {
 
   // Fetch config on mount
   useEffect(() => {
+    if (!user || !user.serventia) {
+      setError('Usuário sem serventia vinculada.');
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
-    fetch('/api/configuracoes-serventia')
+    fetch(`/api/configuracoes-serventia?serventia=${encodeURIComponent(user.serventia)}`)
       .then(res => {
         if (!res.ok) throw new Error('Erro ao carregar configuração');
         return res.json();
@@ -27,17 +34,24 @@ export default function ConfigurarServentia({ onClose }) {
         setError(err.message || 'Erro ao carregar configuração');
         setLoading(false);
       });
-  }, []);
+  }, [user]);
 
   // Save config
   const handleSalvar = () => {
+    if (!user || !user.serventia) {
+      setError('Usuário sem serventia vinculada.');
+      return;
+    }
     setSaving(true);
     setError(null);
     setSuccess(false);
     fetch('/api/configuracoes-serventia', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ caixa_unificado: caixaUnificado })
+      body: JSON.stringify({
+        caixa_unificado: caixaUnificado,
+        serventia: user.serventia
+      })
     })
       .then(res => {
         if (!res.ok) throw new Error('Erro ao salvar configuração');
