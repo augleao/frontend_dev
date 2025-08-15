@@ -15,8 +15,14 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
       const token = localStorage.getItem('token');
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
       const usuarioNome = usuario.nome || usuario.email || 'Usuário';
+      // Preenche data/hora automaticamente se não preenchidos
+      const now = new Date();
+      const dataEntrega = form.entrega.data || now.toISOString().slice(0, 10);
+      const horaEntrega = form.entrega.hora || now.toTimeString().slice(0, 5);
       const body = {
         ...form.entrega,
+        data: dataEntrega,
+        hora: horaEntrega,
         protocolo: pedidoId,
         usuario: usuarioNome
       };
@@ -38,7 +44,7 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
         // Garante que o id esteja presente para o botão mudar
         onChange('entrega', { ...data.entrega, id: data.entrega.id || data.entregaId });
       } else if (data && data.entregaId && typeof onChange === 'function') {
-        onChange('entrega', { ...form.entrega, id: data.entregaId });
+        onChange('entrega', { ...form.entrega, data: dataEntrega, hora: horaEntrega, id: data.entregaId });
       }
       // Atualiza status para Concluído
       await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(pedidoId)}/status`, {
@@ -165,19 +171,25 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
             gap: 4
           }}>
             <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 14 }}>Data da entrega:</label>
-            <input 
-              type="date" 
-              value={form.entrega.data} 
-              onChange={e => onChange('data', e.target.value)} 
-              style={{
-                width: '100%',
-                border: '1.5px solid #a9dfbf',
-                borderRadius: 6,
-                padding: '8px 12px',
-                fontSize: 13,
-                boxSizing: 'border-box',
-              }}
-            />
+            {form.entrega && form.entrega.id ? (
+              <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13, padding: '4px 0' }}>
+                {form.entrega.data || '-'}
+              </span>
+            ) : (
+              <input 
+                type="date" 
+                value={form.entrega.data} 
+                onChange={e => onChange('data', e.target.value)} 
+                style={{
+                  width: '100%',
+                  border: '1.5px solid #a9dfbf',
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 13,
+                  boxSizing: 'border-box',
+                }}
+              />
+            )}
           </div>
           
           {/* Hora da Entrega */}
@@ -188,19 +200,25 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
             gap: 4
           }}>
             <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 13 }}>Hora da entrega:</label>
-            <input 
-              type="time" 
-              value={form.entrega.hora} 
-              onChange={e => onChange('hora', e.target.value)} 
-              style={{
-                width: '100%',
-                border: '1.5px solid #a9dfbf',
-                borderRadius: 6,
-                padding: '8px 12px',
-                fontSize: 13,
-                boxSizing: 'border-box',
-              }}
-            />
+            {form.entrega && form.entrega.id ? (
+              <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13, padding: '4px 0' }}>
+                {form.entrega.hora || '-'}
+              </span>
+            ) : (
+              <input 
+                type="time" 
+                value={form.entrega.hora} 
+                onChange={e => onChange('hora', e.target.value)} 
+                style={{
+                  width: '100%',
+                  border: '1.5px solid #a9dfbf',
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 13,
+                  boxSizing: 'border-box',
+                }}
+              />
+            )}
           </div>
         </div>
 
