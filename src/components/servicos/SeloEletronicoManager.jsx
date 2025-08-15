@@ -129,40 +129,7 @@ export default function SeloEletronicoManager({ protocolo, onSelosChange }) {
         />
       </div>
       {error && <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>}
-      {selos.length > 0 && (
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8 }}>
-          <thead>
-            <tr style={{ background: '#ede1f7' }}>
-              <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Imagem</th>
-              <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Selo Consulta</th>
-              <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Código de Segurança</th>
-              <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Qtd. Atos</th>
-              <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Atos praticados por</th>
-              <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Valores</th>
-            </tr>
-          </thead>
-          <tbody>
-            {selos.map((selo, idx) => (
-              <tr key={idx} style={{ background: idx % 2 === 0 ? '#f8f4fc' : '#fff' }}>
-                <td style={{ padding: 6 }}>
-                  <img src={selo.imagemUrl} alt="Selo" style={{ maxWidth: 80, maxHeight: 60, borderRadius: 4 }} />
-                </td>
-                <td style={{ padding: 6, fontSize: 12 }}>{selo.seloConsulta || selo.selo_consulta || '-'}</td>
-                <td style={{ padding: 6, fontSize: 12 }}>{selo.codigoSeguranca || selo.codigo_seguranca || '-'}</td>
-                <td style={{ padding: 6, fontSize: 12, color: selo.qtdAtos || selo.qtd_atos ? '#000' : '#999' }}>
-                  {selo.qtdAtos || selo.qtd_atos || 'Não identificado'}
-                </td>
-                <td style={{ padding: 6, fontSize: 12, color: (selo.atosPraticadosPor || selo.atos_praticados_por) ? '#000' : '#999' }}>
-                  {selo.atosPraticadosPor || selo.atos_praticados_por || 'Não identificado'}
-                </td>
-                <td style={{ padding: 6, fontSize: 12, color: selo.valores ? '#000' : '#999' }}>
-                  {selo.valores || 'Não identificado'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+  {/* Tabela de selos removida. Renderização centralizada no componente pai. */}
     </div>
   );
 }
