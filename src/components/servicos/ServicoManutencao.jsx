@@ -174,7 +174,11 @@ export default function ServicoManutencao() {
               ...f.execucao,
               ...(data.pedido.execucao || {})
             },
-            entrega: { ...f.entrega, ...data.pedido.entrega },
+            entrega: {
+              ...f.entrega,
+              ...data.pedido.entrega,
+              ...(data.pedido.entrega?.retirado_por ? { retiradoPor: data.pedido.entrega.retirado_por } : {})
+            },
             // Garante que o id da serventia esteja presente para o ServicoEntrada
             serventiaId: (
               data.pedido.serventiaId ||

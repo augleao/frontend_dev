@@ -173,7 +173,11 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
             <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 14 }}>Data da entrega:</label>
             {form.entrega && form.entrega.id ? (
               <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13, padding: '4px 0' }}>
-                {form.entrega.data || '-'}
+                {form.entrega.data
+                  ? (typeof form.entrega.data === 'string' && form.entrega.data.includes('T')
+                      ? form.entrega.data.slice(0, 10)
+                      : form.entrega.data)
+                  : '-'}
               </span>
             ) : (
               <input 
