@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from './AuthContext';
+import config from '../../config';
 
 
 export default function ConfigurarServentia({ onClose }) {
@@ -19,7 +20,7 @@ export default function ConfigurarServentia({ onClose }) {
     }
     setLoading(true);
     setError(null);
-    const url = `/api/configuracoes-serventia?serventia=${encodeURIComponent(user.serventia)}`;
+    const url = `${config.apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(user.serventia)}`;
     console.log('[ConfigurarServentia] Usuário logado:', user);
     console.log('[ConfigurarServentia] Buscando config da serventia:', user.serventia, 'URL:', url);
     fetch(url)
@@ -62,7 +63,7 @@ export default function ConfigurarServentia({ onClose }) {
       serventia: user.serventia
     };
     console.log('[ConfigurarServentia] Salvando config:', body);
-    fetch('/api/configuracoes-serventia', {
+    fetch(`${config.apiURL}/configuracoes-serventia`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
