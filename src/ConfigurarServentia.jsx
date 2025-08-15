@@ -19,10 +19,13 @@ export default function ConfigurarServentia({ onClose }) {
     }
     setLoading(true);
     setError(null);
-    fetch(`/api/configuracoes-serventia?serventia=${encodeURIComponent(user.serventia)}`)
+    const url = `/api/configuracoes-serventia?serventia=${encodeURIComponent(user.serventia)}`;
+    console.log('[ConfigurarServentia] Usuário logado:', user);
+    console.log('[ConfigurarServentia] Buscando config da serventia:', user.serventia, 'URL:', url);
+    fetch(url)
       .then(async res => {
+        console.log('[ConfigurarServentia] Resposta GET status:', res.status);
         if (!res.ok) throw new Error('Erro ao carregar configuração');
-        // Se resposta vazia ou 204, retorna objeto vazio
         const text = await res.text();
         if (!text) return {};
         try {
@@ -32,12 +35,14 @@ export default function ConfigurarServentia({ onClose }) {
         }
       })
       .then(data => {
+        console.log('[ConfigurarServentia] Dados recebidos GET:', data);
         if (data && typeof data.caixa_unificado !== 'undefined') {
           setCaixaUnificado(!!data.caixa_unificado);
         }
         setLoading(false);
       })
       .catch(err => {
+        console.error('[ConfigurarServentia] Erro GET:', err);
         setError(err.message || 'Erro ao carregar configuração');
         setLoading(false);
       });
@@ -52,15 +57,18 @@ export default function ConfigurarServentia({ onClose }) {
     setSaving(true);
     setError(null);
     setSuccess(false);
+    const body = {
+      caixa_unificado: caixaUnificado,
+      serventia: user.serventia
+    };
+    console.log('[ConfigurarServentia] Salvando config:', body);
     fetch('/api/configuracoes-serventia', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        caixa_unificado: caixaUnificado,
-        serventia: user.serventia
-      })
+      body: JSON.stringify(body)
     })
       .then(async res => {
+        console.log('[ConfigurarServentia] Resposta POST status:', res.status);
         if (!res.ok) throw new Error('Erro ao salvar configuração');
         const text = await res.text();
         if (!text) return {};
@@ -70,11 +78,13 @@ export default function ConfigurarServentia({ onClose }) {
           return {};
         }
       })
-      .then(() => {
+      .then(data => {
+        console.log('[ConfigurarServentia] Dados recebidos POST:', data);
         setSuccess(true);
         setSaving(false);
       })
       .catch(err => {
+        console.error('[ConfigurarServentia] Erro POST:', err);
         setError(err.message || 'Erro ao salvar configuração');
         setSaving(false);
       });
