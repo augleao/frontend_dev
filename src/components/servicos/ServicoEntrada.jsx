@@ -388,7 +388,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 serventia: serventiaId,
                 data: new Date().toISOString()
               };
-              await fetch(`${config.apiURL}/api/atos-pagos`, {
+              await fetch(`${config.apiURL}/atos-pagos`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
