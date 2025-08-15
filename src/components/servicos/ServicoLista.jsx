@@ -354,7 +354,7 @@ export default function ListaServicos() {
 
       
       {/* Tabela de pedidos */}
-      <div style={{ marginTop: 24, borderRadius: 12, background: '#f4f6f8', padding: 16 }}>
+      <div style={{ marginTop: 12, borderRadius: 12, background: '#f4f6f8', padding: 16 }}>
   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: '#e9ecef' }}>
