@@ -431,8 +431,10 @@ function CaixaDiario() {
   const carregarDadosDaData = async () => {
     try {
       const token = localStorage.getItem('token');
+      // Adiciona o parâmetro serventia na requisição
+      const serventiaParam = usuario?.serventia ? `&serventia=${encodeURIComponent(usuario.serventia)}` : '';
       const resAtos = await fetch(
-        `${apiURL}/atos-pagos?data=${dataSelecionada}`,
+        `${apiURL}/atos-pagos?data=${dataSelecionada}${serventiaParam}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
