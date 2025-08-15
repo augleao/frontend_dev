@@ -45,6 +45,7 @@ export default function AtosGrid({ atos, agrupados, handleAtoChange }) {
             <th>Descrição do Ato</th>
             <th>Valor Total</th>
             <th>Valor Faltante</th>
+            <th>Usuário</th>
             <th>Dinheiro</th>
             <th>Cartão</th>
             <th>Pix</th>
@@ -88,6 +89,7 @@ export default function AtosGrid({ atos, agrupados, handleAtoChange }) {
                   <td style={{ padding: '10px 8px', minWidth: 180 }}>{ato.descricao}</td>
                   <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 500 }}>{formatarMoeda(ato.valorTotalComISS)}</td>
                   <td style={{ padding: '10px 8px', textAlign: 'right', color: valorFaltante === 0 ? '#388e3c' : '#d32f2f', fontWeight: 500 }}>{formatarMoeda(valorFaltante)}</td>
+                  <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 500 }}>{ato.usuario || ''}</td>
                   {renderPagamentoCell(ato, 'pagamentoDinheiro', handleAtoChange)}
                   {renderPagamentoCell(ato, 'pagamentoCartao', handleAtoChange)}
                   {renderPagamentoCell(ato, 'pagamentoPix', handleAtoChange)}
