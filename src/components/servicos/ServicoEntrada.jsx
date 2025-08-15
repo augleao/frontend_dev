@@ -390,7 +390,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 pagamentos: 'Dinheiro',
                 usuario: usuario.nome || usuario.email || 'Sistema'
               };
-              await fetch(`${config.apiURL}/api/atos-pagos`, {
+              await fetch(`${config.apiURL}/atos-pagos`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
