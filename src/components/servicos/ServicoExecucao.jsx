@@ -243,6 +243,21 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
               const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
               const usuarioNome = usuario.nome || usuario.email || 'Usuário';
               try {
+                // Exclui a execução salva
+                if (form.execucao && form.execucao.id) {
+                  const res = await fetch(`${config.apiURL}/execucao-servico/${form.execucao.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                      'Authorization': `Bearer ${token}`
+                    }
+                  });
+                  if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    alert('Erro ao excluir execução: ' + (err.error || res.status));
+                    return;
+                  }
+                }
+                // Atualiza o status do pedido
                 await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(pedidoId)}/status`, {
                   method: 'POST',
                   headers: {
@@ -258,9 +273,9 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
                 if (typeof onChange === 'function') {
                   onChange('execucao', {});
                 }
-                alert('Status do pedido alterado para "Aguardando Execução".');
+                alert('Execução cancelada e status do pedido alterado para "Aguardando Execução".');
               } catch (e) {
-                alert('Erro ao atualizar status do pedido.');
+                alert('Erro ao cancelar execução ou atualizar status do pedido.');
               }
             }}
             style={{
