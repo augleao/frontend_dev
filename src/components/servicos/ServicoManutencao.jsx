@@ -565,7 +565,7 @@ export default function ServicoManutencao() {
                   boxShadow: '0 2px 8px rgba(231,76,60,0.3)'
                 }}
               >
-                🗑️ Excluir Registro
+                🗑️ Excluir Pedido
               </button>
             </div>
           )}
