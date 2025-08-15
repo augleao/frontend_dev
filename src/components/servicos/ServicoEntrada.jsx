@@ -53,9 +53,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       if (!id) {
         const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
         id = usuarioLogado.serventia || usuarioLogado.serventiaId || usuarioLogado.serventia_id || null;
-        console.log('[DEBUG] Buscando serventia do usuario logado:', id, '| usuario:', usuarioLogado);
       }
-      console.log('[DEBUG] Buscando serventia, id:', id);
       if (!id) {
         console.warn('[DEBUG] Nenhum id de serventia encontrado no form nem no usuario. form completo:', JSON.stringify(form, null, 2));
         return;
@@ -63,13 +61,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       try {
         const token = localStorage.getItem('token');
         const url = `${config.apiURL}/serventias/${id}`;
-        console.log('[DEBUG] Fazendo fetch para:', url, '| token:', token);
         const res = await fetch(url, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-        console.log('[DEBUG] Status da resposta:', res.status, res.statusText);
         let text = await res.text();
-        console.log('[DEBUG] Corpo da resposta:', text);
         let data = {};
         try {
           data = text ? JSON.parse(text) : {};
@@ -77,13 +72,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           console.error('[DEBUG] Erro ao fazer parse do JSON da resposta:', jsonErr);
         }
         if (res.ok) {
-          console.log('[DEBUG] Resposta da API serventia (objeto final):', data);
           setServentiaInfo(data.serventia || data);
         } else {
-          console.log('[DEBUG] Erro ao buscar serventia, status:', res.status, '| corpo:', text);
         }
       } catch (e) {
-        console.log('[DEBUG] Erro no fetch da serventia:', e);
       }
     }
     fetchServentia();
@@ -400,7 +392,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   // Função para gerar protocolo em HTML e abrir para impressão
   const handleImprimirProtocolo = () => {
     // DEBUG: logar serventiaInfo para depuração
-    console.log('[PROTOCOLO DEBUG] serventiaInfo:', serventiaInfo);
     // Dados principais do protocolo
     const protocolo = form.protocolo || '(sem número)';
     // Usa a data/hora do salvamento do pedido (form.criado_em), se disponível
@@ -427,7 +418,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     // Sempre exibir bloco completo da serventia, mesmo que alguns campos estejam vazios
     const s = serventiaInfo || {};
     // LOG para rastrear dados recebidos da serventia
-    console.log('[PROTOCOLO LOG] Dados da serventia recebidos para impressão:', s);
     if (!s || typeof s !== 'object') {
       console.warn('[PROTOCOLO LOG] serventiaInfo está indefinido ou não é objeto:', s);
     }

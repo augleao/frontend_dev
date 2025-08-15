@@ -47,12 +47,9 @@ export default function SeloEletronicoManager({ protocolo, onSelosChange }) {
       // LOG: Mostra todos os valores do FormData
       for (let pair of formData.entries()) {
         if (pair[0] === 'imagem') {
-          console.log(`[LOG SELAGEM] FormData -> imagem: nome=${pair[1].name}, tipo=${pair[1].type}, tamanho=${pair[1].size}`);
         } else {
-          console.log(`[LOG SELAGEM] FormData -> ${pair[0]}: ${pair[1]}`);
         }
       }
-      console.log('[SeloEletronicoManager] Enviando imagem para backend:', { execucao_servico_id: protocolo, file });
       const token = localStorage.getItem('token');
       const res = await fetch(`${config.apiURL}/execucaoservico/${protocolo}/selo`, {
         method: 'POST',
@@ -63,7 +60,6 @@ export default function SeloEletronicoManager({ protocolo, onSelosChange }) {
       });
       
       const text = await res.text();
-      console.log('[SeloEletronicoManager] Resposta do backend:', text);
       
       if (!res.ok) throw new Error('Erro ao processar selo.');
       
@@ -85,7 +81,6 @@ export default function SeloEletronicoManager({ protocolo, onSelosChange }) {
         valores: data.valores || ''
       };
       
-      console.log('[SeloEletronicoManager] Campos extraídos - qtd_atos:', data.qtd_atos, 'atos_praticados_por:', data.atos_praticados_por || 'VAZIO');
       
       setSelos(prev => [...prev, seloMapeado]);
       if (onSelosChange) onSelosChange(prev => [...(Array.isArray(prev) ? prev : []), seloMapeado]);
