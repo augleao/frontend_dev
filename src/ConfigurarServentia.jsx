@@ -1,54 +1,132 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
 
 export default function ConfigurarServentia({ onClose }) {
   const [caixaUnificado, setCaixaUnificado] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
+  // Fetch config on mount
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    fetch('/api/configuracoes-serventia')
+      .then(res => {
+        if (!res.ok) throw new Error('Erro ao carregar configuração');
+        return res.json();
+      })
+      .then(data => {
+        if (data && typeof data.caixa_unificado !== 'undefined') {
+          setCaixaUnificado(!!data.caixa_unificado);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message || 'Erro ao carregar configuração');
+        setLoading(false);
+      });
+  }, []);
+
+  // Save config
+  const handleSalvar = () => {
+    setSaving(true);
+    setError(null);
+    setSuccess(false);
+    fetch('/api/configuracoes-serventia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ caixa_unificado: caixaUnificado })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Erro ao salvar configuração');
+        return res.json();
+      })
+      .then(() => {
+        setSuccess(true);
+        setSaving(false);
+      })
+      .catch(err => {
+        setError(err.message || 'Erro ao salvar configuração');
+        setSaving(false);
+      });
+  };
 
   return (
     <div style={{ padding: 32, maxWidth: 500 }}>
       <h2 style={{ marginBottom: 24 }}>Configurar Serventia</h2>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-        <label style={{ fontWeight: 600, fontSize: 16 }}>
-          Caixa Unificado?
-        </label>
-        <span
-          style={{
-            background: '#eee',
-            borderRadius: '50%',
-            width: 22,
-            height: 22,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 16,
-            cursor: 'pointer',
-            marginLeft: 4
-          }}
-          title="Caso esta opção esteja marcada, todos os lançamentos feitos pelos escreventes serão lançados em um único caixa. Caso esteja desmarcado, cada escrevente terá seu próprio caixa."
-        >
-          ?
-        </span>
-        <input
-          type="checkbox"
-          checked={caixaUnificado}
-          onChange={e => setCaixaUnificado(e.target.checked)}
-          style={{ marginLeft: 12, width: 20, height: 20 }}
-        />
-      </div>
-      <button
-        onClick={onClose}
-        style={{
-          padding: '8px 24px',
-          background: '#888',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 6,
-          fontWeight: 600,
-          fontSize: 15,
-          cursor: 'pointer',
-        }}
-      >
-        Fechar
-      </button>
+      {loading ? (
+        <div>Carregando...</div>
+      ) : (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+            <label style={{ fontWeight: 600, fontSize: 16 }}>
+              Caixa Unificado?
+            </label>
+            <span
+              style={{
+                background: '#eee',
+                borderRadius: '50%',
+                width: 22,
+                height: 22,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 16,
+                cursor: 'pointer',
+                marginLeft: 4
+              }}
+              title="Caso esta opção esteja marcada, todos os lançamentos feitos pelos escreventes serão lançados em um único caixa. Caso esteja desmarcado, cada escrevente terá seu próprio caixa."
+            >
+              ?
+            </span>
+            <input
+              type="checkbox"
+              checked={caixaUnificado}
+              onChange={e => setCaixaUnificado(e.target.checked)}
+              style={{ marginLeft: 12, width: 20, height: 20 }}
+              disabled={saving}
+            />
+          </div>
+          {error && <div style={{ color: 'red', marginBottom: 12 }}>{error}</div>}
+          {success && <div style={{ color: 'green', marginBottom: 12 }}>Configuração salva com sucesso!</div>}
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button
+              onClick={handleSalvar}
+              style={{
+                padding: '8px 24px',
+                background: '#1976d2',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 6,
+                fontWeight: 600,
+                fontSize: 15,
+                cursor: saving ? 'not-allowed' : 'pointer',
+                opacity: saving ? 0.7 : 1
+              }}
+              disabled={saving}
+            >
+              {saving ? 'Salvando...' : 'Salvar'}
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                padding: '8px 24px',
+                background: '#888',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 6,
+                fontWeight: 600,
+                fontSize: 15,
+                cursor: 'pointer',
+              }}
+            >
+              Fechar
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
