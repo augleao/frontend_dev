@@ -299,7 +299,17 @@ export default function ListaServicos() {
                   cursor: 'pointer',
                   fontSize: 12,
                   color: '#2c3e50',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  background:
+                    status.toLowerCase() === 'aguardando conferência' ? '#ffe5b4' : // laranja claro
+                    status.toLowerCase() === 'aguardando pagamento' ? '#fff9c4' : // amarelo claro
+                    status.toLowerCase() === 'aguardando execução' ? '#bbdefb' : // azul claro
+                    status.toLowerCase() === 'aguardando entrega' ? '#c8e6c9' : // verde claro
+                    status.toLowerCase() === 'concluído' ? '#eeeeee' : // cinza claro
+                    '#fff',
+                  borderRadius: 4,
+                  padding: '2px 8px',
+                  border: '1px solid #e0e0e0'
                 }}>
                   <input
                     type="checkbox"
@@ -379,7 +389,7 @@ export default function ListaServicos() {
       
       {/* Tabela de pedidos */}
       <div style={{ marginTop: 24, borderRadius: 12, background: '#f4f6f8', padding: 16 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: '#e9ecef' }}>
               <th style={{ padding: 8 }}>Criado em</th>
