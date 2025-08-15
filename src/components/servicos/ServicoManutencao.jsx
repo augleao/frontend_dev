@@ -15,6 +15,23 @@ const clientesMock = [
   { id: 1, nome: 'João Silva', cpf: '123.456.789-00', endereco: 'Rua A, 123', telefone: '99999-9999', email: 'joao@email.com' },
   { id: 2, nome: 'Maria Souza', cpf: '987.654.321-00', endereco: 'Rua B, 456', telefone: '88888-8888', email: 'maria@email.com' }
 ];
+const tiposServico = [
+  'Certidão de Nascimento',
+  'Certidão de Casamento',
+  'Reconhecimento de Firma',
+  'Autenticação de Documento'
+];
+const statusExecucao = [
+  { value: 'em_andamento', label: 'Em andamento', color: '#3498db' },
+  { value: 'aguardando', label: 'Aguardando documentos', color: '#f39c12' },
+  { value: 'concluido', label: 'Concluído', color: '#27ae60' },
+  { value: 'cancelado', label: 'Cancelado', color: '#e74c3c' }
+];
+const statusPagamento = [
+  { value: 'pendente', label: 'Pendente', color: '#f39c12' },
+  { value: 'parcial', label: 'Parcial', color: '#3498db' },
+  { value: 'pago', label: 'Pago', color: '#27ae60' }
+];
 function gerarProtocolo() {
   return 'PRT-' + Date.now().toString().slice(-6);
 }
