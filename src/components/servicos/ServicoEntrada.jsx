@@ -370,6 +370,38 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             console.error('Erro ao gravar status (catch):', errStatus);
           }
         }
+
+        // NOVO: Lançar entrada no caixa se houver pagamento em dinheiro
+        const pagamentosDinheiro = (valorAdiantadoDetalhes || []).filter(p => p.forma && p.forma.toLowerCase() === 'dinheiro' && p.valor && parseFloat(p.valor) > 0);
+        if (pagamentosDinheiro.length > 0) {
+          try {
+            const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+            const serventiaId = form.serventiaId || form.serventia_id || form.serventia || usuario.serventia || usuario.serventiaId || usuario.serventia_id;
+            for (const pagamento of pagamentosDinheiro) {
+              const caixaBody = {
+                valor: parseFloat(pagamento.valor),
+                forma_pagamento: 'Dinheiro',
+                tipo: 'entrada',
+                descricao: `Entrada de dinheiro referente ao pedido ${data.protocolo || form.protocolo || ''}`,
+                usuario: usuario.nome || usuario.email || 'Sistema',
+                protocolo: data.protocolo || form.protocolo || '',
+                serventia: serventiaId,
+                data: new Date().toISOString()
+              };
+              await fetch(`${config.apiURL}/api/atos-pagos`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...(token ? { Authorization: `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify(caixaBody)
+              });
+            }
+          } catch (errCaixa) {
+            console.error('Erro ao lançar entrada no caixa (atos_pagos):', errCaixa);
+          }
+        }
+
         const mensagem = (form.protocolo && form.protocolo.trim() !== '')
           ? `Pedido ${form.protocolo} atualizado com sucesso!`
           : 'Novo pedido criado com sucesso!';
