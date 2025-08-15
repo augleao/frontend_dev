@@ -7,6 +7,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const [showAdicionarAtosModal, setShowAdicionarAtosModal] = useState(false);
   const [modalComboSelecionado, setModalComboSelecionado] = useState('');
   const [modalAtoSelecionado, setModalAtoSelecionado] = useState('');
+  const [modalAtoSelecionadoObj, setModalAtoSelecionadoObj] = useState(null);
   const [modalAtoTerm, setModalAtoTerm] = useState('');
   const [atosDisponiveis, setAtosDisponiveis] = useState([]);
   const [atosSuggestions, setAtosSuggestions] = useState([]);
@@ -175,6 +176,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   // Seleciona um ato da busca
   const handleSelectAto = (ato) => {
     setModalAtoSelecionado(ato.id);
+    setModalAtoSelecionadoObj(ato);
     setModalAtoTerm(`${ato.codigo} - ${ato.descricao}`);
     setAtosSuggestions([]);
   };
@@ -215,7 +217,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const handleAdicionarComboModal = () => {
     // Se foi selecionado um ato individual
     if (modalAtoSelecionado && !modalComboSelecionado) {
-      const ato = atosSuggestions.find(a => a.id === Number(modalAtoSelecionado));
+      const ato = modalAtoSelecionadoObj;
       console.log('[DEBUG] handleAdicionarComboModal', { ato, modalAtoSelecionado, atosSuggestions });
       if (!ato) {
         console.warn('[ADICIONAR ATO] Nenhum ato encontrado para o id selecionado:', modalAtoSelecionado);
@@ -265,16 +267,17 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     }
     
     // Limpa campos do modal, mas mantém o popup aberto para adicionar mais combos/atos
-    setModalComboSelecionado('');
-    setModalAtoSelecionado('');
-    setModalAtoTerm('');
-    setAtosSuggestions([]);
-    setModalTipoRegistro('');
-    setModalNomeRegistrados('');
-    setModalLivro('');
-    setModalFolha('');
-    setModalTermo('');
-    setModalCodigoTributario('');
+  setModalComboSelecionado('');
+  setModalAtoSelecionado('');
+  setModalAtoSelecionadoObj(null);
+  setModalAtoTerm('');
+  setAtosSuggestions([]);
+  setModalTipoRegistro('');
+  setModalNomeRegistrados('');
+  setModalLivro('');
+  setModalFolha('');
+  setModalTermo('');
+  setModalCodigoTributario('');
   };
 
   // Adiciona pagamento adiantado através do modal
