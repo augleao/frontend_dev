@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from './AuthContext';
-import config from '../../config';
+import config from './config';
 
 
 export default function ConfigurarServentia({ onClose }) {
