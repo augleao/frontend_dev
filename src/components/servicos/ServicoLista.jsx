@@ -308,11 +308,15 @@ export default function ListaServicos() {
                     status.toLowerCase() === 'concluído' ? '#eeeeee' : // cinza claro
                     '#fff',
                   borderRadius: 4,
-                  padding: '6px 14px',
+                  padding: '2px 6px',
                   border: '1px solid #e0e0e0',
                   boxShadow: '0 1px 2px rgba(44,62,80,0.04)',
                   transition: 'background 0.2s',
-                  fontWeight: 600
+                  fontWeight: 500,
+                  minWidth: 0,
+                  maxWidth: 140,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
                 }}>
                   <input
                     type="checkbox"
@@ -353,42 +357,6 @@ export default function ListaServicos() {
         margin: '0 24px 16px 24px'
       }}></div>
 
-      {/* Informação dos resultados */}
-      <div style={{
-        padding: '8px 16px',
-        background: '#ecf0f1',
-        borderRadius: 8,
-        marginBottom: 16,
-        fontSize: 14,
-        color: '#2c3e50',
-        fontWeight: 600
-      }}>
-        {(() => {
-          const statusMarcados = Object.keys(statusSelecionados).filter(status => statusSelecionados[status]);
-          const temFiltroData = dataInicial || dataFinal;
-          const temFiltroStatus = statusMarcados.length > 0;
-          
-          if (temFiltroData || temFiltroStatus) {
-            return (
-              <>
-                Exibindo <strong>{pedidosFiltrados.length}</strong> de <strong>{pedidos.length}</strong> pedidos
-                {temFiltroData && (
-                  <>
-                    {dataInicial && dataFinal && ` (período: ${new Date(dataInicial).toLocaleDateString('pt-BR')} até ${new Date(dataFinal).toLocaleDateString('pt-BR')})`}
-                    {dataInicial && !dataFinal && ` (a partir de ${new Date(dataInicial).toLocaleDateString('pt-BR')})`}
-                    {!dataInicial && dataFinal && ` (até ${new Date(dataFinal).toLocaleDateString('pt-BR')})`}
-                  </>
-                )}
-                {temFiltroStatus && (
-                  <> - Status: <strong>{statusMarcados.join(', ')}</strong></>
-                )}
-              </>
-            );
-          } else {
-            return <>Total de <strong>{pedidos.length}</strong> pedidos</>;
-          }
-        })()}
-      </div>
       
       {/* Tabela de pedidos */}
       <div style={{ marginTop: 24, borderRadius: 12, background: '#f4f6f8', padding: 16 }}>
