@@ -439,6 +439,7 @@ function CaixaDiario() {
       );
       if (resAtos.ok) {
         const dataAtos = await resAtos.json();
+        console.log('[CaixaDiario] Atos recebidos do backend:', dataAtos.CaixaDiario);
         setAtos(dataAtos.CaixaDiario || []);
       }
     } catch (e) {
@@ -452,10 +453,12 @@ function CaixaDiario() {
       setLoadingConfig(true);
       try {
         if (!usuario?.serventia) throw new Error('Usuário sem serventia');
-  const res = await fetch(`${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(usuario.serventia)}`);
+        console.log('[CaixaDiario] Serventia do usuário:', usuario.serventia);
+        const res = await fetch(`${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(usuario.serventia)}`);
         if (!res.ok) throw new Error('Erro ao buscar configuração da serventia');
         const data = await res.json();
         setCaixaUnificado(!!data.caixa_unificado);
+        console.log('[CaixaDiario] Valor de caixaUnificado:', !!data.caixa_unificado);
       } catch (e) {
         setCaixaUnificado(false);
         console.error('Erro ao buscar config de caixa unificado:', e);
@@ -470,8 +473,11 @@ function CaixaDiario() {
   useEffect(() => {
     if (caixaUnificado) {
       setAtosFiltrados(atos);
+      console.log('[CaixaDiario] caixaUnificado=true, exibindo todos os atos:', atos);
     } else {
-      setAtosFiltrados(atos.filter(a => a.usuario === usuario?.nome));
+      const filtrados = atos.filter(a => a.usuario === usuario?.nome);
+      setAtosFiltrados(filtrados);
+      console.log('[CaixaDiario] caixaUnificado=false, exibindo só do usuário', usuario?.nome, filtrados);
     }
   }, [caixaUnificado, atos, usuario?.nome]);
 
