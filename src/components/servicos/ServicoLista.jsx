@@ -394,12 +394,34 @@ export default function ListaServicos() {
           <tbody>
             {pedidosFiltrados.map((p, idx) => {
               return (
-                <tr key={p.protocolo} style={{ background: idx % 2 === 0 ? '#fff' : '#f8f9fa' }}>
+                <tr key={p.protocolo} style={{
+                  background:
+                    statusPedidos[p.protocolo]?.toLowerCase() === 'aguardando conferência' ? '#ffe5b4' : // laranja claro
+                    statusPedidos[p.protocolo]?.toLowerCase() === 'aguardando pagamento' ? '#fff9c4' : // amarelo claro
+                    statusPedidos[p.protocolo]?.toLowerCase() === 'aguardando execução' ? '#bbdefb' : // azul claro
+                    statusPedidos[p.protocolo]?.toLowerCase() === 'aguardando entrega' ? '#c8e6c9' : // verde claro
+                    statusPedidos[p.protocolo]?.toLowerCase() === 'concluído' ? '#eeeeee' : // cinza claro
+                    (idx % 2 === 0 ? '#fff' : '#f8f9fa')
+                }}>
                   <td style={{ padding: 8 }}>{formatDateTime(p.criado_em)}</td>
                   <td style={{ padding: 8 }}>{p.protocolo}</td>
                   <td style={{ padding: 8 }}>{p.cliente?.nome || '-'}</td>
                   <td style={{ padding: 8 }}>{p.descricao || '-'}</td>
-                  <td style={{ padding: 8 }}>{statusPedidos[p.protocolo] || '-'}</td>
+                  <td style={{
+                    padding: 8,
+                    borderRadius: 6,
+                    fontWeight: 'bold',
+                    background:
+                      statusPedidos[p.protocolo]?.toLowerCase() === 'aguardando conferência' ? '#ffe5b4' : // laranja claro
+                      statusPedidos[p.protocolo]?.toLowerCase() === 'aguardando pagamento' ? '#fff9c4' : // amarelo claro
+                      statusPedidos[p.protocolo]?.toLowerCase() === 'aguardando execução' ? '#bbdefb' : // azul claro
+                      statusPedidos[p.protocolo]?.toLowerCase() === 'aguardando entrega' ? '#c8e6c9' : // verde claro
+                      statusPedidos[p.protocolo]?.toLowerCase() === 'concluído' ? '#eeeeee' : // cinza claro
+                      '#f4f6f8',
+                    color: '#2c3e50'
+                  }}>
+                    {statusPedidos[p.protocolo] || '-'}
+                  </td>
                   <td style={{ padding: 8 }}>{formatDate(p.prazo)}</td>
                   <td style={{ padding: 8, display: 'flex', gap: 8 }}>
                     <button
