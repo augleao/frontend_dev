@@ -20,9 +20,16 @@ export default function ConfigurarServentia({ onClose }) {
     setLoading(true);
     setError(null);
     fetch(`/api/configuracoes-serventia?serventia=${encodeURIComponent(user.serventia)}`)
-      .then(res => {
+      .then(async res => {
         if (!res.ok) throw new Error('Erro ao carregar configuração');
-        return res.json();
+        // Se resposta vazia ou 204, retorna objeto vazio
+        const text = await res.text();
+        if (!text) return {};
+        try {
+          return JSON.parse(text);
+        } catch {
+          return {};
+        }
       })
       .then(data => {
         if (data && typeof data.caixa_unificado !== 'undefined') {
@@ -53,9 +60,15 @@ export default function ConfigurarServentia({ onClose }) {
         serventia: user.serventia
       })
     })
-      .then(res => {
+      .then(async res => {
         if (!res.ok) throw new Error('Erro ao salvar configuração');
-        return res.json();
+        const text = await res.text();
+        if (!text) return {};
+        try {
+          return JSON.parse(text);
+        } catch {
+          return {};
+        }
       })
       .then(() => {
         setSuccess(true);
