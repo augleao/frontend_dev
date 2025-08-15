@@ -28,6 +28,7 @@ export default function CaixaTableEscrevente({ atos, onRemover }) {
             <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Descrição</th>
             <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Quantidade</th>
             <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Valor Unitário</th>
+            <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Usuário</th>
             <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Pagamentos</th>
             <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Ações</th>
           </tr>
@@ -48,6 +49,7 @@ export default function CaixaTableEscrevente({ atos, onRemover }) {
               <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px' }}>{ato.descricao}</td>
               <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px' }}>{ato.quantidade}</td>
               <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px' }}>R$ {formatarValor(ato.valor_unitario)}</td>
+              <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px' }}>{ato.usuario || ''}</td>
               <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '11px' }}>
                 {formasPagamento
                   .filter((fp) => {
