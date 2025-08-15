@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+import { FaBoxOpen, FaCashRegister, FaUsers, FaChartBar, FaCog, FaSignOutAlt, FaPlus } from 'react-icons/fa';
 import ConfigurarServentia from './ConfigurarServentia';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [showConfigurar, setShowConfigurar] = useState(false);
+
+  const atalhoLinks = [
+    { label: 'Pedidos/Serviços', icon: <FaBoxOpen />, to: '/manutencao-servicos' },
+    { label: 'Caixa Diário', icon: <FaCashRegister />, to: '/caixa-diario' },
+    { label: 'Usuários/Admin', icon: <FaUsers />, to: '/usuarios-admin' },
+    { label: 'Relatórios', icon: <FaChartBar />, to: '/relatorios' },
+    { label: 'Configurações', icon: <FaCog />, to: '/configurar-serventia' },
+  ];
 
   // Estilos dos botões (mesmo padrão do ImportarAtos)
   const buttonStyle = {
