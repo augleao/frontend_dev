@@ -50,10 +50,12 @@ export default function ListaServicos() {
     'aguardando entrega': true,
     'concluído': false
   });
+  const [loadingPedidos, setLoadingPedidos] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchPedidos() {
+      setLoadingPedidos(true);
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${config.apiURL}/pedidos`, {
@@ -85,6 +87,7 @@ export default function ListaServicos() {
       } catch (err) {
         console.error('Erro ao buscar pedidos:', err);
       }
+      setLoadingPedidos(false);
     }
     fetchPedidos();
   }, []);
@@ -466,7 +469,13 @@ export default function ListaServicos() {
                 </tr>
               );
             })}
-            {pedidosFiltrados.length === 0 && (
+            {loadingPedidos ? (
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
+                  Carregando pedidos...
+                </td>
+              </tr>
+            ) : pedidosFiltrados.length === 0 && (
               <tr>
                 <td colSpan={7} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
                   {pedidos.length === 0 ? 'Nenhum pedido encontrado.' : 'Nenhum pedido encontrado para o período selecionado.'}
