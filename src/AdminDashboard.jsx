@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+
+import ConfigurarServentia from './ConfigurarServentia';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [showConfigurar, setShowConfigurar] = useState(false);
 
   // Estilos dos botões (mesmo padrão do ImportarAtos)
   const buttonStyle = {
@@ -93,12 +96,45 @@ export default function AdminDashboard() {
           >
             Usuários
           </button>
+          <button
+            style={{
+              padding: '10px 20px',
+              background: '#27ae60',
+              color: '#fff',
+              borderRadius: 8,
+              border: 'none',
+              fontWeight: 'bold',
+              fontSize: 16,
+              cursor: 'pointer',
+            }}
+            onClick={() => setShowConfigurar(true)}
+          >
+            Configurar Serventia
+          </button>
         </div>
         <h2 style={{ margin: 0 }}>Painel de Administração</h2>
       </div>
 
       {/* Seção de Gerenciamento de Backups foi movida para outro componente */}
       {/* Seção de Administração de Usuários foi movida para outro componente */}
-    </div>
+    {showConfigurar && (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        background: 'rgba(0,0,0,0.25)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000
+      }}>
+        <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 4px 24px rgba(44,62,80,0.12)' }}>
+          <ConfigurarServentia onClose={() => setShowConfigurar(false)} />
+        </div>
+      </div>
+    )}
+  </div>
   );
 }
