@@ -452,7 +452,7 @@ function CaixaDiario() {
       setLoadingConfig(true);
       try {
         if (!usuario?.serventia) throw new Error('Usuário sem serventia');
-        const res = await fetch(`${config.apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(usuario.serventia)}`);
+  const res = await fetch(`${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(usuario.serventia)}`);
         if (!res.ok) throw new Error('Erro ao buscar configuração da serventia');
         const data = await res.json();
         setCaixaUnificado(!!data.caixa_unificado);
