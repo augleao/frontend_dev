@@ -308,8 +308,11 @@ export default function ListaServicos() {
                     status.toLowerCase() === 'concluído' ? '#eeeeee' : // cinza claro
                     '#fff',
                   borderRadius: 4,
-                  padding: '2px 8px',
-                  border: '1px solid #e0e0e0'
+                  padding: '6px 14px',
+                  border: '1px solid #e0e0e0',
+                  boxShadow: '0 1px 2px rgba(44,62,80,0.04)',
+                  transition: 'background 0.2s',
+                  fontWeight: 600
                 }}>
                   <input
                     type="checkbox"
