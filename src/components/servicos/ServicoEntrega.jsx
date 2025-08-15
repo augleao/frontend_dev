@@ -35,7 +35,8 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
       if (!res.ok) throw new Error('Erro ao salvar entrega');
       const data = await res.json();
       if (data && data.entrega && typeof onChange === 'function') {
-        onChange('entrega', data.entrega);
+        // Garante que o id esteja presente para o botão mudar
+        onChange('entrega', { ...data.entrega, id: data.entrega.id || data.entregaId });
       } else if (data && data.entregaId && typeof onChange === 'function') {
         onChange('entrega', { ...form.entrega, id: data.entregaId });
       }
