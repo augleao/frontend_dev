@@ -350,12 +350,7 @@ export default function ListaServicos() {
         </div>
       </div>
 
-      {/* Linha divisória */}
-      <div style={{
-        height: '1px',
-        background: 'linear-gradient(to right, transparent, #bdc3c7, transparent)',
-        margin: '0 24px 16px 24px'
-      }}></div>
+
 
       
       {/* Tabela de pedidos */}
