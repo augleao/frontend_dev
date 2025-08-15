@@ -241,20 +241,26 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
             gap: 4
           }}>
             <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 13 }}>Método de Entrega:</label>
-            <input 
-              type="text" 
-              value={form.entrega.retiradoPor} 
-              onChange={e => onChange('retiradoPor', e.target.value)} 
-              style={{
-                width: '100%',
-                border: '1.5px solid #a9dfbf',
-                borderRadius: 6,
-                padding: '8px 12px',
-                fontSize: 13,
-                boxSizing: 'border-box',
-              }}
-              placeholder="Adicione aqui a forma de entrega (balcão, correios, CRC, etc.) e o protocolo, se disponível."
-            />
+            {form.entrega && form.entrega.id ? (
+              <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13, padding: '4px 0' }}>
+                {form.entrega.retiradoPor || '-'}
+              </span>
+            ) : (
+              <input 
+                type="text" 
+                value={form.entrega.retiradoPor} 
+                onChange={e => onChange('retiradoPor', e.target.value)} 
+                style={{
+                  width: '100%',
+                  border: '1.5px solid #a9dfbf',
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 13,
+                  boxSizing: 'border-box',
+                }}
+                placeholder="Adicione aqui a forma de entrega (balcão, correios, CRC, etc.) e o protocolo, se disponível."
+              />
+            )}
           </div>
         </div>
         {/* Botão de ação ao final */}
