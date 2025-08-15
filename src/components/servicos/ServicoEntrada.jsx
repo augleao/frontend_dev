@@ -387,10 +387,11 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 descricao: `Entrada de dinheiro referente ao pedido ${data.protocolo || form.protocolo || ''}`,
                 quantidade: 1,
                 valor_unitario: parseFloat(pagamento.valor),
-                pagamentos: 'Dinheiro',
+                pagamentos: JSON.stringify(['Dinheiro']),
                 usuario: usuario.nome || usuario.email || 'Sistema'
               };
-              console.log('[CAIXA][POST] Enviando entrada de dinheiro para atos_pagos:', caixaBody);
+              console.log('[CAIXA][POST] Enviando entrada de dinheiro para atos_pagos (objeto):', caixaBody);
+              console.log('[CAIXA][POST] Enviando para backend (JSON):', JSON.stringify(caixaBody));
               const caixaRes = await fetch(`${config.apiURL}/atos-pagos`, {
                 method: 'POST',
                 headers: {
