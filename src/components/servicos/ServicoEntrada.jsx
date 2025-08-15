@@ -217,7 +217,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     if (modalAtoSelecionado && !modalComboSelecionado) {
       const ato = atosSuggestions.find(a => a.id === Number(modalAtoSelecionado));
       console.log('[DEBUG] handleAdicionarComboModal', { ato, modalAtoSelecionado, atosSuggestions });
-      if (!ato) return;
+      if (!ato) {
+        console.warn('[ADICIONAR ATO] Nenhum ato encontrado para o id selecionado:', modalAtoSelecionado);
+        return;
+      }
       setAtosPedido(prev => [
         ...prev,
         {
