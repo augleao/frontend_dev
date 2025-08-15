@@ -16,6 +16,10 @@ import { apiURL } from './config';
 import { gerarRelatorioPDF } from './components/RelatorioPDF';
 
 function CaixaDiario() {
+  // Usuário logado
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+  const [caixaUnificado, setCaixaUnificado] = useState(false);
+  const [loadingConfig, setLoadingConfig] = useState(true);
   // Estados
   const [dataSelecionada, setDataSelecionada] = useState(() => {
     const hoje = new Date();
@@ -43,6 +47,7 @@ function CaixaDiario() {
 
   const [quantidade, setQuantidade] = useState(1);
   const [atos, setAtos] = useState([]);
+  const [atosFiltrados, setAtosFiltrados] = useState([]);
   const [fechamentos, setFechamentos] = useState([]);
   const debounceTimeout = useRef(null);
 
@@ -440,6 +445,35 @@ function CaixaDiario() {
       console.error('Erro ao carregar dados da data:', e);
     }
   };
+
+  // Buscar config de caixa unificado da serventia
+  useEffect(() => {
+    async function fetchConfig() {
+      setLoadingConfig(true);
+      try {
+        if (!usuario?.serventia) throw new Error('Usuário sem serventia');
+        const res = await fetch(`/api/configuracoes-serventia?serventia=${encodeURIComponent(usuario.serventia)}`);
+        if (!res.ok) throw new Error('Erro ao buscar configuração da serventia');
+        const data = await res.json();
+        setCaixaUnificado(!!data.caixa_unificado);
+      } catch (e) {
+        setCaixaUnificado(false);
+        console.error('Erro ao buscar config de caixa unificado:', e);
+      } finally {
+        setLoadingConfig(false);
+      }
+    }
+    fetchConfig();
+  }, [usuario?.serventia]);
+
+  // Filtrar atos conforme config
+  useEffect(() => {
+    if (caixaUnificado) {
+      setAtosFiltrados(atos);
+    } else {
+      setAtosFiltrados(atos.filter(a => a.usuario === usuario?.nome));
+    }
+  }, [caixaUnificado, atos, usuario?.nome]);
 
 // Adicione este useEffect:
 useEffect(() => {
@@ -1129,7 +1163,11 @@ useEffect(() => {
         }}>
           📋 Movimentos do Dia
         </h3>
-        <AtosTable atos={atos} onRemover={removerAto} />
+        {loadingConfig ? (
+          <div>Carregando configuração da serventia...</div>
+        ) : (
+          <AtosTable atos={atosFiltrados} onRemover={removerAto} />
+        )}
       </div>
       
       </div> {/* Fim do Container Principal */}
