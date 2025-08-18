@@ -60,37 +60,27 @@ export default function ListaServicos() {
         const token = localStorage.getItem('token');
         const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
         const idServentiaUsuario = usuario.serventia || usuario.serventiaId || usuario.serventia_id;
-        // Busca todos os usuários para mapear id -> serventia
+        // Busca todos os usuários
         const usuariosRes = await fetch(`${config.apiURL}/admin/usuarios`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const usuariosData = await usuariosRes.json();
-        const usuariosMap = new Map();
-        (usuariosData.usuarios || []).forEach(u => {
-          usuariosMap.set(u.id, u);
-        });
+        // Filtra usuários que pertencem à mesma serventia do usuário logado
+        const usuariosDaServentia = (usuariosData.usuarios || []).filter(u => u.serventia === idServentiaUsuario);
+        const idsUsuariosDaServentia = new Set(usuariosDaServentia.map(u => u.id));
         // Busca todos os pedidos
         const res = await fetch(`${config.apiURL}/pedidos`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        // Filtra pedidos pela serventia do usuário criador do pedido
+        // Filtra pedidos criados por qualquer usuário da serventia
         const pedidosFiltradosServentia = (data.pedidos || []).filter(p => {
           const usuarioIdPedido = p.usuario_id || p.usuarioId || p.user_id || p.userId;
-          const usuarioCriador = usuariosMap.get(usuarioIdPedido);
-          if (!usuarioCriador) {
-            console.log('[DEBUG] Pedido sem usuarioCriador:', p, 'usuarioIdPedido:', usuarioIdPedido);
+          if (!usuarioIdPedido) {
+            console.log('[DEBUG] Pedido sem usuarioIdPedido:', p);
             return false;
           }
-          const logInfo = {
-            pedidoProtocolo: p.protocolo,
-            usuarioIdPedido,
-            usuarioCriador,
-            usuarioCriadorServentia: usuarioCriador.serventia,
-            idServentiaUsuario
-          };
-          console.log('[DEBUG] Comparando serventias:', logInfo);
-          return usuarioCriador.serventia === idServentiaUsuario;
+          return idsUsuariosDaServentia.has(usuarioIdPedido);
         });
         setPedidos(pedidosFiltradosServentia);
         setPedidosFiltrados(pedidosFiltradosServentia); // Inicializa os pedidos filtrados
