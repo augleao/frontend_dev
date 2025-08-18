@@ -338,21 +338,23 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   };
 
   return (
-    <div
-      style={{
+    <div style={{ background: '#f5e6fa', padding: '0', borderRadius: '16px', width: '100%', boxSizing: 'border-box', display: 'flex', justifyContent: 'center' }}>
+      <div style={{
         width: '100%',
-        margin: '0',
-        padding: '16px',
+        maxWidth: '800px',
+        margin: '32px 0',
+        padding: '24px 32px',
         borderRadius: '16px',
         border: '2px solid #9b59b6',
         boxShadow: '0 2px 12px rgba(155,89,182,0.10)',
         background: '#f5e6fa',
         overflow: 'hidden',
-        marginBottom: 16,
-        boxSizing: 'border-box'
-      }}
-    >
-
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'stretch'
+      }}>
+  </div>
         {/* Descrição do Serviço, Origem, campo condicional e Prazo na mesma linha */}
         <div style={{
           padding: '8px 12px',
