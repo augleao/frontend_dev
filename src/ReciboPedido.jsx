@@ -78,7 +78,7 @@ export default function ReciboPedido() {
         <div>
           <h2 style={{ margin: 0, fontWeight: 700 }}>Recibo de serviço</h2>
           <div style={{ fontSize: 16, margin: '8px 0' }}>
-            <b>Tipo serviço:</b> <span style={{ fontWeight: 600 }}>Inscrição de CPF</span>
+            <b>Tipo serviço:</b> <span style={{ fontWeight: 600 }}>{pedido.descricao || '-'}</span>
           </div>
           <div style={{ fontSize: 14 }}>
             <b>Cartório:</b> {serventia.nome_completo || '-'}<br/>
@@ -110,7 +110,7 @@ export default function ReciboPedido() {
         <b>Protocolo:</b> {pedido.protocolo}<br/>
         <b>Chave:</b> fe345
       </div>
-      <h3 style={{ marginTop: 24, marginBottom: 8, fontSize: 18 }}>Dados do CLiente:</h3>
+      <h3 style={{ marginTop: 24, marginBottom: 8, fontSize: 18 }}>Dados do Cliente:</h3>
       <div style={{ fontSize: 15, marginBottom: 8 }}>
         <b>Nome:</b> {pedido.cliente?.nome || '-'}<br/>
         <b>Telefone:</b> {pedido.cliente?.telefone || '-'} &nbsp; <b>Nº do CPF:</b>  {pedido.cliente?.cpf || '-'}
