@@ -388,21 +388,21 @@ export default function ListaServicos() {
               <th style={{ padding: 8 }}>Status</th>
               <th style={{ padding: 8 }}>Prazo</th>
               <th style={{ padding: 8 }}>Ações</th>
-                    <button
-                      style={{
-                        background: '#e67e22',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 6,
-                        padding: '6px 16px',
-                        fontWeight: 'bold',
-                        fontSize: 14,
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => navigate(`/recibo/${encodeURIComponent(p.protocolo)}`)}
-                    >
-                      PROTOCOLO
-                    </button>
+            </tr>
+          </thead>
+          <tbody>
+            {pedidosFiltrados.map((p, idx) => {
+              return (
+                <tr key={p.protocolo} style={{
+                  background:
+                    statusPedidos[p.protocolo]?.toLowerCase() === 'aguardando conferência' ? '#ffe5b4' : // laranja claro
+                    statusPedidos[p.protocolo]?.toLowerCase() === 'aguardando pagamento' ? '#fff9c4' : // amarelo claro
+                    statusPedidos[p.protocolo]?.toLowerCase() === 'aguardando execução' ? '#bbdefb' : // azul claro
+                    statusPedidos[p.protocolo]?.toLowerCase() === 'aguardando entrega' ? '#c8e6c9' : // verde claro
+                    statusPedidos[p.protocolo]?.toLowerCase() === 'concluído' ? '#eeeeee' : // cinza claro
+                    (idx % 2 === 0 ? '#fff' : '#f8f9fa')
+                }}>
+                  <td style={{ padding: 8 }}>{formatDateTime(p.criado_em)}</td>
                   <td style={{ padding: 8 }}>{p.protocolo}</td>
                   <td style={{ padding: 8 }}>{p.cliente?.nome || '-'}</td>
                   <td style={{ padding: 8 }}>{p.descricao || '-'}</td>
