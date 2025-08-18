@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import ReciboProtocolo from './ReciboProtocolo';
 import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 
@@ -438,114 +439,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     }
   };
 
-  // Função para gerar protocolo em HTML e abrir para impressão
-  const handleImprimirProtocolo = () => {
-    // DEBUG: logar serventiaInfo para depuração
-    // Dados principais do protocolo
-    const protocolo = form.protocolo || '(sem número)';
-    // Usa a data/hora do salvamento do pedido (form.criado_em), se disponível
-    let data = '-';
-    if (form.criado_em) {
-      try {
-        const d = new Date(form.criado_em);
-        data = d.toLocaleString('pt-BR');
-      } catch (e) {
-        console.warn('[PROTOCOLO LOG] Erro ao converter form.criado_em:', form.criado_em, e);
-        data = form.criado_em;
-      }
-    } else {
-      data = new Date().toLocaleString('pt-BR');
-    }
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    const nomeUsuario = usuario.nome || usuario.email || 'Usuário';
-    // Dados do cliente
-    const cliente = form.cliente || {};
-    const clienteNome = cliente.nome || form.clienteNome || '-';
-    const clienteDoc = cliente.cpf || cliente.cnpj || form.clienteCpf || form.clienteCnpj || '-';
-    const clienteEmail = cliente.email || form.clienteEmail || '-';
-    const clienteTel = cliente.telefone || form.clienteTelefone || '-';
-    // Sempre exibir bloco completo da serventia, mesmo que alguns campos estejam vazios
-    const s = serventiaInfo || {};
-    // LOG para rastrear dados recebidos da serventia
-    if (!s || typeof s !== 'object') {
-      console.warn('[PROTOCOLO LOG] serventiaInfo está indefinido ou não é objeto:', s);
-    }
-    if (!s.nome_completo) {
-      console.warn('[PROTOCOLO LOG] nome_completo ausente na serventia:', s);
-    }
-    let serventiaHtml = `
-      <div style="text-align:center; margin-bottom:4px;">
-        <img src='/brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png' alt='Brasão da República' style='height:38px; margin-bottom:2px;' />
-      </div>
-      <div><b>${s.nome_completo || ''}</b></div>
-      <div>${s.endereco || ''}</div>
-      <div>CNPJ: ${s.cnpj || ''}</div>
-      <div>Telefone: ${s.telefone || ''}</div>
-      <div>Email: ${s.email || ''}</div>
-    `;
-    // Monta HTML do protocolo para impressora térmica 80 colunas, apenas preto
-    const html = `
-      <html>
-      <head>
-        <title>Recibo de Protocolo</title>
-        <style>
-          @page { size: A4; margin: 1cm; }
-          body { font-family: 'Times New Roman', serif; font-size: 11pt; color: black; line-height: 1.4; margin: 0; padding: 0; width: 19cm; height: 13.5cm; box-sizing: border-box; }
-          .serventia-bloco { text-align: center; margin-bottom: 10px; }
-          .info { margin-bottom: 4px; text-align: center; }
-          .label { color: #000; font-weight: bold; }
-          .valor { color: #000; }
-          .atos-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
-          .atos-table th, .atos-table td { border: 1px solid #000; padding: 2px 3px; font-size: 10px; color: #000; }
-          .atos-table th { background: #fff; color: #000; font-weight: bold; }
-        </style>
-      </head>
-      <body>
-        <div class="serventia-bloco">${serventiaHtml}</div>
-        <h2 style="color: #000; text-align: center; font-size: 15px; margin: 2px 0 8px 0; font-weight: bold;">Recibo de Protocolo nº ${protocolo}</h2>
-        <div class="info"><span class="label">Data/Hora:</span> <span class="valor">${data}</span></div>
-        <div class="info"><span class="label">Escrevente responsável pelo Protocolo:</span> <span class="valor">${nomeUsuario}</span></div>
-        <div class="info"><span class="label">Cliente:</span> <span class="valor">${clienteNome}</span></div>
-        <div class="info"><span class="label">CPF/CNPJ:</span> <span class="valor">${clienteDoc}</span></div>
-        <div class="info"><span class="label">E-mail:</span> <span class="valor">${clienteEmail}</span></div>
-        <div class="info"><span class="label">Tel:</span> <span class="valor">${clienteTel}</span></div>
-        <div class="info"><span class="label">Descrição:</span> <span class="valor">${form.descricao || ''}</span></div>
-        <div class="info"><span class="label">Origem:</span> <span class="valor">${form.origem || ''} ${form.origemInfo ? '(' + form.origemInfo + ')' : ''}</span></div>
-        <div class="info"><span class="label">Previsão de Entrega:</span> <span class="valor">${form.prazo || ''}</span></div>
-        <div class="info"><span class="label">Obs:</span> <span class="valor">${form.observacao || ''}</span></div>
-        <div class="info"><span class="label">Valor(es) Adiantado(s):</span> <span class="valor">${(valorAdiantadoDetalhes || []).map(v => v.valor ? `R$${parseFloat(v.valor).toLocaleString('pt-BR', {minimumFractionDigits:2})} (${v.forma})` : '').filter(Boolean).join(' | ') || '-'}</span></div>
-        <table class="atos-table">
-          <thead>
-            <tr>
-              <th>Combo</th>
-              <th>Cód.</th>
-              <th>Desc.</th>
-              <th>Qtd</th>
-              <th>Trib.</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${(atosPedido || []).map(ato => `
-              <tr>
-                <td>${ato.comboNome || ''}</td>
-                <td>${ato.atoCodigo || ''}</td>
-                <td>${ato.atoDescricao ? ato.atoDescricao.slice(0, 18) : ''}</td>
-                <td>${ato.quantidade || 1}</td>
-                <td>${ato.codigoTributario || ''}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        <script>window.onload = function() { window.print(); }</script>
-      </body>
-      </html>
-    `;
-  const win = window.open('', '_blank', 'width=794,height=550'); // Tamanho aproximado de meia folha A4
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => { win.print(); }, 500);
-  };
+
 
   return (
     <div style={{ background: 'transparent', padding: '0', borderRadius: '0', width: '100%', boxSizing: 'border-box', display: 'flex', justifyContent: 'center' }}>
@@ -1419,23 +1313,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           >
             {form.protocolo && form.protocolo.trim() !== '' ? 'Atualizar Pedido' : 'Salvar Pedido'}
           </button>
-          <button
-            type="button"
-            onClick={handleImprimirProtocolo}
-            style={{
-              padding: '6px 18px',
-              background: '#9b59b6',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              fontWeight: 'bold',
-              fontSize: 15,
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            Imprimir Protocolo
-          </button>
+          <ReciboProtocolo form={form} serventiaInfo={serventiaInfo} usuario={JSON.parse(localStorage.getItem('usuario') || '{}')} />
         </div>
 
       </div>
