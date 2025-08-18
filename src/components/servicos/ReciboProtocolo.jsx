@@ -35,8 +35,8 @@ const s = serventiaInfo || {};
 
     // Valores adiantados
     const valorAdiantadoDetalhes = form.valorAdiantadoDetalhes || [];
-    // Atos do pedido
-    const atosPedido = form.combos || [];
+  // Atos do pedido (tenta pegar de combos, atosPedido ou atos)
+  const atosPedido = form.combos || form.atosPedido || form.atos || [];
     // Monta HTML do protocolo
     const html = `
       <html>
@@ -79,15 +79,25 @@ const s = serventiaInfo || {};
             </tr>
           </thead>
           <tbody>
-            ${(atosPedido || []).map(ato => `
-              <tr>
-                <td>${ato.comboNome || ''}</td>
-                <td>${ato.atoCodigo || ''}</td>
-                <td>${ato.atoDescricao ? ato.atoDescricao.slice(0, 18) : ''}</td>
-                <td>${ato.quantidade || 1}</td>
-                <td>${ato.codigoTributario || ''}</td>
-              </tr>
-            `).join('')}
+            ${
+              (atosPedido && atosPedido.length > 0)
+                ? atosPedido.map(ato => {
+                    // Compatibilidade de campos
+                    const comboNome = ato.comboNome || ato.combo_nome || ato.combo || '';
+                    const atoCodigo = ato.atoCodigo || ato.ato_codigo || ato.codigo || '';
+                    const atoDescricao = ato.atoDescricao || ato.ato_descricao || ato.descricao || '';
+                    const quantidade = ato.quantidade || 1;
+                    const codigoTributario = ato.codigoTributario || ato.codigo_tributario || '';
+                    return `<tr>
+                      <td>${comboNome}</td>
+                      <td>${atoCodigo}</td>
+                      <td>${atoDescricao ? atoDescricao.slice(0, 18) : ''}</td>
+                      <td>${quantidade}</td>
+                      <td>${codigoTributario}</td>
+                    </tr>`;
+                  }).join('')
+                : `<tr><td colspan='5' style='text-align:center;color:#888;'>Nenhum ato/combo adicionado</td></tr>`
+            }
           </tbody>
         </table>
       </body>
