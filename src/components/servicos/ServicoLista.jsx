@@ -75,27 +75,22 @@ export default function ListaServicos() {
         });
         const data = await res.json();
         // Filtra pedidos pela serventia do usuário criador do pedido
-        // 1. Descobrir a serventia do usuário logado
-        // 2. Montar lista de nomes de usuários da mesma serventia
-        // 3. Exibir pedidos cujo campo usuario esteja nessa lista
-        const nomesUsuariosMesmaServentia = [];
-        for (const u of usuariosMap.values()) {
-          if (u.serventia === idServentiaUsuario) {
-            nomesUsuariosMesmaServentia.push((u.nome || '').toLowerCase().trim());
-          }
-        }
-        console.log('[DEBUG] Nomes de usuários da mesma serventia:', nomesUsuariosMesmaServentia);
         const pedidosFiltradosServentia = (data.pedidos || []).filter(p => {
-          if (!p.usuario) {
-            console.log('[DEBUG] Pedido sem campo usuario:', p);
+          const usuarioIdPedido = p.usuario_id || p.usuarioId || p.user_id || p.userId;
+          const usuarioCriador = usuariosMap.get(usuarioIdPedido);
+          if (!usuarioCriador) {
+            console.log('[DEBUG] Pedido sem usuarioCriador:', p, 'usuarioIdPedido:', usuarioIdPedido);
             return false;
           }
-          const nomePedido = (p.usuario || '').toLowerCase().trim();
-          const pertence = nomesUsuariosMesmaServentia.includes(nomePedido);
-          if (!pertence) {
-            console.log('[DEBUG] Pedido ignorado, usuario não pertence à serventia:', p.usuario);
-          }
-          return pertence;
+          const logInfo = {
+            pedidoProtocolo: p.protocolo,
+            usuarioIdPedido,
+            usuarioCriador,
+            usuarioCriadorServentia: usuarioCriador.serventia,
+            idServentiaUsuario
+          };
+          console.log('[DEBUG] Comparando serventias:', logInfo);
+          return usuarioCriador.serventia === idServentiaUsuario;
         });
         setPedidos(pedidosFiltradosServentia);
         setPedidosFiltrados(pedidosFiltradosServentia); // Inicializa os pedidos filtrados
