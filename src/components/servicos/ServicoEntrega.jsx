@@ -41,7 +41,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         folha: ato.folha || '',
         termo: ato.termo || ''
       }));
-      setAtosPedido(mappedAtos);
+      if (typeof setAtosPedido === 'function') {
+        setAtosPedido(mappedAtos);
+      }
     }
     // eslint-disable-next-line
   }, [form.combos]);
