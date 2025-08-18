@@ -153,11 +153,7 @@ function App() {
 />
         <Route
           path="/recibo/:protocolo"
-          element={
-            <PrivateRoute>
-              <ReciboPedido />
-            </PrivateRoute>
-          }
+          element={<ReciboPedido />}
         />
       </Routes>
     </AuthProvider>
