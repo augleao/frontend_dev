@@ -6,7 +6,26 @@ export default function ReciboProtocolo({ form, serventiaInfo, usuario }) {
     const protocolo = form.protocolo || '(sem número)';
     const nomeUsuario = usuario?.nome || '';
     const nomeServentia = serventiaInfo?.nome_completo || '';
-    const dataCriacao = form.criado_em ? new Date(form.criado_em).toLocaleString('pt-BR') : '';
+    const data = form.criado_em ? new Date(form.criado_em).toLocaleString('pt-BR') : '';
+    // Cliente
+    const cliente = form.cliente || {};
+    const clienteNome = cliente.nome || form.clienteNome || '-';
+    const clienteDoc = cliente.cpf || cliente.cnpj || form.clienteCpf || form.clienteCnpj || '-';
+    const clienteEmail = cliente.email || form.clienteEmail || '-';
+    const clienteTel = cliente.telefone || form.clienteTelefone || '-';
+    // Serventia bloco
+    const s = serventiaInfo || {};
+    const serventiaHtml = `
+      <div><b>${s.nome_completo || ''}</b></div>
+      <div>${s.endereco || ''}</div>
+      <div>CNPJ: ${s.cnpj || ''}</div>
+      <div>Telefone: ${s.telefone || ''}</div>
+      <div>Email: ${s.email || ''}</div>
+    `;
+    // Valores adiantados
+    const valorAdiantadoDetalhes = form.valorAdiantadoDetalhes || [];
+    // Atos do pedido
+    const atosPedido = form.combos || [];
     // Monta HTML do protocolo
     const html = `
       <html>
@@ -60,15 +79,13 @@ export default function ReciboProtocolo({ form, serventiaInfo, usuario }) {
             `).join('')}
           </tbody>
         </table>
-        <script>window.onload = function() { window.print(); }</script>
       </body>
       </html>
-
     `;
     const win = window.open('', '_blank', 'width=600,height=600');
-  win.document.write(html);
-  win.document.close();
-  // Removido window.print() automático. Usuário pode imprimir manualmente na janela.
+    win.document.write(html);
+    win.document.close();
+    // Removido window.print() automático. Usuário pode imprimir manualmente na janela.
   };
 
   return (
