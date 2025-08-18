@@ -10,28 +10,65 @@ export default function ReciboProtocolo({ form, serventiaInfo, usuario }) {
     // Monta HTML do protocolo
     const html = `
       <html>
-        <head>
-          <title>Recibo de Protocolo</title>
-          <style>
-            body { font-family: Arial, sans-serif; font-size: 13px; color: #000; }
-            .info { margin-bottom: 6px; }
-            .label { font-weight: bold; }
-            .valor { margin-left: 4px; }
-          </style>
-        </head>
-        <body>
-          <h2 style="color: #000; text-align: center; font-size: 15px; margin: 2px 0 8px 0; font-weight: bold;">Recibo de Protocolo nº ${protocolo}</h2>
-          <div class="info"><span class="label">Escrevente responsável pelo Protocolo:</span> <span class="valor">${nomeUsuario}</span></div>
-          <div class="info"><span class="label">Serventia:</span> <span class="valor">${nomeServentia}</span></div>
-          <div class="info"><span class="label">Data de criação:</span> <span class="valor">${dataCriacao}</span></div>
-          <!-- Adicione mais campos conforme necessário -->
-        </body>
+      <head>
+        <title>Recibo de Protocolo</title>
+        <style>
+          @page { size: A4; margin: 1cm; }
+          body { font-family: 'Times New Roman', serif; font-size: 11pt; color: black; line-height: 1.4; margin: 0; padding: 0; width: 19cm; height: 13.5cm; box-sizing: border-box; }
+          .serventia-bloco { text-align: center; margin-bottom: 10px; }
+          .info { margin-bottom: 4px; text-align: center; }
+          .label { color: #000; font-weight: bold; }
+          .valor { color: #000; }
+          .atos-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+          .atos-table th, .atos-table td { border: 1px solid #000; padding: 2px 3px; font-size: 10px; color: #000; }
+          .atos-table th { background: #fff; color: #000; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="serventia-bloco">${serventiaHtml}</div>
+        <h2 style="color: #000; text-align: center; font-size: 15px; margin: 2px 0 8px 0; font-weight: bold;">Recibo de Protocolo nº ${protocolo}</h2>
+        <div class="info"><span class="label">Data/Hora:</span> <span class="valor">${data}</span></div>
+        <div class="info"><span class="label">Escrevente responsável pelo Protocolo:</span> <span class="valor">${nomeUsuario}</span></div>
+        <div class="info"><span class="label">Cliente:</span> <span class="valor">${clienteNome}</span></div>
+        <div class="info"><span class="label">CPF/CNPJ:</span> <span class="valor">${clienteDoc}</span></div>
+        <div class="info"><span class="label">E-mail:</span> <span class="valor">${clienteEmail}</span></div>
+        <div class="info"><span class="label">Tel:</span> <span class="valor">${clienteTel}</span></div>
+        <div class="info"><span class="label">Descrição:</span> <span class="valor">${form.descricao || ''}</span></div>
+        <div class="info"><span class="label">Origem:</span> <span class="valor">${form.origem || ''} ${form.origemInfo ? '(' + form.origemInfo + ')' : ''}</span></div>
+        <div class="info"><span class="label">Previsão de Entrega:</span> <span class="valor">${form.prazo || ''}</span></div>
+        <div class="info"><span class="label">Obs:</span> <span class="valor">${form.observacao || ''}</span></div>
+        <div class="info"><span class="label">Valor(es) Adiantado(s):</span> <span class="valor">${(valorAdiantadoDetalhes || []).map(v => v.valor ? `R$${parseFloat(v.valor).toLocaleString('pt-BR', {minimumFractionDigits:2})} (${v.forma})` : '').filter(Boolean).join(' | ') || '-'}</span></div>
+        <table class="atos-table">
+          <thead>
+            <tr>
+              <th>Combo</th>
+              <th>Cód.</th>
+              <th>Desc.</th>
+              <th>Qtd</th>
+              <th>Trib.</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(atosPedido || []).map(ato => `
+              <tr>
+                <td>${ato.comboNome || ''}</td>
+                <td>${ato.atoCodigo || ''}</td>
+                <td>${ato.atoDescricao ? ato.atoDescricao.slice(0, 18) : ''}</td>
+                <td>${ato.quantidade || 1}</td>
+                <td>${ato.codigoTributario || ''}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <script>window.onload = function() { window.print(); }</script>
+      </body>
       </html>
+
     `;
     const win = window.open('', '_blank', 'width=600,height=600');
-    win.document.write(html);
-    win.document.close();
-    win.print();
+  win.document.write(html);
+  win.document.close();
+  // Removido window.print() automático. Usuário pode imprimir manualmente na janela.
   };
 
   return (
