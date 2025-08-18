@@ -58,16 +58,26 @@ export default function ListaServicos() {
       setLoadingPedidos(true);
       try {
         const token = localStorage.getItem('token');
+        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+        const idServentiaUsuario = usuario.serventiaId || usuario.serventia_id || usuario.serventia;
         const res = await fetch(`${config.apiURL}/pedidos`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        setPedidos(data.pedidos || []);
-        setPedidosFiltrados(data.pedidos || []); // Inicializa os pedidos filtrados
+        // Filtra pedidos pela serventia do usuário logado
+        const pedidosFiltradosServentia = (data.pedidos || []).filter(p => {
+          return (
+            p.serventiaId === idServentiaUsuario ||
+            p.serventia_id === idServentiaUsuario ||
+            p.serventia === idServentiaUsuario
+          );
+        });
+        setPedidos(pedidosFiltradosServentia);
+        setPedidosFiltrados(pedidosFiltradosServentia); // Inicializa os pedidos filtrados
         // Buscar status de todos os pedidos
-        if (data.pedidos && data.pedidos.length > 0) {
+        if (pedidosFiltradosServentia.length > 0) {
           const statusMap = {};
-          await Promise.all(data.pedidos.map(async (pedido) => {
+          await Promise.all(pedidosFiltradosServentia.map(async (pedido) => {
             try {
               const resStatus = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(pedido.protocolo)}/status/ultimo`, {
                 headers: { Authorization: `Bearer ${token}` }
