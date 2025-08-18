@@ -14,14 +14,25 @@ export default function ReciboProtocolo({ form, serventiaInfo, usuario }) {
     const clienteEmail = cliente.email || form.clienteEmail || '-';
     const clienteTel = cliente.telefone || form.clienteTelefone || '-';
     // Serventia bloco
-    const s = serventiaInfo || {};
-    const serventiaHtml = `
+const s = serventiaInfo || {};
+    // LOG para rastrear dados recebidos da serventia
+    if (!s || typeof s !== 'object') {
+      console.warn('[PROTOCOLO LOG] serventiaInfo está indefinido ou não é objeto:', s);
+    }
+    if (!s.nome_completo) {
+      console.warn('[PROTOCOLO LOG] nome_completo ausente na serventia:', s);
+    }
+    let serventiaHtml = `
+      <div style="text-align:center; margin-bottom:4px;">
+        <img src='/brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png' alt='Brasão da República' style='height:38px; margin-bottom:2px;' />
+      </div>
       <div><b>${s.nome_completo || ''}</b></div>
       <div>${s.endereco || ''}</div>
       <div>CNPJ: ${s.cnpj || ''}</div>
       <div>Telefone: ${s.telefone || ''}</div>
       <div>Email: ${s.email || ''}</div>
     `;
+
     // Valores adiantados
     const valorAdiantadoDetalhes = form.valorAdiantadoDetalhes || [];
     // Atos do pedido
