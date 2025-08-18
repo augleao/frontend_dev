@@ -449,7 +449,7 @@ export default function ListaServicos() {
                         fontSize: 14,
                         cursor: 'pointer'
                       }}
-                      onClick={() => navigate(`/recibo/${encodeURIComponent(p.protocolo)}`)}
+                      onClick={() => window.open(`/recibo/${encodeURIComponent(p.protocolo)}`, '_blank', 'width=800,height=600,noopener,noreferrer')}
                     >
                       PROTOCOLO
                     </button>
