@@ -76,7 +76,7 @@ export default function ReciboPedido() {
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div>
-          <h2 style={{ margin: 0, fontWeight: 700 }}>Recibo de serviço</h2>
+          <h2 style={{ margin: 0, fontWeight: 700 }}>Protocolo</h2>
           <div style={{ fontSize: 16, margin: '8px 0' }}>
             <b>Tipo serviço:</b> <span style={{ fontWeight: 600 }}>{pedido.descricao || '-'}</span>
           </div>

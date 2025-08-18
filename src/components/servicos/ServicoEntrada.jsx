@@ -1313,7 +1313,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           >
             {form.protocolo && form.protocolo.trim() !== '' ? 'Atualizar Pedido' : 'Salvar Pedido'}
           </button>
-          <ReciboProtocolo form={form} serventiaInfo={serventiaInfo} usuario={JSON.parse(localStorage.getItem('usuario') || '{}')} />
+          {/* <ReciboProtocolo removido conforme solicitado */}
         </div>
 
       </div>
