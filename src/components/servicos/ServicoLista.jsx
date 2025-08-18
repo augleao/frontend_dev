@@ -449,11 +449,7 @@ export default function ListaServicos() {
                         fontSize: 14,
                         cursor: 'pointer'
                       }}
-                      onClick={() => {
-                        const url = `${window.location.origin}/recibo/${encodeURIComponent(p.protocolo)}`;
-                        console.log('[PROTOCOLO] Abrindo nova guia para:', url);
-                        window.open(url, '_blank', 'noopener,noreferrer');
-                      }}
+                      onClick={() => navigate(`/recibo/${encodeURIComponent(p.protocolo)}`)}
                     >
                       PROTOCOLO
                     </button>
