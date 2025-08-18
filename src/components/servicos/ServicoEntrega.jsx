@@ -1207,7 +1207,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         )}
 
         {/* Atos Table Card */}
-        {atosPedido.length > 0 && (
+  {Array.isArray(atosPedido) && atosPedido.length > 0 && (
           <div style={{
             padding: '16px',
             marginBottom: '16px',
