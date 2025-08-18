@@ -449,7 +449,11 @@ export default function ListaServicos() {
                         fontSize: 14,
                         cursor: 'pointer'
                       }}
-                      onClick={() => window.open(`/recibo/${encodeURIComponent(p.protocolo)}`, '_blank', 'width=800,height=600,noopener,noreferrer')}
+                      onClick={() => {
+                        const url = `/recibo/${encodeURIComponent(p.protocolo)}`;
+                        console.log('[PROTOCOLO] Abrindo popup para:', url);
+                        window.open(url, '_blank', 'width=800,height=600,noopener,noreferrer');
+                      }}
                     >
                       PROTOCOLO
                     </button>
