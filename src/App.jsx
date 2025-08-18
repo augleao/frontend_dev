@@ -23,7 +23,6 @@ import ServicoManutencao from './components/servicos/ServicoManutencao'; // ajus
 import ListaServicos from './components/servicos/ServicoLista'; // adicione esta linha
 import ReciboPedido from './ReciboPedido';
 import EditarCombos from './components/admin/EditarCombos';
-import ProtocoloAcesso from './ProtocoloAcesso';
 
 
 
@@ -154,9 +153,12 @@ function App() {
 />
         <Route
           path="/recibo/:protocolo"
-          element={<ReciboPedido />}
+          element={
+            <PrivateRoute>
+              <ReciboPedido />
+            </PrivateRoute>
+          }
         />
-        <Route path="/protocolo" element={<ProtocoloAcesso />} />
       </Routes>
     </AuthProvider>
   );
