@@ -564,9 +564,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         flexDirection: 'column',
         alignItems: 'stretch'
       }}>
-<<<<<<< HEAD
-  </div>
-=======
         {/* Header */}
         <div style={{
           padding: '10px 16px 6px 16px',
@@ -578,10 +575,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           <h2 style={{ margin: 0, color: '#6c3483', fontWeight: 700, fontSize: 18 }}>
             Informações do Serviço:
           </h2>
-        </div>
-
-
->>>>>>> parent of 55080e6 (Update ServicoEntrada.jsx)
+  </div>
         {/* Descrição do Serviço, Origem, campo condicional e Prazo na mesma linha */}
         <div style={{
           padding: '8px 12px',
@@ -1443,8 +1437,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             Imprimir Protocolo
           </button>
         </div>
+
       </div>
-    
+    </div>
   );
 }
 
