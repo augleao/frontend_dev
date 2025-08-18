@@ -65,22 +65,22 @@ export default function ListaServicos() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const usuariosData = await usuariosRes.json();
-        // Filtra usuários que pertencem à mesma serventia do usuário logado
-        const usuariosDaServentia = (usuariosData.usuarios || []).filter(u => u.serventia === idServentiaUsuario);
-        const idsUsuariosDaServentia = new Set(usuariosDaServentia.map(u => u.id));
+  // Filtra usuários que pertencem à mesma serventia do usuário logado
+  const usuariosDaServentia = (usuariosData.usuarios || []).filter(u => u.serventia === idServentiaUsuario);
+  const nomesUsuariosDaServentia = new Set(usuariosDaServentia.map(u => u.nome));
         // Busca todos os pedidos
         const res = await fetch(`${config.apiURL}/pedidos`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        // Filtra pedidos criados por qualquer usuário da serventia
+        // Filtra pedidos criados por qualquer usuário da serventia (comparando pelo nome)
         const pedidosFiltradosServentia = (data.pedidos || []).filter(p => {
-          const usuarioIdPedido = p.usuario_id || p.usuarioId || p.user_id || p.userId;
-          if (!usuarioIdPedido) {
-            console.log('[DEBUG] Pedido sem usuarioIdPedido:', p);
+          const nomeUsuarioPedido = p.usuario;
+          if (!nomeUsuarioPedido) {
+            console.log('[DEBUG] Pedido sem nomeUsuarioPedido:', p);
             return false;
           }
-          return idsUsuariosDaServentia.has(usuarioIdPedido);
+          return nomesUsuariosDaServentia.has(nomeUsuarioPedido);
         });
         setPedidos(pedidosFiltradosServentia);
         setPedidosFiltrados(pedidosFiltradosServentia); // Inicializa os pedidos filtrados
