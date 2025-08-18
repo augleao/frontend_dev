@@ -76,8 +76,20 @@ export default function ListaServicos() {
         const data = await res.json();
         // Filtra pedidos pela serventia do usuário criador do pedido
         const pedidosFiltradosServentia = (data.pedidos || []).filter(p => {
-          const usuarioCriador = usuariosMap.get(p.usuario_id || p.usuarioId || p.user_id || p.userId);
-          if (!usuarioCriador) return false;
+          const usuarioIdPedido = p.usuario_id || p.usuarioId || p.user_id || p.userId;
+          const usuarioCriador = usuariosMap.get(usuarioIdPedido);
+          if (!usuarioCriador) {
+            console.log('[DEBUG] Pedido sem usuarioCriador:', p, 'usuarioIdPedido:', usuarioIdPedido);
+            return false;
+          }
+          const logInfo = {
+            pedidoProtocolo: p.protocolo,
+            usuarioIdPedido,
+            usuarioCriador,
+            usuarioCriadorServentia: usuarioCriador.serventia,
+            idServentiaUsuario
+          };
+          console.log('[DEBUG] Comparando serventias:', logInfo);
           return usuarioCriador.serventia === idServentiaUsuario;
         });
         setPedidos(pedidosFiltradosServentia);
