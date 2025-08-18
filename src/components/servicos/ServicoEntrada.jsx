@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import ReciboProtocolo from './ReciboProtocolo';
+//import ReciboProtocolo from './ReciboProtocolo';
 import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 

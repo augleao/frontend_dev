@@ -36,7 +36,17 @@ function Home() {
         gap: '20px',
         marginBottom: '30px'
       }}>
-
+      </div>
+      <div style={{ marginBottom: 32 }}>
+        <a href="/protocolo" style={{
+          color: '#6c3483',
+          fontWeight: 700,
+          fontSize: '1.1rem',
+          textDecoration: 'underline',
+          letterSpacing: 0.5,
+        }}>
+          Consultar protocolo (acesso público)
+        </a>
       </div>
       <img
         src="https://recivil.com.br/wp-content/uploads/2020/08/logo.jpg"
