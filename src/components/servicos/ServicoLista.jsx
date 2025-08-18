@@ -451,7 +451,7 @@ export default function ListaServicos() {
                       }}
                       onClick={() => navigate(`/recibo/${encodeURIComponent(p.protocolo)}`)}
                     >
-                      RECIBO
+                      PROTOCOLO
                     </button>
                     <button
                       style={{
