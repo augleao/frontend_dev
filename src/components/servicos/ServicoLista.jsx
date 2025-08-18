@@ -450,9 +450,9 @@ export default function ListaServicos() {
                         cursor: 'pointer'
                       }}
                       onClick={() => {
-                        const url = `/recibo/${encodeURIComponent(p.protocolo)}`;
-                        console.log('[PROTOCOLO] Abrindo popup para:', url);
-                        window.open(url, '_blank', 'width=800,height=600,noopener,noreferrer');
+                        const url = `${window.location.origin}/recibo/${encodeURIComponent(p.protocolo)}`;
+                        console.log('[PROTOCOLO] Abrindo nova guia para:', url);
+                        window.open(url, '_blank', 'noopener,noreferrer');
                       }}
                     >
                       PROTOCOLO
