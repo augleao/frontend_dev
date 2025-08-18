@@ -354,19 +354,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         flexDirection: 'column',
         alignItems: 'stretch'
       }}>
-        {/* Header */}
-        <div style={{
-          padding: '10px 16px 6px 16px',
-          marginBottom: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-          <h2 style={{ margin: 0, color: '#2c3e50', fontWeight: 700, fontSize: 18 }}>
-            Informações do Serviço:
-          </h2>
-        </div>
-
 
         {/* Descrição do Serviço, Origem, campo condicional e Prazo na mesma linha */}
         <div style={{
