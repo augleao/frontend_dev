@@ -59,18 +59,26 @@ export default function ListaServicos() {
       try {
         const token = localStorage.getItem('token');
         const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-        const idServentiaUsuario = usuario.serventiaId || usuario.serventia_id || usuario.serventia;
+        const idServentiaUsuario = usuario.serventia || usuario.serventiaId || usuario.serventia_id;
+        // Busca todos os usuários para mapear id -> serventia
+        const usuariosRes = await fetch(`${config.apiURL}/admin/usuarios`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const usuariosData = await usuariosRes.json();
+        const usuariosMap = new Map();
+        (usuariosData.usuarios || []).forEach(u => {
+          usuariosMap.set(u.id, u);
+        });
+        // Busca todos os pedidos
         const res = await fetch(`${config.apiURL}/pedidos`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        // Filtra pedidos pela serventia do usuário logado
+        // Filtra pedidos pela serventia do usuário criador do pedido
         const pedidosFiltradosServentia = (data.pedidos || []).filter(p => {
-          return (
-            p.serventiaId === idServentiaUsuario ||
-            p.serventia_id === idServentiaUsuario ||
-            p.serventia === idServentiaUsuario
-          );
+          const usuarioCriador = usuariosMap.get(p.usuario_id || p.usuarioId || p.user_id || p.userId);
+          if (!usuarioCriador) return false;
+          return usuarioCriador.serventia === idServentiaUsuario;
         });
         setPedidos(pedidosFiltradosServentia);
         setPedidosFiltrados(pedidosFiltradosServentia); // Inicializa os pedidos filtrados
