@@ -24,15 +24,20 @@ export default function ReciboPedido() {
       try {
         const res = await fetch(`${config.apiURL}/recibo/${encodeURIComponent(protocolo)}`);
         const data = await res.json();
-        console.log('ReciboPedido: resposta bruta da API', data);
+        // LOG: Mostra exatamente o que foi retornado pela API
+        console.log('ReciboPedido: resposta da API recebida', data);
         if (data && typeof data === 'object') {
           Object.keys(data).forEach(k => {
             console.log('ReciboPedido: chave', k, 'valor', data[k]);
           });
         }
-        console.log('ReciboPedido: resposta da API', data);
-        if (data.pedido) setPedido(data.pedido);
-        else setErro('Pedido não encontrado.');
+        // LOG: Mostra o objeto pedido, se existir
+        if (data.pedido) {
+          console.log('ReciboPedido: objeto pedido recebido', data.pedido);
+          setPedido(data.pedido);
+        } else {
+          setErro('Pedido não encontrado.');
+        }
       } catch (err) {
         setErro('Erro ao buscar pedido.');
       }
