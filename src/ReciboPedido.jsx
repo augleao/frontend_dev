@@ -71,7 +71,7 @@ export default function ReciboPedido() {
     <div style={{ maxWidth: 900, margin: '0 auto', background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(44,62,80,0.08)', padding: 32, fontFamily: 'Arial, sans-serif' }}>
       <div style={{ textAlign: 'right', marginBottom: 8 }}>
         <a href={window.location.href} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: '#6c3483', textDecoration: 'underline' }}>
-          Abrir recibo em nova guia
+          ibo em nova guia
         </a>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
@@ -99,16 +99,8 @@ export default function ReciboPedido() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div style={{ fontSize: 15 }}>
           <b>Data de solicitação:</b> {pedido.criado_em ? new Date(pedido.criado_em).toLocaleDateString() : '-'}<br/>
-          <b>Data de entrega:</b> Acompanhar pelo portal
+          <b>Previsão de entrega:</b> {pedido.previsao_entrega ? new Date(pedido.previsao_entrega).toLocaleDateString() : '-'}
         </div>
-        <div style={{ border: '2px dashed #aaa', borderRadius: 8, padding: 8, background: '#fafafa' }}>
-          <QRCodeCanvas value={urlRecibo} size={100} />
-        </div>
-      </div>
-      <div style={{ border: '1px solid #aaa', borderRadius: 8, padding: 12, marginBottom: 16, background: '#f8f8f8' }}>
-        Consulte o andamento do seu pedido pelo QR Code ao lado ou pelo site<br/>
-        <b>Protocolo:</b> {pedido.protocolo}<br/>
-        <b>Chave:</b> fe345
       </div>
       <h3 style={{ marginTop: 24, marginBottom: 8, fontSize: 18 }}>Dados do Cliente:</h3>
       <div style={{ fontSize: 15, marginBottom: 8 }}>
