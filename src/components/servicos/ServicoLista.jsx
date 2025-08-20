@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import config from '../../config';
+import { gerarReciboProtocoloPDF } from '../../utils/gerarReciboProtocoloPDF';
 
 
 function formatDate(dateStr) {
@@ -449,8 +450,23 @@ export default function ListaServicos() {
                         fontSize: 14,
                         cursor: 'pointer'
                       }}
-                      onClick={() => {
-                        window.open(`/recibo/${encodeURIComponent(p.protocolo)}`, 'reciboPopup', 'width=900,height=700,noopener');
+                      onClick={async () => {
+                        // Busca os dados do pedido antes de gerar o PDF
+                        try {
+                          const token = localStorage.getItem('token');
+                          const res = await fetch(`${config.apiURL}/recibo/${encodeURIComponent(p.protocolo)}`,
+                            token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
+                          const data = await res.json();
+                          if (!data.pedido) {
+                            alert('Não foi possível obter os dados do pedido para gerar o PDF.');
+                            return;
+                          }
+                          const blob = gerarReciboProtocoloPDF(data.pedido);
+                          const url = URL.createObjectURL(blob);
+                          window.open(url, '_blank');
+                        } catch (err) {
+                          alert('Erro ao gerar PDF do recibo.');
+                        }
                       }}
                     >
                       PROTOCOLO
