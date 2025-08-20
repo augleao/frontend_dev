@@ -77,9 +77,10 @@ export function gerarReciboProtocoloPDF(pedido) {
   y += 6;
   doc.text(`Nome: ${pedido.cliente?.nome || '-'}`, marginX, y);
   y += 6;
-  doc.text(`Telefone: ${pedido.cliente?.telefone || '-'}`, marginX, y);
-  y += 6;
-  doc.text(`CPF/CNPJ: ${pedido.cliente?.cpf || '-'}`, marginX, y);
+  // Telefone e CPF/CNPJ na mesma linha
+  const telefoneCliente = `Telefone: ${pedido.cliente?.telefone || '-'}`;
+  const cpfCnpjCliente = `CPF/CNPJ: ${pedido.cliente?.cpf || '-'}`;
+  doc.text(`${telefoneCliente}    |    ${cpfCnpjCliente}`, marginX, y);
   y += 8;
   // Valores Adiantados pelo usuário
   doc.setFont('times', 'bold');
@@ -95,9 +96,5 @@ export function gerarReciboProtocoloPDF(pedido) {
     doc.text('Nenhum valor antecipado informado.', marginX, y);
     y += 6;
   }
-  // Espaço para assinatura
-  // Limitar a metade da página A4 (148mm)
-  // Opcional: pode adicionar uma linha ou texto indicando fim do recibo
-  // doc.line(marginX, 148, pageWidth - marginX, 148);
   return doc.output('blob');
 }
