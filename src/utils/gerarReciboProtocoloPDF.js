@@ -6,7 +6,7 @@ export function gerarReciboProtocoloPDF(pedido) {
   const doc = new jsPDF();
   let y = 15;
   doc.setFontSize(16);
-  doc.text('Recibo de Protocolo nº ${pedido.protocolo || '-'}', 105, y, { align: 'center' });
+  doc.text('Recibo de Protocolo', 105, y, { align: 'center' });
   y += 10;
   doc.setFontSize(12);
   doc.text(`Protocolo: ${pedido.protocolo || '-'}`, 15, y);
