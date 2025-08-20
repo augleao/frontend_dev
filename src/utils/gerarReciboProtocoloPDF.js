@@ -1,20 +1,4 @@
-  // LOGS PARA DEPURAÇÃO DOS CAMPOS DISPONÍVEIS
-  console.log('--- gerarReciboProtocoloPDF ---');
-  if (pedido && typeof pedido === 'object') {
-    Object.keys(pedido).forEach(k => {
-      console.log('campo pedido:', k, '| valor:', pedido[k]);
-    });
-    if (pedido.serventia && typeof pedido.serventia === 'object') {
-      Object.keys(pedido.serventia).forEach(k => {
-        console.log('campo serventia:', k, '| valor:', pedido.serventia[k]);
-      });
-    }
-    if (pedido.cliente && typeof pedido.cliente === 'object') {
-      Object.keys(pedido.cliente).forEach(k => {
-        console.log('campo cliente:', k, '| valor:', pedido.cliente[k]);
-      });
-    }
-  }
+
 // Função utilitária para gerar PDF do recibo de protocolo usando jsPDF
 // Recebe um objeto pedido e retorna um Blob PDF
 
