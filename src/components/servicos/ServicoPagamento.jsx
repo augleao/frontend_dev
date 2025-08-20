@@ -147,8 +147,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
     // Dados da serventia (igual protocolo)
     const s = serventiaInfo || {};
     let serventiaHtml = `
-      <div style="text-align:center; margin-bottom:4px;">
-        <img src='/brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png' alt='Brasão da República' style='height:38px; margin-bottom:2px;' />
+      <div style="text-align:center; margin-bottom:2px;">
+        <img src='/brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png' alt='Brasão da República' style='height:28px; margin-bottom:1px;' />
       </div>
       <div><b>${s.nome_completo || ''}</b></div>
       <div>${s.endereco || ''}</div>
@@ -162,21 +162,21 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           <title>Recibo de Devolução por Excesso de Pagamento</title>
           <style>
             @page { size: A4; margin: 1cm; }
-            body { font-family: 'Times New Roman', serif; font-size: 11pt; color: black; line-height: 1.4; margin: 0; padding: 0; width: 19cm; height: 13.5cm; box-sizing: border-box; }
-            .cabecalho { text-align: center; margin-bottom: 20px; border-bottom: 2px solid black; padding-bottom: 15px; }
-            .serventia-bloco { text-align: center; margin-bottom: 10px; }
-            .titulo-recibo { font-size: 16pt; font-weight: bold; margin: 15px 0 10px 0; text-decoration: underline; }
-            .protocolo { font-size: 12pt; font-weight: bold; margin-bottom: 10px; }
-            .secao { margin: 15px 0; }
-            .linha-info { display: flex; justify-content: space-between; margin: 8px 0; border-bottom: 1px dotted black; padding-bottom: 3px; }
+            body { font-family: 'Times New Roman', serif; font-size: 10pt; color: black; line-height: 1.2; margin: 0; padding: 0; width: 19cm; height: 13.5cm; box-sizing: border-box; }
+            .cabecalho { text-align: center; margin-bottom: 8px; border-bottom: 1.5px solid black; padding-bottom: 6px; }
+            .serventia-bloco { text-align: center; margin-bottom: 4px; }
+            .titulo-recibo { font-size: 13pt; font-weight: bold; margin: 8px 0 6px 0; text-decoration: underline; }
+            .protocolo { font-size: 10pt; font-weight: bold; margin-bottom: 6px; }
+            .secao { margin: 7px 0; }
+            .linha-info { display: flex; justify-content: space-between; margin: 3px 0; border-bottom: 1px dotted #888; padding-bottom: 1.5px; }
             .label { font-weight: bold; width: 40%; }
             .valor { text-align: right; width: 55%; }
-            .destaque-excesso { border: 3px double black; padding: 15px; text-align: center; margin: 20px 0; background-color: #f9f9f9; }
-            .valor-excesso { font-size: 20pt; font-weight: bold; margin: 10px 0; }
-            .assinatura { margin-top: 30px; display: flex; justify-content: space-between; }
-            .campo-assinatura { width: 45%; text-align: center; border-top: 1px solid black; padding-top: 5px; margin-top: 40px; }
-            .rodape { margin-top: 25px; font-size: 9pt; text-align: center; border-top: 1px solid black; padding-top: 10px; }
-            .observacoes { margin: 15px 0; font-size: 10pt; font-style: italic; }
+            .destaque-excesso { border: 2px double black; padding: 7px; text-align: center; margin: 10px 0; background-color: #f9f9f9; }
+            .valor-excesso { font-size: 15pt; font-weight: bold; margin: 5px 0; }
+            .assinatura { margin-top: 12px; display: flex; justify-content: space-between; }
+            .campo-assinatura { width: 45%; text-align: center; border-top: 1px solid black; padding-top: 2px; margin-top: 15px; }
+            .rodape { margin-top: 10px; font-size: 8pt; text-align: center; border-top: 1px solid black; padding-top: 5px; }
+            .observacoes { margin: 7px 0; font-size: 9pt; font-style: italic; }
             @media print { body { margin: 0; padding: 0; } }
           </style>
         </head>
@@ -225,9 +225,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             </div>
           </div>
           <div class="destaque-excesso">
-            <div style="font-size: 14pt; font-weight: bold; margin-bottom: 10px;">VALOR DEVOLVIDO</div>
+            <div style="font-size: 12pt; font-weight: bold; margin-bottom: 5px;">VALOR DEVOLVIDO</div>
             <div class="valor-excesso">R$ ${valorExcesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-            <div style="font-size: 10pt; margin-top: 10px;">(${valorExcesso.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace('R$', '').trim()} por extenso)</div>
+            <div style="font-size: 9pt; margin-top: 4px;">(${valorExcesso.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace('R$', '').trim()} por extenso)</div>
           </div>
           <div class="observacoes">
             <strong>Observações:</strong><br>
@@ -237,11 +237,11 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           <div class="assinatura">
             <div class="campo-assinatura">
               <div>Assinatura do Cliente</div>
-              <div style="font-size: 9pt; margin-top: 5px;">${cliente.nome || '____________________'}</div>
+              <div style="font-size: 8pt; margin-top: 2px;">${cliente.nome || '____________________'}</div>
             </div>
             <div class="campo-assinatura">
               <div>Assinatura do Responsável</div>
-              <div style="font-size: 9pt; margin-top: 5px;">Serventia</div>
+              <div style="font-size: 8pt; margin-top: 2px;">Serventia</div>
             </div>
           </div>
           <div class="rodape">
