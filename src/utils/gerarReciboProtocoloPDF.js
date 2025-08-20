@@ -25,25 +25,26 @@ export function gerarReciboProtocoloPDF(pedido) {
   doc.text(`RECIBO DE PROTOCOLO Nº: ${pedido.protocolo || '-'}`, pageWidth / 2, y, { align: 'center' });
   y += 10;
   doc.setFont('times', 'normal');
-  doc.setFontSize(12);
-  doc.text(`Nº: ${pedido.protocolo || '-'}`, pageWidth / 2, y, { align: 'center' });
-  y += 10;
+  doc.setFontSize(12);  
   // Linha separadora
   doc.setDrawColor(150);
   doc.line(marginX, y, pageWidth - marginX, y);
   y += 6;
   // Dados do cartório
   doc.setFontSize(11);
-  doc.text(`Cartório: ${pedido.serventia?.nome_completo || '-'}`, marginX, y);
+  doc.text(`${pedido.serventia?.nome_completo || '-'}`, marginX, y);
   y += 6;
   doc.text(`Endereço: ${pedido.serventia?.endereco || '-'}`, marginX, y);
   y += 6;
-  doc.text(`Telefone: ${pedido.serventia?.telefone || '-'}${pedido.serventia?.whatsapp ? ' / ' + pedido.serventia.whatsapp : ''}`, marginX, y);
-  y += 6;
-  if (pedido.serventia?.email) {
-    doc.text(`Email: ${pedido.serventia.email}`, marginX, y);
-    y += 6;
+  let contato = `Telefone: ${pedido.serventia?.telefone || '-'}`;
+  if (pedido.serventia?.whatsapp) {
+    contato += ' / ' + pedido.serventia.whatsapp;
   }
+  if (pedido.serventia?.email) {
+    contato += `  |  Email: ${pedido.serventia.email}`;
+  }
+  doc.text(contato, marginX, y);
+  y += 6;
   if (pedido.serventia?.cnpj) {
     doc.text(`CNPJ: ${pedido.serventia.cnpj}`, marginX, y);
     y += 6;
