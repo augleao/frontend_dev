@@ -450,7 +450,7 @@ export default function ListaServicos() {
                         cursor: 'pointer'
                       }}
                       onClick={() => {
-                        window.open(`/recibo/${encodeURIComponent(p.protocolo)}`, '_blank', 'noopener');
+                        window.open(`/recibo/${encodeURIComponent(p.protocolo)}`, 'reciboPopup', 'width=900,height=700,noopener');
                       }}
                     >
                       PROTOCOLO
