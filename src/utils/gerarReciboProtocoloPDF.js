@@ -27,9 +27,11 @@ export function gerarReciboProtocoloPDF(pedido) {
   y += 6;
   doc.setFont('times', 'normal');
   doc.setFontSize(12);  
-  // Linha separadora
+  // Linha separadora mais grossa
   doc.setDrawColor(150);
+  doc.setLineWidth(0.8);
   doc.line(marginX, y, pageWidth - marginX, y);
+  doc.setLineWidth(0.2); // volta ao padrão para outras linhas
   y += 6;
   // Dados do cartório
   doc.setFontSize(11);
@@ -66,9 +68,11 @@ export function gerarReciboProtocoloPDF(pedido) {
   let dataPrev = `Previsão de entrega: ${pedido.prazo ? new Date(pedido.prazo).toLocaleDateString() : '-'}`;
   doc.text(`${dataSolic}  |  ${dataPrev}`, marginX, y);
   y += 8;
-  // Linha separadora
+  // Linha separadora mais grossa
   doc.setDrawColor(200);
+  doc.setLineWidth(0.8);
   doc.line(marginX, y, pageWidth - marginX, y);
+  doc.setLineWidth(0.2); // volta ao padrão para outras linhas
   y += 6;
   // Dados do cliente
   doc.setFont('times', 'bold');
