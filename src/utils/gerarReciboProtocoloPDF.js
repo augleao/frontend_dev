@@ -45,18 +45,25 @@ export function gerarReciboProtocoloPDF(pedido) {
   }
   doc.text(contato, marginX, y);
   y += 6;
+  let docIdLine = '';
   if (pedido.serventia?.cnpj) {
-    doc.text(`CNPJ: ${pedido.serventia.cnpj}`, marginX, y);
-    y += 6;
+    docIdLine += `CNPJ: ${pedido.serventia.cnpj}`;
   }
-  doc.text(`CNS: ${pedido.serventia?.cns || '-'}`, marginX, y);
+  if (pedido.serventia?.cns) {
+    if (docIdLine) docIdLine += '  |  ';
+    docIdLine += `CNS: ${pedido.serventia.cns}`;
+  }
+  if (!docIdLine) {
+    docIdLine = 'CNS: -';
+  }
+  doc.text(docIdLine, marginX, y);
   y += 6;
   // Dados do pedido
   doc.text(`Tipo de serviço: ${pedido.descricao || '-'}`, marginX, y);
   y += 6;
-  doc.text(`Data de solicitação: ${pedido.criado_em ? new Date(pedido.criado_em).toLocaleDateString() : '-'}`, marginX, y);
-  y += 6;
-  doc.text(`Previsão de entrega: ${pedido.previsao_entrega ? new Date(pedido.previsao_entrega).toLocaleDateString() : '-'}`, marginX, y);
+  const dataSolic = `Data de solicitação: ${pedido.criado_em ? new Date(pedido.criado_em).toLocaleDateString() : '-'}`;
+  const dataPrev = `Previsão de entrega: ${pedido.previsao_entrega ? new Date(pedido.previsao_entrega).toLocaleDateString() : '-'}`;
+  doc.text(`${dataSolic}  |  ${dataPrev}`, marginX, y);
   y += 8;
   // Linha separadora
   doc.setDrawColor(200);
