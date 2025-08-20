@@ -81,9 +81,9 @@ export function gerarReciboProtocoloPDF(pedido) {
   y += 6;
   doc.text(`CPF/CNPJ: ${pedido.cliente?.cpf || '-'}`, marginX, y);
   y += 8;
-  // Valores pagos
+  // Valores Adiantados pelo usuário
   doc.setFont('times', 'bold');
-  doc.text('Valores pagos', marginX, y);
+  doc.text('Valores Adiantados pelo usuário:', marginX, y);
   doc.setFont('times', 'normal');
   y += 6;
   if (Array.isArray(pedido.valorAdiantadoDetalhes) && pedido.valorAdiantadoDetalhes.length > 0) {
@@ -96,18 +96,6 @@ export function gerarReciboProtocoloPDF(pedido) {
     y += 6;
   }
   // Espaço para assinatura
-  y += 16;
-  doc.setDrawColor(100);
-  doc.line(pageWidth / 2 - 35, y, pageWidth / 2 + 35, y);
-  y += 5;
-  doc.setFontSize(10);
-  doc.text('Assinatura do responsável', pageWidth / 2, y, { align: 'center' });
-  // Rodapé
-  const cidade = pedido.serventia?.cidade || '';
-  const dataHoje = new Date().toLocaleDateString('pt-BR');
-  y += 12;
-  doc.setFontSize(10);
-  doc.text(`${cidade}, ${dataHoje}`, pageWidth - marginX, y, { align: 'right' });
   // Limitar a metade da página A4 (148mm)
   // Opcional: pode adicionar uma linha ou texto indicando fim do recibo
   // doc.line(marginX, 148, pageWidth - marginX, 148);
