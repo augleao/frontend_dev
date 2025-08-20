@@ -3,9 +3,30 @@ import React from 'react';
 import { useState } from 'react';
 import config from '../../config';
 
+
 export default function ServicoEntrega({ form, onChange, pedidoId }) {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
+
+  // Preenche data/hora atuais se não houver valor ao montar
+  React.useEffect(() => {
+    if (form && form.entrega && !form.entrega.id) {
+      const now = new Date();
+      const dataAtual = now.toISOString().slice(0, 10);
+      const horaAtual = now.toTimeString().slice(0, 5);
+      let atualizou = false;
+      if (!form.entrega.data) {
+        onChange('data', dataAtual);
+        atualizou = true;
+      }
+      if (!form.entrega.hora) {
+        onChange('hora', horaAtual);
+        atualizou = true;
+      }
+      // Não altera retiradoPor, pois pode ser preenchido pelo usuário
+    }
+    // eslint-disable-next-line
+  }, []);
 
   // Função para salvar entrega
   const salvarEntrega = async () => {
