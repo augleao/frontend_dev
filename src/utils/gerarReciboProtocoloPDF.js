@@ -62,10 +62,7 @@ export function gerarReciboProtocoloPDF(pedido) {
   doc.text(`Tipo de serviço: ${pedido.descricao || '-'}`, marginX, y);
   y += 6;
   const dataSolic = `Data de solicitação: ${pedido.criado_em ? new Date(pedido.criado_em).toLocaleDateString() : '-'}`;
-  let dataPrev = `Previsão de entrega: ${pedido.previsao_entrega ? new Date(pedido.previsao_entrega).toLocaleDateString() : '-'}`;
-  if (pedido.prazo_estimado) {
-    dataPrev += ` (prazo estimado: ${pedido.prazo_estimado})`;
-  }
+  let dataPrev = `Previsão de entrega: ${pedido.prazo ? new Date(pedido.prazo).toLocaleDateString() : '-'}`;
   doc.text(`${dataSolic}  |  ${dataPrev}`, marginX, y);
   y += 8;
   // Linha separadora
