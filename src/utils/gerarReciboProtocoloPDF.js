@@ -23,7 +23,7 @@ export function gerarReciboProtocoloPDF(pedido) {
   doc.setFont('times', 'bold');
   doc.setFontSize(18);
   doc.text(`RECIBO DE PROTOCOLO Nº: ${pedido.protocolo || '-'}`, pageWidth / 2, y, { align: 'center' });
-  y += 10;
+  y += 6;
   doc.setFont('times', 'normal');
   doc.setFontSize(12);  
   // Linha separadora
@@ -62,13 +62,16 @@ export function gerarReciboProtocoloPDF(pedido) {
   doc.text(`Tipo de serviço: ${pedido.descricao || '-'}`, marginX, y);
   y += 6;
   const dataSolic = `Data de solicitação: ${pedido.criado_em ? new Date(pedido.criado_em).toLocaleDateString() : '-'}`;
-  const dataPrev = `Previsão de entrega: ${pedido.previsao_entrega ? new Date(pedido.previsao_entrega).toLocaleDateString() : '-'}`;
+  let dataPrev = `Previsão de entrega: ${pedido.previsao_entrega ? new Date(pedido.previsao_entrega).toLocaleDateString() : '-'}`;
+  if (pedido.prazo_estimado) {
+    dataPrev += ` (prazo estimado: ${pedido.prazo_estimado})`;
+  }
   doc.text(`${dataSolic}  |  ${dataPrev}`, marginX, y);
   y += 8;
   // Linha separadora
   doc.setDrawColor(200);
   doc.line(marginX, y, pageWidth - marginX, y);
-  y += 8;
+  y += 6;
   // Dados do cliente
   doc.setFont('times', 'bold');
   doc.text('Dados do Cliente', marginX, y);
