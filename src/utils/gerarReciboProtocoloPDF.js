@@ -79,7 +79,7 @@ export function gerarReciboProtocoloPDF(pedido) {
   y += 6;
   doc.text(`Telefone: ${pedido.cliente?.telefone || '-'}`, marginX, y);
   y += 6;
-  doc.text(`CPF: ${pedido.cliente?.cpf || '-'}`, marginX, y);
+  doc.text(`CPF/CNPJ: ${pedido.cliente?.cpf || '-'}`, marginX, y);
   y += 8;
   // Valores pagos
   doc.setFont('times', 'bold');
