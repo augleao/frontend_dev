@@ -22,7 +22,7 @@ export function gerarReciboProtocoloPDF(pedido) {
   // Título
   doc.setFont('times', 'bold');
   doc.setFontSize(18);
-  doc.text('RECIBO DE PROTOCOLO', pageWidth / 2, y, { align: 'center' });
+  doc.text(`RECIBO DE PROTOCOLO Nº: ${pedido.protocolo || '-'}`, pageWidth / 2, y, { align: 'center' });
   y += 10;
   doc.setFont('times', 'normal');
   doc.setFontSize(12);
