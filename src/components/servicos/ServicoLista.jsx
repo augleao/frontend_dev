@@ -13,7 +13,6 @@ function formatDate(dateStr) {
   return `${dia}/${mes}/${ano}`;
 }
 
-
 function formatDateTime(dateStr) {
   if (!dateStr) return '-';
   // Se vier sem separadores, tenta formatar manualmente
@@ -38,7 +37,6 @@ function formatDateTime(dateStr) {
   return `${dia}/${mes}/${ano} às ${hora}:${min}:${seg}`;
 }
 
-
 export default function ListaServicos() {
   const [pedidos, setPedidos] = useState([]);
   const [pedidosFiltrados, setPedidosFiltrados] = useState([]);
@@ -56,66 +54,6 @@ export default function ListaServicos() {
   const [loadingPedidos, setLoadingPedidos] = useState(true);
   const navigate = useNavigate();
 
-  // Função para aplicar filtros de data e status
-  const aplicarFiltros = () => {
-    let pedidosFiltradosTemp = [...pedidos];
-
-    // Filtro por protocolo/número do pedido
-    if (buscaProtocolo.trim()) {
-      pedidosFiltradosTemp = pedidosFiltradosTemp.filter(pedido => {
-        return pedido.protocolo && pedido.protocolo.toLowerCase().includes(buscaProtocolo.toLowerCase().trim());
-      });
-    }
-
-    // Filtro por data
-    if (dataInicial || dataFinal) {
-      pedidosFiltradosTemp = pedidosFiltradosTemp.filter(pedido => {
-        if (!pedido.criado_em) return false;
-        const dataPedido = new Date(pedido.criado_em);
-        // Se só tem data inicial, filtra de data inicial até hoje
-        if (dataInicial && !dataFinal) {
-          const dataInicialObj = new Date(dataInicial);
-          dataInicialObj.setHours(0, 0, 0, 0); // Início do dia selecionado
-          const hoje = new Date();
-          hoje.setHours(23, 59, 59, 999); // Final do dia de hoje
-          return dataPedido >= dataInicialObj && dataPedido <= hoje;
-        }
-        // Se só tem data final, filtra desde o início até data final
-        if (!dataInicial && dataFinal) {
-          const dataFinalObj = new Date(dataFinal);
-          dataFinalObj.setHours(23, 59, 59, 999); // Final do dia selecionado
-          return dataPedido <= dataFinalObj;
-        }
-        // Se tem ambas as datas
-        if (dataInicial && dataFinal) {
-          const dataInicialObj = new Date(dataInicial);
-          dataInicialObj.setHours(0, 0, 0, 0); // Início do dia inicial
-          const dataFinalObj = new Date(dataFinal);
-          dataFinalObj.setHours(23, 59, 59, 999); // Final do dia final
-          return dataPedido >= dataInicialObj && dataPedido <= dataFinalObj;
-        }
-        return true;
-      });
-    }
-    setPedidosFiltrados(pedidosFiltradosTemp);
-  };
-
-  // Função para limpar filtros
-  const limparFiltros = () => {
-    setDataInicial('');
-    setDataFinal('');
-    setBuscaProtocolo('');
-    setStatusSelecionados({
-      'aguardando conferência': true,
-      'aguardando pagamento': true,
-      'aguardando execução': true,
-      'aguardando entrega': true,
-      'concluído': false
-    });
-    setPedidosFiltrados(pedidos);
-  };
-
-
   useEffect(() => {
     async function fetchPedidos() {
       setLoadingPedidos(true);
@@ -128,9 +66,9 @@ export default function ListaServicos() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const usuariosData = await usuariosRes.json();
-        // Filtra usuários que pertencem à mesma serventia do usuário logado
-        const usuariosDaServentia = (usuariosData.usuarios || []).filter(u => u.serventia === idServentiaUsuario);
-        const nomesUsuariosDaServentia = new Set(usuariosDaServentia.map(u => u.nome));
+  // Filtra usuários que pertencem à mesma serventia do usuário logado
+  const usuariosDaServentia = (usuariosData.usuarios || []).filter(u => u.serventia === idServentiaUsuario);
+  const nomesUsuariosDaServentia = new Set(usuariosDaServentia.map(u => u.nome));
         // Busca todos os pedidos
         const res = await fetch(`${config.apiURL}/pedidos`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -175,10 +113,92 @@ export default function ListaServicos() {
     fetchPedidos();
   }, []);
 
-  // Aplicar filtros sempre que as datas, status ou pedidos mudarem
-  useEffect(() => {
-    aplicarFiltros();
-  }, [dataInicial, dataFinal, buscaProtocolo, statusSelecionados, pedidos, statusPedidos]);
+  // Função para aplicar filtros de data e status
+  const aplicarFiltros = () => {
+    let pedidosFiltradosTemp = [...pedidos];
+
+    // Filtro por protocolo/número do pedido
+    if (buscaProtocolo.trim()) {
+      pedidosFiltradosTemp = pedidosFiltradosTemp.filter(pedido => {
+        return pedido.protocolo && pedido.protocolo.toLowerCase().includes(buscaProtocolo.toLowerCase().trim());
+      });
+    }
+
+    // Filtro por data
+    if (dataInicial || dataFinal) {
+      pedidosFiltradosTemp = pedidosFiltradosTemp.filter(pedido => {
+        if (!pedido.criado_em) return false;
+        
+        const dataPedido = new Date(pedido.criado_em);
+        
+        // Se só tem data inicial, filtra de data inicial até hoje
+        if (dataInicial && !dataFinal) {
+          const dataInicialObj = new Date(dataInicial);
+          dataInicialObj.setHours(0, 0, 0, 0); // Início do dia selecionado
+          const hoje = new Date();
+          hoje.setHours(23, 59, 59, 999); // Final do dia de hoje
+          return dataPedido >= dataInicialObj && dataPedido <= hoje;
+        }
+        
+        // Se só tem data final, filtra desde o início até data final
+        if (!dataInicial && dataFinal) {
+          const dataFinalObj = new Date(dataFinal);
+          dataFinalObj.setHours(23, 59, 59, 999); // Final do dia selecionado
+          return dataPedido <= dataFinalObj;
+        }
+        
+        // Se tem ambas as datas
+        if (dataInicial && dataFinal) {
+          const dataInicialObj = new Date(dataInicial);
+          dataInicialObj.setHours(0, 0, 0, 0); // Início do dia inicial
+          const dataFinalObj = new Date(dataFinal);
+          dataFinalObj.setHours(23, 59, 59, 999); // Final do dia final
+          return dataPedido >= dataInicialObj && dataPedido <= dataFinalObj;
+        }
+        
+        return true;
+      });
+    }
+
+    // Filtro por status
+    const statusMarcados = Object.keys(statusSelecionados).filter(status => statusSelecionados[status]);
+    if (statusMarcados.length > 0) {
+      pedidosFiltradosTemp = pedidosFiltradosTemp.filter(pedido => {
+        const statusPedido = statusPedidos[pedido.protocolo];
+        if (!statusPedido || statusPedido === '-') return false;
+        
+        // Normaliza o status para comparação (minúsculo e sem acentos)
+        const statusNormalizado = statusPedido.toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '');
+        
+        return statusMarcados.some(statusMarcado => {
+          const statusMarcadoNormalizado = statusMarcado.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+          return statusNormalizado.includes(statusMarcadoNormalizado) || 
+                 statusMarcadoNormalizado.includes(statusNormalizado);
+        });
+      });
+    }
+
+    setPedidosFiltrados(pedidosFiltradosTemp);
+  };
+
+  // Função para limpar filtros
+  const limparFiltros = () => {
+    setDataInicial('');
+    setDataFinal('');
+    setBuscaProtocolo('');
+    setStatusSelecionados({
+      'aguardando conferência': true,
+      'aguardando pagamento': true,
+      'aguardando execução': true,
+      'aguardando entrega': true,
+      'concluído': false
+    });
+    setPedidosFiltrados(pedidos);
+  };
 
   // Função para alterar status selecionado
   const handleStatusChange = (status, checked) => {
