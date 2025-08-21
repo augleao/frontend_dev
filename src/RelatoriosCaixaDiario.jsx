@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { apiURL } from './config';
+import { apiURL } from '../config';
 import { getUsuariosMap } from './utilsUsuarios';
 
 function MeusFechamentos() {
