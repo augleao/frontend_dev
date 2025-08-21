@@ -14,13 +14,17 @@ function MeusFechamentos() {
       setErro('');
       try {
         const token = localStorage.getItem('token');
+        console.log('[MeusFechamentos] Buscando fechamentos para usuário:', nomeUsuario);
         const res = await fetch(
           `${apiURL}/meus-fechamentos`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        console.log('[MeusFechamentos] Status da resposta:', res.status);
         const data = await res.json();
+        console.log('[MeusFechamentos] Dados recebidos do backend:', data);
         setFechamentos(data.fechamentos || []);
       } catch (e) {
+        console.error('[MeusFechamentos] Erro ao buscar fechamentos:', e);
         setErro(e.message);
       }
       setLoading(false);
@@ -28,7 +32,7 @@ function MeusFechamentos() {
     fetchFechamentos();
   }, [nomeUsuario]);
 
-  console.log(fechamentos);
+  console.log('[MeusFechamentos] fechamentos no estado:', fechamentos);
 
   return (
     <div style={{
@@ -55,7 +59,12 @@ function MeusFechamentos() {
           </thead>
           <tbody>
             {fechamentos
-              .filter(f => f.codigo === '0001')
+              .filter(f => {
+                const isFechamento = f.codigo === '0001';
+                if (!isFechamento) return false;
+                console.log('[MeusFechamentos] Fechamento encontrado:', f);
+                return true;
+              })
               .map((f, idx) => {
                 const valorInicial = fechamentos.find(
                   fi =>
@@ -63,6 +72,11 @@ function MeusFechamentos() {
                     fi.data === f.data &&
                     fi.usuario === f.usuario
                 );
+                if (valorInicial) {
+                  console.log('[MeusFechamentos] Valor inicial encontrado para fechamento:', f, valorInicial);
+                } else {
+                  console.log('[MeusFechamentos] Nenhum valor inicial encontrado para fechamento:', f);
+                }
                 return (
                   <tr key={f.data + f.hora + f.codigo + idx}>
                     <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
