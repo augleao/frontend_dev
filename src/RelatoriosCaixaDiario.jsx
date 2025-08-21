@@ -1,36 +1,61 @@
 import React, { useEffect, useState } from 'react';
 import { apiURL } from './config';
+import { getUsuariosMap } from './utilsUsuarios';
 
 function MeusFechamentos() {
   const [fechamentos, setFechamentos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
+  const [caixaUnificado, setCaixaUnificado] = useState(false);
+  const [usuariosServentia, setUsuariosServentia] = useState([]);
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
   const nomeUsuario = usuario?.nome || '';
 
   useEffect(() => {
-    async function fetchFechamentos() {
+    async function fetchConfigAndFechamentos() {
       setLoading(true);
       setErro('');
       try {
+        // 1. Buscar config de caixa unificado da serventia
+        if (!usuario?.serventia) throw new Error('Usuário sem serventia');
+        const configRes = await fetch(`${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(usuario.serventia)}`);
+        if (!configRes.ok) throw new Error('Erro ao buscar configuração da serventia');
+        const configData = await configRes.json();
+        setCaixaUnificado(!!configData.caixa_unificado);
+        console.log('[MeusFechamentos] caixaUnificado:', !!configData.caixa_unificado);
+
+        // 2. Buscar fechamentos normalmente
         const token = localStorage.getItem('token');
-        console.log('[MeusFechamentos] Buscando fechamentos para usuário:', nomeUsuario);
         const res = await fetch(
           `${apiURL}/meus-fechamentos`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log('[MeusFechamentos] Status da resposta:', res.status);
         const data = await res.json();
-        console.log('[MeusFechamentos] Dados recebidos do backend:', data);
-        setFechamentos(data.fechamentos || []);
+        let fechamentosRecebidos = data.fechamentos || [];
+        console.log('[MeusFechamentos] Fechamentos recebidos:', fechamentosRecebidos);
+
+        // 3. Se caixa unificado, buscar todos usuários da serventia e filtrar fechamentos
+        if (configData.caixa_unificado) {
+          const usuariosMap = await getUsuariosMap();
+          const usuariosDaServentia = Array.from(usuariosMap.values()).filter(u => u.serventia === usuario.serventia);
+          setUsuariosServentia(usuariosDaServentia);
+          const nomesUsuariosServentia = usuariosDaServentia.map(u => u.nome);
+          // Filtra fechamentos de todos os usuários da serventia
+          fechamentosRecebidos = fechamentosRecebidos.filter(f => nomesUsuariosServentia.includes(f.usuario));
+          console.log('[MeusFechamentos] Fechamentos filtrados (caixa unificado):', fechamentosRecebidos);
+        } else {
+          // Se não for unificado, filtra só do usuário logado
+          fechamentosRecebidos = fechamentosRecebidos.filter(f => f.usuario === nomeUsuario);
+        }
+        setFechamentos(fechamentosRecebidos);
       } catch (e) {
-        console.error('[MeusFechamentos] Erro ao buscar fechamentos:', e);
         setErro(e.message);
+        console.error('[MeusFechamentos] Erro:', e);
       }
       setLoading(false);
     }
-    fetchFechamentos();
-  }, [nomeUsuario]);
+    fetchConfigAndFechamentos();
+  }, [nomeUsuario, usuario?.serventia]);
 
   console.log('[MeusFechamentos] fechamentos no estado:', fechamentos);
 
