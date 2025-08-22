@@ -76,7 +76,14 @@ function MeusFechamentos() {
           </thead>
           <tbody>
             {fechamentos
-              .filter(f => f.codigo === '0001')
+              .filter(f => {
+                // Se houver lista de usuários da serventia, filtra só os fechamentos desses usuários
+                if (usuariosServentia.length > 0) {
+                  return f.codigo === '0001' && usuariosServentia.some(u => u.nome === f.usuario);
+                }
+                // Caso não tenha lista, mantém filtro antigo (apenas código 0001)
+                return f.codigo === '0001';
+              })
               .map((f, idx) => {
                 const valorInicial = fechamentos.find(
                   fi =>
