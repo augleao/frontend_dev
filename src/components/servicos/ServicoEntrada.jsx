@@ -226,9 +226,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     let subtotalDescontado = 0;
     atosFiltrados.forEach((ato, idx) => {
       const valor = parseFloat(ato.valor_final || 0);
-      const valorDescontado = valor * 0.93;
+      const valorDescontado = Math.round((valor * 0.93) * 100) / 100;
       const quantidade = ato.quantidade || 1;
-      console.log(`[ISS][ETAPA] Ato #${idx+1}: valor original = ${valor}, valor com desconto 7% = ${valorDescontado}, quantidade = ${quantidade}, total ato = ${valorDescontado * quantidade}`);
+      console.log(`[ISS][ETAPA] Ato #${idx+1}: valor original = ${valor}, valor com desconto 7% (arredondado) = ${valorDescontado}, quantidade = ${quantidade}, total ato = ${valorDescontado * quantidade}`);
       subtotalDescontado += valorDescontado * quantidade;
     });
     console.log(`[ISS][ETAPA] Subtotal já com desconto de 7%: ${subtotalDescontado}`);
