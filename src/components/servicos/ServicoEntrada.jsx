@@ -1,3 +1,10 @@
+import React, { useEffect, useState } from 'react';
+//import ReciboProtocolo from './ReciboProtocolo';
+import { useNavigate } from 'react-router-dom';
+import config from '../../config';
+
+export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
+  // ...existing code...
   // Função para calcular valor com ISS
   const calcularValorComISS = (valorBase) => {
     if (!valorBase || !serventiaInfo || !serventiaInfo.iss || Number(serventiaInfo.iss) === 0) {
