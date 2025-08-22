@@ -223,14 +223,15 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     console.log('[ISS][DEBUG] atosPedido:', atosPedido);
     const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
     console.log('[ISS][DEBUG] atosFiltrados (codigoTributario === "01"):', atosFiltrados);
-    const total = atosFiltrados.reduce((total, ato) => {
+    const subtotal = atosFiltrados.reduce((total, ato) => {
       const valor = parseFloat(ato.valor_final || 0);
-      const valorComISS = calcularValorComISS(valor);
-      console.log(`[ISS] Ato:`, ato, 'valor_final:', valor, 'valorComISS:', valorComISS);
-      return total + (valorComISS * (ato.quantidade || 1));
+      return total + (valor * (ato.quantidade || 1));
     }, 0);
-    console.log('[ISS] Total dos atos pagos com ISS:', total);
-    return total;
+    // Aplica o ISS sobre o total
+    const iss = percentualISS !== null ? percentualISS : (serventiaInfo && serventiaInfo.iss ? Number(serventiaInfo.iss) : 0);
+    const totalComISS = Math.round((subtotal * (1 + iss / 100)) * 100) / 100;
+    console.log(`[ISS] Subtotal dos atos pagos: ${subtotal}, percentualISS: ${iss}, Total com ISS: ${totalComISS}`);
+    return totalComISS;
   };
 
   // Adiciona TODOS os atos do combo selecionado ao pedido OU adiciona um ato individual
