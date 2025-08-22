@@ -21,10 +21,16 @@ function MeusFechamentos() {
         const usuariosDaServentia = Array.from(usuariosMap.values()).filter(u => u.serventia === usuario.serventia);
         console.log('[MeusFechamentos] Usuários da mesma serventia encontrados:', usuariosDaServentia);
         setUsuariosServentia(usuariosDaServentia);
-        // Buscar fechamentos normalmente (sem alterar lógica ainda)
+        // Montar a query string se houver usuários da serventia
+        let url = `${apiURL}/meus-fechamentos`;
+        if (usuariosDaServentia.length > 0) {
+          const nomes = usuariosDaServentia.map(u => u.nome).join(',');
+          url += `?usuarios=${encodeURIComponent(nomes)}`;
+          console.log('[MeusFechamentos] Enviando lista de usuários na query:', nomes);
+        }
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${apiURL}/meus-fechamentos`,
+          url,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
