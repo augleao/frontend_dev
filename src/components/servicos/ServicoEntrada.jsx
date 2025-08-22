@@ -248,7 +248,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       const combo = combosDisponiveis.find(c => c.id === Number(modalComboSelecionado));
       if (!combo || !Array.isArray(combo.atos) || combo.atos.length === 0) return;
       
-      setAtosPedido(prev => [
+      setAtosPedido(prev => ([
         ...prev,
         ...combo.atos.map(ato => ({
           comboId: combo.id,
@@ -264,7 +264,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           folha: modalFolha,
           termo: modalTermo
         }))
-      ]);
+      ]));
     }
     
     // Limpa campos do modal, mas mantém o popup aberto para adicionar mais combos/atos
@@ -439,7 +439,22 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     }
   };
 
-
+  // Função para calcular valor com ISS
+  const calcularValorComISS = (valorBase) => {
+    if (!valorBase || !serventiaInfo || !serventiaInfo.iss || Number(serventiaInfo.iss) === 0) {
+      console.log('[ISS] Não aplicando ISS. valorBase:', valorBase, 'serventiaInfo:', serventiaInfo);
+      return valorBase;
+    }
+    const percentualISS = Number(serventiaInfo.iss);
+    const valorComISS = valorBase * (1 + percentualISS / 100);
+    console.log(`[ISS] Valor base: ${valorBase}, ISS: ${percentualISS}%, Valor final: ${valorComISS}`);
+    return valorComISS;
+  };
+  useEffect(() => {
+    if (serventiaInfo && typeof serventiaInfo.iss !== 'undefined') {
+      console.log('[ISS] Percentual ISS da serventia:', serventiaInfo.iss);
+    }
+  }, [serventiaInfo]);
 
   return (
     <div style={{ background: 'transparent', padding: '0', borderRadius: '0', width: '100%', boxSizing: 'border-box', display: 'flex', justifyContent: 'center' }}>
