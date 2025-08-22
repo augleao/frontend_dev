@@ -78,6 +78,7 @@ function MeusFechamentos() {
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Hora</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Valor Inicial</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Valor Final</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Usuário</th>
             </tr>
           </thead>
           <tbody>
@@ -111,6 +112,7 @@ function MeusFechamentos() {
                     <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
                       {Number(f.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </td>
+                    <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>{f.usuario}</td>
                   </tr>
                 );
               })}
