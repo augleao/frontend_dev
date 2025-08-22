@@ -1,10 +1,19 @@
   // Função para calcular valor com ISS
   const calcularValorComISS = (valorBase) => {
-    if (!valorBase || !serventiaInfo || !serventiaInfo.iss || Number(serventiaInfo.iss) === 0) return valorBase;
+    if (!valorBase || !serventiaInfo || !serventiaInfo.iss || Number(serventiaInfo.iss) === 0) {
+      console.log('[ISS] Não aplicando ISS. valorBase:', valorBase, 'serventiaInfo:', serventiaInfo);
+      return valorBase;
+    }
     const percentualISS = Number(serventiaInfo.iss);
     const valorComISS = valorBase * (1 + percentualISS / 100);
+    console.log(`[ISS] Valor base: ${valorBase}, ISS: ${percentualISS}%, Valor final: ${valorComISS}`);
     return valorComISS;
   };
+  useEffect(() => {
+    if (serventiaInfo && typeof serventiaInfo.iss !== 'undefined') {
+      console.log('[ISS] Percentual ISS da serventia:', serventiaInfo.iss);
+    }
+  }, [serventiaInfo]);
 import React, { useEffect, useState } from 'react';
 //import ReciboProtocolo from './ReciboProtocolo';
 import { useNavigate } from 'react-router-dom';
