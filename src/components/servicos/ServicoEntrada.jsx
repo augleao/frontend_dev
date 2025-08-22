@@ -4,16 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 
 export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
-  // ...existing code...
-
-import React, { useEffect, useState } from 'react';
-//import ReciboProtocolo from './ReciboProtocolo';
-import { useNavigate } from 'react-router-dom';
-import config from '../../config';
-
-// ...existing code...
-
-export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido }) {
   // Estado para controlar popup/modal de adicionar atos
   const [showAdicionarAtosModal, setShowAdicionarAtosModal] = useState(false);
   const [modalComboSelecionado, setModalComboSelecionado] = useState('');
