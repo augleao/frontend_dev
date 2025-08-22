@@ -452,7 +452,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         border: '2px solid #9b59b6',
         boxShadow: '0 2px 12px rgba(155,89,182,0.10)',
         background: '#f5e6fa',
-        overflow: 'hidden',
+  // overflow: 'hidden', // Removido para permitir que dropdowns fiquem visíveis acima do container
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
