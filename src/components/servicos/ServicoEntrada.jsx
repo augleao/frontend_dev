@@ -1141,26 +1141,26 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               >
                 <thead>
                   <tr style={{ background: '#ede1f7' }}>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Combo</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Código do Ato</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Descrição do Ato</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Quantidade</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Código Tributário</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Tipo de Registro</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Nome do(s) Registrado(s)</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Livro</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Folha</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Termo</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10 }}>Ações</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Combo</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Código do Ato</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Descrição do Ato</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Quantidade</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Código Tributário</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Tipo de Registro</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Nome do(s) Registrado(s)</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Livro</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Folha</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Termo</th>
+                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {atosPedido.map((ato, idx) => (
-                  <tr key={`${ato.comboId}-${ato.atoId}-${idx}`} style={{ background: idx % 2 === 0 ? '#f8f4fc' : 'transparent', fontSize: 10 }}>
-                      <td style={{ padding: 6, fontSize: 10 }}>{ato.comboNome}</td>
-                      <td style={{ padding: 6, fontSize: 10 }}>{ato.atoCodigo}</td>
-                      <td style={{ padding: 6, fontSize: 10 }}>{ato.atoDescricao ? ato.atoDescricao.slice(0, 15) : ''}</td>
-                      <td style={{ padding: 6, fontSize: 10 }}>
+                  <tr key={`${ato.comboId}-${ato.atoId}-${idx}`} style={{ background: idx % 2 === 0 ? '#f8f4fc' : 'transparent', fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>
+                      <td style={{ padding: 6, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>{ato.comboNome}</td>
+                      <td style={{ padding: 6, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>{ato.atoCodigo}</td>
+                      <td style={{ padding: 6, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>{ato.atoDescricao ? ato.atoDescricao.slice(0, 15) : ''}</td>
+                      <td style={{ padding: 6, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>
                         <input
                           type="number"
                           min={1}
