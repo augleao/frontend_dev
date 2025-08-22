@@ -1,17 +1,3 @@
-  // Estado para percentual ISS fixo por serventia do usuário logado
-  const [percentualISS, setPercentualISS] = useState(null);
-
-  // Fixar percentual ISS conforme serventia do usuário logado
-  useEffect(() => {
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    if (usuario?.serventia === 'RCPN de Campanha') {
-      setPercentualISS(3);
-    } else if (usuario?.serventia === 'RCPN de Lavras') {
-      setPercentualISS(0);
-    } else {
-      setPercentualISS(0);
-    }
-  }, []);
 import React, { useEffect, useState } from 'react';
 //import ReciboProtocolo from './ReciboProtocolo';
 import { useNavigate } from 'react-router-dom';
@@ -104,7 +90,21 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const [valorAdiantadoDetalhes, setValorAdiantadoDetalhes] = useState(
     form.valorAdiantadoDetalhes || []
   );
+  // Estado para percentual ISS fixo por serventia do usuário logado
+  const [percentualISS, setPercentualISS] = useState(null);
 
+  // Fixar percentual ISS conforme serventia do usuário logado
+  useEffect(() => {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    if (usuario?.serventia === 'RCPN de Campanha') {
+      setPercentualISS(3);
+    } else if (usuario?.serventia === 'RCPN de Lavras') {
+      setPercentualISS(0);
+    } else {
+      setPercentualISS(0);
+    }
+  }, []);
+  
   useEffect(() => {
     setValorAdiantadoDetalhes(form.valorAdiantadoDetalhes || []);
   }, [form.valorAdiantadoDetalhes]);
