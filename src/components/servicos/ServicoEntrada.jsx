@@ -1,3 +1,10 @@
+  // Função para calcular valor com ISS
+  const calcularValorComISS = (valorBase) => {
+    if (!valorBase || !serventiaInfo || !serventiaInfo.iss || Number(serventiaInfo.iss) === 0) return valorBase;
+    const percentualISS = Number(serventiaInfo.iss);
+    const valorComISS = valorBase * (1 + percentualISS / 100);
+    return valorComISS;
+  };
 import React, { useEffect, useState } from 'react';
 //import ReciboProtocolo from './ReciboProtocolo';
 import { useNavigate } from 'react-router-dom';
@@ -209,7 +216,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
     const total = atosFiltrados.reduce((total, ato) => {
       const valor = parseFloat(ato.valor_final || 0);
-      return total + (valor * (ato.quantidade || 1));
+      const valorComISS = calcularValorComISS(valor);
+      return total + (valorComISS * (ato.quantidade || 1));
     }, 0);
     return total;
   };
