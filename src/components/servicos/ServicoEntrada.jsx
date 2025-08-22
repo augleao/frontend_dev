@@ -266,7 +266,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           atoDescricao: ato.descricao,
           valor_final: ato.valor_final,
           quantidade: 1,
-          codigoTributario: modalCodigoTributario,
+          codigoTributario: modalCodigoTributario || '01',
           tipoRegistro: modalTipoRegistro,
           nomeRegistrados: modalNomeRegistrados,
           livro: modalLivro,
@@ -279,7 +279,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     else if (modalComboSelecionado && !modalAtoSelecionado) {
       const combo = combosDisponiveis.find(c => c.id === Number(modalComboSelecionado));
       if (!combo || !Array.isArray(combo.atos) || combo.atos.length === 0) return;
-      
       setAtosPedido(prev => ([
         ...prev,
         ...combo.atos.map(ato => ({
@@ -289,7 +288,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           atoCodigo: ato.codigo,
           atoDescricao: ato.descricao,
           quantidade: 1,
-          codigoTributario: modalCodigoTributario,
+          codigoTributario: modalCodigoTributario || '01',
           tipoRegistro: modalTipoRegistro,
           nomeRegistrados: modalNomeRegistrados,
           livro: modalLivro,
