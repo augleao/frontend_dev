@@ -58,14 +58,7 @@ function MeusFechamentos() {
       boxShadow: '0 4px 16px rgba(0,0,0,0.08)'
     }}>
       <h2 style={{ marginBottom: 18, color: '#2c3e50' }}>🗂️ Meus Fechamentos de Caixa</h2>
-      <div style={{ marginBottom: 18 }}>
-        <strong>Usuários da mesma serventia:</strong>
-        <ul>
-          {usuariosServentia.map(u => (
-            <li key={u.id}>{u.nome} ({u.email})</li>
-          ))}
-        </ul>
-      </div>
+  {/* Lista de usuários da mesma serventia removida */}
       {loading && <div>Carregando...</div>}
       {erro && <div style={{ color: 'red' }}>{erro}</div>}
       {/* A tabela de fechamentos permanece igual por enquanto */}
