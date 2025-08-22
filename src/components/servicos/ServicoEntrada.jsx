@@ -229,6 +229,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       const valor = parseFloat(ato.valor_final || 0);
       const issqn = parseFloat(ato.issqn || 0);
       const quantidade = ato.quantidade || 1;
+      console.log(`[ISS][DEBUG] Ato #${idx+1}: issqn retornado do backend =`, ato.issqn);
       let valorFinalAto = valor;
       // Se a serventia tem ISS e o ato possui issqn, soma valor_final + issqn
       if ((percentualISS !== null && percentualISS > 0) && !isNaN(issqn) && issqn > 0) {
