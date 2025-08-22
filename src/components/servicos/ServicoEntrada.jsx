@@ -223,16 +223,19 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     console.log('[ISS][DEBUG] atosPedido:', atosPedido);
     const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
     console.log('[ISS][DEBUG] atosFiltrados (codigoTributario === "01"):', atosFiltrados);
-    // Aplica desconto de 7% em cada valor
-    const subtotalDescontado = atosFiltrados.reduce((total, ato) => {
+    let subtotalDescontado = 0;
+    atosFiltrados.forEach((ato, idx) => {
       const valor = parseFloat(ato.valor_final || 0);
       const valorDescontado = valor * 0.93;
-      return total + (valorDescontado * (ato.quantidade || 1));
-    }, 0);
+      const quantidade = ato.quantidade || 1;
+      console.log(`[ISS][ETAPA] Ato #${idx+1}: valor original = ${valor}, valor com desconto 7% = ${valorDescontado}, quantidade = ${quantidade}, total ato = ${valorDescontado * quantidade}`);
+      subtotalDescontado += valorDescontado * quantidade;
+    });
+    console.log(`[ISS][ETAPA] Subtotal já com desconto de 7%: ${subtotalDescontado}`);
     // Aplica o ISS sobre o total já descontado
     const iss = percentualISS !== null ? percentualISS : (serventiaInfo && serventiaInfo.iss ? Number(serventiaInfo.iss) : 0);
     const totalComISS = Math.round((subtotalDescontado * (1 + iss / 100)) * 100) / 100;
-    console.log(`[ISS] Subtotal descontado: ${subtotalDescontado}, percentualISS: ${iss}, Total com ISS: ${totalComISS}`);
+    console.log(`[ISS][ETAPA] Subtotal com desconto: ${subtotalDescontado}, percentualISS: ${iss}, Total final com ISS: ${totalComISS}`);
     return totalComISS;
   };
 
