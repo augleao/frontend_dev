@@ -288,7 +288,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           atoCodigo: ato.codigo,
           atoDescricao: ato.descricao,
           quantidade: 1,
-          codigoTributario: modalCodigoTributario || '01',
+          codigoTributario: (ato.codigoTributario || modalCodigoTributario || '01'),
           tipoRegistro: modalTipoRegistro,
           nomeRegistrados: modalNomeRegistrados,
           livro: modalLivro,
