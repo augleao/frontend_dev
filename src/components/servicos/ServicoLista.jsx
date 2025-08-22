@@ -61,14 +61,14 @@ export default function ListaServicos() {
         const token = localStorage.getItem('token');
         const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
         const idServentiaUsuario = usuario.serventia || usuario.serventiaId || usuario.serventia_id;
-        // Busca todos os usuários
-        const usuariosRes = await fetch(`${config.apiURL}/admin/usuarios`, {
+        // Busca todos os usuários e filtra os da mesma serventia do usuário logado
+        const usuariosRes = await fetch(`${config.apiURL}/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const usuariosData = await usuariosRes.json();
-  // Filtra usuários que pertencem à mesma serventia do usuário logado
-  const usuariosDaServentia = (usuariosData.usuarios || []).filter(u => u.serventia === idServentiaUsuario);
+        const usuariosDaServentia = (usuariosData.usuarios || []).filter(u => u.serventia === idServentiaUsuario);
   const nomesUsuariosDaServentia = new Set(usuariosDaServentia.map(u => u.nome));
+  console.log('[DEBUG] Usuários da mesma serventia:', usuariosDaServentia);
         // Busca todos os pedidos
         const res = await fetch(`${config.apiURL}/pedidos`, {
           headers: { Authorization: `Bearer ${token}` }
