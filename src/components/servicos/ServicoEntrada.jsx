@@ -1144,8 +1144,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                     <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Combo</th>
                     <th style={{ padding: 6, width: 70, minWidth: 50, maxWidth: 80, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Código do Ato</th>
                     <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Descrição do Ato</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Quantidade</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Código Tributário</th>
+                    <th style={{ padding: 6, width: 50, minWidth: 50, maxWidth: 50, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Quantidade</th>
+                    <th style={{ padding: 6, width: 60, minWidth: 60, maxWidth: 60, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Código Tributário</th>
                     <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Tipo de Registro</th>
                     <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Nome do(s) Registrado(s)</th>
                     <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Livro</th>
