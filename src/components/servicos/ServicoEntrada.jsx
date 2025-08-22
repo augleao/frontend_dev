@@ -209,8 +209,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
     const total = atosFiltrados.reduce((total, ato) => {
       const valor = parseFloat(ato.valor_final || 0);
-      const valorComISS = calcularValorComISS(valor);
-      return total + (valorComISS * (ato.quantidade || 1));
+      return total + (valor * (ato.quantidade || 1));
     }, 0);
     return total;
   };
