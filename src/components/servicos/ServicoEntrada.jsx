@@ -1179,19 +1179,19 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                         />
                         {codigoTributarioIdx === idx && codigoTributarioSuggestions.length > 0 && (
                           <ul style={{
-                            position: 'absolute',
+                            position: 'fixed',
                             background: '#fff',
                             border: '1px solid #ccc',
                             borderRadius: 4,
                             margin: 0,
                             padding: '4px 0',
                             listStyle: 'none',
-                            zIndex: 9999,
+                            zIndex: 2147483647, // valor máximo para garantir sobreposição
                             width: 220,
-                            left: 0,
-                            top: '100%',
+                            left: (document.activeElement && document.activeElement.getBoundingClientRect ? document.activeElement.getBoundingClientRect().left : 0),
+                            top: (document.activeElement && document.activeElement.getBoundingClientRect ? document.activeElement.getBoundingClientRect().bottom : 0),
                             fontSize: 10,
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.18)'
                           }}>
                             {codigoTributarioSuggestions.map(sug => (
                               <li
