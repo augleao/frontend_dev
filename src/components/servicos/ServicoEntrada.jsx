@@ -1,3 +1,17 @@
+  // Estado para percentual ISS fixo por serventia do usuário logado
+  const [percentualISS, setPercentualISS] = useState(null);
+
+  // Fixar percentual ISS conforme serventia do usuário logado
+  useEffect(() => {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    if (usuario?.serventia === 'RCPN de Campanha') {
+      setPercentualISS(3);
+    } else if (usuario?.serventia === 'RCPN de Lavras') {
+      setPercentualISS(0);
+    } else {
+      setPercentualISS(0);
+    }
+  }, []);
 import React, { useEffect, useState } from 'react';
 //import ReciboProtocolo from './ReciboProtocolo';
 import { useNavigate } from 'react-router-dom';
@@ -206,6 +220,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
   // Função para calcular a soma dos valores dos atos pagos (código tributário "01")
   const calcularTotalAtosPagos = () => {
+    if (!serventiaInfo) {
+      console.log('[ISS] ServentiaInfo ainda não carregado, não calculando total dos atos pagos.');
+      return 0;
+    }
     const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
     const total = atosFiltrados.reduce((total, ato) => {
       const valor = parseFloat(ato.valor_final || 0);
@@ -444,14 +462,15 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
   // Função para calcular valor com ISS
   const calcularValorComISS = (valorBase) => {
-    console.log('[ISS] calcularValorComISS chamada. valorBase:', valorBase, 'serventiaInfo:', serventiaInfo);
-    if (!valorBase || !serventiaInfo || !serventiaInfo.iss || Number(serventiaInfo.iss) === 0) {
-      console.log('[ISS] Não aplicando ISS. valorBase:', valorBase, 'serventiaInfo:', serventiaInfo);
+    // Prioriza percentualISS fixado pelo useEffect, senão usa da serventiaInfo
+    const iss = percentualISS !== null ? percentualISS : (serventiaInfo && serventiaInfo.iss ? Number(serventiaInfo.iss) : 0);
+    console.log('[ISS] calcularValorComISS chamada. valorBase:', valorBase, 'percentualISS:', iss, 'serventiaInfo:', serventiaInfo);
+    if (!valorBase || iss === 0) {
+      console.log('[ISS] Não aplicando ISS. valorBase:', valorBase, 'percentualISS:', iss);
       return valorBase;
     }
-    const percentualISS = Number(serventiaInfo.iss);
-    const valorComISS = valorBase * (1 + percentualISS / 100);
-    console.log(`[ISS] Valor base: ${valorBase}, ISS: ${percentualISS}%, Valor final: ${valorComISS}`);
+    const valorComISS = valorBase * (1 + iss / 100);
+    console.log(`[ISS] Valor base: ${valorBase}, ISS: ${iss}%, Valor final: ${valorComISS}`);
     return valorComISS;
   };
 
