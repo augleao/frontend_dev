@@ -223,14 +223,16 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     console.log('[ISS][DEBUG] atosPedido:', atosPedido);
     const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
     console.log('[ISS][DEBUG] atosFiltrados (codigoTributario === "01"):', atosFiltrados);
-    const subtotal = atosFiltrados.reduce((total, ato) => {
+    // Aplica desconto de 7% em cada valor
+    const subtotalDescontado = atosFiltrados.reduce((total, ato) => {
       const valor = parseFloat(ato.valor_final || 0);
-      return total + (valor * (ato.quantidade || 1));
+      const valorDescontado = valor * 0.93;
+      return total + (valorDescontado * (ato.quantidade || 1));
     }, 0);
-    // Aplica o ISS sobre o total
+    // Aplica o ISS sobre o total já descontado
     const iss = percentualISS !== null ? percentualISS : (serventiaInfo && serventiaInfo.iss ? Number(serventiaInfo.iss) : 0);
-    const totalComISS = Math.round((subtotal * (1 + iss / 100)) * 100) / 100;
-    console.log(`[ISS] Subtotal dos atos pagos: ${subtotal}, percentualISS: ${iss}, Total com ISS: ${totalComISS}`);
+    const totalComISS = Math.round((subtotalDescontado * (1 + iss / 100)) * 100) / 100;
+    console.log(`[ISS] Subtotal descontado: ${subtotalDescontado}, percentualISS: ${iss}, Total com ISS: ${totalComISS}`);
     return totalComISS;
   };
 
