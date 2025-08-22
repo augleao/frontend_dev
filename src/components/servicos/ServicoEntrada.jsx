@@ -220,7 +220,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
   // Função para calcular a soma dos valores dos atos pagos (código tributário "01")
   const calcularTotalAtosPagos = () => {
+    console.log('[ISS][DEBUG] atosPedido:', atosPedido);
     const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
+    console.log('[ISS][DEBUG] atosFiltrados (codigoTributario === "01"):', atosFiltrados);
     const total = atosFiltrados.reduce((total, ato) => {
       const valor = parseFloat(ato.valor_final || 0);
       const valorComISS = calcularValorComISS(valor);
