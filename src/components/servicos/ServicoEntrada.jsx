@@ -235,10 +235,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         valorFinalAto = valor + issqn;
         console.log(`[ISS][ETAPA] Ato #${idx+1}: valor_final = ${valor}, issqn = ${issqn}, valor_final + issqn = ${valorFinalAto}, quantidade = ${quantidade}, total ato = ${valorFinalAto * quantidade}`);
       } else {
-        // Caso não tenha ISS, pode aplicar desconto de 7% se necessário
-        const valorDescontado = Math.round((valor * 0.93) * 100) / 100;
-        valorFinalAto = valorDescontado;
-        console.log(`[ISS][ETAPA] Ato #${idx+1}: valor original = ${valor}, valor com desconto 7% (arredondado) = ${valorDescontado}, quantidade = ${quantidade}, total ato = ${valorFinalAto * quantidade}`);
+        // Sem ISS, usa apenas valor_final
+        valorFinalAto = valor;
+        console.log(`[ISS][ETAPA] Ato #${idx+1}: valor_final = ${valor}, quantidade = ${quantidade}, total ato = ${valorFinalAto * quantidade}`);
       }
       subtotal += valorFinalAto * quantidade;
     });
