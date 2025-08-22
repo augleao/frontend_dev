@@ -224,32 +224,26 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     console.log('[ISS][DEBUG] atosPedido:', atosPedido);
     const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
     console.log('[ISS][DEBUG] atosFiltrados (codigoTributario === "01"):', atosFiltrados);
-    let subtotalDescontado = 0;
+    let subtotal = 0;
     atosFiltrados.forEach((ato, idx) => {
       const valor = parseFloat(ato.valor_final || 0);
-      const valorDescontado = Math.round((valor * 0.93) * 100) / 100;
+      const issqn = parseFloat(ato.issqn || 0);
       const quantidade = ato.quantidade || 1;
-      let valorFinalAto = valorDescontado;
-      // Se a serventia tem ISS e o ato possui issqn, usa o issqn do banco
-      if ((percentualISS !== null && percentualISS > 0) && typeof ato.issqn !== 'undefined' && ato.issqn !== null) {
-        valorFinalAto = parseFloat(ato.issqn);
-        console.log(`[ISS][ETAPA] Ato #${idx+1}: valor original = ${valor}, valor com desconto 7% (arredondado) = ${valorDescontado}, ISSQN do banco = ${ato.issqn}, quantidade = ${quantidade}, total ato = ${valorFinalAto * quantidade}`);
+      let valorFinalAto = valor;
+      // Se a serventia tem ISS e o ato possui issqn, soma valor_final + issqn
+      if ((percentualISS !== null && percentualISS > 0) && !isNaN(issqn) && issqn > 0) {
+        valorFinalAto = valor + issqn;
+        console.log(`[ISS][ETAPA] Ato #${idx+1}: valor_final = ${valor}, issqn = ${issqn}, valor_final + issqn = ${valorFinalAto}, quantidade = ${quantidade}, total ato = ${valorFinalAto * quantidade}`);
       } else {
+        // Caso não tenha ISS, pode aplicar desconto de 7% se necessário
+        const valorDescontado = Math.round((valor * 0.93) * 100) / 100;
+        valorFinalAto = valorDescontado;
         console.log(`[ISS][ETAPA] Ato #${idx+1}: valor original = ${valor}, valor com desconto 7% (arredondado) = ${valorDescontado}, quantidade = ${quantidade}, total ato = ${valorFinalAto * quantidade}`);
       }
-      subtotalDescontado += valorFinalAto * quantidade;
+      subtotal += valorFinalAto * quantidade;
     });
-    console.log(`[ISS][ETAPA] Subtotal já com desconto de 7% ou ISSQN: ${subtotalDescontado}`);
-    // Aplica o ISS sobre o total já descontado (apenas se não usou issqn individual)
-    let totalComISS = subtotalDescontado;
-    if (!(percentualISS !== null && percentualISS > 0 && atosFiltrados.some(ato => typeof ato.issqn !== 'undefined' && ato.issqn !== null))) {
-      const iss = percentualISS !== null ? percentualISS : (serventiaInfo && serventiaInfo.iss ? Number(serventiaInfo.iss) : 0);
-      totalComISS = Math.round((subtotalDescontado * (1 + iss / 100)) * 100) / 100;
-      console.log(`[ISS][ETAPA] Subtotal com desconto: ${subtotalDescontado}, percentualISS: ${iss}, Total final com ISS: ${totalComISS}`);
-    } else {
-      console.log(`[ISS][ETAPA] Total final (usando ISSQN individual): ${totalComISS}`);
-    }
-    return totalComISS;
+    console.log(`[ISS][ETAPA] Subtotal final: ${subtotal}`);
+    return subtotal;
   };
 
   // Adiciona TODOS os atos do combo selecionado ao pedido OU adiciona um ato individual
