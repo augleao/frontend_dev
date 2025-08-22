@@ -104,7 +104,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       setPercentualISS(0);
     }
   }, []);
-  
+
   useEffect(() => {
     setValorAdiantadoDetalhes(form.valorAdiantadoDetalhes || []);
   }, [form.valorAdiantadoDetalhes]);
@@ -220,10 +220,6 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
   // Função para calcular a soma dos valores dos atos pagos (código tributário "01")
   const calcularTotalAtosPagos = () => {
-    if (!serventiaInfo) {
-      console.log('[ISS] ServentiaInfo ainda não carregado, não calculando total dos atos pagos.');
-      return 0;
-    }
     const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
     const total = atosFiltrados.reduce((total, ato) => {
       const valor = parseFloat(ato.valor_final || 0);
