@@ -361,10 +361,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       // Atualiza o status para "Aguardando Execução" no banco de dados
       const resultado = await atualizarStatusPedido('Aguardando Execução');
 
-      // Se há excesso, gera automaticamente o recibo
-      if (excesso > 0) {
-        gerarReciboExcesso(excesso);
-      }
+  // Se há excesso, não gera mais recibo automaticamente. O usuário pode clicar no botão para gerar o recibo.
 
       if (resultado && resultado.local) {
         alert('✅ Pagamento confirmado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
