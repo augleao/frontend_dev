@@ -336,10 +336,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         // Não retorna aqui, pois ainda pode tentar atualizar status
       }
 
-  // ...existing code...
 
-
-  // Função para excluir pagamento salvo (agora dentro do componente)
+  // Função para excluir pagamento salvo
   const handleExcluirPagamento = async () => {
     if (!window.confirm('Tem certeza que deseja excluir este pagamento? Esta ação não pode ser desfeita.')) return;
     try {
