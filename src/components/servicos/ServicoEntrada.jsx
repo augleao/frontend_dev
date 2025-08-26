@@ -497,7 +497,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         width: '100%',
         maxWidth: '100%',
         margin: '32px 0',
-        padding: '24px 8px 24px 16px', // padding lateral reduzido, mais próximo da esquerda
+        padding: '24px 4px 24px 16px', // padding lateral reduzido, mais próximo da esquerda
         borderRadius: '16px',
         border: '2px solid #9b59b6',
         boxShadow: '0 2px 12px rgba(155,89,182,0.10)',
@@ -616,7 +616,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               boxSizing: 'border-box',
             }}
           />
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>Observação:</label>
+          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>Obs.:</label>
           <input
             type="text"
             value={form.observacao || ''}
