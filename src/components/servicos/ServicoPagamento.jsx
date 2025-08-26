@@ -449,17 +449,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               textAlign: 'right'
             }}
           />
-          <span style={{
-            fontSize: '15px',
-            color: '#742a2a',
-            fontWeight: 'bold',
-            marginLeft: 8,
-            fontFamily: 'monospace',
-            minWidth: 80,
-            display: 'inline-block'
-          }}>
-            {`R$ ${(parseFloat(valorAdicional || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          </span>
       </div>
       {/* Subtotal deste pedido */}
       <div style={{ marginBottom: 20, textAlign: 'left' }}>
