@@ -492,17 +492,17 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   }, [serventiaInfo]);
 
   return (
-    <div style={{ background: 'transparent', padding: '0', borderRadius: '0', width: '100%', boxSizing: 'border-box', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ background: 'transparent', padding: '0', borderRadius: '0', width: '100%', boxSizing: 'border-box', display: 'flex', justifyContent: 'flex-start' }}>
       <div style={{
         width: '100%',
         maxWidth: '100%',
         margin: '32px 0',
-        padding: '24px 32px',
+        padding: '24px 8px 24px 16px', // padding lateral reduzido, mais próximo da esquerda
         borderRadius: '16px',
         border: '2px solid #9b59b6',
         boxShadow: '0 2px 12px rgba(155,89,182,0.10)',
         background: '#f5e6fa',
-  // overflow: 'hidden', // Removido para permitir que dropdowns fiquem visíveis acima do container
+        // overflow: 'hidden', // Removido para permitir que dropdowns fiquem visíveis acima do container
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
