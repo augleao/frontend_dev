@@ -75,7 +75,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           },
           body: JSON.stringify({ 
             status: novoStatus,
-            usuario: usuario
+            usuario: usuario,
+            valorAdicional: valorAdicional
           })
         });
 
@@ -456,7 +457,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               color: '#e53e3e',
               fontFamily: 'monospace',
               marginLeft: 8,
-              textAlign: 'right'
+              textAlign: 'left'
             }}
           />
       </div>
