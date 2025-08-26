@@ -425,11 +425,14 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           value={valorAdicional}
           onChange={e => setValorAdicional(e.target.value)}
           style={{
-            width: 160,
-              border: '1.5px solid #d6d6f5',
+            width: 120,
+              border: '1.5px solid #f5d6d6ff',
               borderRadius: 6,
               padding: '4px 2px',
-              fontSize: 13,
+          fontSize: '18px',
+          fontWeight: 'bold',
+          color: '#e53e3e',
+          fontFamily: 'monospace',
               height: 32,
               boxSizing: 'border-box',
           }}
