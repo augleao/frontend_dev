@@ -416,27 +416,39 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           alignItems: 'center',
           gap: 6,
           flexWrap: 'wrap' }}>
-        <label style={{ color: '#742a2a', fontWeight: 600, fontSize: 13, minWidth: 100, margin: 0 }} htmlFor="valorAdicionalInput">
-          Valor Adicional:
-        </label>
-        <input
-          id="valorAdicionalInput"
-          type="number"
-          value={valorAdicional}
-          onChange={e => setValorAdicional(e.target.value)}
-          style={{
-            width: 120,
-              border: '1.5px solid #f5d6d6ff',
+          <label style={{ fontWeight: 'bold', color: '#742a2a', marginRight: 12 }} htmlFor="valorAdicionalInput">
+            Valor Adicional:
+          </label>
+          <input
+            id="valorAdicionalInput"
+            type="number"
+            min="0"
+            step="0.01"
+            value={valorAdicional}
+            onChange={e => setValorAdicional(e.target.value)}
+            style={{
+              width: 120,
+              padding: '8px 12px',
               borderRadius: 6,
-              padding: '4px 2px',
-          fontSize: '18px',
-          fontWeight: 'bold',
-          color: '#e53e3e',
-          fontFamily: 'monospace',
-              height: 32,
-              boxSizing: 'border-box',
-          }}
-        />
+              border: '2px solid #e53e3e',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: '#e53e3e',
+              fontFamily: 'monospace',
+              marginLeft: 8
+            }}
+          />
+          <span style={{
+            fontSize: '15px',
+            color: '#742a2a',
+            fontWeight: 'bold',
+            marginLeft: 8,
+            fontFamily: 'monospace',
+            minWidth: 80,
+            display: 'inline-block'
+          }}>
+            {`R$ ${(parseFloat(valorAdicional || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          </span>
       </div>
       {/* Subtotal deste pedido */}
       <div style={{ marginBottom: 20, textAlign: 'left' }}>
