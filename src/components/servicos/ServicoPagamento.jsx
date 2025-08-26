@@ -37,6 +37,36 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   // Estado para valor adicional
   const [valorAdicional, setValorAdicional] = useState(0);
   const [valorAdicionalInput, setValorAdicionalInput] = useState('');
+  // Estado para saber se já existe pagamento salvo
+  const [pagamentoSalvo, setPagamentoSalvo] = useState(false);
+
+  // Buscar pagamento salvo ao montar
+  React.useEffect(() => {
+    async function fetchPagamentoSalvo() {
+      if (!form.protocolo) return;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.valorAdicional !== undefined) {
+            setValorAdicional(data.valorAdicional);
+            setValorAdicionalInput(
+              data.valorAdicional === '' || data.valorAdicional === null
+                ? ''
+                : parseFloat(data.valorAdicional).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+            );
+            setPagamentoSalvo(true);
+          }
+        }
+      } catch (e) {
+        // Falha silenciosa
+      }
+    }
+    fetchPagamentoSalvo();
+  }, [form.protocolo]);
 
   // Função para calcular o total adiantado
   const calcularTotalAdiantado = () => {
@@ -298,11 +328,38 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             hora: hora
           })
         });
+        setPagamentoSalvo(true);
       } catch (e) {
         console.error('Erro ao salvar informações de pagamento:', e);
         alert('❌ Erro ao salvar informações de pagamento. Verifique sua conexão e tente novamente.');
         // Não retorna aqui, pois ainda pode tentar atualizar status
       }
+  // Função para excluir pagamento salvo
+  const handleExcluirPagamento = async () => {
+    if (!window.confirm('Tem certeza que deseja excluir este pagamento? Esta ação não pode ser desfeita.')) return;
+    try {
+      setProcessando(true);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        setPagamentoSalvo(false);
+        setValorAdicional(0);
+        setValorAdicionalInput('');
+        alert('✅ Pagamento excluído com sucesso.');
+      } else {
+        alert('❌ Erro ao excluir pagamento.');
+      }
+    } catch (e) {
+      alert('❌ Erro ao excluir pagamento.');
+    } finally {
+      setProcessando(false);
+    }
+  };
 
       // Atualiza o status para "Aguardando Execução" no banco de dados
       const resultado = await atualizarStatusPedido('Aguardando Execução');
@@ -625,9 +682,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                     {pagamentoConfirmado ? '✅ Pagamento Confirmado!' : '✅ Valor adiantado suficiente!'} 
                     {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                   </div>
-                  
                   <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    {!pagamentoConfirmado ? (
+                    {!pagamentoConfirmado && !pagamentoSalvo && (
                       <button
                         type="button"
                         onClick={handleConfirmarPagamento}
@@ -647,9 +703,33 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                         onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
                         onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
                       >
-                        {processando ? '⏳ Processando...' : '✅ Confirmar Pagamento'}
+                        {processando ? '⏳ Processando...' : '✅ Salvar Pagamento'}
                       </button>
-                    ) : (
+                    )}
+                    {pagamentoSalvo && !pagamentoConfirmado && (
+                      <button
+                        type="button"
+                        onClick={handleExcluirPagamento}
+                        disabled={processando}
+                        style={{
+                          padding: '14px 32px',
+                          background: processando ? '#a0aec0' : 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          cursor: processando ? 'not-allowed' : 'pointer',
+                          boxShadow: '0 4px 12px rgba(229,62,62,0.3)',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
+                        onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
+                      >
+                        {processando ? '⏳ Processando...' : '❌ Excluir Pagamento'}
+                      </button>
+                    )}
+                    {pagamentoConfirmado && (
                       <button
                         type="button"
                         onClick={handleCancelarPagamento}
@@ -672,7 +752,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                         {processando ? '⏳ Processando...' : '❌ Cancelar Pagamento'}
                       </button>
                     )}
-                    
                     {/* Botão para gerar recibo do excesso - sempre visível quando há excesso */}
                     {excesso > 0 && (
                       <button
