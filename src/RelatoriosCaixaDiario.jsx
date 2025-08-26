@@ -14,13 +14,26 @@ function MeusFechamentos() {
     async function fetchFechamentosEUsuarios() {
       setLoading(true);
       setErro('');
+      let usuariosDaServentia = [];
       try {
         console.log('[MeusFechamentos] Usuário logado:', usuario);
         // Buscar usuários da mesma serventia
-        const usuariosMap = await getUsuariosMap();
-        const usuariosDaServentia = Array.from(usuariosMap.values()).filter(u => u.serventia === usuario.serventia);
-        console.log('[MeusFechamentos] Usuários da mesma serventia encontrados:', usuariosDaServentia);
-        setUsuariosServentia(usuariosDaServentia);
+        try {
+          const usuariosMap = await getUsuariosMap();
+          usuariosDaServentia = Array.from(usuariosMap.values()).filter(u => u.serventia === usuario.serventia);
+          console.log('[MeusFechamentos] Usuários da mesma serventia encontrados:', usuariosDaServentia);
+          setUsuariosServentia(usuariosDaServentia);
+        } catch (e) {
+          if (e && e.message && e.message.includes('403')) {
+            setErro('Você não tem permissão para listar todos os usuários. Serão exibidos apenas seus próprios fechamentos.');
+            usuariosDaServentia = [usuario];
+            setUsuariosServentia([usuario]);
+          } else {
+            setErro('Erro ao buscar usuários: ' + (e.message || e));
+            setUsuariosServentia([usuario]);
+            usuariosDaServentia = [usuario];
+          }
+        }
         // Montar a query string se houver usuários da serventia
         let url = `${apiURL}/meus-fechamentos`;
         if (usuariosDaServentia.length > 0) {
