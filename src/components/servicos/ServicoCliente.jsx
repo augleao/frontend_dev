@@ -166,7 +166,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             type="text"
             value={form.cliente.nome}
             onChange={handleNomeChange}
-            style={{ width: 200, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
+            style={{ width: 400, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
             autoComplete="off"
           />
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0, marginLeft: 12 }}>CPF/CNPJ:</label>
