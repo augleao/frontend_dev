@@ -421,11 +421,21 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           </label>
           <input
             id="valorAdicionalInput"
-            type="number"
-            min="0"
-            step="0.01"
-            value={valorAdicional}
-            onChange={e => setValorAdicional(e.target.value)}
+            type="text"
+            inputMode="decimal"
+            value={
+              (valorAdicional === '' || valorAdicional === null)
+                ? ''
+                : parseFloat(valorAdicional).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+            }
+            onChange={e => {
+              // Remove tudo que não for número ou vírgula/ponto
+              let v = e.target.value.replace(/[^\d,\.]/g, '').replace(',', '.');
+              // Permite apenas um ponto
+              const parts = v.split('.');
+              if (parts.length > 2) v = parts[0] + '.' + parts.slice(1).join('');
+              setValorAdicional(v ? parseFloat(v) : 0);
+            }}
             style={{
               width: 120,
               padding: '8px 12px',
@@ -435,7 +445,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               fontWeight: 'bold',
               color: '#e53e3e',
               fontFamily: 'monospace',
-              marginLeft: 8
+              marginLeft: 8,
+              textAlign: 'right'
             }}
           />
           <span style={{
