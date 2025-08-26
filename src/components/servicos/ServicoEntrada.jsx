@@ -536,7 +536,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             onChange={e => onChange('descricao', e.target.value)}
             maxLength={200}
             style={{
-              width: 160,
+              width: 260,
               border: '1.5px solid #d6d6f5',
               borderRadius: 6,
               padding: '4px 2px',
