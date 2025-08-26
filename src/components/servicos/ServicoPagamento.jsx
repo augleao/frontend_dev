@@ -75,8 +75,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           },
           body: JSON.stringify({ 
             status: novoStatus,
-            usuario: usuario,
-            valorAdicional: valorAdicional
+            usuario: usuario
           })
         });
 
@@ -272,20 +271,47 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   const handleConfirmarPagamento = async () => {
     try {
       setProcessando(true);
-      
       const totalAdiantado = calcularTotalAdiantado();
       const excesso = totalAdiantado - valorTotal;
-      
-      console.log('[DEBUG] Iniciando confirmação de pagamento...');
-      
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
+      const usuario = usuarioLogado.nome || usuarioLogado.email || 'Sistema';
+      const dataHora = new Date();
+      const data = dataHora.toLocaleDateString('pt-BR');
+      const hora = dataHora.toLocaleTimeString('pt-BR');
+
+      // Salvar informações do pagamento na nova tabela pedido_pagamento
+      try {
+        const token = localStorage.getItem('token');
+        await fetch(`${config.apiURL}/pedido_pagamento`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            protocolo: form.protocolo,
+            valorAtos: parseFloat(valorTotal || 0),
+            valorAdicional: parseFloat(valorAdicional || 0),
+            totalAdiantado: totalAdiantado,
+            usuario: usuario,
+            data: data,
+            hora: hora
+          })
+        });
+      } catch (e) {
+        console.error('Erro ao salvar informações de pagamento:', e);
+        alert('❌ Erro ao salvar informações de pagamento. Verifique sua conexão e tente novamente.');
+        // Não retorna aqui, pois ainda pode tentar atualizar status
+      }
+
       // Atualiza o status para "Aguardando Execução" no banco de dados
       const resultado = await atualizarStatusPedido('Aguardando Execução');
-      
+
       // Se há excesso, gera automaticamente o recibo
       if (excesso > 0) {
         gerarReciboExcesso(excesso);
       }
-      
+
       if (resultado && resultado.local) {
         alert('✅ Pagamento confirmado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
       } else {
@@ -293,8 +319,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       }
     } catch (error) {
       console.error('Erro ao confirmar pagamento:', error);
-      
-      // Só mostra erro se realmente falhou (não foi fallback)
       if (!error.message.includes('local')) {
         alert('❌ Erro ao confirmar pagamento. Verifique sua conexão e tente novamente.');
       }
