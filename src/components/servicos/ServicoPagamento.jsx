@@ -34,6 +34,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   }, [form.serventiaId, form.serventia_id, form.serventia]);
   const [statusPedido, setStatusPedido] = useState(form.status || 'Em Análise');
   const [processando, setProcessando] = useState(false);
+  // Estado para valor adicional
+  const [valorAdicional, setValorAdicional] = useState(0);
+
   // Função para calcular o total adiantado
   const calcularTotalAdiantado = () => {
     return valorAdiantadoDetalhes
@@ -402,8 +405,33 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           color: '#e53e3e',
           fontFamily: 'monospace'
         }}>
-          R$ {valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          R$ {(parseFloat(valorTotal || 0) + parseFloat(valorAdicional || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </span>
+      </div>
+      {/* Campo Valor Adicional */}
+      <div style={{ marginBottom: 20, textAlign: 'left' }}>
+        <label style={{ fontWeight: 'bold', color: '#742a2a', marginRight: 12 }} htmlFor="valorAdicionalInput">
+          Valor Adicional:
+        </label>
+        <input
+          id="valorAdicionalInput"
+          type="number"
+          min="0"
+          step="0.01"
+          value={valorAdicional}
+          onChange={e => setValorAdicional(e.target.value)}
+          style={{
+            width: 120,
+            padding: '8px 12px',
+            borderRadius: 6,
+            border: '2px solid #e53e3e',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            color: '#e53e3e',
+            fontFamily: 'monospace',
+            marginLeft: 8
+          }}
+        />
       </div>
       
       {/* Tabela de Valores Adiantados */}
@@ -506,11 +534,12 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         }}>
           {(() => {
             const totalAdiantado = calcularTotalAdiantado();
-            const valorRestante = valorTotal - totalAdiantado;
-            const excesso = totalAdiantado - valorTotal;
+            const valorTotalComAdicional = parseFloat(valorTotal || 0) + parseFloat(valorAdicional || 0);
+            const valorRestante = valorTotalComAdicional - totalAdiantado;
+            const excesso = totalAdiantado - valorTotalComAdicional;
             const pagamentoConfirmado = statusPedido === 'Pago';
             
-            if (totalAdiantado >= valorTotal) {
+            if (totalAdiantado >= valorTotalComAdicional) {
               return (
                 <div>
                   <div style={{
