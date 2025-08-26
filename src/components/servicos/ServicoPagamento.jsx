@@ -337,32 +337,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       }
 
 
-  // Função para excluir pagamento salvo
-  const handleExcluirPagamento = async () => {
-    if (!window.confirm('Tem certeza que deseja excluir este pagamento? Esta ação não pode ser desfeita.')) return;
-    try {
-      setProcessando(true);
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (res.ok) {
-        setPagamentoSalvo(false);
-        setValorAdicional(0);
-        setValorAdicionalInput('');
-        alert('✅ Pagamento excluído com sucesso.');
-      } else {
-        alert('❌ Erro ao excluir pagamento.');
-      }
-    } catch (e) {
-      alert('❌ Erro ao excluir pagamento.');
-    } finally {
-      setProcessando(false);
-    }
-  };
+
 
       // Atualiza o status para "Aguardando Execução" no banco de dados
       const resultado = await atualizarStatusPedido('Aguardando Execução');
@@ -712,7 +687,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                     {pagamentoSalvo && !pagamentoConfirmado && (
                       <button
                         type="button"
-                        onClick={handleExcluirPagamento}
+                        onClick={handleCancelarPagamento}
                         disabled={processando}
                         style={{
                           padding: '14px 32px',
