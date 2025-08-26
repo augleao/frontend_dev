@@ -397,7 +397,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           color: '#742a2a',
           marginRight: 12
         }}>
-          Valor a ser pago:
+          Valor dos Atos:
         </span>
         <span style={{
           fontSize: '18px',
@@ -405,11 +405,11 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           color: '#e53e3e',
           fontFamily: 'monospace'
         }}>
-          R$ {(parseFloat(valorTotal || 0) + parseFloat(valorAdicional || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          R$ {parseFloat(valorTotal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </span>
       </div>
       {/* Campo Valor Adicional */}
-      <div style={{ marginBottom: 20, textAlign: 'left' }}>
+      <div style={{ marginBottom: 8, textAlign: 'left' }}>
         <label style={{ fontWeight: 'bold', color: '#742a2a', marginRight: 12 }} htmlFor="valorAdicionalInput">
           Valor Adicional:
         </label>
@@ -432,6 +432,25 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             marginLeft: 8
           }}
         />
+      </div>
+      {/* Subtotal deste pedido */}
+      <div style={{ marginBottom: 20, textAlign: 'left' }}>
+        <span style={{
+          fontSize: '15px',
+          fontWeight: 'bold',
+          color: '#742a2a',
+          marginRight: 12
+        }}>
+          Subtotal deste pedido:
+        </span>
+        <span style={{
+          fontSize: '17px',
+          fontWeight: 'bold',
+          color: '#e53e3e',
+          fontFamily: 'monospace'
+        }}>
+          R$ {(parseFloat(valorTotal || 0) + parseFloat(valorAdicional || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
       </div>
       
       {/* Tabela de Valores Adiantados */}
