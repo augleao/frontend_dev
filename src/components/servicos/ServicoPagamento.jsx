@@ -36,6 +36,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   const [processando, setProcessando] = useState(false);
   // Estado para valor adicional
   const [valorAdicional, setValorAdicional] = useState(0);
+  const [valorAdicionalInput, setValorAdicionalInput] = useState('');
 
   // Função para calcular o total adiantado
   const calcularTotalAdiantado = () => {
@@ -423,18 +424,27 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             id="valorAdicionalInput"
             type="text"
             inputMode="decimal"
-            value={
-              (valorAdicional === '' || valorAdicional === null)
-                ? ''
-                : parseFloat(valorAdicional).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-            }
+            value={valorAdicionalInput}
             onChange={e => {
-              // Remove tudo que não for número ou vírgula/ponto
+              setValorAdicionalInput(e.target.value);
+              // Aceita vírgula ou ponto como separador decimal
               let v = e.target.value.replace(/[^\d,\.]/g, '').replace(',', '.');
               // Permite apenas um ponto
               const parts = v.split('.');
               if (parts.length > 2) v = parts[0] + '.' + parts.slice(1).join('');
               setValorAdicional(v ? parseFloat(v) : 0);
+            }}
+            onBlur={e => {
+              // Formata como moeda ao perder o foco
+              setValorAdicionalInput(
+                (valorAdicional === '' || valorAdicional === null)
+                  ? ''
+                  : parseFloat(valorAdicional).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+              );
+            }}
+            onFocus={e => {
+              // Remove máscara ao focar
+              setValorAdicionalInput(valorAdicional ? String(valorAdicional).replace('.', ',') : '');
             }}
             style={{
               width: 120,
