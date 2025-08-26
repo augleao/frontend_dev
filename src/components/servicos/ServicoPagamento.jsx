@@ -387,8 +387,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
     }
   };
 
-  // Função para cancelar pagamento
-  const handleCancelarPagamento = async () => {
+  // Função para excluir pagamento
+  const handleExcluirPagamento = async () => {
     if (window.confirm('Tem certeza que deseja cancelar este pagamento? O status voltará para "Conferido".')) {
       try {
         setProcessando(true);
