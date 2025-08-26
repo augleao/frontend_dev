@@ -338,32 +338,33 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
 
   // ...existing code...
 
-// Função para excluir pagamento salvo (agora no escopo principal)
-const handleExcluirPagamento = async () => {
-  if (!window.confirm('Tem certeza que deseja excluir este pagamento? Esta ação não pode ser desfeita.')) return;
-  try {
-    setProcessando(true);
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
+
+  // Função para excluir pagamento salvo (agora dentro do componente)
+  const handleExcluirPagamento = async () => {
+    if (!window.confirm('Tem certeza que deseja excluir este pagamento? Esta ação não pode ser desfeita.')) return;
+    try {
+      setProcessando(true);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        setPagamentoSalvo(false);
+        setValorAdicional(0);
+        setValorAdicionalInput('');
+        alert('✅ Pagamento excluído com sucesso.');
+      } else {
+        alert('❌ Erro ao excluir pagamento.');
       }
-    });
-    if (res.ok) {
-      setPagamentoSalvo(false);
-      setValorAdicional(0);
-      setValorAdicionalInput('');
-      alert('✅ Pagamento excluído com sucesso.');
-    } else {
+    } catch (e) {
       alert('❌ Erro ao excluir pagamento.');
+    } finally {
+      setProcessando(false);
     }
-  } catch (e) {
-    alert('❌ Erro ao excluir pagamento.');
-  } finally {
-    setProcessando(false);
-  }
-};
+  };
 
       // Atualiza o status para "Aguardando Execução" no banco de dados
       const resultado = await atualizarStatusPedido('Aguardando Execução');
