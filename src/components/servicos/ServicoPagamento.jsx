@@ -43,14 +43,21 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   // Buscar pagamento salvo ao montar
   React.useEffect(() => {
     async function fetchPagamentoSalvo() {
-      if (!form.protocolo) return;
+      if (!form.protocolo) {
+        console.log('[Pagamento] Nenhum protocolo informado, não buscando pagamento salvo.');
+        return;
+      }
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`, {
+        const url = `${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`;
+        console.log('[Pagamento] Buscando pagamento salvo:', url);
+        const res = await fetch(url, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
+        console.log('[Pagamento] Status da resposta:', res.status);
         if (res.ok) {
           const data = await res.json();
+          console.log('[Pagamento] Dados recebidos do backend:', data);
           if (data && data.valorAdicional !== undefined) {
             setValorAdicional(data.valorAdicional);
             setValorAdicionalInput(
@@ -59,10 +66,14 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                 : parseFloat(data.valorAdicional).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
             );
             setPagamentoSalvo(true);
+          } else {
+            console.log('[Pagamento] Nenhum valorAdicional encontrado nos dados recebidos.');
           }
+        } else {
+          console.log('[Pagamento] Resposta não OK ao buscar pagamento salvo:', res.status, res.statusText);
         }
       } catch (e) {
-        // Falha silenciosa
+        console.error('[Pagamento] Erro ao buscar pagamento salvo:', e);
       }
     }
     fetchPagamentoSalvo();
