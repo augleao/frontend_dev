@@ -58,16 +58,24 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         if (res.ok) {
           const data = await res.json();
           console.log('[Pagamento] Dados recebidos do backend:', data);
-          if (data && data.valorAdicional !== undefined) {
-            setValorAdicional(data.valorAdicional);
+          // Aceita tanto snake_case quanto camelCase por compatibilidade
+          const valorAdicionalBackend = data.valorAdicional !== undefined ? data.valorAdicional : data.valor_adicional;
+          if (valorAdicionalBackend !== undefined) {
+            setValorAdicional(valorAdicionalBackend);
             setValorAdicionalInput(
-              data.valorAdicional === '' || data.valorAdicional === null
+              valorAdicionalBackend === '' || valorAdicionalBackend === null
                 ? ''
-                : parseFloat(data.valorAdicional).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                : parseFloat(valorAdicionalBackend).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
             );
             setPagamentoSalvo(true);
+            // Atualiza statusPedido se vier do backend
+            const statusBackend = data.status !== undefined ? data.status : data.status_pedido;
+            if (statusBackend) {
+              setStatusPedido(statusBackend);
+              if (onChange) onChange({ ...form, status: statusBackend });
+            }
           } else {
-            console.log('[Pagamento] Nenhum valorAdicional encontrado nos dados recebidos.');
+            console.log('[Pagamento] Nenhum valorAdicional/valor_adicional encontrado nos dados recebidos.');
           }
         } else {
           console.log('[Pagamento] Resposta não OK ao buscar pagamento salvo:', res.status, res.statusText);
