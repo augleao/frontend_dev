@@ -416,7 +416,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           alignItems: 'center',
           gap: 6,
           flexWrap: 'wrap' }}>
-        <label style={{ fontWeight: 'bold', color: '#742a2a', marginRight: 12 }} htmlFor="valorAdicionalInput">
+        <label style={{ color: '#742a2a', fontWeight: 600, fontSize: 13, minWidth: 100, margin: 0 }} htmlFor="valorAdicionalInput">
           Valor Adicional:
         </label>
         <input
@@ -425,15 +425,13 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           value={valorAdicional}
           onChange={e => setValorAdicional(e.target.value)}
           style={{
-            width: 120,
-            padding: '8px 12px',
-            borderRadius: 6,
-            border: '2px solid #e53e3e',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            color: '#e53e3e',
-            fontFamily: 'monospace',
-            marginLeft: 8
+            width: 160,
+              border: '1.5px solid #d6d6f5',
+              borderRadius: 6,
+              padding: '4px 2px',
+              fontSize: 13,
+              height: 32,
+              boxSizing: 'border-box',
           }}
         />
       </div>
