@@ -380,23 +380,44 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
 
   // Função para excluir pagamento
   const handleCancelarPagamento = async () => {
-    if (window.confirm('Tem certeza que deseja cancelar este pagamento? O status voltará para "Conferido".')) {
+    if (window.confirm('Tem certeza que deseja cancelar este pagamento? O status voltará para "Aguardando Conferência".')) {
       try {
         setProcessando(true);
-        
         console.log('[DEBUG] Iniciando cancelamento de pagamento...');
-        
-        // Atualiza o status para "Conferido" no banco de dados
-        const resultado = await atualizarStatusPedido('Conferido');
-        
+
+        // Tenta excluir o pagamento salvo no backend
+        try {
+          const token = localStorage.getItem('token');
+          const url = `${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`;
+          console.log('[Pagamento] Enviando DELETE para:', url);
+          const res = await fetch(url, {
+            method: 'DELETE',
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          });
+          console.log('[Pagamento] Status da resposta DELETE:', res.status);
+          if (res.ok) {
+            console.log('[Pagamento] Pagamento excluído do backend com sucesso.');
+            setPagamentoSalvo(false);
+            setValorAdicional(0);
+            setValorAdicionalInput('');
+          } else {
+            const text = await res.text();
+            console.warn('[Pagamento] Falha ao excluir pagamento do backend:', res.status, text);
+          }
+        } catch (e) {
+          console.error('[Pagamento] Erro ao tentar excluir pagamento do backend:', e);
+        }
+
+        // Atualiza o status para "Aguardando Conferência" no banco de dados
+        const resultado = await atualizarStatusPedido('Aguardando Pagamento');
+
         if (resultado && resultado.local) {
           alert('✅ Pagamento cancelado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
         } else {
-          alert('✅ Pagamento cancelado com sucesso! Status atualizado para "Conferido".');
+          alert('✅ Pagamento cancelado com sucesso! Status atualizado para "Aguardando Conferência".');
         }
       } catch (error) {
         console.error('Erro ao cancelar pagamento:', error);
-        
         // Só mostra erro se realmente falhou (não foi fallback)
         if (!error.message.includes('local')) {
           alert('❌ Erro ao cancelar pagamento. Verifique sua conexão e tente novamente.');
