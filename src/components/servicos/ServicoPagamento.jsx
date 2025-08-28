@@ -567,7 +567,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             }}
             style={{
               width: 120,
-              padding: '2px 4px',
+              padding: '1px 1px',
               borderRadius: 6,
               border: '1px solid #e0b9b9ff',
               fontSize: '16px',
