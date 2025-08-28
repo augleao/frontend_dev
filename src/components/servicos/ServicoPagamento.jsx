@@ -575,8 +575,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               color: '#e53e3e',
               fontFamily: 'monospace',
               marginLeft: 0,
-              textAlign: 'left',
-              '::placeholder': { fontSize: '6px' }
+              textAlign: 'left'
             }}
           />
       </div>
