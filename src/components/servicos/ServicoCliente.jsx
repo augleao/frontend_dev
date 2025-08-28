@@ -140,7 +140,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
         boxShadow: '0 2px 12px rgba(155,89,182,0.10)',
         background: '#f5e6fa',
         overflow: 'hidden',
-        marginBottom: 16,
+  marginBottom: 0,
         boxSizing: 'border-box'
       }}
     >
