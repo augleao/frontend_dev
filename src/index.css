@@ -3,6 +3,8 @@
   font-size: 12px;
   white-space: pre-line;
   line-height: 1.2;
+  margin: 0;
+  padding: 0;
 }
 body {
   margin: 0;
