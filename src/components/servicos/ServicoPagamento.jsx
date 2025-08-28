@@ -542,6 +542,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             id="valorAdicionalInput"
             type="text"
             inputMode="decimal"
+            placeholder="Ex. valor cobrado pela CRC, Correios, etc. ..."
             value={valorAdicionalInput}
             onChange={e => {
               setValorAdicionalInput(e.target.value);
@@ -568,7 +569,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               width: 120,
               padding: '8px 12px',
               borderRadius: 6,
-              border: '2px solid #e53e3e',
+              border: '2px solid #e0b9b9ff',
               fontSize: '16px',
               fontWeight: 'bold',
               color: '#e53e3e',
