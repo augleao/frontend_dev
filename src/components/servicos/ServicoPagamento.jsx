@@ -528,13 +528,13 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         </span>
       </div>
       {/* Campo Valor Adicional */}
-      <div style={{ 
-          padding: '8px 12px',
-          margin: '0 0 8px 0',
-          display: 'flex',
-          alignItems: 'left',
-          gap: 6,
-          flexWrap: 'wrap' }}>
+    <div style={{ 
+      padding: '0',
+      margin: '0 0 8px 0',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 6,
+      flexWrap: 'wrap' }}>
           <label style={{ fontWeight: 'bold', color: '#742a2a', marginRight: 12 }} htmlFor="valorAdicionalInput">
             Valor Adicional:
           </label>
