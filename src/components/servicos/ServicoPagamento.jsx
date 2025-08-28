@@ -623,7 +623,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             <thead>
               <tr style={{ background: '#fdf2f8' }}>
                 <th style={{
-                  padding: '2px 12px 8px 12px', // padding superior reduzido para aproximar placeholder do topo
+                  padding: '4px 12px 10px 12px', // padding mais equilibrado para placeholder de duas linhas
                   textAlign: 'left',
                   color: '#742a2a',
                   fontWeight: '600',
