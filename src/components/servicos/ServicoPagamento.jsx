@@ -567,7 +567,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             }}
             style={{
               width: 120,
-              padding: '8px 12px',
+              padding: '3px 6px', // padding reduzido para aproximar placeholder das bordas
               borderRadius: 6,
               border: '1px solid #e0b9b9ff',
               fontSize: '16px',
