@@ -484,7 +484,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         borderBottom: '2px solid #e53e3e',
         paddingBottom: 8
       }}>💳 Informações de Pagamento</h3>
-      {/* Valor a ser pago */}
+      {/* Valor a ser pago (incluindo ISS, igual ServicoEntrada) */}
       <div style={{
         marginBottom: 20,
         textAlign: 'left'
@@ -503,7 +503,28 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           color: '#e53e3e',
           fontFamily: 'monospace'
         }}>
-          R$ {parseFloat(valorTotal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {(() => {
+            // Replica a lógica do calcularTotalAtosPagos do ServicoEntrada
+            const atos = (form.atosPedido || form.atos || []);
+            // Se não vier, tenta pegar de combos
+            const combos = Array.isArray(form.combos) ? form.combos : [];
+            let listaAtos = atos.length > 0 ? atos : combos;
+            // Filtro igual ao ServicoEntrada
+            listaAtos = listaAtos.filter(ato => ato.codigoTributario === '01' || ato.codigo_tributario === '01');
+            let subtotal = 0;
+            listaAtos.forEach(ato => {
+              const valor = parseFloat(ato.valor_final || ato.valorFinal || 0);
+              const issqn = parseFloat(ato.issqn || 0);
+              const quantidade = ato.quantidade || 1;
+              // ISS: se vier campo issqn e for >0, soma
+              let valorFinalAto = valor;
+              if (!isNaN(issqn) && issqn > 0) {
+                valorFinalAto = valor + issqn;
+              }
+              subtotal += valorFinalAto * quantidade;
+            });
+            return `R$ ${subtotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          })()}
         </span>
       </div>
       {/* Campo Valor Adicional */}
