@@ -490,7 +490,7 @@ export default function ServicoManutencao() {
             {/* ServicoCliente - largura total, em cima */}
             <div style={{ 
               width: '100%', 
-              marginBottom: 8, // Reduzido de 20 para 8 para diminuir a separação vertical
+              marginBottom: 0, // Removido para eliminar espaçamento extra
               boxSizing: 'border-box'
             }}>
               <ServicoCliente form={form} clientes={clientes} onChange={handleFormChange} onClienteChange={handleClienteChange} />
