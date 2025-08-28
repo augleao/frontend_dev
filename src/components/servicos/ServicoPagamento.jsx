@@ -498,7 +498,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           Valor dos Atos:
         </span>
         <span style={{
-          fontSize: '18px',
+          fontSize: '16px',
           fontWeight: 'bold',
           color: '#e53e3e',
           fontFamily: 'monospace'
@@ -532,7 +532,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           padding: '8px 12px',
           margin: '0 0 8px 0',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'left',
           gap: 6,
           flexWrap: 'wrap' }}>
           <label style={{ fontWeight: 'bold', color: '#742a2a', marginRight: 12 }} htmlFor="valorAdicionalInput">
@@ -581,7 +581,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       {/* Subtotal deste pedido */}
       <div style={{ marginBottom: 20, textAlign: 'left' }}>
         <span style={{
-          fontSize: '15px',
+          fontSize: '16px',
           fontWeight: 'bold',
           color: '#742a2a',
           marginRight: 12
@@ -589,7 +589,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           Subtotal deste pedido:
         </span>
         <span style={{
-          fontSize: '17px',
+          fontSize: '16px',
           fontWeight: 'bold',
           color: '#e53e3e',
           fontFamily: 'monospace'
