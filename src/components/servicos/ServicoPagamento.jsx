@@ -542,7 +542,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             id="valorAdicionalInput"
             type="text"
             inputMode="decimal"
-            placeholder="Ex. valor cobrado pela CRC, Correios, etc. ..."
             value={valorAdicionalInput}
             onChange={e => {
               setValorAdicionalInput(e.target.value);
