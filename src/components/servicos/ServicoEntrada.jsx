@@ -496,7 +496,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
       <div style={{
         width: '100%',
         maxWidth: '100%',
-        margin: '32px 0',
+  margin: '0',
   padding: '8px 4px 8px 16px', // padding superior/inferior reduzido para 8px
         borderRadius: '16px',
         border: '2px solid #9b59b6',
