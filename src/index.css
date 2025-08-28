@@ -1,6 +1,6 @@
 /* Diminui a fonte do placeholder do input Valor Adicional */
 #valorAdicionalInput::placeholder {
-  font-size: 12px;
+  font-size: 8px;
   white-space: pre-line;
   line-height: 1.2;
   margin: 0;
