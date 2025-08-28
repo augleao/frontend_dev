@@ -490,12 +490,11 @@ export default function ServicoManutencao() {
             {/* ServicoCliente - largura total, em cima */}
             <div style={{ 
               width: '100%', 
-              marginBottom: 20,
+              marginBottom: 8, // Reduzido de 20 para 8 para diminuir a separação vertical
               boxSizing: 'border-box'
             }}>
               <ServicoCliente form={form} clientes={clientes} onChange={handleFormChange} onClienteChange={handleClienteChange} />
             </div>
-            
             {/* ServicoEntrada - largura total, embaixo */}
             <div style={{ 
               width: '100%',
