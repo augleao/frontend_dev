@@ -645,6 +645,7 @@ const subtotalPedido = useMemo(() => {
       </div>
       
 
+
       {/* Tabela de Valores Adiantados */}
       {valorAdiantadoDetalhes && valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
         <div style={{
