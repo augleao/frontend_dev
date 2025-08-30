@@ -223,11 +223,22 @@ const subtotalPedido = useMemo(() => {
             console.log('[Pagamento][EFFECT][DEBUG] Nenhum campo de complementos encontrado no backend.');
           }
           if (complementosBackend.length > 0) {
-            const complementosMarcados = complementosBackend.map(item => ({ ...item, complemento: true }));
+            // Garante que todos os complementos têm valor, forma e complemento: true
+            const complementosMarcados = complementosBackend.map((item, idx) => {
+              const valor = item.valor !== undefined ? item.valor : item.valor_complemento;
+              const forma = item.forma !== undefined ? item.forma : item.forma_pagamento;
+              const complemento = true;
+              const novoItem = { ...item, valor, forma, complemento };
+              if (!valor || !forma) {
+                console.warn(`[Pagamento][EFFECT][DEBUG][WARN] Complemento do backend sem valor/forma esperado:`, item, 'idx:', idx);
+              }
+              return novoItem;
+            });
             setValorAdiantadoDetalhes(prev => {
               const naoComplementos = (prev || []).filter(item => !item.complemento);
-              console.log('[Pagamento][EFFECT][DEBUG] Atualizando valorAdiantadoDetalhes. Não complementos:', naoComplementos, 'Novos complementos:', complementosMarcados);
-              return [...naoComplementos, ...complementosMarcados];
+              const resultado = [...naoComplementos, ...complementosMarcados];
+              console.log('[Pagamento][EFFECT][DEBUG] Atualizando valorAdiantadoDetalhes. Não complementos:', naoComplementos, 'Novos complementos:', complementosMarcados, 'Resultado final:', resultado);
+              return resultado;
             });
           } else {
             console.log('[Pagamento][EFFECT][DEBUG] Nenhum complemento para adicionar ao valorAdiantadoDetalhes.');
