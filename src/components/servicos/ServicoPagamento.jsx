@@ -742,7 +742,8 @@ const excesso = totalAdiantado - subtotalPedido;
                     {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                   </div>
                   <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    {!pagamentoConfirmado && !pagamentoSalvo && (
+                    {/* Salvar Pagamento sempre visível quando não confirmado */}
+                    {!pagamentoConfirmado && (
                       <button
                         type="button"
                         onClick={handleConfirmarPagamento}
@@ -763,6 +764,29 @@ const excesso = totalAdiantado - subtotalPedido;
                         onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
                       >
                         {processando ? '⏳ Processando...' : '✅ Salvar Pagamento'}
+                      </button>
+                    )}
+                    {/* Botão Adicionar Complemento */}
+                    {!pagamentoConfirmado && (
+                      <button
+                        type="button"
+                        onClick={() => setMostrarComplemento(true)}
+                        style={{
+                          padding: '14px 32px',
+                          background: 'linear-gradient(135deg, #f6ad55 0%, #dd6b20 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(237,137,54,0.3)',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
+                      >
+                        ➕ Adicionar Complemento
                       </button>
                     )}
                     {pagamentoSalvo && !pagamentoConfirmado && (
@@ -835,8 +859,49 @@ const excesso = totalAdiantado - subtotalPedido;
                       </button>
                     )}
                   </div>
+                  {/* Formulário de complemento */}
+                  {mostrarComplemento && !pagamentoConfirmado && (
+                    <div style={{ marginTop: 18, padding: 16, background: '#fffbe5', border: '1.5px solid #f6ad55', borderRadius: 8 }}>
+                      <h4 style={{ color: '#b7791f', marginBottom: 10 }}>Adicionar Complemento</h4>
+                      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <select value={formaComplemento} onChange={e => setFormaComplemento(e.target.value)} style={{ padding: '8px', borderRadius: 6, border: '1px solid #f6ad55', fontSize: '15px' }}>
+                          <option value="">Selecione a forma</option>
+                          <option value="Dinheiro">Dinheiro</option>
+                          <option value="Cartão de Débito">Cartão de Débito</option>
+                          <option value="Cartão de Crédito">Cartão de Crédito</option>
+                          <option value="PIX">PIX</option>
+                          <option value="Cheque">Cheque</option>
+                        </select>
+                        <input type="number" min="0" step="0.01" value={valorComplemento} onChange={e => setValorComplemento(e.target.value)} placeholder="Valor" style={{ padding: '8px', borderRadius: 6, border: '1px solid #f6ad55', fontSize: '15px', width: 100 }} />
+                        <button type="button" onClick={adicionarComplemento} style={{ padding: '8px 18px', background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}>Adicionar</button>
+                        <button type="button" onClick={() => setMostrarComplemento(false)} style={{ padding: '8px 18px', background: 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}>Cancelar</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
+  // Estado para controle do complemento
+  const [mostrarComplemento, setMostrarComplemento] = useState(false);
+  const [formaComplemento, setFormaComplemento] = useState("");
+  const [valorComplemento, setValorComplemento] = useState("");
+
+  // Função para adicionar complemento
+  function adicionarComplemento() {
+    if (!formaComplemento || !valorComplemento || isNaN(parseFloat(valorComplemento)) || parseFloat(valorComplemento) <= 0) {
+      alert("Preencha a forma de pagamento e um valor válido.");
+      return;
+    }
+    if (onChange) {
+      const novosDetalhes = [
+        ...valorAdiantadoDetalhes,
+        { forma: formaComplemento, valor: parseFloat(valorComplemento) }
+      ];
+      onChange({ ...form, valorAdiantadoDetalhes: novosDetalhes });
+    }
+    setFormaComplemento("");
+    setValorComplemento("");
+    setMostrarComplemento(false);
+  }
             } else {
               return (
                 <div>
@@ -849,7 +914,7 @@ const excesso = totalAdiantado - subtotalPedido;
                     color: '#8b1a1a',
                     fontWeight: 'bold'
                   }}>
-                    ⚠️ Valor insuficiente! Faltam: R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ⚠️ Valor insuficiente! Falta: R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <button
                     type="button"
