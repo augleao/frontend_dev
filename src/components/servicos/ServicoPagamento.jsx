@@ -880,7 +880,7 @@ const excesso = totalAdiantado - subtotalPedido;
                   )}
                 </div>
               );
-  // Estado para controle do complemento
+  // Estado para controle do complemento (deve ficar no topo do componente)
   const [mostrarComplemento, setMostrarComplemento] = useState(false);
   const [formaComplemento, setFormaComplemento] = useState("");
   const [valorComplemento, setValorComplemento] = useState("");
