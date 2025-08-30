@@ -1,3 +1,10 @@
+
+import React, { useState, useMemo } from 'react';
+import config from '../../config';
+
+// ...existing code...
+
+export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes = [] }) {
   // ...existing code...
   // Tabela de complementos de pagamento (renderização gradual)
   const renderTabelaComplementos = () => {
@@ -64,8 +71,6 @@
       </div>
     );
   };
-import React, { useState, useMemo } from 'react';
-import config from '../../config';
 
 const statusPagamento = [
   { value: 'pendente', label: 'Pendente' },
