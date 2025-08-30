@@ -2,10 +2,14 @@
 import React, { useState, useMemo } from 'react';
 import config from '../../config';
 
-// ...existing code...
+
+const statusPagamento = [
+  { value: 'pendente', label: 'Pendente' },
+  { value: 'parcial', label: 'Parcial' },
+  { value: 'pago', label: 'Pago' }
+];
 
 export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes = [] }) {
-  // ...existing code...
   // Tabela de complementos de pagamento (renderização gradual)
   const renderTabelaComplementos = () => {
     const complementos = valorAdiantadoDetalhes.filter(item => item.complemento && item.valor && item.forma);
@@ -71,16 +75,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       </div>
     );
   };
-
-const statusPagamento = [
-  { value: 'pendente', label: 'Pendente' },
-  { value: 'parcial', label: 'Parcial' },
-  { value: 'pago', label: 'Pago' }
-];
-
-
-
-export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes = [] }) {
   const [serventiaInfo, setServentiaInfo] = useState(null);
   // Estados para modal de complemento de pagamento
   const [showComplementoModal, setShowComplementoModal] = useState(false);
