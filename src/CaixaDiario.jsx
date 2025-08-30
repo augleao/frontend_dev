@@ -241,7 +241,7 @@ function CaixaDiario() {
   const calcularValorComISS = (valorBase) => {
     if (!valorBase || percentualISS === 0) return valorBase;
     const valorComISS = valorBase * (1 + percentualISS / 100);
-    console.log(`Valor base: ${valorBase}, ISS: ${percentualISS}%, Valor final: ${valorComISS}`);
+  // Valor base/ISS log REMOVIDO
     return valorComISS;
   };
 

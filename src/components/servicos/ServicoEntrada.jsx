@@ -221,28 +221,28 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
   // Função para calcular a soma dos valores dos atos pagos (código tributário "01")
   const calcularTotalAtosPagos = () => {
-    console.log('[ISS][DEBUG] atosPedido:', atosPedido);
+  // ...existing code...
     const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
-    console.log('[ISS][DEBUG] atosFiltrados (codigoTributario === "01"):', atosFiltrados);
+  // ...existing code...
     let subtotal = 0;
     atosFiltrados.forEach((ato, idx) => {
       const valor = parseFloat(ato.valor_final || 0);
       const issqn = parseFloat(ato.issqn || 0);
       const quantidade = ato.quantidade || 1;
-      console.log(`[ISS][DEBUG] Ato #${idx+1}: issqn retornado do backend =`, ato.issqn);
+  // ...existing code...
       let valorFinalAto = valor;
       // Se a serventia tem ISS e o ato possui issqn, soma valor_final + issqn
       if ((percentualISS !== null && percentualISS > 0) && !isNaN(issqn) && issqn > 0) {
         valorFinalAto = valor + issqn;
-        console.log(`[ISS][ETAPA] Ato #${idx+1}: valor_final = ${valor}, issqn = ${issqn}, valor_final + issqn = ${valorFinalAto}, quantidade = ${quantidade}, total ato = ${valorFinalAto * quantidade}`);
+  // ...existing code...
       } else {
         // Sem ISS, usa apenas valor_final
         valorFinalAto = valor;
-        console.log(`[ISS][ETAPA] Ato #${idx+1}: valor_final = ${valor}, quantidade = ${quantidade}, total ato = ${valorFinalAto * quantidade}`);
+  // ...existing code...
       }
       subtotal += valorFinalAto * quantidade;
     });
-    console.log(`[ISS][ETAPA] Subtotal final: ${subtotal}`);
+  // ...existing code...
     return subtotal;
   };
 
@@ -474,20 +474,20 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   const calcularValorComISS = (valorBase) => {
     // Prioriza percentualISS fixado pelo useEffect, senão usa da serventiaInfo
     const iss = percentualISS !== null ? percentualISS : (serventiaInfo && serventiaInfo.iss ? Number(serventiaInfo.iss) : 0);
-    console.log('[ISS] calcularValorComISS chamada. valorBase:', valorBase, 'percentualISS:', iss, 'serventiaInfo:', serventiaInfo);
+  // [ISS] calcularValorComISS chamada: REMOVIDO
     if (!valorBase || iss === 0) {
-      console.log('[ISS] Não aplicando ISS. valorBase:', valorBase, 'percentualISS:', iss);
+  // [ISS] Não aplicando ISS: REMOVIDO
       return valorBase;
     }
     const valorComISS = valorBase * (1 + iss / 100);
-    console.log(`[ISS] Valor base: ${valorBase}, ISS: ${iss}%, Valor final: ${valorComISS}`);
+  // [ISS] Valor base: REMOVIDO
     return valorComISS;
   };
 
   // Log sempre que o percentual ISS mudar
   useEffect(() => {
     if (serventiaInfo && typeof serventiaInfo.iss !== 'undefined') {
-      console.log('[ISS] Percentual ISS da serventia:', serventiaInfo.iss);
+  // [ISS] Percentual ISS da serventia: REMOVIDO
     }
   }, [serventiaInfo]);
 
