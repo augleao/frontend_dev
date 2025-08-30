@@ -204,6 +204,24 @@ const subtotalPedido = useMemo(() => {
           } else {
             console.log('[Pagamento] Nenhum valorAdicional/valor_adicional encontrado nos dados recebidos.');
           }
+
+          // Carrega complementos do backend, se existirem
+          let complementosBackend = [];
+          if (Array.isArray(data.complementos)) {
+            complementosBackend = data.complementos;
+          } else if (Array.isArray(data.complementos_pagamento)) {
+            complementosBackend = data.complementos_pagamento;
+          }
+          if (complementosBackend.length > 0) {
+            // Marca todos como complemento: true (caso backend não envie)
+            const complementosMarcados = complementosBackend.map(item => ({ ...item, complemento: true }));
+            // Junta com outros pagamentos já existentes que não são complementos
+            setValorAdiantadoDetalhes(prev => {
+              // Remove complementos antigos para evitar duplicidade
+              const naoComplementos = (prev || []).filter(item => !item.complemento);
+              return [...naoComplementos, ...complementosMarcados];
+            });
+          }
         } else {
           console.log('[Pagamento] Resposta não OK ao buscar pagamento salvo:', res.status, res.statusText);
         }
