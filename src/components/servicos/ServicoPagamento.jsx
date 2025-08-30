@@ -208,9 +208,13 @@ const subtotalPedido = useMemo(() => {
           // Carrega complementos do backend, se existirem
           let complementosBackend = [];
           if (Array.isArray(data.complementos)) {
+            console.log('[Pagamento][DEBUG] Campo "complementos" encontrado:', data.complementos);
             complementosBackend = data.complementos;
           } else if (Array.isArray(data.complementos_pagamento)) {
+            console.log('[Pagamento][DEBUG] Campo "complementos_pagamento" encontrado:', data.complementos_pagamento);
             complementosBackend = data.complementos_pagamento;
+          } else {
+            console.log('[Pagamento][DEBUG] Nenhum campo de complementos encontrado no backend.');
           }
           if (complementosBackend.length > 0) {
             // Marca todos como complemento: true (caso backend não envie)
@@ -219,8 +223,11 @@ const subtotalPedido = useMemo(() => {
             setValorAdiantadoDetalhes(prev => {
               // Remove complementos antigos para evitar duplicidade
               const naoComplementos = (prev || []).filter(item => !item.complemento);
+              console.log('[Pagamento][DEBUG] Atualizando valorAdiantadoDetalhes. Não complementos:', naoComplementos, 'Novos complementos:', complementosMarcados);
               return [...naoComplementos, ...complementosMarcados];
             });
+          } else {
+            console.log('[Pagamento][DEBUG] Nenhum complemento para adicionar ao valorAdiantadoDetalhes.');
           }
         } else {
           console.log('[Pagamento] Resposta não OK ao buscar pagamento salvo:', res.status, res.statusText);
