@@ -874,28 +874,52 @@ const excesso = totalAdiantado - subtotalPedido;
                   }}>
                     ⚠️ Valor insuficiente! Falta: R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
-                  {/* Botão Adicionar Complemento: só exibe se não confirmado */}
+                  {/* Botão Salvar Pagamento sempre visível quando não confirmado */}
                   {!pagamentoConfirmado && (
-                    <button
-                      type="button"
-                      onClick={() => setMostrarComplemento(true)}
-                      style={{
-                        padding: '14px 32px',
-                        background: 'linear-gradient(135deg, #f6ad55 0%, #dd6b20 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 12px rgba(237,137,54,0.3)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
-                      onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
-                    >
-                      ➕ Adicionar Complemento
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleConfirmarPagamento}
+                        disabled={processando}
+                        style={{
+                          padding: '14px 32px',
+                          background: processando ? '#a0aec0' : 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          cursor: processando ? 'not-allowed' : 'pointer',
+                          boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
+                          transition: 'all 0.2s ease',
+                          marginRight: 8
+                        }}
+                        onMouseEnter={e => !processando && (e.target.style.transform = 'translateY(-2px)')}
+                        onMouseLeave={e => !processando && (e.target.style.transform = 'translateY(0px)')}
+                      >
+                        {processando ? '⏳ Processando...' : '✅ Salvar Pagamento'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMostrarComplemento(true)}
+                        style={{
+                          padding: '14px 32px',
+                          background: 'linear-gradient(135deg, #f6ad55 0%, #dd6b20 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(237,137,54,0.3)',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
+                      >
+                        ➕ Adicionar Complemento
+                      </button>
+                    </>
                   )}
                   {/* Formulário de complemento */}
                   {mostrarComplemento && !pagamentoConfirmado && (
