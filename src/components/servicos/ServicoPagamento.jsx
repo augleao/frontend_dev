@@ -788,8 +788,8 @@ const excesso = totalAdiantado - subtotalPedido;
                         {processando ? '⏳ Processando...' : '✅ Salvar Pagamento'}
                       </button>
                     )}
-                    {/* Botão Adicionar Complemento */}
-                    {!pagamentoConfirmado && (
+                    {/* Botão Adicionar Complemento: só exibe se totalAdiantado < subtotalPedido e não confirmado */}
+                    {!pagamentoConfirmado && totalAdiantado < subtotalPedido && (
                       <button
                         type="button"
                         onClick={() => setMostrarComplemento(true)}
