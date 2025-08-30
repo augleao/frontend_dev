@@ -213,14 +213,11 @@ const subtotalPedido = useMemo(() => {
           }
           // Carrega complementos do backend, se existirem
           let complementosBackend = [];
-          if (Array.isArray(data.complementos)) {
-            console.log('[Pagamento][EFFECT][DEBUG] Campo "complementos" encontrado:', data.complementos);
-            complementosBackend = data.complementos;
-          } else if (Array.isArray(data.complementos_pagamento)) {
-            console.log('[Pagamento][EFFECT][DEBUG] Campo "complementos_pagamento" encontrado:', data.complementos_pagamento);
-            complementosBackend = data.complementos_pagamento;
+          if (Array.isArray(data.complemento_pagamento)) {
+            console.log('[Pagamento][EFFECT][DEBUG] Campo "complemento_pagamento" encontrado:', data.complemento_pagamento);
+            complementosBackend = data.complemento_pagamento;
           } else {
-            console.log('[Pagamento][EFFECT][DEBUG] Nenhum campo de complementos encontrado no backend.');
+            console.log('[Pagamento][EFFECT][DEBUG] Nenhum campo complemento_pagamento encontrado no backend.');
           }
           if (complementosBackend.length > 0) {
             // Garante que todos os complementos têm valor, forma e complemento: true
