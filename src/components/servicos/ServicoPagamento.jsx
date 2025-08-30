@@ -11,6 +11,28 @@ const statusPagamento = [
 
 export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes = [] }) {
   const [serventiaInfo, setServentiaInfo] = useState(null);
+  // Estados para complemento de pagamento
+  const [mostrarComplemento, setMostrarComplemento] = useState(false);
+  const [formaComplemento, setFormaComplemento] = useState("");
+  const [valorComplemento, setValorComplemento] = useState("");
+
+  // Função para adicionar complemento de pagamento
+  const adicionarComplemento = () => {
+    if (!formaComplemento || !valorComplemento || isNaN(parseFloat(valorComplemento))) {
+      alert("Preencha a forma e o valor do complemento corretamente.");
+      return;
+    }
+    if (onChange) {
+      const novosDetalhes = [
+        ...valorAdiantadoDetalhes,
+        { forma: formaComplemento, valor: parseFloat(valorComplemento) }
+      ];
+      onChange({ ...form, valorAdiantadoDetalhes: novosDetalhes });
+    }
+    setFormaComplemento("");
+    setValorComplemento("");
+    setMostrarComplemento(false);
+  };
   // Buscar informações completas da serventia ao montar
   React.useEffect(() => {
     async function fetchServentia() {
