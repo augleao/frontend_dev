@@ -646,165 +646,168 @@ const subtotalPedido = useMemo(() => {
       
 
 
+
       {/* Tabela de Valores Adiantados */}
       {valorAdiantadoDetalhes && valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
-        <div style={{
-          marginBottom: 20,
-          padding: 16,
-          background: '#fff5f5',
-          border: '2px solid #feb2b2',
-          borderRadius: 8
-        }}>
-          <h4 style={{
-            margin: '0 0 12px 0',
-            color: '#742a2a',
-            fontSize: '16px',
-            fontWeight: '600'
-          }}>💰 Valores Adiantados pelo Usuário</h4>
-          <table style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            fontSize: '14px'
+        <>
+          <div style={{
+            marginBottom: 20,
+            padding: 16,
+            background: '#fff5f5',
+            border: '2px solid #feb2b2',
+            borderRadius: 8
           }}>
-            <thead>
-              <tr style={{ background: '#fdf2f8' }}>
-                <th style={{
-                  padding: '2px 2px 2px 2px',
-                  textAlign: 'left',
-                  color: '#742a2a',
-                  fontWeight: '600',
-                  border: '1px solid #feb2b2'
-                }}>
-                  Valor
-                </th>
-                <th style={{
-                  padding: '8px 12px',
-                  textAlign: 'left',
-                  color: '#742a2a',
-                  fontWeight: '600',
-                  border: '1px solid #feb2b2'
-                }}>
-                  Forma de Pagamento
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {valorAdiantadoDetalhes
-                .filter(item => item.valor && item.forma)
-                .map((item, idx) => (
-                <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fef5f5' }}>
-                  <td style={{
-                    padding: '8px 12px',
-                    border: '1px solid #feb2b2',
-                    fontFamily: 'monospace',
+            <h4 style={{
+              margin: '0 0 12px 0',
+              color: '#742a2a',
+              fontSize: '16px',
+              fontWeight: '600'
+            }}>💰 Valores Adiantados pelo Usuário</h4>
+            <table style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: '14px'
+            }}>
+              <thead>
+                <tr style={{ background: '#fdf2f8' }}>
+                  <th style={{
+                    padding: '2px 2px 2px 2px',
+                    textAlign: 'left',
+                    color: '#742a2a',
                     fontWeight: '600',
-                    color: '#e53e3e'
+                    border: '1px solid #feb2b2'
                   }}>
-                    R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </td>
-                  <td style={{
+                    Valor
+                  </th>
+                  <th style={{
                     padding: '8px 12px',
-                    border: '1px solid #feb2b2',
-                    color: '#742a2a'
+                    textAlign: 'left',
+                    color: '#742a2a',
+                    fontWeight: '600',
+                    border: '1px solid #feb2b2'
                   }}>
-                    {item.forma}
-                  </td>
+                    Forma de Pagamento
+                  </th>
                 </tr>
-              ))}
-              {/* Linha de Total */}
-              <tr style={{ background: '#f3d5d5', fontWeight: 'bold' }}>
-                <td style={{
-                  padding: '10px 12px',
-                  border: '2px solid #e53e3e',
-                  fontFamily: 'monospace',
-                  fontWeight: 'bold',
-                  color: '#8b1a1a',
-                  fontSize: '16px'
-                }}>
-                  R$ {calcularTotalAdiantado().toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </td>
-                <td style={{
-                  padding: '10px 12px',
-                  border: '2px solid #e53e3e',
-                  fontWeight: 'bold',
-                  color: '#8b1a1a'
-                }}>
-                  TOTAL ADIANTADO
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Tabela de Complementos Adicionados */}
-      {valorAdiantadoDetalhes && valorAdiantadoDetalhes.filter(item => item.forma && item.valor && item.complemento).length > 0 && (
-        <div style={{
-          marginBottom: 20,
-          padding: 16,
-          background: '#fffbe5',
-          border: '2px solid #f6ad55',
-          borderRadius: 8
-        }}>
-          <h4 style={{
-            margin: '0 0 12px 0',
-            color: '#b7791f',
-            fontSize: '16px',
-            fontWeight: '600'
-          }}>➕ Complementos de Pagamento</h4>
-          <table style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            fontSize: '14px'
-          }}>
-            <thead>
-              <tr style={{ background: '#fffbe5' }}>
-                <th style={{
-                  padding: '2px 2px 2px 2px',
-                  textAlign: 'left',
-                  color: '#b7791f',
-                  fontWeight: '600',
-                  border: '1px solid #f6ad55'
-                }}>
-                  Valor
-                </th>
-                <th style={{
-                  padding: '8px 12px',
-                  textAlign: 'left',
-                  color: '#b7791f',
-                  fontWeight: '600',
-                  border: '1px solid #f6ad55'
-                }}>
-                  Forma de Pagamento
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {valorAdiantadoDetalhes
-                .filter(item => item.forma && item.valor && item.complemento)
-                .map((item, idx) => (
-                  <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fffbe5' }}>
+              </thead>
+              <tbody>
+                {valorAdiantadoDetalhes
+                  .filter(item => item.valor && item.forma)
+                  .map((item, idx) => (
+                  <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fef5f5' }}>
                     <td style={{
                       padding: '8px 12px',
-                      border: '1px solid #f6ad55',
+                      border: '1px solid #feb2b2',
                       fontFamily: 'monospace',
                       fontWeight: '600',
-                      color: '#b7791f'
+                      color: '#e53e3e'
                     }}>
                       R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td style={{
                       padding: '8px 12px',
-                      border: '1px solid #f6ad55',
-                      color: '#b7791f'
+                      border: '1px solid #feb2b2',
+                      color: '#742a2a'
                     }}>
                       {item.forma}
                     </td>
                   </tr>
                 ))}
-            </tbody>
-          </table>
-        </div>
+                {/* Linha de Total */}
+                <tr style={{ background: '#f3d5d5', fontWeight: 'bold' }}>
+                  <td style={{
+                    padding: '10px 12px',
+                    border: '2px solid #e53e3e',
+                    fontFamily: 'monospace',
+                    fontWeight: 'bold',
+                    color: '#8b1a1a',
+                    fontSize: '16px'
+                  }}>
+                    R$ {calcularTotalAdiantado().toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                  <td style={{
+                    padding: '10px 12px',
+                    border: '2px solid #e53e3e',
+                    fontWeight: 'bold',
+                    color: '#8b1a1a'
+                  }}>
+                    TOTAL ADIANTADO
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Tabela de Complementos Adicionados */}
+          {valorAdiantadoDetalhes.filter(item => item.forma && item.valor && item.complemento).length > 0 && (
+            <div style={{
+              marginBottom: 20,
+              padding: 16,
+              background: '#fffbe5',
+              border: '2px solid #f6ad55',
+              borderRadius: 8
+            }}>
+              <h4 style={{
+                margin: '0 0 12px 0',
+                color: '#b7791f',
+                fontSize: '16px',
+                fontWeight: '600'
+              }}>➕ Complementos de Pagamento</h4>
+              <table style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                fontSize: '14px'
+              }}>
+                <thead>
+                  <tr style={{ background: '#fffbe5' }}>
+                    <th style={{
+                      padding: '2px 2px 2px 2px',
+                      textAlign: 'left',
+                      color: '#b7791f',
+                      fontWeight: '600',
+                      border: '1px solid #f6ad55'
+                    }}>
+                      Valor
+                    </th>
+                    <th style={{
+                      padding: '8px 12px',
+                      textAlign: 'left',
+                      color: '#b7791f',
+                      fontWeight: '600',
+                      border: '1px solid #f6ad55'
+                    }}>
+                      Forma de Pagamento
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {valorAdiantadoDetalhes
+                    .filter(item => item.forma && item.valor && item.complemento)
+                    .map((item, idx) => (
+                      <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fffbe5' }}>
+                        <td style={{
+                          padding: '8px 12px',
+                          border: '1px solid #f6ad55',
+                          fontFamily: 'monospace',
+                          fontWeight: '600',
+                          color: '#b7791f'
+                        }}>
+                          R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </td>
+                        <td style={{
+                          padding: '8px 12px',
+                          border: '1px solid #f6ad55',
+                          color: '#b7791f'
+                        }}>
+                          {item.forma}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
       
       {/* Botão condicional baseado no valor adiantado */}
