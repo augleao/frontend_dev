@@ -5,10 +5,10 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 
-('Iniciando index.js');
+console.log('Iniciando index.js');
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-('Renderizando App com BrowserRouter');
+console.log('Renderizando App com BrowserRouter');
 root.render(
   <React.StrictMode>
     <BrowserRouter>
@@ -17,5 +17,5 @@ root.render(
   </React.StrictMode>
 );
 
-('Chamando reportWebVitals');
+console.log('Chamando reportWebVitals');
 reportWebVitals();

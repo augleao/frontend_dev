@@ -46,7 +46,7 @@ function AtosPraticados() {
 
   const [nomeUsuario, setNomeUsuario] = useState(() => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    ('🧑 nomeUsuario recebido atosPraticados:', usuario);
+    console.log('🧑 nomeUsuario recebido atosPraticados:', usuario);
     return usuario?.nome || 'Usuário não identificado';
   });
   const [entradaValor, setEntradaValor] = useState('');
@@ -156,7 +156,7 @@ function AtosPraticados() {
         
         if (res.ok) {
           setAtos(atos.filter((_, i) => i !== index));
-          ('Ato removido do backend e da lista local:', atoParaRemover);
+          console.log('Ato removido do backend e da lista local:', atoParaRemover);
         } else {
           const errorData = await res.json();
           console.error('Erro ao remover ato do backend:', errorData);
@@ -169,7 +169,7 @@ function AtosPraticados() {
     } else {
       // Ato só existe localmente, remover apenas da lista
       setAtos(atos.filter((_, i) => i !== index));
-      ('Ato removido apenas da lista local (não tinha ID):', atoParaRemover);
+      console.log('Ato removido apenas da lista local (não tinha ID):', atoParaRemover);
     }
   };
 
@@ -294,7 +294,7 @@ useEffect(() => {
 
     try {
       const token = localStorage.getItem('token');
-      ('Enviando fechamento ao backend:', atoFechamento);
+      console.log('Enviando fechamento ao backend:', atoFechamento);
       const res = await fetch(
         `${apiURL}/atos-praticados`,
         {
@@ -307,7 +307,7 @@ useEffect(() => {
         }
       );
       const resText = await res.text();
-      ('Resposta do backend ao salvar fechamento:', res.status, resText);
+      console.log('Resposta do backend ao salvar fechamento:', res.status, resText);
 
       if (!res.ok) {
         alert('Erro ao salvar fechamento no banco: ' + resText);

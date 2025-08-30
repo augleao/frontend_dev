@@ -2,7 +2,7 @@ import React from 'react';
 import { formasPagamento, formatarValor } from './utils';
 
 export default function AtosTableEscrevente({ atos, onRemover }) {
-  ("Atos recebidos na tabela atos-table:", atos);
+  console.log("Atos recebidos na tabela atos-table:", atos);
 
   // Função para formatar data no padrão brasileiro (DD/MM/AAAA)
   const formatarDataBR = (dataStr) => {

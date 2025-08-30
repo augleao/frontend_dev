@@ -53,7 +53,7 @@ function CaixaDiario() {
 
   const [nomeUsuario, setNomeUsuario] = useState(() => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    ('🧑 nomeUsuario recebido CaixaDiario:', usuario);
+    console.log('🧑 nomeUsuario recebido CaixaDiario:', usuario);
     return usuario?.nome || 'Usuário não identificado';
   });
   const [entradaValor, setEntradaValor] = useState('');
@@ -92,7 +92,7 @@ function CaixaDiario() {
       pagamentos: {}, // vazio conforme solicitado
       usuario: nomeUsuario,
       };
-    ('entrada enviada para o backend:', novaEntrada);
+    console.log('entrada enviada para o backend:', novaEntrada);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
@@ -112,7 +112,7 @@ function CaixaDiario() {
         setEntradaObs('');
         // Em vez de setAtos([...]), recarregue do backend:
         await carregarDadosDaData();
-        ('Entrada manual salva com sucesso:', novaEntrada);
+        console.log('Entrada manual salva com sucesso:', novaEntrada);
       } else {
         const errorData = await res.json();
         console.error('Erro ao salvar entrada:', errorData);
@@ -164,7 +164,7 @@ function CaixaDiario() {
         setAtos((prev) => [...prev, novaSaida]);
         setSaidaValor('');
         setSaidaObs('');
-        ('Saída manual salva com sucesso:', novaSaida);
+        console.log('Saída manual salva com sucesso:', novaSaida);
       } else {
         const errorData = await res.json();
         console.error('Erro ao salvar saída:', errorData);
@@ -227,12 +227,12 @@ function CaixaDiario() {
 
     const valorFinal = valorInicial + totalDinheiro + totalEntradas - totalSaidas;
 
-    ("Cálculo do Valor Final do Caixa:");
-    ("- Valor Inicial (tabela):", valorInicial);
-    ("- Total Dinheiro (atos):", totalDinheiro);
-    ("- Total Entradas (0003):", totalEntradas);
-    ("- Total Saídas (0002):", totalSaidas);
-    ("- Valor Final Calculado:", valorFinal);
+    console.log("Cálculo do Valor Final do Caixa:");
+    console.log("- Valor Inicial (tabela):", valorInicial);
+    console.log("- Total Dinheiro (atos):", totalDinheiro);
+    console.log("- Total Entradas (0003):", totalEntradas);
+    console.log("- Total Saídas (0002):", totalSaidas);
+    console.log("- Valor Final Calculado:", valorFinal);
 
     return isNaN(valorFinal) ? 0 : valorFinal;
   };
@@ -353,10 +353,10 @@ function CaixaDiario() {
       usuario: nomeUsuario,
     };
 
-    ('Ato a ser salvo:', novoAto);
-    ('Valor original:', selectedAto.valor_final);
-    ('Valor com ISS:', valorUnitarioComISS);
-    ('Percentual ISS aplicado:', percentualISS);
+    console.log('Ato a ser salvo:', novoAto);
+    console.log('Valor original:', selectedAto.valor_final);
+    console.log('Valor com ISS:', valorUnitarioComISS);
+    console.log('Percentual ISS aplicado:', percentualISS);
 
     try {
       const token = localStorage.getItem('token');
@@ -410,7 +410,7 @@ function CaixaDiario() {
         
         if (res.ok) {
           setAtos(atos.filter((_, i) => i !== index));
-          ('Ato removido do backend e da lista local:', atoParaRemover);
+          console.log('Ato removido do backend e da lista local:', atoParaRemover);
         } else {
           const errorData = await res.json();
           console.error('Erro ao remover ato do backend:', errorData);
@@ -423,7 +423,7 @@ function CaixaDiario() {
     } else {
       // Ato só existe localmente, remover apenas da lista
       setAtos(atos.filter((_, i) => i !== index));
-      ('Ato removido apenas da lista local (não tinha ID):', atoParaRemover);
+      console.log('Ato removido apenas da lista local (não tinha ID):', atoParaRemover);
     }
   };
 
@@ -441,7 +441,7 @@ function CaixaDiario() {
       );
       if (resAtos.ok) {
         const dataAtos = await resAtos.json();
-        ('[CaixaDiario] Atos recebidos do backend:', dataAtos.CaixaDiario);
+        console.log('[CaixaDiario] Atos recebidos do backend:', dataAtos.CaixaDiario);
         setAtos(dataAtos.CaixaDiario || []);
       }
     } catch (e) {
@@ -455,12 +455,12 @@ function CaixaDiario() {
       setLoadingConfig(true);
       try {
         if (!usuario?.serventia) throw new Error('Usuário sem serventia');
-        ('[CaixaDiario] Serventia do usuário:', usuario.serventia);
+        console.log('[CaixaDiario] Serventia do usuário:', usuario.serventia);
         const res = await fetch(`${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(usuario.serventia)}`);
         if (!res.ok) throw new Error('Erro ao buscar configuração da serventia');
         const data = await res.json();
         setCaixaUnificado(!!data.caixa_unificado);
-        ('[CaixaDiario] Valor de caixaUnificado:', !!data.caixa_unificado);
+        console.log('[CaixaDiario] Valor de caixaUnificado:', !!data.caixa_unificado);
       } catch (e) {
         setCaixaUnificado(false);
         console.error('Erro ao buscar config de caixa unificado:', e);
@@ -475,11 +475,11 @@ function CaixaDiario() {
   useEffect(() => {
     if (caixaUnificado) {
       setAtosFiltrados(atos);
-      ('[CaixaDiario] caixaUnificado=true, exibindo todos os atos:', atos);
+      console.log('[CaixaDiario] caixaUnificado=true, exibindo todos os atos:', atos);
     } else {
       const filtrados = atos.filter(a => a.usuario === usuario?.nome);
       setAtosFiltrados(filtrados);
-      ('[CaixaDiario] caixaUnificado=false, exibindo só do usuário', usuario?.nome, filtrados);
+      console.log('[CaixaDiario] caixaUnificado=false, exibindo só do usuário', usuario?.nome, filtrados);
     }
   }, [caixaUnificado, atos, usuario?.nome]);
 
@@ -578,7 +578,7 @@ useEffect(() => {
 
     try {
       const token = localStorage.getItem('token');
-      ('Enviando fechamento ao backend:', atoFechamento);
+      console.log('Enviando fechamento ao backend:', atoFechamento);
       const res = await fetch(
         `${apiURL}/atos-pagos`,
         {
@@ -591,7 +591,7 @@ useEffect(() => {
         }
       );
       const resText = await res.text();
-      ('Resposta do backend ao salvar fechamento:', res.status, resText);
+      console.log('Resposta do backend ao salvar fechamento:', res.status, resText);
 
       if (!res.ok) {
         alert('Erro ao salvar fechamento no banco: ' + resText);
@@ -651,7 +651,7 @@ useEffect(() => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        ('Remoção do valor inicial antigo:', resDel.status, await resDel.text());
+        console.log('Remoção do valor inicial antigo:', resDel.status, await resDel.text());
       } catch (e) {
         console.error('Erro ao remover valor inicial antigo:', e);
       }
@@ -671,7 +671,7 @@ useEffect(() => {
 
     try {
       const token = localStorage.getItem('token');
-      ('Enviando valor inicial ao backend:', novoAto);
+      console.log('Enviando valor inicial ao backend:', novoAto);
       const res = await fetch(
         `${apiURL}/atos-pagos`,
         {
@@ -684,7 +684,7 @@ useEffect(() => {
         }
       );
       const resText = await res.text();
-      ('Resposta do backend ao salvar valor inicial:', res.status, resText);
+      console.log('Resposta do backend ao salvar valor inicial:', res.status, resText);
       if (res.ok) {
         await carregarDadosDaData();
       } else {

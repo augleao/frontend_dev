@@ -2,8 +2,8 @@
 
 // Detecta o layout do PDF
 export function detectarLayoutPDF(texto) {
-  ("Detectando layout do PDF...");
-  ("Primeiros 500 caracteres:", texto.substring(0, 500));
+  console.log("Detectando layout do PDF...");
+  console.log("Primeiros 500 caracteres:", texto.substring(0, 500));
   
   // Layout 3: Formato tabular específico do RELATORIO2.pdf
   // Detecta pela presença de indicadores específicos do formato tabular
@@ -12,29 +12,29 @@ export function detectarLayoutPDF(texto) {
       texto.includes('EMOLUMENTORECOMPETOTAL') &&
       texto.includes('TFJ') &&
       texto.includes('FUNDO')) {
-    ("Layout 3 detectado (formato tabular) - por padrão de colunas");
+    console.log("Layout 3 detectado (formato tabular) - por padrão de colunas");
     return 'layout3';
   }
   
   // Verificação adicional para Layout 3: padrão de dados específico
   // Formato: QTDE + CÓDIGO + R$ valores múltiplos + descrição + R$ 0,00
   if (/\d+\s+\d{4}R\$\s*[\d.,]+R\$\s*[\d.,]+R\$\s*[\d.,]+R\$\s*[\d.,]+.*?R\$\s*0,00/.test(texto)) {
-    ("Layout 3 detectado (formato tabular) - por padrão de dados");
+    console.log("Layout 3 detectado (formato tabular) - por padrão de dados");
     return 'layout3';
   }
   
   // Layout 2: Formato com dados concatenados (mantido inalterado)
   if (/^\d{5}R\$/.test(texto.replace(/\n/g, ''))) {
-    ("Layout 2 detectado (dados concatenados)");
+    console.log("Layout 2 detectado (dados concatenados)");
     return 'novo';
   }
   if (texto.split('\n').some(l => /^\d{5}R\$/.test(l))) {
-    ("Layout 2 detectado (dados concatenados - método 2)");
+    console.log("Layout 2 detectado (dados concatenados - método 2)");
     return 'novo';
   }
   
   // Layout 1: Formato antigo (mantido inalterado)
-  ("Layout 1 detectado (formato antigo)");
+  console.log("Layout 1 detectado (formato antigo)");
   return 'antigo';
 }
 
@@ -110,8 +110,8 @@ export function extrairDadosAntigo(texto) {
 
 // Extração para layout 3 (formato tabular)
 export function extrairDadosLayout3(texto) {
-  ("Iniciando extração para Layout 3 (formato tabular)");
-  ("Texto completo:", texto);
+  console.log("Iniciando extração para Layout 3 (formato tabular)");
+  console.log("Texto completo:", texto);
   
   const atos = [];
   let dataRelatorio = null;
@@ -120,7 +120,7 @@ export function extrairDadosLayout3(texto) {
   const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
   if (matchData) {
     dataRelatorio = matchData[1];
-    ("Data do relatório encontrada:", dataRelatorio);
+    console.log("Data do relatório encontrada:", dataRelatorio);
   }
   
   // Regex para capturar o padrão específico do Layout 3
@@ -140,7 +140,7 @@ export function extrairDadosLayout3(texto) {
     const descricao = match[7].trim();
     const fundo = parseFloat(match[8].replace(/\./g, '').replace(',', '.'));
     
-    (`✅ Ato extraído (Layout 3) - Qtde: ${quantidade}, Código: ${codigo}, Desc: "${descricao}", Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Total: ${valorTotal}, Fundo: ${fundo}`);
+    console.log(`✅ Ato extraído (Layout 3) - Qtde: ${quantidade}, Código: ${codigo}, Desc: "${descricao}", Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Total: ${valorTotal}, Fundo: ${fundo}`);
     
     atos.push({
       id: id++,
@@ -161,13 +161,13 @@ export function extrairDadosLayout3(texto) {
     });
   }
   
-  (`✅ Total de atos extraídos (Layout 3): ${atos.length}`);
+  console.log(`✅ Total de atos extraídos (Layout 3): ${atos.length}`);
   return { dataRelatorio, atos };
 }
 
 // Extração para layout novo
 export function extrairDadosNovo(texto) {
-  ("Texto recebido para extração:", texto.substring(0, 500) + "...");
+  console.log("Texto recebido para extração:", texto.substring(0, 500) + "...");
   
   const atos = [];
   let dataRelatorio = null;
@@ -176,13 +176,13 @@ export function extrairDadosNovo(texto) {
   const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
   if (matchData) {
     dataRelatorio = matchData[1];
-    ("Data do relatório encontrada:", dataRelatorio);
+    console.log("Data do relatório encontrada:", dataRelatorio);
   }
   
   const linhas = texto.split("\n");
   
   // MÉTODO 1: Tentar extração com dados concatenados (formato antigo)
-  ("Tentando método 1: dados concatenados...");
+  console.log("Tentando método 1: dados concatenados...");
   const regexAto = /(\d+)(\d{4})R\$\s*([\d.,]+)R\$\s*([\d.,]+)R\$\s*([\d.,]+)R\$\s*([\d.,]+)(.+)/g;
   let match;
   let id = 0;
@@ -196,7 +196,7 @@ export function extrairDadosNovo(texto) {
     const valorTotal = parseFloat(match[6].replace(/\./g, "").replace(",", "."));
     const descricao = match[7].trim();
     
-    (`Ato extraído (método 1) - Qtde: ${quantidade}, Código: ${codigo}, Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Total: ${valorTotal}, Desc: ${descricao}`);
+    console.log(`Ato extraído (método 1) - Qtde: ${quantidade}, Código: ${codigo}, Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Total: ${valorTotal}, Desc: ${descricao}`);
     
     atos.push({
       id: id++,
@@ -218,7 +218,7 @@ export function extrairDadosNovo(texto) {
   
   // MÉTODO 2: Se não encontrou atos, tentar extração por seções separadas (formato novo)
   if (atos.length === 0) {
-    ("Método 1 falhou. Tentando método 2: seções separadas...");
+    console.log("Método 1 falhou. Tentando método 2: seções separadas...");
     
     // Extrair descrições dos atos
     const listaDescricoes = [];
@@ -248,7 +248,7 @@ export function extrairDadosNovo(texto) {
               quantidade: qtde,
               descricao: proximaLinha
             });
-            (`Descrição coletada - Qtde: ${qtde}, Desc: ${proximaLinha}`);
+            console.log(`Descrição coletada - Qtde: ${qtde}, Desc: ${proximaLinha}`);
           }
         }
       }
@@ -270,7 +270,7 @@ export function extrairDadosNovo(texto) {
       if (linha === "TOTAL") indiceTotal = i;
     }
     
-    ("Índices encontrados:", { indiceCodigo, indiceEmolumento, indiceRecompe, indiceTfj, indiceTotal });
+    console.log("Índices encontrados:", { indiceCodigo, indiceEmolumento, indiceRecompe, indiceTfj, indiceTotal });
     
     if (indiceCodigo !== -1 && indiceEmolumento !== -1) {
       // Extrair códigos
@@ -338,8 +338,8 @@ export function extrairDadosNovo(texto) {
         }
       }
       
-      ("Dados extraídos (método 2):", { codigos, emolumentos, recompes, tfjs, totais });
-      ("Lista de descrições:", listaDescricoes);
+      console.log("Dados extraídos (método 2):", { codigos, emolumentos, recompes, tfjs, totais });
+      console.log("Lista de descrições:", listaDescricoes);
       
       // Combinar os dados por ordem
       const minLength = Math.min(
@@ -358,7 +358,7 @@ export function extrairDadosNovo(texto) {
         const tfj = tfjs[i] || 0;
         const valorTotal = totais[i] || emolumento + recompe + tfj;
         
-        (`Ato extraído (método 2) - Código: ${codigo}, Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Total: ${valorTotal}`);
+        console.log(`Ato extraído (método 2) - Código: ${codigo}, Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Total: ${valorTotal}`);
         
         atos.push({
           id: id++,
@@ -382,7 +382,7 @@ export function extrairDadosNovo(texto) {
   
   // MÉTODO 3: Se ainda não encontrou atos, tentar extração direta das linhas de dados
   if (atos.length === 0) {
-    ("Método 2 falhou. Tentando método 3: extração direta das linhas de dados...");
+    console.log("Método 2 falhou. Tentando método 3: extração direta das linhas de dados...");
     
     for (let i = 0; i < linhas.length; i++) {
       const linha = linhas[i].trim();
@@ -406,7 +406,7 @@ export function extrairDadosNovo(texto) {
         const tfj = 0;
         const valorTotal = emolumento + recompe + tfj;
         
-        (`Ato extraído (método 3) - Qtde: ${quantidade}, Código: ${codigo}, Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Total: ${valorTotal}, Desc: ${descricao}`);
+        console.log(`Ato extraído (método 3) - Qtde: ${quantidade}, Código: ${codigo}, Emol: ${emolumento}, RECOMPE: ${recompe}, TFJ: ${tfj}, Total: ${valorTotal}, Desc: ${descricao}`);
         
         atos.push({
           id: id++,
@@ -428,14 +428,14 @@ export function extrairDadosNovo(texto) {
     }
   }
   
-  (`Total de atos extraídos: ${atos.length}`);
+  console.log(`Total de atos extraídos: ${atos.length}`);
   return { dataRelatorio, atos };
 }
 
 // Função principal de extração
 export function extrairDadosDoTexto(texto) {
   const tipo = detectarLayoutPDF(texto);
-  ("Tipo de layout detectado:", tipo);
+  console.log("Tipo de layout detectado:", tipo);
   
   if (tipo === 'layout3') return extrairDadosLayout3(texto);
   if (tipo === 'novo') return extrairDadosNovo(texto);
@@ -477,7 +477,7 @@ export function moedaParaNumero(valorStr) {
   }
   
   const resultado = parseFloat(num) || 0;
-  ('moedaParaNumero:', { entrada: valorStr, processado: num, resultado });
+  console.log('moedaParaNumero:', { entrada: valorStr, processado: num, resultado });
   return resultado;
 }
 
