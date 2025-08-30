@@ -11,27 +11,39 @@ const statusPagamento = [
 
 export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes = [] }) {
   const [serventiaInfo, setServentiaInfo] = useState(null);
-  // Estados para complemento de pagamento
-  const [mostrarComplemento, setMostrarComplemento] = useState(false);
-  const [formaComplemento, setFormaComplemento] = useState("");
-  const [valorComplemento, setValorComplemento] = useState("");
+  // Estados para modal de complemento de pagamento
+  const [showComplementoModal, setShowComplementoModal] = useState(false);
+  const [modalValorComplemento, setModalValorComplemento] = useState("");
+  const [modalFormaComplemento, setModalFormaComplemento] = useState("");
 
-  // Função para adicionar complemento de pagamento
-  const adicionarComplemento = () => {
-    if (!formaComplemento || !valorComplemento || isNaN(parseFloat(valorComplemento))) {
+  // Função para abrir modal
+  const abrirComplementoModal = () => {
+    setShowComplementoModal(true);
+    setModalValorComplemento("");
+    setModalFormaComplemento("");
+  };
+
+  // Função para fechar modal
+  const fecharComplementoModal = () => {
+    setShowComplementoModal(false);
+    setModalValorComplemento("");
+    setModalFormaComplemento("");
+  };
+
+  // Função para adicionar complemento de pagamento via modal
+  const handleAdicionarComplementoModal = () => {
+    if (!modalFormaComplemento || !modalValorComplemento || isNaN(parseFloat(modalValorComplemento))) {
       alert("Preencha a forma e o valor do complemento corretamente.");
       return;
     }
     if (onChange) {
       const novosDetalhes = [
         ...valorAdiantadoDetalhes,
-        { forma: formaComplemento, valor: parseFloat(valorComplemento) }
+        { forma: modalFormaComplemento, valor: parseFloat(modalValorComplemento), complemento: true }
       ];
       onChange({ ...form, valorAdiantadoDetalhes: novosDetalhes });
     }
-    setFormaComplemento("");
-    setValorComplemento("");
-    setMostrarComplemento(false);
+    fecharComplementoModal();
   };
   // Buscar informações completas da serventia ao montar
   React.useEffect(() => {
@@ -975,7 +987,7 @@ const excesso = totalAdiantado - subtotalPedido;
                       </button>
                       <button
                         type="button"
-                        onClick={() => setMostrarComplemento(true)}
+                        onClick={abrirComplementoModal}
                         style={{
                           padding: '14px 32px',
                           background: 'linear-gradient(135deg, #f6ad55 0%, #dd6b20 100%)',
@@ -995,22 +1007,60 @@ const excesso = totalAdiantado - subtotalPedido;
                       </button>
                     </>
                   )}
-                  {/* Formulário de complemento */}
-                  {mostrarComplemento && !pagamentoConfirmado && (
-                    <div style={{ marginTop: 18, padding: 16, background: '#fffbe5', border: '1.5px solid #f6ad55', borderRadius: 8 }}>
-                      <h4 style={{ color: '#b7791f', marginBottom: 10 }}>Adicionar Complemento</h4>
-                      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                        <select value={formaComplemento} onChange={e => setFormaComplemento(e.target.value)} style={{ padding: '8px', borderRadius: 6, border: '1px solid #f6ad55', fontSize: '15px' }}>
-                          <option value="">Selecione a forma</option>
-                          <option value="Dinheiro">Dinheiro</option>
-                          <option value="Cartão de Débito">Cartão de Débito</option>
-                          <option value="Cartão de Crédito">Cartão de Crédito</option>
-                          <option value="PIX">PIX</option>
-                          <option value="Cheque">Cheque</option>
-                        </select>
-                        <input type="number" min="0" step="0.01" value={valorComplemento} onChange={e => setValorComplemento(e.target.value)} placeholder="Valor" style={{ padding: '8px', borderRadius: 6, border: '1px solid #f6ad55', fontSize: '15px', width: 100 }} />
-                        <button type="button" onClick={adicionarComplemento} style={{ padding: '8px 18px', background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}>Adicionar</button>
-                        <button type="button" onClick={() => setMostrarComplemento(false)} style={{ padding: '8px 18px', background: 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}>Cancelar</button>
+                  {/* Modal de complemento de pagamento */}
+                  {showComplementoModal && !pagamentoConfirmado && (
+                    <div style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      width: '100vw',
+                      height: '100vh',
+                      background: 'rgba(0,0,0,0.25)',
+                      zIndex: 9999,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <div style={{
+                        background: '#fffbe5',
+                        border: '2px solid #f6ad55',
+                        borderRadius: 12,
+                        padding: 32,
+                        minWidth: 320,
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.18)'
+                      }}>
+                        <h3 style={{ color: '#b7791f', marginBottom: 18, textAlign: 'center' }}>Adicionar Complemento</h3>
+                        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 18, justifyContent: 'center' }}>
+                          <select value={modalFormaComplemento} onChange={e => setModalFormaComplemento(e.target.value)} style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', minWidth: 140 }}>
+                            <option value="">Selecione a forma</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Cartão de Débito">Cartão de Débito</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="PIX">PIX</option>
+                            <option value="Cheque">Cheque</option>
+                          </select>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={modalValorComplemento}
+                            onChange={e => setModalValorComplemento(e.target.value)}
+                            placeholder="Valor"
+                            style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', width: 120 }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={handleAdicionarComplementoModal}
+                            style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
+                          >Adicionar</button>
+                          <button
+                            type="button"
+                            onClick={fecharComplementoModal}
+                            style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
+                          >Cancelar</button>
+                        </div>
                       </div>
                     </div>
                   )}
