@@ -618,30 +618,7 @@ const subtotalPedido = useMemo(() => {
           color: '#e53e3e',
           fontFamily: 'monospace'
         }}>
-          {useMemo(() => {
-            // Calcula o valor dos atos (mesma lógica do campo acima)
-            const atos = (form.atosPedido || form.atos || []);
-            const combos = Array.isArray(form.combos) ? form.combos : [];
-            let listaAtos = atos.length > 0 ? atos : combos;
-            listaAtos = listaAtos.filter(ato => ato.codigoTributario === '01' || ato.codigo_tributario === '01');
-            let subtotal = 0;
-            listaAtos.forEach(ato => {
-              const valor = parseFloat(ato.valor_final || ato.valorFinal || 0);
-              const issqn = parseFloat(ato.issqn || 0);
-              const quantidade = ato.quantidade || 1;
-              let valorFinalAto = valor;
-              if (!isNaN(issqn) && issqn > 0) {
-                valorFinalAto = valor + issqn;
-              }
-              subtotal += valorFinalAto * quantidade;
-            });
-            let adicional = 0;
-            if (!isNaN(parseFloat(valorAdicional))) {
-              adicional = parseFloat(valorAdicional) || 0;
-            }
-            const total = subtotal + adicional;
-            return `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-          }, [form.atosPedido, form.atos, form.combos, valorAdicional])}
+          {`R$ ${subtotalPedido.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
         </span>
       </div>
       
@@ -745,12 +722,11 @@ const subtotalPedido = useMemo(() => {
         }}>
           {(() => {
             const totalAdiantado = calcularTotalAdiantado();
-            const valorTotalComAdicional = parseFloat(valorTotal || 0) + parseFloat(valorAdicional || 0);
-            const valorRestante = valorTotalComAdicional - totalAdiantado;
-            const excesso = totalAdiantado - valorTotalComAdicional;
+            const valorRestante = subtotalPedido - totalAdiantado;
+const excesso = totalAdiantado - subtotalPedido;
             const pagamentoConfirmado = statusPedido === 'Pago';
-            
-            if (totalAdiantado >= valorTotalComAdicional) {
+
+            if (totalAdiantado >= subtotalPedido) {
               return (
                 <div>
                   <div style={{
