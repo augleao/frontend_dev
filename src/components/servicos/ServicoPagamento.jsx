@@ -455,8 +455,10 @@ const subtotalPedido = useMemo(() => {
       const data = dataHora.toLocaleDateString('pt-BR');
       const hora = dataHora.toLocaleTimeString('pt-BR');
 
+      // Filtra apenas complementos
+      const complementos = (valorAdiantadoDetalhes || []).filter(item => item.complemento && item.valor && item.forma);
 
-      // Salvar informações do pagamento na nova tabela pedido_pagamento
+      // Salvar informações do pagamento na nova tabela pedido_pagamento, incluindo complementos
       try {
         const token = localStorage.getItem('token');
         await fetch(`${config.apiURL}/pedido_pagamento`, {
@@ -472,7 +474,8 @@ const subtotalPedido = useMemo(() => {
             totalAdiantado: totalAdiantado,
             usuario: usuario,
             data: data,
-            hora: hora
+            hora: hora,
+            complementos: complementos // envia array de complementos
           })
         });
         setPagamentoSalvo(true);
@@ -482,13 +485,10 @@ const subtotalPedido = useMemo(() => {
         // Não retorna aqui, pois ainda pode tentar atualizar status
       }
 
-
-
-
       // Atualiza o status para "Aguardando Execução" no banco de dados
       const resultado = await atualizarStatusPedido('Aguardando Execução');
 
-  // Se há excesso, não gera mais recibo automaticamente. O usuário pode clicar no botão para gerar o recibo.
+      // Se há excesso, não gera mais recibo automaticamente. O usuário pode clicar no botão para gerar o recibo.
 
       if (resultado && resultado.local) {
         alert('✅ Pagamento confirmado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
