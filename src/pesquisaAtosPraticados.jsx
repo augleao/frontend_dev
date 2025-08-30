@@ -41,7 +41,7 @@ export default function PesquisaAtosPraticados() {
         });
         if (res.ok) {
           const data = await res.json();
-          console.log('🛑 Dados brutos dos usuários:', data.usuarios);
+          ('🛑 Dados brutos dos usuários:', data.usuarios);
           setUsuarios(data.usuarios || []);
         } else {
           setUsuarios([]);
@@ -55,9 +55,9 @@ export default function PesquisaAtosPraticados() {
 
   // Atualiza o filtro para o próprio usuário caso não seja Registrador/Substituto
   useEffect(() => {
-    console.log('👤 usuarioLogado:', usuarioLogado);
-    console.log('👥 usuarios:', usuarios);
-    console.log('✍️ nomeEscrevente:', nomeEscrevente);
+    ('👤 usuarioLogado:', usuarioLogado);
+    ('👥 usuarios:', usuarios);
+    ('✍️ nomeEscrevente:', nomeEscrevente);
 
     if (
       usuarioLogado &&
@@ -66,7 +66,7 @@ export default function PesquisaAtosPraticados() {
       usuarioLogado.cargo !== 'Substituto'
     ) {
       setNomeEscrevente(usuarioLogado.nome || usuarioLogado.email);
-      console.log('🔒 Escrevente comum: setNomeEscrevente para', usuarioLogado.nome || usuarioLogado.email);
+      ('🔒 Escrevente comum: setNomeEscrevente para', usuarioLogado.nome || usuarioLogado.email);
     }
     // Se for Substituto, só limpa se o escrevente não for da mesma serventia
     if (
@@ -79,10 +79,10 @@ export default function PesquisaAtosPraticados() {
           (u.nome || u.email) === nomeEscrevente &&
           u.serventia === usuarioLogado.serventia
       );
-      console.log('🔎 escreventeValido:', escreventeValido);
+      ('🔎 escreventeValido:', escreventeValido);
       if (!escreventeValido) {
         setNomeEscrevente('');
-        console.log('🧹 Limpando nomeEscrevente pois não pertence à serventia do Substituto');
+        ('🧹 Limpando nomeEscrevente pois não pertence à serventia do Substituto');
       }
     }
   }, [usuarioLogado, usuarios, nomeEscrevente]);
@@ -109,7 +109,7 @@ export default function PesquisaAtosPraticados() {
       if (codigoAto.trim()) params.append('codigo', codigoAto.trim());
       if (tipoTributacao.trim()) params.append('tributacao', tipoTributacao.trim());
       
-      console.log('🔍 Buscando atos com parâmetros:', params.toString());
+      ('🔍 Buscando atos com parâmetros:', params.toString());
       
       const res = await fetch(
         `${apiURL}/busca-atos/pesquisa?${params.toString()}`,
@@ -119,7 +119,7 @@ export default function PesquisaAtosPraticados() {
       );
       
       const data = await res.json();
-      console.log('📊 Resposta da API:', data);
+      ('📊 Resposta da API:', data);
       
       if (res.ok) {
         let atos = data.atos || [];
@@ -428,7 +428,7 @@ export default function PesquisaAtosPraticados() {
                 value={nomeEscrevente}
                 onChange={e => {
                   setNomeEscrevente(e.target.value);
-                  console.log('✍️ Alterado nomeEscrevente para:', e.target.value);
+                  ('✍️ Alterado nomeEscrevente para:', e.target.value);
                 }}
                 style={{
                   width: '100%',
@@ -455,7 +455,7 @@ export default function PesquisaAtosPraticados() {
                     if (!usuarioLogado) return true;
                     if (usuarioLogado.cargo === 'Substituto') {
                       const result = u.serventia === usuarioLogado.serventia;
-                      console.log(
+                      (
                         `🔍 Substituto vê ${u.nome || u.email} (serventia: ${u.serventia})?`,
                         result
                       );

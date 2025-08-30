@@ -15,26 +15,26 @@ export default function CaixaInfo({
   // Definir ISS conforme serventia do usuário no carregamento
   useEffect(() => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    console.log('Usuário carregado:', usuario);
+    ('Usuário carregado:', usuario);
     if (usuario?.serventia === 'RCPN de Campanha') {
       setISS(3);
       setPropISS(3);
-      console.log('ISS definido como 3 para RCPN de Campanha');
+      ('ISS definido como 3 para RCPN de Campanha');
     } else if (usuario?.serventia === 'RCPN de Lavras') {
       setISS(0);
       setPropISS(0);
-      console.log('ISS definido como 0 para RCPN de Lavras');
+      ('ISS definido como 0 para RCPN de Lavras');
     } else {
       setISS(0);
       setPropISS(0);
-      console.log('ISS padrão definido como 0');
+      ('ISS padrão definido como 0');
     }
   }, [setPropISS]);
 
   // Sincronizar ISS com a prop
   useEffect(() => {
     setPropISS(ISS);
-    console.log('ISS sincronizado com prop:', ISS);
+    ('ISS sincronizado com prop:', ISS);
   }, [ISS, setPropISS]);
 
   // Estilo para campos somente leitura (informação)

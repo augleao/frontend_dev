@@ -64,7 +64,7 @@ export default function RenderBackupManager() {
         setBackupMsg('ID do Postgres não informado.');
         return;
       }
-      console.log('[Backup] Iniciando export para postgresId (via backend):', postgresId);
+      ('[Backup] Iniciando export para postgresId (via backend):', postgresId);
       const res = await fetch(`${config.apiURL}/admin/render/postgres/${postgresId}/export`, {
         method: 'POST',
         headers: {
@@ -72,7 +72,7 @@ export default function RenderBackupManager() {
           'Accept': 'application/json'
         }
       });
-      console.log('[Backup] Status da resposta:', res.status);
+      ('[Backup] Status da resposta:', res.status);
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         console.error('[Backup] Erro ao iniciar backup:', err);

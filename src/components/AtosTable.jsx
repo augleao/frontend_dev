@@ -208,29 +208,29 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
         dataPesquisa = `${ano}-${mes}-${dia}`;
       }
 
-      console.log('[AtosTable] 🔎 Buscando atos pagos para data:', dataPesquisa, 'serventia:', usuario.serventia);
+      ('[AtosTable] 🔎 Buscando atos pagos para data:', dataPesquisa, 'serventia:', usuario.serventia);
 
       const res = await fetch(
         `${config.apiURL}/atos-tabela?data=${dataPesquisa}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) {
-        console.log('[AtosTable] ❌ Falha ao buscar atos-tabela');
+        ('[AtosTable] ❌ Falha ao buscar atos-tabela');
         return;
       }
       const data = await res.json();
-      console.log('[AtosTable] 📥 Dados recebidos da API atos-tabela:', data);
+      ('[AtosTable] 📥 Dados recebidos da API atos-tabela:', data);
 
       // Filtra atos pagos (tributação === '01') e da serventia
       const atosPagos = (data.atos || []).filter(
         ato => ato.tributacao === '01' && ato.usuario_serventia === usuario.serventia
       );
-      console.log('[AtosTable] ✅ Atos pagos filtrados:', atosPagos);
+      ('[AtosTable] ✅ Atos pagos filtrados:', atosPagos);
 
       // Agrupa por código
       const agrupados = {};
       atosPagos.forEach(ato => {
-        console.log('[DEBUG ato agrupamento]', ato); // ADICIONE ESTA LINHA
+        ('[DEBUG ato agrupamento]', ato); // ADICIONE ESTA LINHA
 
         if (!agrupados[ato.codigo]) {
           agrupados[ato.codigo] = {
@@ -256,7 +256,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
         agrupados[ato.codigo].pagamentos.deposito.quantidade += Number(ato.pagamentos?.depositoPrevio?.quantidade) || 0;
         agrupados[ato.codigo].pagamentos.deposito.valor      += Number(ato.pagamentos?.depositoPrevio?.valor) || 0;
       });
-      console.log('[AtosTable] 📊 Atos agrupados por código:', agrupados);
+      ('[AtosTable] 📊 Atos agrupados por código:', agrupados);
 
       // Preenche as linhas da tabela com os valores apurados
       setAtos(prevAtos =>

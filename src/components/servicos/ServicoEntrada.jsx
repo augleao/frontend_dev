@@ -251,7 +251,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     // Se foi selecionado um ato individual
     if (modalAtoSelecionado && !modalComboSelecionado) {
       const ato = modalAtoSelecionadoObj;
-      console.log('[DEBUG] handleAdicionarComboModal', { ato, modalAtoSelecionado, atosSuggestions });
+      ('[DEBUG] handleAdicionarComboModal', { ato, modalAtoSelecionado, atosSuggestions });
       if (!ato) {
         console.warn('[ADICIONAR ATO] Nenhum ato encontrado para o id selecionado:', modalAtoSelecionado);
         return;
@@ -429,8 +429,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                   pagamentos: JSON.stringify(['Dinheiro']),
                   usuario: usuario.nome || usuario.email || 'Sistema'
                 };
-                console.log('[CAIXA][POST] Enviando entrada de dinheiro para atos_pagos (objeto):', caixaBody);
-                console.log('[CAIXA][POST] Enviando para backend (JSON):', JSON.stringify(caixaBody));
+                ('[CAIXA][POST] Enviando entrada de dinheiro para atos_pagos (objeto):', caixaBody);
+                ('[CAIXA][POST] Enviando para backend (JSON):', JSON.stringify(caixaBody));
                 const caixaRes = await fetch(`${config.apiURL}/atos-pagos`, {
                   method: 'POST',
                   headers: {
@@ -440,7 +440,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                   body: JSON.stringify(caixaBody)
                 });
                 const caixaResText = await caixaRes.text();
-                console.log('[CAIXA][POST] Resposta do backend:', caixaRes.status, caixaRes.statusText, caixaResText);
+                ('[CAIXA][POST] Resposta do backend:', caixaRes.status, caixaRes.statusText, caixaResText);
                 if (!caixaRes.ok) {
                   console.error('[CAIXA][POST] Erro ao lançar entrada no caixa:', caixaRes.status, caixaRes.statusText, caixaResText);
                 }

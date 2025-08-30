@@ -25,15 +25,15 @@ export default function ReciboPedido() {
         const res = await fetch(`${config.apiURL}/recibo/${encodeURIComponent(protocolo)}`);
         const data = await res.json();
         // LOG: Mostra exatamente o que foi retornado pela API
-        console.log('ReciboPedido: resposta da API recebida', data);
+        ('ReciboPedido: resposta da API recebida', data);
         if (data && typeof data === 'object') {
           Object.keys(data).forEach(k => {
-            console.log('ReciboPedido: chave', k, 'valor', data[k]);
+            ('ReciboPedido: chave', k, 'valor', data[k]);
           });
         }
         // LOG: Mostra o objeto pedido, se existir
         if (data.pedido) {
-          console.log('ReciboPedido: objeto pedido recebido', data.pedido);
+          ('ReciboPedido: objeto pedido recebido', data.pedido);
           setPedido(data.pedido);
         } else {
           setErro('Pedido não encontrado.');
@@ -51,22 +51,22 @@ export default function ReciboPedido() {
   if (erro) return <div style={{padding: 32, color: 'red'}}>{erro}</div>;
 
   if (!pedido) {
-    console.log('ReciboPedido: pedido está nulo ou indefinido');
+    ('ReciboPedido: pedido está nulo ou indefinido');
     return null;
   }
 
   // Monta URL do recibo para QR code
   const urlRecibo = `${window.location.origin}/recibo/${encodeURIComponent(pedido.protocolo)}`;
   const serventia = pedido.serventia || {};
-  console.log('ReciboPedido: pedido', pedido);
+  ('ReciboPedido: pedido', pedido);
   if (pedido.serventia === undefined) {
     console.warn('ReciboPedido: pedido.serventia está undefined');
   } else if (pedido.serventia === null) {
     console.warn('ReciboPedido: pedido.serventia está null');
   } else {
-    console.log('ReciboPedido: serventia', serventia);
+    ('ReciboPedido: serventia', serventia);
     Object.keys(serventia).forEach(k => {
-      console.log('ReciboPedido: serventia campo', k, 'valor', serventia[k]);
+      ('ReciboPedido: serventia campo', k, 'valor', serventia[k]);
     });
   }
 

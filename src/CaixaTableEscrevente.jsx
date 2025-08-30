@@ -3,7 +3,7 @@ import React from 'react';
 import { formasPagamento, formatarDataBR, formatarValor } from './utils';
 
 export default function CaixaTableEscrevente({ atos, onRemover }) {
-  console.log("Atos recebidos na tabela caixa-table:", atos);
+  ("Atos recebidos na tabela caixa-table:", atos);
 
   // Função para determinar a cor de fundo baseada no código do ato
   const getCorFundo = (codigo) => {

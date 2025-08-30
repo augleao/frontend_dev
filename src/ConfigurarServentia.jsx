@@ -21,11 +21,11 @@ export default function ConfigurarServentia({ onClose }) {
     setLoading(true);
     setError(null);
     const url = `${config.apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(user.serventia)}`;
-    console.log('[ConfigurarServentia] Usuário logado:', user);
-    console.log('[ConfigurarServentia] Buscando config da serventia:', user.serventia, 'URL:', url);
+    ('[ConfigurarServentia] Usuário logado:', user);
+    ('[ConfigurarServentia] Buscando config da serventia:', user.serventia, 'URL:', url);
     fetch(url)
       .then(async res => {
-        console.log('[ConfigurarServentia] Resposta GET status:', res.status);
+        ('[ConfigurarServentia] Resposta GET status:', res.status);
         if (!res.ok) throw new Error('Erro ao carregar configuração');
         const text = await res.text();
         if (!text) return {};
@@ -36,7 +36,7 @@ export default function ConfigurarServentia({ onClose }) {
         }
       })
       .then(data => {
-        console.log('[ConfigurarServentia] Dados recebidos GET:', data);
+        ('[ConfigurarServentia] Dados recebidos GET:', data);
         if (data && typeof data.caixa_unificado !== 'undefined') {
           setCaixaUnificado(!!data.caixa_unificado);
         }
@@ -62,14 +62,14 @@ export default function ConfigurarServentia({ onClose }) {
       caixa_unificado: caixaUnificado,
       serventia: user.serventia
     };
-    console.log('[ConfigurarServentia] Salvando config:', body);
+    ('[ConfigurarServentia] Salvando config:', body);
     fetch(`${config.apiURL}/configuracoes-serventia`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     })
       .then(async res => {
-        console.log('[ConfigurarServentia] Resposta POST status:', res.status);
+        ('[ConfigurarServentia] Resposta POST status:', res.status);
         if (!res.ok) throw new Error('Erro ao salvar configuração');
         const text = await res.text();
         if (!text) return {};
@@ -80,7 +80,7 @@ export default function ConfigurarServentia({ onClose }) {
         }
       })
       .then(data => {
-        console.log('[ConfigurarServentia] Dados recebidos POST:', data);
+        ('[ConfigurarServentia] Dados recebidos POST:', data);
         setSuccess(true);
         setSaving(false);
       })

@@ -170,9 +170,9 @@ const subtotalPedido = useMemo(() => {
   // Buscar pagamento salvo ao montar
   React.useEffect(() => {
     // Loga sempre que o protocolo mudar
-    console.log('[Pagamento][EFFECT] Protocolo atual:', form.protocolo);
+    ('[Pagamento][EFFECT] Protocolo atual:', form.protocolo);
     if (!form.protocolo) {
-      console.log('[Pagamento][EFFECT] Nenhum protocolo informado, não buscando pagamento salvo.');
+      ('[Pagamento][EFFECT] Nenhum protocolo informado, não buscando pagamento salvo.');
       setPagamentoSalvo(false);
       return;
     }
@@ -180,20 +180,20 @@ const subtotalPedido = useMemo(() => {
       try {
         const token = localStorage.getItem('token');
         const url = `${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`;
-        console.log('[Pagamento][EFFECT] Buscando pagamento salvo:', url);
+        ('[Pagamento][EFFECT] Buscando pagamento salvo:', url);
         const res = await fetch(url, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-        console.log('[Pagamento][EFFECT] Status da resposta:', res.status);
+        ('[Pagamento][EFFECT] Status da resposta:', res.status);
         if (res.ok) {
           const data = await res.json();
-          console.log('[Pagamento][EFFECT] Dados recebidos do backend:', data);
+          ('[Pagamento][EFFECT] Dados recebidos do backend:', data);
           if (data && data.id) {
             setPagamentoSalvo(true);
-            console.log('[Pagamento][EFFECT] Pagamento salvo detectado no backend. Exibindo botão Excluir Pagamento.');
+            ('[Pagamento][EFFECT] Pagamento salvo detectado no backend. Exibindo botão Excluir Pagamento.');
           } else {
             setPagamentoSalvo(false);
-            console.log('[Pagamento][EFFECT] Nenhum pagamento salvo detectado no backend. Exibindo botão Salvar Pagamento.');
+            ('[Pagamento][EFFECT] Nenhum pagamento salvo detectado no backend. Exibindo botão Salvar Pagamento.');
           }
           // Aceita tanto snake_case quanto camelCase por compatibilidade
           const valorAdicionalBackend = data.valorAdicional !== undefined ? data.valorAdicional : data.valor_adicional;
@@ -214,10 +214,10 @@ const subtotalPedido = useMemo(() => {
           // Carrega complementos do backend, se existirem
           let complementosBackend = [];
           if (Array.isArray(data.complemento_pagamento)) {
-            console.log('[Pagamento][EFFECT][DEBUG] Campo "complemento_pagamento" encontrado:', data.complemento_pagamento);
+            ('[Pagamento][EFFECT][DEBUG] Campo "complemento_pagamento" encontrado:', data.complemento_pagamento);
             complementosBackend = data.complemento_pagamento;
           } else {
-            console.log('[Pagamento][EFFECT][DEBUG] Nenhum campo complemento_pagamento encontrado no backend.');
+            ('[Pagamento][EFFECT][DEBUG] Nenhum campo complemento_pagamento encontrado no backend.');
           }
           if (complementosBackend.length > 0) {
             // Garante que todos os complementos têm valor, forma e complemento: true
@@ -234,15 +234,15 @@ const subtotalPedido = useMemo(() => {
             setValorAdiantadoDetalhes(prev => {
               const naoComplementos = (prev || []).filter(item => !item.complemento);
               const resultado = [...naoComplementos, ...complementosMarcados];
-              console.log('[Pagamento][EFFECT][DEBUG] Atualizando valorAdiantadoDetalhes. Não complementos:', naoComplementos, 'Novos complementos:', complementosMarcados, 'Resultado final:', resultado);
+              ('[Pagamento][EFFECT][DEBUG] Atualizando valorAdiantadoDetalhes. Não complementos:', naoComplementos, 'Novos complementos:', complementosMarcados, 'Resultado final:', resultado);
               return resultado;
             });
           } else {
-            console.log('[Pagamento][EFFECT][DEBUG] Nenhum complemento para adicionar ao valorAdiantadoDetalhes.');
+            ('[Pagamento][EFFECT][DEBUG] Nenhum complemento para adicionar ao valorAdiantadoDetalhes.');
           }
         } else {
           setPagamentoSalvo(false);
-          console.log('[Pagamento][EFFECT] Resposta não OK ao buscar pagamento salvo:', res.status, res.statusText);
+          ('[Pagamento][EFFECT] Resposta não OK ao buscar pagamento salvo:', res.status, res.statusText);
         }
       } catch (e) {
         setPagamentoSalvo(false);
@@ -277,7 +277,7 @@ const subtotalPedido = useMemo(() => {
       const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
       const usuario = usuarioLogado.nome || usuarioLogado.email || 'Sistema';
       
-      console.log(`[DEBUG] Tentando atualizar status para: ${novoStatus}`);
+      (`[DEBUG] Tentando atualizar status para: ${novoStatus}`);
       
       try {
         // Usa a mesma API do ServicoConferencia
@@ -300,7 +300,7 @@ const subtotalPedido = useMemo(() => {
             onChange({ ...form, status: novoStatus });
           }
           
-          console.log('[DEBUG] Status atualizado com sucesso via POST status');
+          ('[DEBUG] Status atualizado com sucesso via POST status');
           return { status: novoStatus, success: true };
         }
 
@@ -548,20 +548,20 @@ const subtotalPedido = useMemo(() => {
     if (window.confirm('Tem certeza que deseja cancelar este pagamento? O status voltará para "Aguardando Conferência".')) {
       try {
         setProcessando(true);
-        console.log('[DEBUG] Iniciando cancelamento de pagamento...');
+        ('[DEBUG] Iniciando cancelamento de pagamento...');
 
         // Tenta excluir o pagamento salvo no backend
         try {
           const token = localStorage.getItem('token');
           const url = `${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`;
-          console.log('[Pagamento] Enviando DELETE para:', url);
+          ('[Pagamento] Enviando DELETE para:', url);
           const res = await fetch(url, {
             method: 'DELETE',
             headers: token ? { Authorization: `Bearer ${token}` } : {}
           });
-          console.log('[Pagamento] Status da resposta DELETE:', res.status);
+          ('[Pagamento] Status da resposta DELETE:', res.status);
           if (res.ok) {
-            console.log('[Pagamento] Pagamento excluído do backend com sucesso.');
+            ('[Pagamento] Pagamento excluído do backend com sucesso.');
             setPagamentoSalvo(false);
             setValorAdicional(0);
             setValorAdicionalInput('');
@@ -876,11 +876,11 @@ const subtotalPedido = useMemo(() => {
             const pagamentoConfirmado = statusPedido === 'Pago';
 
             // LOGS para depuração do fluxo dos botões
-            console.log('[Pagamento][RENDER] pagamentoSalvo:', pagamentoSalvo, '| statusPedido:', statusPedido, '| pagamentoConfirmado:', pagamentoConfirmado, '| totalAdiantado:', totalAdiantado, '| subtotalPedido:', subtotalPedido);
+            ('[Pagamento][RENDER] pagamentoSalvo:', pagamentoSalvo, '| statusPedido:', statusPedido, '| pagamentoConfirmado:', pagamentoConfirmado, '| totalAdiantado:', totalAdiantado, '| subtotalPedido:', subtotalPedido);
 
             // NOVA LÓGICA: se houver pagamento salvo, sempre mostra o botão de excluir
             if (pagamentoSalvo && !pagamentoConfirmado) {
-              console.log('[Pagamento][RENDER] Exibindo botão Excluir Pagamento (pagamentoSalvo = true)');
+              ('[Pagamento][RENDER] Exibindo botão Excluir Pagamento (pagamentoSalvo = true)');
               return (
                 <div>
                   <div style={{
@@ -946,7 +946,7 @@ const subtotalPedido = useMemo(() => {
 
             // Se pagamento confirmado, mostra botão cancelar
             if (pagamentoConfirmado) {
-              console.log('[Pagamento][RENDER] Exibindo botão Cancelar Pagamento');
+              ('[Pagamento][RENDER] Exibindo botão Cancelar Pagamento');
               return (
                 <div>
                   <div style={{
@@ -1012,7 +1012,7 @@ const subtotalPedido = useMemo(() => {
 
             // Caso padrão: valor insuficiente, mostra salvar e complemento
             if (totalAdiantado >= subtotalPedido) {
-              console.log('[Pagamento][RENDER] Exibindo botão Salvar Pagamento');
+              ('[Pagamento][RENDER] Exibindo botão Salvar Pagamento');
               return (
                 <div>
                   <div style={{
@@ -1075,7 +1075,7 @@ const subtotalPedido = useMemo(() => {
                 </div>
               );
             } else {
-              console.log('[Pagamento][RENDER] Exibindo botão Salvar Pagamento e Adicionar Complemento (valor insuficiente)');
+              ('[Pagamento][RENDER] Exibindo botão Salvar Pagamento e Adicionar Complemento (valor insuficiente)');
               return (
                 <div>
                   <div style={{

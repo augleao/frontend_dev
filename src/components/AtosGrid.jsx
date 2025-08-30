@@ -77,9 +77,9 @@ export default function AtosGrid({ atos, agrupados, handleAtoChange }) {
 
             // Dados agrupados para o código deste ato
             const agrupado = agrupados?.[ato.codigo];
-            console.log('[AtosGrid] Renderizando ato:', ato);
-            console.log('[AtosGrid] agrupados:', agrupados);
-            console.log('[AtosGrid] agrupado para código', ato.codigo, ':', agrupado);
+            ('[AtosGrid] Renderizando ato:', ato);
+            ('[AtosGrid] agrupados:', agrupados);
+            ('[AtosGrid] agrupado para código', ato.codigo, ':', agrupado);
 
             return (
               <React.Fragment key={ato.id}>
@@ -104,7 +104,7 @@ export default function AtosGrid({ atos, agrupados, handleAtoChange }) {
                   </td>
                 </tr>
                 {(() => {
-                  console.log('[AtosGrid] agrupado dentro do render:', agrupado);
+                  ('[AtosGrid] agrupado dentro do render:', agrupado);
                   return agrupado ? (
                     <tr
                       style={{

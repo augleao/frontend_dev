@@ -16,12 +16,12 @@ function MeusFechamentos() {
       setErro('');
       let usuariosDaServentia = [];
       try {
-        console.log('[MeusFechamentos] Usuário logado:', usuario);
+        ('[MeusFechamentos] Usuário logado:', usuario);
         // Buscar usuários da mesma serventia
         try {
           const usuariosMap = await getUsuariosMap();
           usuariosDaServentia = Array.from(usuariosMap.values()).filter(u => u.serventia === usuario.serventia);
-          console.log('[MeusFechamentos] Usuários da mesma serventia encontrados:', usuariosDaServentia);
+          ('[MeusFechamentos] Usuários da mesma serventia encontrados:', usuariosDaServentia);
           setUsuariosServentia(usuariosDaServentia);
         } catch (e) {
           if (e && e.message && e.message.includes('403')) {
@@ -39,7 +39,7 @@ function MeusFechamentos() {
         if (usuariosDaServentia.length > 0) {
           const nomes = usuariosDaServentia.map(u => u.nome).join(',');
           url += `?usuarios=${encodeURIComponent(nomes)}`;
-          console.log('[MeusFechamentos] Enviando lista de usuários na query:', nomes);
+          ('[MeusFechamentos] Enviando lista de usuários na query:', nomes);
         }
         const token = localStorage.getItem('token');
         const res = await fetch(
@@ -47,7 +47,7 @@ function MeusFechamentos() {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
-        console.log('[MeusFechamentos] Fechamentos recebidos:', data.fechamentos);
+        ('[MeusFechamentos] Fechamentos recebidos:', data.fechamentos);
         setFechamentos(data.fechamentos || []);
       } catch (e) {
         setErro(e.message);
@@ -58,8 +58,8 @@ function MeusFechamentos() {
     fetchFechamentosEUsuarios();
   }, [nomeUsuario, usuario?.serventia]);
 
-  console.log('Usuários da mesma serventia:', usuariosServentia);
-  console.log('Fechamentos:', fechamentos);
+  ('Usuários da mesma serventia:', usuariosServentia);
+  ('Fechamentos:', fechamentos);
 
   return (
     <div style={{

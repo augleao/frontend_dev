@@ -68,7 +68,7 @@ export default function ListaServicos() {
         const usuariosData = await usuariosRes.json();
         const usuariosDaServentia = (usuariosData.usuarios || []).filter(u => u.serventia === idServentiaUsuario);
   const nomesUsuariosDaServentia = new Set(usuariosDaServentia.map(u => u.nome));
-  console.log('[DEBUG] Usuários da mesma serventia:', usuariosDaServentia);
+  ('[DEBUG] Usuários da mesma serventia:', usuariosDaServentia);
         // Busca todos os pedidos
         const res = await fetch(`${config.apiURL}/pedidos`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -78,7 +78,7 @@ export default function ListaServicos() {
         const pedidosFiltradosServentia = (data.pedidos || []).filter(p => {
           const nomeUsuarioPedido = p.usuario;
           if (!nomeUsuarioPedido) {
-            console.log('[DEBUG] Pedido sem nomeUsuarioPedido:', p);
+            ('[DEBUG] Pedido sem nomeUsuarioPedido:', p);
             return false;
           }
           return nomesUsuariosDaServentia.has(nomeUsuarioPedido);
@@ -452,22 +452,22 @@ export default function ListaServicos() {
                       }}
                       onClick={async () => {
                         // LOG: Clique no botão PROTOCOLO
-                        console.log('Clique no botão PROTOCOLO para o pedido:', p.protocolo);
+                        ('Clique no botão PROTOCOLO para o pedido:', p.protocolo);
                         try {
                           const token = localStorage.getItem('token');
-                          console.log('Buscando dados do pedido na API:', `${config.apiURL}/recibo/${encodeURIComponent(p.protocolo)}`);
+                          ('Buscando dados do pedido na API:', `${config.apiURL}/recibo/${encodeURIComponent(p.protocolo)}`);
                           const res = await fetch(`${config.apiURL}/recibo/${encodeURIComponent(p.protocolo)}`,
                             token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
                           const data = await res.json();
-                          console.log('Resposta recebida da API para o protocolo', p.protocolo, ':', data);
+                          ('Resposta recebida da API para o protocolo', p.protocolo, ':', data);
                           if (!data.pedido) {
                             alert('Não foi possível obter os dados do pedido para gerar o PDF.');
                             return;
                           }
-                          console.log('Chamando gerarReciboProtocoloPDF com:', data.pedido);
+                          ('Chamando gerarReciboProtocoloPDF com:', data.pedido);
                           const blob = gerarReciboProtocoloPDF(data.pedido);
                           const url = URL.createObjectURL(blob);
-                          console.log('PDF gerado, abrindo nova aba.');
+                          ('PDF gerado, abrindo nova aba.');
                           window.open(url, '_blank');
                         } catch (err) {
                           console.error('Erro ao gerar PDF do recibo:', err);
