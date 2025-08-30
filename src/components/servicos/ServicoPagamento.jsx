@@ -7,6 +7,29 @@ const statusPagamento = [
   { value: 'pago', label: 'Pago' }
 ];
 
+const subtotalPedido = useMemo(() => {
+  const atos = (form.atosPedido || form.atos || []);
+  const combos = Array.isArray(form.combos) ? form.combos : [];
+  let listaAtos = atos.length > 0 ? atos : combos;
+  listaAtos = listaAtos.filter(ato => ato.codigoTributario === '01' || ato.codigo_tributario === '01');
+  let subtotal = 0;
+  listaAtos.forEach(ato => {
+    const valor = parseFloat(ato.valor_final || ato.valorFinal || 0);
+    const issqn = parseFloat(ato.issqn || 0);
+    const quantidade = ato.quantidade || 1;
+    let valorFinalAto = valor;
+    if (!isNaN(issqn) && issqn > 0) {
+      valorFinalAto = valor + issqn;
+    }
+    subtotal += valorFinalAto * quantidade;
+  });
+  let adicional = 0;
+  if (!isNaN(parseFloat(valorAdicional))) {
+    adicional = parseFloat(valorAdicional) || 0;
+  }
+  return subtotal + adicional;
+}, [form.atosPedido, form.atos, form.combos, valorAdicional]);
+
 export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes = [] }) {
   const [serventiaInfo, setServentiaInfo] = useState(null);
   // Buscar informações completas da serventia ao montar
