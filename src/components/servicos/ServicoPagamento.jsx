@@ -556,7 +556,7 @@ const subtotalPedido = useMemo(() => {
       margin: '0 0 8px 0',
       display: 'flex',
       alignItems: 'center',
-      gap: 6,
+      gap: 0,
       flexWrap: 'wrap' }}>
           <label style={{ fontWeight: 'bold', color: '#742a2a', marginRight: 12 }} htmlFor="valorAdicionalInput">
             Valor Adicional:
