@@ -878,8 +878,8 @@ const excesso = totalAdiantado - subtotalPedido;
                     {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                   </div>
                   <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    {/* Salvar Pagamento sempre visível quando não confirmado */}
-                    {!pagamentoConfirmado && (
+                    {/* Exibe apenas um dos botões: Salvar ou Excluir Pagamento */}
+                    {!pagamentoConfirmado && !pagamentoSalvo && (
                       <button
                         type="button"
                         onClick={handleConfirmarPagamento}
@@ -902,7 +902,7 @@ const excesso = totalAdiantado - subtotalPedido;
                         {processando ? '⏳ Processando...' : '✅ Salvar Pagamento'}
                       </button>
                     )}
-                    {pagamentoSalvo && !pagamentoConfirmado && (
+                    {!pagamentoConfirmado && pagamentoSalvo && (
                       <button
                         type="button"
                         onClick={handleCancelarPagamento}
