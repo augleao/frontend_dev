@@ -880,28 +880,6 @@ const excesso = totalAdiantado - subtotalPedido;
                   )}
                 </div>
               );
-  // Estado para controle do complemento (deve ficar no topo do componente)
-  const [mostrarComplemento, setMostrarComplemento] = useState(false);
-  const [formaComplemento, setFormaComplemento] = useState("");
-  const [valorComplemento, setValorComplemento] = useState("");
-
-  // Função para adicionar complemento
-  function adicionarComplemento() {
-    if (!formaComplemento || !valorComplemento || isNaN(parseFloat(valorComplemento)) || parseFloat(valorComplemento) <= 0) {
-      alert("Preencha a forma de pagamento e um valor válido.");
-      return;
-    }
-    if (onChange) {
-      const novosDetalhes = [
-        ...valorAdiantadoDetalhes,
-        { forma: formaComplemento, valor: parseFloat(valorComplemento) }
-      ];
-      onChange({ ...form, valorAdiantadoDetalhes: novosDetalhes });
-    }
-    setFormaComplemento("");
-    setValorComplemento("");
-    setMostrarComplemento(false);
-  }
             } else {
               return (
                 <div>
