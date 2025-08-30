@@ -870,102 +870,177 @@ const subtotalPedido = useMemo(() => {
             // LOGS para depuração do fluxo dos botões
             console.log('[Pagamento][RENDER] pagamentoSalvo:', pagamentoSalvo, '| statusPedido:', statusPedido, '| pagamentoConfirmado:', pagamentoConfirmado, '| totalAdiantado:', totalAdiantado, '| subtotalPedido:', subtotalPedido);
 
-            if (totalAdiantado >= subtotalPedido) {
-              if (!pagamentoConfirmado && !pagamentoSalvo) {
-                console.log('[Pagamento][RENDER] Exibindo botão Salvar Pagamento');
-              }
-              if (!pagamentoConfirmado && pagamentoSalvo) {
-                console.log('[Pagamento][RENDER] Exibindo botão Excluir Pagamento');
-              }
-              if (pagamentoConfirmado) {
-                console.log('[Pagamento][RENDER] Exibindo botão Cancelar Pagamento');
-              }
+            // NOVA LÓGICA: se houver pagamento salvo, sempre mostra o botão de excluir
+            if (pagamentoSalvo && !pagamentoConfirmado) {
+              console.log('[Pagamento][RENDER] Exibindo botão Excluir Pagamento (pagamentoSalvo = true)');
               return (
                 <div>
                   <div style={{
                     marginBottom: 12,
                     padding: 12,
-                    background: pagamentoConfirmado ? '#e8f5e8' : '#e8f5e8',
-                    border: `2px solid ${pagamentoConfirmado ? '#38a169' : '#38a169'}`,
+                    background: '#e8f5e8',
+                    border: '2px solid #38a169',
                     borderRadius: 8,
                     color: '#2d5016',
                     fontWeight: 'bold'
                   }}>
-                    {pagamentoConfirmado ? '✅ Pagamento Confirmado!' : '✅ Valor adiantado suficiente!'} 
+                    {'✅ Pagamento já salvo!'}
                     {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                   </div>
                   <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    {/* Exibe apenas um dos botões: Salvar ou Excluir Pagamento */}
-                    {!pagamentoConfirmado && !pagamentoSalvo && (
+                    <button
+                      type="button"
+                      onClick={handleCancelarPagamento}
+                      disabled={processando}
+                      style={{
+                        padding: '14px 32px',
+                        background: processando ? '#a0aec0' : 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 8,
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        cursor: processando ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 4px 12px rgba(229,62,62,0.3)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
+                      onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
+                    >
+                      {processando ? '⏳ Processando...' : '❌ Excluir Pagamento'}
+                    </button>
+                    {excesso > 0 && (
                       <button
                         type="button"
-                        onClick={handleConfirmarPagamento}
-                        disabled={processando}
+                        onClick={() => gerarReciboExcesso(excesso)}
                         style={{
                           padding: '14px 32px',
-                          background: processando ? '#a0aec0' : 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
+                          background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
                           color: '#fff',
                           border: 'none',
                           borderRadius: 8,
                           fontSize: '16px',
                           fontWeight: '700',
-                          cursor: processando ? 'not-allowed' : 'pointer',
-                          boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(49,130,206,0.3)',
                           transition: 'all 0.2s ease'
                         }}
-                        onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
-                        onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
+                        onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
                       >
-                        {processando ? '⏳ Processando...' : '✅ Salvar Pagamento'}
+                        📄 Gerar Recibo do Troco
                       </button>
                     )}
-                    {!pagamentoConfirmado && pagamentoSalvo && (
+                  </div>
+                </div>
+              );
+            }
+
+            // Se pagamento confirmado, mostra botão cancelar
+            if (pagamentoConfirmado) {
+              console.log('[Pagamento][RENDER] Exibindo botão Cancelar Pagamento');
+              return (
+                <div>
+                  <div style={{
+                    marginBottom: 12,
+                    padding: 12,
+                    background: '#e8f5e8',
+                    border: '2px solid #38a169',
+                    borderRadius: 8,
+                    color: '#2d5016',
+                    fontWeight: 'bold'
+                  }}>
+                    {'✅ Pagamento Confirmado!'}
+                    {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={handleCancelarPagamento}
+                      disabled={processando}
+                      style={{
+                        padding: '14px 32px',
+                        background: processando ? '#a0aec0' : 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 8,
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        cursor: processando ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 4px 12px rgba(229,62,62,0.3)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
+                      onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
+                    >
+                      {processando ? '⏳ Processando...' : '❌ Cancelar Pagamento'}
+                    </button>
+                    {excesso > 0 && (
                       <button
                         type="button"
-                        onClick={handleCancelarPagamento}
-                        disabled={processando}
+                        onClick={() => gerarReciboExcesso(excesso)}
                         style={{
                           padding: '14px 32px',
-                          background: processando ? '#a0aec0' : 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)',
+                          background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
                           color: '#fff',
                           border: 'none',
                           borderRadius: 8,
                           fontSize: '16px',
                           fontWeight: '700',
-                          cursor: processando ? 'not-allowed' : 'pointer',
-                          boxShadow: '0 4px 12px rgba(229,62,62,0.3)',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(49,130,206,0.3)',
                           transition: 'all 0.2s ease'
                         }}
-                        onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
-                        onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
+                        onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
                       >
-                        {processando ? '⏳ Processando...' : '❌ Excluir Pagamento'}
+                        📄 Gerar Recibo do Troco
                       </button>
                     )}
-                    {pagamentoConfirmado && (
-                      <button
-                        type="button"
-                        onClick={handleCancelarPagamento}
-                        disabled={processando}
-                        style={{
-                          padding: '14px 32px',
-                          background: processando ? '#a0aec0' : 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 8,
-                          fontSize: '16px',
-                          fontWeight: '700',
-                          cursor: processando ? 'not-allowed' : 'pointer',
-                          boxShadow: '0 4px 12px rgba(229,62,62,0.3)',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
-                        onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
-                      >
-                        {processando ? '⏳ Processando...' : '❌ Cancelar Pagamento'}
-                      </button>
-                    )}
-                    {/* Botão para gerar recibo do excesso - sempre visível quando há excesso */}
+                  </div>
+                </div>
+              );
+            }
+
+            // Caso padrão: valor insuficiente, mostra salvar e complemento
+            if (totalAdiantado >= subtotalPedido) {
+              console.log('[Pagamento][RENDER] Exibindo botão Salvar Pagamento');
+              return (
+                <div>
+                  <div style={{
+                    marginBottom: 12,
+                    padding: 12,
+                    background: '#e8f5e8',
+                    border: '2px solid #38a169',
+                    borderRadius: 8,
+                    color: '#2d5016',
+                    fontWeight: 'bold'
+                  }}>
+                    {'✅ Valor adiantado suficiente!'}
+                    {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={handleConfirmarPagamento}
+                      disabled={processando}
+                      style={{
+                        padding: '14px 32px',
+                        background: processando ? '#a0aec0' : 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 8,
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        cursor: processando ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
+                      onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
+                    >
+                      {processando ? '⏳ Processando...' : '✅ Salvar Pagamento'}
+                    </button>
                     {excesso > 0 && (
                       <button
                         type="button"
@@ -992,6 +1067,7 @@ const subtotalPedido = useMemo(() => {
                 </div>
               );
             } else {
+              console.log('[Pagamento][RENDER] Exibindo botão Salvar Pagamento e Adicionar Complemento (valor insuficiente)');
               return (
                 <div>
                   <div style={{
