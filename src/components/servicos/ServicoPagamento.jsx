@@ -169,30 +169,31 @@ const subtotalPedido = useMemo(() => {
 }, [form.atosPedido, form.atos, form.combos, valorAdicional]);
   // Buscar pagamento salvo ao montar
   React.useEffect(() => {
+    // Loga sempre que o protocolo mudar
+    console.log('[Pagamento][EFFECT] Protocolo atual:', form.protocolo);
+    if (!form.protocolo) {
+      console.log('[Pagamento][EFFECT] Nenhum protocolo informado, não buscando pagamento salvo.');
+      setPagamentoSalvo(false);
+      return;
+    }
     async function fetchPagamentoSalvo() {
-      if (!form.protocolo) {
-        console.log('[Pagamento][LOG] Nenhum protocolo informado, não buscando pagamento salvo.');
-        setPagamentoSalvo(false);
-        return;
-      }
       try {
         const token = localStorage.getItem('token');
         const url = `${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`;
-        console.log('[Pagamento][LOG] Buscando pagamento salvo:', url);
+        console.log('[Pagamento][EFFECT] Buscando pagamento salvo:', url);
         const res = await fetch(url, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-        console.log('[Pagamento][LOG] Status da resposta:', res.status);
+        console.log('[Pagamento][EFFECT] Status da resposta:', res.status);
         if (res.ok) {
           const data = await res.json();
-          console.log('[Pagamento][LOG] Dados recebidos do backend:', data);
-          // Se vier um objeto de pagamento salvo, marca como salvo independentemente do valor adicional
+          console.log('[Pagamento][EFFECT] Dados recebidos do backend:', data);
           if (data && data.id) {
             setPagamentoSalvo(true);
-            console.log('[Pagamento][LOG] Pagamento salvo detectado no backend. Exibindo botão Excluir Pagamento.');
+            console.log('[Pagamento][EFFECT] Pagamento salvo detectado no backend. Exibindo botão Excluir Pagamento.');
           } else {
             setPagamentoSalvo(false);
-            console.log('[Pagamento][LOG] Nenhum pagamento salvo detectado no backend. Exibindo botão Salvar Pagamento.');
+            console.log('[Pagamento][EFFECT] Nenhum pagamento salvo detectado no backend. Exibindo botão Salvar Pagamento.');
           }
           // Aceita tanto snake_case quanto camelCase por compatibilidade
           const valorAdicionalBackend = data.valorAdicional !== undefined ? data.valorAdicional : data.valor_adicional;
@@ -213,34 +214,31 @@ const subtotalPedido = useMemo(() => {
           // Carrega complementos do backend, se existirem
           let complementosBackend = [];
           if (Array.isArray(data.complementos)) {
-            console.log('[Pagamento][DEBUG] Campo "complementos" encontrado:', data.complementos);
+            console.log('[Pagamento][EFFECT][DEBUG] Campo "complementos" encontrado:', data.complementos);
             complementosBackend = data.complementos;
           } else if (Array.isArray(data.complementos_pagamento)) {
-            console.log('[Pagamento][DEBUG] Campo "complementos_pagamento" encontrado:', data.complementos_pagamento);
+            console.log('[Pagamento][EFFECT][DEBUG] Campo "complementos_pagamento" encontrado:', data.complementos_pagamento);
             complementosBackend = data.complementos_pagamento;
           } else {
-            console.log('[Pagamento][DEBUG] Nenhum campo de complementos encontrado no backend.');
+            console.log('[Pagamento][EFFECT][DEBUG] Nenhum campo de complementos encontrado no backend.');
           }
           if (complementosBackend.length > 0) {
-            // Marca todos como complemento: true (caso backend não envie)
             const complementosMarcados = complementosBackend.map(item => ({ ...item, complemento: true }));
-            // Junta com outros pagamentos já existentes que não são complementos
             setValorAdiantadoDetalhes(prev => {
-              // Remove complementos antigos para evitar duplicidade
               const naoComplementos = (prev || []).filter(item => !item.complemento);
-              console.log('[Pagamento][DEBUG] Atualizando valorAdiantadoDetalhes. Não complementos:', naoComplementos, 'Novos complementos:', complementosMarcados);
+              console.log('[Pagamento][EFFECT][DEBUG] Atualizando valorAdiantadoDetalhes. Não complementos:', naoComplementos, 'Novos complementos:', complementosMarcados);
               return [...naoComplementos, ...complementosMarcados];
             });
           } else {
-            console.log('[Pagamento][DEBUG] Nenhum complemento para adicionar ao valorAdiantadoDetalhes.');
+            console.log('[Pagamento][EFFECT][DEBUG] Nenhum complemento para adicionar ao valorAdiantadoDetalhes.');
           }
         } else {
           setPagamentoSalvo(false);
-          console.log('[Pagamento][LOG] Resposta não OK ao buscar pagamento salvo:', res.status, res.statusText);
+          console.log('[Pagamento][EFFECT] Resposta não OK ao buscar pagamento salvo:', res.status, res.statusText);
         }
       } catch (e) {
         setPagamentoSalvo(false);
-        console.error('[Pagamento][LOG] Erro ao buscar pagamento salvo:', e);
+        console.error('[Pagamento][EFFECT] Erro ao buscar pagamento salvo:', e);
       }
     }
     fetchPagamentoSalvo();
