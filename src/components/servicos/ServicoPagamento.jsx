@@ -864,10 +864,22 @@ const subtotalPedido = useMemo(() => {
           {(() => {
             const totalAdiantado = calcularTotalAdiantado();
             const valorRestante = subtotalPedido - totalAdiantado;
-const excesso = totalAdiantado - subtotalPedido;
+            const excesso = totalAdiantado - subtotalPedido;
             const pagamentoConfirmado = statusPedido === 'Pago';
 
+            // LOGS para depuração do fluxo dos botões
+            console.log('[Pagamento][RENDER] pagamentoSalvo:', pagamentoSalvo, '| statusPedido:', statusPedido, '| pagamentoConfirmado:', pagamentoConfirmado, '| totalAdiantado:', totalAdiantado, '| subtotalPedido:', subtotalPedido);
+
             if (totalAdiantado >= subtotalPedido) {
+              if (!pagamentoConfirmado && !pagamentoSalvo) {
+                console.log('[Pagamento][RENDER] Exibindo botão Salvar Pagamento');
+              }
+              if (!pagamentoConfirmado && pagamentoSalvo) {
+                console.log('[Pagamento][RENDER] Exibindo botão Excluir Pagamento');
+              }
+              if (pagamentoConfirmado) {
+                console.log('[Pagamento][RENDER] Exibindo botão Cancelar Pagamento');
+              }
               return (
                 <div>
                   <div style={{
