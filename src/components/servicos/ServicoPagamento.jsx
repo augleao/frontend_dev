@@ -788,29 +788,6 @@ const excesso = totalAdiantado - subtotalPedido;
                         {processando ? '⏳ Processando...' : '✅ Salvar Pagamento'}
                       </button>
                     )}
-                    {/* Botão Adicionar Complemento: só exibe se totalAdiantado < subtotalPedido e não confirmado */}
-                    {!pagamentoConfirmado && totalAdiantado < subtotalPedido && (
-                      <button
-                        type="button"
-                        onClick={() => setMostrarComplemento(true)}
-                        style={{
-                          padding: '14px 32px',
-                          background: 'linear-gradient(135deg, #f6ad55 0%, #dd6b20 100%)',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 8,
-                          fontSize: '16px',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(237,137,54,0.3)',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
-                        onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
-                      >
-                        ➕ Adicionar Complemento
-                      </button>
-                    )}
                     {pagamentoSalvo && !pagamentoConfirmado && (
                       <button
                         type="button"
@@ -881,6 +858,45 @@ const excesso = totalAdiantado - subtotalPedido;
                       </button>
                     )}
                   </div>
+                </div>
+              );
+            } else {
+              return (
+                <div>
+                  <div style={{
+                    marginBottom: 12,
+                    padding: 12,
+                    background: '#fff5f5',
+                    border: '2px solid #e53e3e',
+                    borderRadius: 8,
+                    color: '#8b1a1a',
+                    fontWeight: 'bold'
+                  }}>
+                    ⚠️ Valor insuficiente! Falta: R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  {/* Botão Adicionar Complemento: só exibe se não confirmado */}
+                  {!pagamentoConfirmado && (
+                    <button
+                      type="button"
+                      onClick={() => setMostrarComplemento(true)}
+                      style={{
+                        padding: '14px 32px',
+                        background: 'linear-gradient(135deg, #f6ad55 0%, #dd6b20 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 8,
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(237,137,54,0.3)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
+                      onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
+                    >
+                      ➕ Adicionar Complemento
+                    </button>
+                  )}
                   {/* Formulário de complemento */}
                   {mostrarComplemento && !pagamentoConfirmado && (
                     <div style={{ marginTop: 18, padding: 16, background: '#fffbe5', border: '1.5px solid #f6ad55', borderRadius: 8 }}>
@@ -900,22 +916,6 @@ const excesso = totalAdiantado - subtotalPedido;
                       </div>
                     </div>
                   )}
-                </div>
-              );
-            } else {
-              return (
-                <div>
-                  <div style={{
-                    marginBottom: 12,
-                    padding: 12,
-                    background: '#fff5f5',
-                    border: '2px solid #e53e3e',
-                    borderRadius: 8,
-                    color: '#8b1a1a',
-                    fontWeight: 'bold'
-                  }}>
-                    ⚠️ Valor insuficiente! Falta: R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
                 </div>
               );
             }
