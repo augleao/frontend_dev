@@ -916,26 +916,6 @@ const excesso = totalAdiantado - subtotalPedido;
                   }}>
                     ⚠️ Valor insuficiente! Falta: R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleSolicitarComplementacao}
-                    style={{
-                      padding: '14px 32px',
-                      background: 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 8,
-                      fontSize: '16px',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(229,62,62,0.3)',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
-                    onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
-                  >
-                    💳 Solicitar Complementação
-                  </button>
                 </div>
               );
             }
