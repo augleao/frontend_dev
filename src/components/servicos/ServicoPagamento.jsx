@@ -646,7 +646,7 @@ const subtotalPedido = useMemo(() => {
             <thead>
               <tr style={{ background: '#fdf2f8' }}>
                 <th style={{
-                  padding: '4px 12px 10px 12px', // padding mais equilibrado para placeholder de duas linhas
+                  padding: '2px 2px 2px 2px', // padding mais equilibrado para placeholder de duas linhas
                   textAlign: 'left',
                   color: '#742a2a',
                   fontWeight: '600',
