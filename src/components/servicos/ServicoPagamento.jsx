@@ -644,6 +644,7 @@ const subtotalPedido = useMemo(() => {
         </span>
       </div>
       
+
       {/* Tabela de Valores Adiantados */}
       {valorAdiantadoDetalhes && valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
         <div style={{
@@ -659,7 +660,6 @@ const subtotalPedido = useMemo(() => {
             fontSize: '16px',
             fontWeight: '600'
           }}>💰 Valores Adiantados pelo Usuário</h4>
-          
           <table style={{
             width: '100%',
             borderCollapse: 'collapse',
@@ -668,7 +668,7 @@ const subtotalPedido = useMemo(() => {
             <thead>
               <tr style={{ background: '#fdf2f8' }}>
                 <th style={{
-                  padding: '2px 2px 2px 2px', // padding mais equilibrado para placeholder de duas linhas
+                  padding: '2px 2px 2px 2px',
                   textAlign: 'left',
                   color: '#742a2a',
                   fontWeight: '600',
@@ -731,6 +731,76 @@ const subtotalPedido = useMemo(() => {
                   TOTAL ADIANTADO
                 </td>
               </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Tabela de Complementos Adicionados */}
+      {valorAdiantadoDetalhes && valorAdiantadoDetalhes.filter(item => item.forma && item.valor && item.complemento).length > 0 && (
+        <div style={{
+          marginBottom: 20,
+          padding: 16,
+          background: '#fffbe5',
+          border: '2px solid #f6ad55',
+          borderRadius: 8
+        }}>
+          <h4 style={{
+            margin: '0 0 12px 0',
+            color: '#b7791f',
+            fontSize: '16px',
+            fontWeight: '600'
+          }}>➕ Complementos de Pagamento</h4>
+          <table style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            fontSize: '14px'
+          }}>
+            <thead>
+              <tr style={{ background: '#fffbe5' }}>
+                <th style={{
+                  padding: '2px 2px 2px 2px',
+                  textAlign: 'left',
+                  color: '#b7791f',
+                  fontWeight: '600',
+                  border: '1px solid #f6ad55'
+                }}>
+                  Valor
+                </th>
+                <th style={{
+                  padding: '8px 12px',
+                  textAlign: 'left',
+                  color: '#b7791f',
+                  fontWeight: '600',
+                  border: '1px solid #f6ad55'
+                }}>
+                  Forma de Pagamento
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {valorAdiantadoDetalhes
+                .filter(item => item.forma && item.valor && item.complemento)
+                .map((item, idx) => (
+                  <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fffbe5' }}>
+                    <td style={{
+                      padding: '8px 12px',
+                      border: '1px solid #f6ad55',
+                      fontFamily: 'monospace',
+                      fontWeight: '600',
+                      color: '#b7791f'
+                    }}>
+                      R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                    <td style={{
+                      padding: '8px 12px',
+                      border: '1px solid #f6ad55',
+                      color: '#b7791f'
+                    }}>
+                      {item.forma}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
