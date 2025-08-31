@@ -25,13 +25,21 @@ function Home() {
       color: '#27ae60',
       route: '/caixa-diario'
     },
-        {
+    {
       id: 'meus-fechamentos',
       title: 'CAIXAS FECHADOS',
       description: 'Visualize seus fechamentos de caixa',
       icon: '💰',
       color: '#27ae60',
       route: '/meus-fechamentos'
+    },
+    {
+      id: 'manutencao-servicos',
+      title: 'PEDIDOS',
+      description: 'Gerencie o ciclo completo de pedidos: entrada, cliente, pagamento, execução e entrega',
+      icon: '📝',
+      color: '#8e44ad',
+      route: '/lista-servicos'
     },
     {
       id: 'atos-praticados',
@@ -72,14 +80,6 @@ function Home() {
       icon: '📊',
       color: '#e67e22',
       route: '/relatorio-cnj'
-    },
-    {
-      id: 'manutencao-servicos',
-      title: 'PEDIDOS',
-      description: 'Gerencie o ciclo completo de pedidos: entrada, cliente, pagamento, execução e entrega',
-      icon: '📝',
-      color: '#8e44ad',
-      route: '/lista-servicos' // <-- altere aqui!
     }
   ];
 
