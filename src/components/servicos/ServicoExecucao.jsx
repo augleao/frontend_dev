@@ -418,6 +418,22 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
                     >
                       Excluir
                     </button>
+                      <button
+                        style={{
+                          background: '#1976d2',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: 4,
+                          padding: '4px 10px',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                        title="Editar selo"
+                        onClick={() => {/* lógica de edição será implementada depois */}}
+                      >
+                        Editar
+                      </button>
                   </td>
                 </tr>
               ))}
