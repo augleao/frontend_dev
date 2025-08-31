@@ -1,6 +1,6 @@
 // Serviço para atualizar selo de execução de serviço
 export async function atualizarSeloExecucaoServico(id, seloData) {
-  const response = await fetch(`/api/selos-execucao-servico/${id}`, {
+  const response = await fetch(`/selos-execucao-servico/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
