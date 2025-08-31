@@ -15,7 +15,7 @@
         })
         .catch(() => {});
     }
-  }, [protocolo]);
+  }, [protocolo, form.execucao, onChange]);
   import React, { useState, useEffect } from 'react';
 
 import ClipboardImageUpload from './ClipboardImageUpload';
