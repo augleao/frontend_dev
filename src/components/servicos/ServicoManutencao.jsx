@@ -498,7 +498,13 @@ export default function ServicoManutencao() {
                   (typeof form.conferencia === 'object' && Object.values(form.conferencia).some(v => v && v !== ''))
                 ));
               } else if (tab.key === 'pagamento') {
-                isFilled = !!(form.pagamento && (form.pagamento.valorPago || form.pagamento.status === 'pago'));
+                isFilled = !!(form.pagamento && (
+                  (form.pagamento.status && form.pagamento.status !== 'pendente') ||
+                  (form.pagamento.valorPago && parseFloat(form.pagamento.valorPago) > 0) ||
+                  (form.pagamento.valorTotal && parseFloat(form.pagamento.valorTotal) > 0) ||
+                  (form.pagamento.data && form.pagamento.data !== '') ||
+                  (form.pagamento.forma && form.pagamento.forma !== '')
+                ));
               } else if (tab.key === 'execucao') {
                 isFilled = !!(form.execucao && (form.execucao.status === 'concluido' || form.execucao.status === 'concluído'));
               } else if (tab.key === 'entrega') {
