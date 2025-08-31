@@ -10,5 +10,7 @@ export async function atualizarSeloExecucaoServico(id, seloData) {
   if (!response.ok) {
     throw new Error('Erro ao atualizar selo');
   }
-  return response.json();
+  // Só tenta fazer .json() se houver corpo
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
 }
