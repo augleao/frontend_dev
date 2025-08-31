@@ -189,28 +189,22 @@ export default function ServicoManutencao() {
             )
           }));
 
-          // Após carregar o pedido, buscar execução salva (se existir) e atualizar o form
+          // Após carregar o pedido, buscar conferências salvas (se existirem) e atualizar o form
           if (data.pedido && data.pedido.protocolo) {
-            fetchComAuth(`${config.apiURL}/execucao-servico/${encodeURIComponent(data.pedido.protocolo)}`)
-              .then(execRes => {
-                if (!execRes) {
-                  // Removido: garantir que componentes estejam sempre disponíveis
-                }
-                if (!execRes.ok) {
-                  // Removido: garantir que componentes estejam sempre disponíveis
-                }
-                return execRes.json();
+            fetchComAuth(`${config.apiURL}/conferencias?protocolo=${encodeURIComponent(data.pedido.protocolo)}`)
+              .then(confRes => {
+                if (!confRes || !confRes.ok) return null;
+                return confRes.json();
               })
-              .then(execData => {
-                if (execData) {
+              .then(confData => {
+                if (confData && Array.isArray(confData.conferencias) && confData.conferencias.length > 0) {
+                  // Salva a última conferência encontrada (ou toda a lista, se preferir)
                   setForm(f => ({
                     ...f,
-                    execucao: {
-                      ...f.execucao, // mantém campos já existentes
-                      ...execData    // sobrescreve pelos do backend
-                    }
+                    conferencia: confData.conferencias[confData.conferencias.length - 1]
                   }));
                 } else {
+                  setForm(f => ({ ...f, conferencia: undefined }));
                 }
               });
           }
