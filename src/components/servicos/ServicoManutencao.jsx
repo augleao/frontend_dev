@@ -225,24 +225,6 @@ export default function ServicoManutencao() {
                   }));
                 }
               });
-
-            // Buscar execução salva
-            fetchComAuth(`${config.apiURL}/execucao-servico/${encodeURIComponent(data.pedido.protocolo)}`)
-              .then(execRes => {
-                if (!execRes || !execRes.ok) return null;
-                return execRes.json();
-              })
-              .then(execData => {
-                if (execData && (execData.id || execData.status || execData.responsavel)) {
-                  setForm(f => ({
-                    ...f,
-                    execucao: {
-                      ...f.execucao,
-                      ...execData
-                    }
-                  }));
-                }
-              });
           }
           // Mapeia os combos do backend para o formato esperado pelo frontend
           const combosFormatados = Array.isArray(data.pedido.combos) 
@@ -546,10 +528,13 @@ export default function ServicoManutencao() {
                   );
                 }
                 // LOG DE DEPURAÇÃO
-                //
+                if (window && window.console) {
+                  console.log('[DEBUG][Aba Pagamento] form.pagamento:', pagamentoDebug);
+                  console.log('[DEBUG][Aba Pagamento] pagamentoFilled:', pagamentoFilled);
+                }
                 isFilled = !!pagamentoFilled;
               } else if (tab.key === 'execucao') {
-                isFilled = !!(form.execucao && (form.execucao.status === 'concluido' || form.execucao.status === 'concluído'));
+                isFilled = !!(form.execucao && (form.execucao.id || form.execucao.status === 'concluido' || form.execucao.status === 'concluído'));
               } else if (tab.key === 'entrega') {
                 isFilled = !!(form.entrega && (form.entrega.data || form.entrega.retiradoPor || form.entrega.retirado_por));
               } else if (tab.key === 'historico') {
