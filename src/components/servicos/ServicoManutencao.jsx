@@ -489,7 +489,8 @@ export default function ServicoManutencao() {
               { key: 'conferencia', label: 'Conferência' },
               { key: 'pagamento', label: 'Pagamento' },
               { key: 'execucao', label: 'Execução' },
-              { key: 'entrega', label: 'Entrega' }
+              { key: 'entrega', label: 'Entrega' },
+              { key: 'historico', label: 'Histórico' }
             ].map(tab => (
               <button
                 key={tab.key}
@@ -553,6 +554,35 @@ export default function ServicoManutencao() {
               pedidoId={form.protocolo}
               disabled={false}
             />
+          )}
+          {aba === 'historico' && form.protocolo && historicoStatus.length > 0 && (
+            <div style={{
+              background: 'white',
+              borderRadius: 16,
+              boxShadow: '0 4px 24px rgba(44,62,80,0.08)',
+              padding: 32,
+              marginBottom: 32
+            }}>
+              <h3 style={{ color: '#6c3483', marginBottom: 12 }}>Histórico de Status</h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8 }}>
+                <thead>
+                  <tr style={{ background: '#ede1f7' }}>
+                    <th style={{ padding: 6, fontSize: 13, color: '#6c3483' }}>Data/Hora</th>
+                    <th style={{ padding: 6, fontSize: 13, color: '#6c3483' }}>Status</th>
+                    <th style={{ padding: 6, fontSize: 13, color: '#6c3483' }}>Usuário</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historicoStatus.map((item, idx) => (
+                    <tr key={idx} style={{ background: idx % 2 === 0 ? '#f8f4fc' : '#fff' }}>
+                      <td style={{ padding: 6, fontSize: 13 }}>{item.dataHora ? new Date(item.dataHora).toLocaleString() : ''}</td>
+                      <td style={{ padding: 6, fontSize: 13 }}>{item.status}</td>
+                      <td style={{ padding: 6, fontSize: 13 }}>{item.usuario}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
           {/* Só mostra o botão de excluir se há um pedido carregado */}
           {form.protocolo && (
