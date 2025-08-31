@@ -85,7 +85,7 @@ export default function ClipboardImageUpload({ protocolo, onUpload }) {
         }}
         title="Importar imagem da área de transferência"
       >
-        🖼️ Importar Imagem
+        {uploading ? 'Importando imagem...' : '🖼️ Importar Imagem'}
       </button>
       {error && <span style={{ color: 'red', marginLeft: 6 }}>{error}</span>}
     </span>

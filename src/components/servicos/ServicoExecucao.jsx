@@ -213,7 +213,21 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
               fontWeight: 500
             }}
           />
-          <ClipboardImageUpload protocolo={protocolo} onUpload={() => {}} />
+          <ClipboardImageUpload
+            protocolo={protocolo}
+            onUpload={() => {
+              // Recarrega os selos após upload de imagem
+              if (protocolo) {
+                const token = localStorage.getItem('token');
+                fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocolo)}`, {
+                  headers: { Authorization: `Bearer ${token}` }
+                })
+                  .then(res => res.json())
+                  .then(data => setSelos(data.selos || []))
+                  .catch(() => setSelos([]));
+              }
+            }}
+          />
         </div>
       </div>
       {/* Botões de ação Execução */}
