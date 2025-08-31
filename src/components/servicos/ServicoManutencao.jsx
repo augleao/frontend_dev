@@ -227,7 +227,7 @@ export default function ServicoManutencao() {
               });
 
             // Buscar execução salva
-            fetchComAuth(`${config.apiURL}/execucao-servico?protocolo=${encodeURIComponent(data.pedido.protocolo)}`)
+            fetchComAuth(`${config.apiURL}/execucao-servico/${encodeURIComponent(data.pedido.protocolo)}`)
               .then(execRes => {
                 if (!execRes || !execRes.ok) return null;
                 return execRes.json();
