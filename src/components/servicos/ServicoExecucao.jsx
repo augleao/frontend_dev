@@ -50,7 +50,13 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
               ...data,
               responsavel: data.responsavel || data.usuario || ''
             };
-            if (typeof onChange === 'function') {
+            // Só chama onChange se o id mudou (ou se não havia execucao)
+            const idAtual = form.execucao && form.execucao.id;
+            if (
+              typeof onChange === 'function' &&
+              execucaoAtualizada.id &&
+              execucaoAtualizada.id !== idAtual
+            ) {
               console.log('[Execucao][EFFECT] Chamando onChange para atualizar execucao:', execucaoAtualizada);
               if (execucaoAtualizada && typeof execucaoAtualizada === 'object') {
                 Object.entries(execucaoAtualizada).forEach(([k, v]) => {
