@@ -30,6 +30,36 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
     }
   }, [protocolo, form.execucao && form.execucao.id]);
 
+  // Buscar execução salva ao montar ou quando protocolo mudar
+  useEffect(() => {
+    if (protocolo && (!form.execucao || !form.execucao.id)) {
+      const token = localStorage.getItem('token');
+      console.log('[Execucao][EFFECT] Buscando execução salva para protocolo:', protocolo);
+      fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(protocolo)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => {
+          console.log('[Execucao][EFFECT] Status da resposta:', res.status);
+          return res.ok ? res.json() : null;
+        })
+        .then(data => {
+          console.log('[Execucao][EFFECT] Dados recebidos do backend:', data);
+          if (data && (data.id || data.status || data.responsavel)) {
+            if (typeof onChange === 'function') {
+              console.log('[Execucao][EFFECT] Chamando onChange para atualizar execucao:', data);
+              onChange('execucao', data);
+            }
+          } else {
+            console.log('[Execucao][EFFECT] Nenhuma execução encontrada no backend para este protocolo.');
+          }
+        })
+        .catch((e) => {
+          console.error('[Execucao][EFFECT] Erro ao buscar execução salva:', e);
+        });
+    } else {
+      console.log('[Execucao][EFFECT] Não buscou execução: protocolo=', protocolo, 'form.execucao=', form.execucao);
+    }
+  }, [protocolo, form.execucao, onChange]);
   // Função para salvar ou alterar execução do serviço
   const salvarOuAlterarExecucao = async () => {
     setSalvando(true);
