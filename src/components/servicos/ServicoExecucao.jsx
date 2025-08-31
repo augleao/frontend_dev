@@ -1,5 +1,6 @@
   import React, { useState, useEffect } from 'react';
 import SeloEletronicoManager from './SeloEletronicoManager';
+import ClipboardImageUpload from './ClipboardImageUpload';
 import config from '../../config';
 
 const statusExecucao = [
@@ -212,6 +213,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
               fontWeight: 500
             }}
           />
+          <ClipboardImageUpload protocolo={protocolo} onUpload={() => {}} />
         </div>
       </div>
       {/* Botões de ação Execução */}
