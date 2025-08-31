@@ -22,7 +22,7 @@ export default function UsuariosAdmin() {
 
   const handleEdit = (usuario) => {
     setEditId(usuario.id);
-    setEditData({ ...usuario });
+    setEditData({ ...usuario, password: '' }); // password em branco por padrão
     setMsg('');
   };
 
@@ -32,13 +32,17 @@ export default function UsuariosAdmin() {
 
   const handleSave = async () => {
     const token = localStorage.getItem('token');
+    // Monta objeto apenas com campos relevantes
+    const { nome, email, serventia, cargo, status, password } = editData;
+    const payload = { nome, email, serventia, cargo, status };
+    if (password && password.trim() !== '') payload.password = password;
     const res = await fetch(`${config.apiURL}/admin/usuarios/${editId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(editData),
+      body: JSON.stringify(payload),
     });
     if (res.ok) {
       setMsg('Usuário atualizado!');
@@ -112,7 +116,18 @@ export default function UsuariosAdmin() {
                   usuario.nome
                 )}
               </td>
-              <td>{usuario.email}</td>
+              <td>
+                {editId === usuario.id ? (
+                  <input
+                    name="email"
+                    value={editData.email}
+                    onChange={handleEditChange}
+                    style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                  />
+                ) : (
+                  usuario.email
+                )}
+              </td>
               <td>
                 {editId === usuario.id ? (
                   <input
@@ -143,6 +158,19 @@ export default function UsuariosAdmin() {
                   usuario.cargo
                 )}
               </td>
+              {/* Campo de senha para edição */}
+              {editId === usuario.id && (
+                <td colSpan={2} style={{ paddingTop: 8, paddingBottom: 8 }}>
+                  <input
+                    type="password"
+                    name="password"
+                    value={editData.password}
+                    onChange={handleEditChange}
+                    placeholder="Nova senha (opcional)"
+                    style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                  />
+                </td>
+              )}
               <td>
                 {editId === usuario.id ? (
                   <select
