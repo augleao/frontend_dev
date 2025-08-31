@@ -547,11 +547,6 @@ export default function ServicoManutencao() {
                     (pagamentoDebug.forma && pagamentoDebug.forma !== '')
                   );
                 }
-                // LOG DE DEPURAÇÃO
-                if (window && window.console) {
-                  console.log('[DEBUG][Aba Pagamento] form.pagamento:', pagamentoDebug);
-                  console.log('[DEBUG][Aba Pagamento] pagamentoFilled:', pagamentoFilled);
-                }
                 isFilled = !!pagamentoFilled;
               } else if (tab.key === 'execucao') {
                 let execucaoDebug = form.execucao;
@@ -562,15 +557,6 @@ export default function ServicoManutencao() {
                     execucaoDebug.status === 'concluido' ||
                     execucaoDebug.status === 'concluído'
                   );
-                }
-                if (window && window.console) {
-                  console.log('[DEBUG][Aba Execucao] form.execucao:', execucaoDebug);
-                  if (execucaoDebug && typeof execucaoDebug === 'object') {
-                    Object.entries(execucaoDebug).forEach(([k, v]) => {
-                      console.log(`[DEBUG][Aba Execucao] campo ${k}:`, v);
-                    });
-                  }
-                  console.log('[DEBUG][Aba Execucao] execucaoFilled:', execucaoFilled);
                 }
                 isFilled = !!execucaoFilled;
               } else if (tab.key === 'entrega') {
