@@ -245,6 +245,25 @@ export default function ServicoManutencao() {
                   }));
                 }
               });
+
+            // Buscar entrega salva
+            fetchComAuth(`${config.apiURL}/entrega-servico/${encodeURIComponent(data.pedido.protocolo)}`)
+              .then(entregaRes => {
+                if (!entregaRes || !entregaRes.ok) return null;
+                return entregaRes.json();
+              })
+              .then(entregaData => {
+                if (entregaData && (entregaData.id || entregaData.data || entregaData.hora)) {
+                  setForm(f => ({
+                    ...f,
+                    entrega: {
+                      ...f.entrega,
+                      ...entregaData,
+                      retiradoPor: entregaData.retiradoPor || entregaData.retirado_por || f.entrega.retiradoPor || ''
+                    }
+                  }));
+                }
+              });
           }
           // Mapeia os combos do backend para o formato esperado pelo frontend
           const combosFormatados = Array.isArray(data.pedido.combos) 
