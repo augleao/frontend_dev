@@ -401,40 +401,40 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
                 const isEditing = editingSeloId === selo.id;
                 return (
                   <tr key={selo.id || idx} style={{ background: idx % 2 === 0 ? '#f8f4fc' : '#fff' }}>
-                    <td style={{ padding: 6, fontSize: 12 }}>
+                    <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
                       {isEditing ? (
-                        <input value={editSelo.selo_consulta || ''} onChange={e => setEditSelo({ ...editSelo, selo_consulta: e.target.value })} style={{ width: 80, fontSize: 8, padding: '4px 6px' }} placeholder="Selo" />
-                      ) : (<span style={{ fontSize: 10 }}>{selo.selo_consulta || selo.seloConsulta || ''}</span>)}
+                        <input value={editSelo.selo_consulta || ''} onChange={e => setEditSelo({ ...editSelo, selo_consulta: e.target.value })} style={{ width: 80, fontSize: 9, padding: '1px 2px' }} placeholder="Selo" />
+                      ) : (<span style={{ fontSize: 11 }}>{selo.selo_consulta || selo.seloConsulta || ''}</span>)}
                     </td>
-                    <td style={{ padding: 6, fontSize: 12 }}>
+                    <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
                       {isEditing ? (
-                        <input value={editSelo.codigo_seguranca || ''} onChange={e => setEditSelo({ ...editSelo, codigo_seguranca: e.target.value })} style={{ width: 120, fontSize: 8, padding: '4px 6px' }} placeholder="Código" />
-                      ) : (<span style={{ fontSize: 10 }}>{selo.codigo_seguranca || selo.codigoSeguranca || ''}</span>)}
+                        <input value={editSelo.codigo_seguranca || ''} onChange={e => setEditSelo({ ...editSelo, codigo_seguranca: e.target.value })} style={{ width: 120, fontSize: 9, padding: '1px 2px' }} placeholder="Código" />
+                      ) : (<span style={{ fontSize: 11 }}>{selo.codigo_seguranca || selo.codigoSeguranca || ''}</span>)}
                     </td>
-                    <td style={{ padding: 6, fontSize: 12 }}>
+                    <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
                       {isEditing ? (
-                        <input value={editSelo.qtd_atos || ''} onChange={e => setEditSelo({ ...editSelo, qtd_atos: e.target.value })} style={{ width: 40, fontSize: 8, padding: '4px 6px' }} placeholder="Qtd" />
-                      ) : (<span style={{ fontSize: 10 }}>{selo.qtd_atos || selo.qtdAtos || ''}</span>)}
+                        <input value={editSelo.qtd_atos || ''} onChange={e => setEditSelo({ ...editSelo, qtd_atos: e.target.value })} style={{ width: 40, fontSize: 9, padding: '1px 2px' }} placeholder="Qtd" />
+                      ) : (<span style={{ fontSize: 11 }}>{selo.qtd_atos || selo.qtdAtos || ''}</span>)}
                     </td>
-                    <td style={{ padding: 6, fontSize: 12 }}>
+                    <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
                       {isEditing ? (
-                        <input value={editSelo.atos_praticados_por || ''} onChange={e => setEditSelo({ ...editSelo, atos_praticados_por: e.target.value })} style={{ width: 100, fontSize: 8, padding: '4px 6px' }} placeholder="Praticado por" />
-                      ) : (<span style={{ fontSize: 10 }}>{selo.atos_praticados_por || selo.atosPraticadosPor || ''}</span>)}
+                        <input value={editSelo.atos_praticados_por || ''} onChange={e => setEditSelo({ ...editSelo, atos_praticados_por: e.target.value })} style={{ width: 100, fontSize: 9, padding: '1px 2px' }} placeholder="Praticado por" />
+                      ) : (<span style={{ fontSize: 11 }}>{selo.atos_praticados_por || selo.atosPraticadosPor || ''}</span>)}
                     </td>
-                    <td style={{ padding: 6, fontSize: 12 }}>
+                    <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
                       {isEditing ? (
                         <input
                           value={editSelo.valores || ''}
                           onChange={e => setEditSelo({ ...editSelo, valores: e.target.value })}
-                          style={{ width: 320, fontSize: 8, padding: '4px 6px' }}
+                          style={{ width: 320, fontSize: 9, padding: '1px 2px' }}
                           placeholder="Valores"
                         />
                       ) : (
-                        <span style={{ fontSize: 10 }}>{selo.valores || ''}</span>
+                        <span style={{ fontSize: 11 }}>{selo.valores || ''}</span>
                       )}
                     </td>
-                    <td style={{ padding: 6, fontSize: 12 }}>{selo.criado_em ? new Date(selo.criado_em).toLocaleString() : ''}</td>
-                    <td style={{ padding: 6, fontSize: 12, display: 'flex', gap: 6 }}>
+                    <td style={{ padding: 2, fontSize: 12 }}>{selo.criado_em ? new Date(selo.criado_em).toLocaleString() : ''}</td>
+                    <td style={{ padding: 2, fontSize: 12, display: 'flex', gap: 6 }}>
                       {isEditing ? (
                         <>
                           <button
