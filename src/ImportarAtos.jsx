@@ -188,8 +188,10 @@ function ImportarAtos() {
                 <tr style={{ background: '#f5f5f5' }}>
                   <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Código</th>
                   <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Descrição</th>
+                  <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Emol. Bruto</th>
+                  <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>ISSQN</th>
+                  <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Taxa Fiscal</th>
                   <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Valor Final</th>
-                  <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Origem</th>
                   <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'center' }}>Ações</th>
                 </tr>
               </thead>
@@ -223,6 +225,54 @@ function ImportarAtos() {
                     <td style={{ border: '1px solid #ddd', padding: 12 }}>
                       {editIndex === idx ? (
                         <input
+                          name="emol_bruto"
+                          value={editAto.emol_bruto || ''}
+                          onChange={handleEditChange}
+                          type="number"
+                          step="0.01"
+                          style={{ width: '100%', padding: 4, border: '1px solid #ccc', borderRadius: 4 }}
+                        />
+                      ) : (
+                        ato.emol_bruto !== null && ato.emol_bruto !== undefined
+                          ? `R$ ${Number(ato.emol_bruto).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : ''
+                      )}
+                    </td>
+                    <td style={{ border: '1px solid #ddd', padding: 12 }}>
+                      {editIndex === idx ? (
+                        <input
+                          name="issqn"
+                          value={editAto.issqn || ''}
+                          onChange={handleEditChange}
+                          type="number"
+                          step="0.01"
+                          style={{ width: '100%', padding: 4, border: '1px solid #ccc', borderRadius: 4 }}
+                        />
+                      ) : (
+                        ato.issqn !== null && ato.issqn !== undefined
+                          ? `R$ ${Number(ato.issqn).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : ''
+                      )}
+                    </td>
+                    <td style={{ border: '1px solid #ddd', padding: 12 }}>
+                      {editIndex === idx ? (
+                        <input
+                          name="taxa_fiscal"
+                          value={editAto.taxa_fiscal || ''}
+                          onChange={handleEditChange}
+                          type="number"
+                          step="0.01"
+                          style={{ width: '100%', padding: 4, border: '1px solid #ccc', borderRadius: 4 }}
+                        />
+                      ) : (
+                        ato.taxa_fiscal !== null && ato.taxa_fiscal !== undefined
+                          ? `R$ ${Number(ato.taxa_fiscal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : ''
+                      )}
+                    </td>
+                    <td style={{ border: '1px solid #ddd', padding: 12 }}>
+                      {editIndex === idx ? (
+                        <input
                           name="valor_final"
                           value={editAto.valor_final || ''}
                           onChange={handleEditChange}
@@ -236,7 +286,6 @@ function ImportarAtos() {
                           : ''
                       )}
                     </td>
-                    <td style={{ border: '1px solid #ddd', padding: 12 }}>{ato.origem || ''}</td>
                     <td style={{ border: '1px solid #ddd', padding: 12, textAlign: 'center' }}>
                       {editIndex === idx ? (
                         <>
