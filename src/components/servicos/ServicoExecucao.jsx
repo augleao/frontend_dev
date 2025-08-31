@@ -52,6 +52,11 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
             };
             if (typeof onChange === 'function') {
               console.log('[Execucao][EFFECT] Chamando onChange para atualizar execucao:', execucaoAtualizada);
+              if (execucaoAtualizada && typeof execucaoAtualizada === 'object') {
+                Object.entries(execucaoAtualizada).forEach(([k, v]) => {
+                  console.log(`[Execucao][EFFECT] campo ${k}:`, v);
+                });
+              }
               onChange('execucao', execucaoAtualizada);
             }
           } else {
