@@ -32,7 +32,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
 
   // Buscar execução salva ao montar ou quando protocolo mudar
   useEffect(() => {
-    if (protocolo && (!form.execucao || !form.execucao.id)) {
+    if (protocolo) {
       const token = localStorage.getItem('token');
       console.log('[Execucao][EFFECT] Buscando execução salva para protocolo:', protocolo);
       fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(protocolo)}`, {
@@ -43,11 +43,13 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
           return res.ok ? res.json() : null;
         })
         .then(data => {
-          console.log('[Execucao][EFFECT] Dados recebidos do backend:', data);
+          console.log('[Execucao][EFFECT] Dados recebidos do backend (sempre mostra):', data);
           if (data && (data.id || data.status || data.responsavel)) {
-            if (typeof onChange === 'function') {
-              console.log('[Execucao][EFFECT] Chamando onChange para atualizar execucao:', data);
-              onChange('execucao', data);
+            if (!form.execucao || !form.execucao.id) {
+              if (typeof onChange === 'function') {
+                console.log('[Execucao][EFFECT] Chamando onChange para atualizar execucao:', data);
+                onChange('execucao', data);
+              }
             }
           } else {
             console.log('[Execucao][EFFECT] Nenhuma execução encontrada no backend para este protocolo.');
