@@ -563,25 +563,177 @@ export default function ServicoManutencao() {
               padding: 32,
               marginBottom: 32
             }}>
-              <h3 style={{ color: '#6c3483', marginBottom: 12 }}>Histórico de Status</h3>
-              <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8 }}>
-                <thead>
-                  <tr style={{ background: '#ede1f7' }}>
-                    <th style={{ padding: 6, fontSize: 13, color: '#6c3483' }}>Data/Hora</th>
-                    <th style={{ padding: 6, fontSize: 13, color: '#6c3483' }}>Status</th>
-                    <th style={{ padding: 6, fontSize: 13, color: '#6c3483' }}>Usuário</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {historicoStatus.map((item, idx) => (
-                    <tr key={idx} style={{ background: idx % 2 === 0 ? '#f8f4fc' : '#fff' }}>
-                      <td style={{ padding: 6, fontSize: 13 }}>{item.dataHora ? new Date(item.dataHora).toLocaleString() : ''}</td>
-                      <td style={{ padding: 6, fontSize: 13 }}>{item.status}</td>
-                      <td style={{ padding: 6, fontSize: 13 }}>{item.usuario}</td>
+              <h3 style={{
+                color: '#2c3e50',
+                fontSize: 24,
+                fontWeight: 700,
+                marginBottom: 24,
+                borderBottom: '3px solid #9b59b6',
+                paddingBottom: 12,
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                📊 Histórico de Status - Protocolo: {form.protocolo}
+              </h3>
+              <div style={{
+                border: '2px solid #9b59b6',
+                borderRadius: 12,
+                overflow: 'hidden',
+                boxShadow: '0 2px 12px rgba(155,89,182,0.15)'
+              }}>
+                <table style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  fontSize: '14px'
+                }}>
+                  <thead>
+                    <tr style={{ 
+                      background: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
+                      color: 'white'
+                    }}>
+                      <th style={{
+                        padding: '16px 20px',
+                        textAlign: 'left',
+                        fontWeight: '700',
+                        fontSize: '16px',
+                        borderRight: '1px solid rgba(255,255,255,0.2)'
+                      }}>
+                        📅 Data/Hora
+                      </th>
+                      <th style={{
+                        padding: '16px 20px',
+                        textAlign: 'left',
+                        fontWeight: '700',
+                        fontSize: '16px',
+                        borderRight: '1px solid rgba(255,255,255,0.2)'
+                      }}>
+                        📋 Status
+                      </th>
+                      <th style={{
+                        padding: '16px 20px',
+                        textAlign: 'left',
+                        fontWeight: '700',
+                        fontSize: '16px',
+                        borderRight: '1px solid rgba(255,255,255,0.2)'
+                      }}>
+                        👤 Responsável
+                      </th>
+                      <th style={{
+                        padding: '16px 20px',
+                        textAlign: 'left',
+                        fontWeight: '700',
+                        fontSize: '16px'
+                      }}>
+                        📝 Observações
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {historicoStatus.map((item, index) => {
+                      const dataFormatada = new Date(item.data_alteracao).toLocaleString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                      });
+                      const getStatusColor = (status) => {
+                        switch (status?.toLowerCase()) {
+                          case 'pago': return '#27ae60';
+                          case 'conferido': return '#3498db';
+                          case 'em análise': return '#f39c12';
+                          case 'cancelado': return '#e74c3c';
+                          case 'concluído': return '#2ecc71';
+                          default: return '#7f8c8d';
+                        }
+                      };
+                      return (
+                        <tr key={index} style={{ 
+                          background: index % 2 === 0 ? '#fafafa' : '#ffffff',
+                          borderBottom: index < historicoStatus.length - 1 ? '1px solid #ecf0f1' : 'none',
+                          transition: 'background-color 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.target.parentElement.style.backgroundColor = '#f8f9fa'}
+                        onMouseLeave={(e) => e.target.parentElement.style.backgroundColor = index % 2 === 0 ? '#fafafa' : '#ffffff'}
+                        >
+                          <td style={{
+                            padding: '16px 20px',
+                            borderRight: '1px solid #ecf0f1',
+                            fontFamily: 'monospace',
+                            fontWeight: '600',
+                            color: '#2c3e50'
+                          }}>
+                            {dataFormatada}
+                          </td>
+                          <td style={{
+                            padding: '16px 20px',
+                            borderRight: '1px solid #ecf0f1',
+                            fontWeight: '700',
+                            color: getStatusColor(item.status)
+                          }}>
+                            <span style={{
+                              display: 'inline-block',
+                              padding: '4px 12px',
+                              borderRadius: '20px',
+                              backgroundColor: `${getStatusColor(item.status)}20`,
+                              border: `2px solid ${getStatusColor(item.status)}`,
+                              fontSize: '13px',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px'
+                            }}>
+                              {item.status}
+                            </span>
+                          </td>
+                          <td style={{
+                            padding: '16px 20px',
+                            borderRight: '1px solid #ecf0f1',
+                            color: '#2c3e50',
+                            fontWeight: '600'
+                          }}>
+                            {item.responsavel || 'Sistema'}
+                          </td>
+                          <td style={{
+                            padding: '16px 20px',
+                            color: '#7f8c8d',
+                            fontStyle: item.observacoes ? 'normal' : 'italic'
+                          }}>
+                            {item.observacoes || 'Nenhuma observação'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              {/* Resumo estatístico */}
+              <div style={{
+                marginTop: 20,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '16px 20px',
+                background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                borderRadius: 8,
+                border: '1px solid #dee2e6'
+              }}>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#6c757d',
+                  fontWeight: '600'
+                }}>
+                  📈 Total de alterações de status: <strong style={{ color: '#2c3e50' }}>{historicoStatus.length}</strong>
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#6c757d',
+                  fontWeight: '600'
+                }}>
+                  🕒 Última atualização: <strong style={{ color: '#2c3e50' }}>
+                    {historicoStatus.length > 0 ? new Date(historicoStatus[historicoStatus.length - 1].data_alteracao).toLocaleString('pt-BR') : 'N/A'}
+                  </strong>
+                </div>
+              </div>
             </div>
           )}
           {/* Só mostra o botão de excluir se há um pedido carregado */}
