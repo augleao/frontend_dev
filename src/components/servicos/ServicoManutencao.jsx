@@ -168,11 +168,11 @@ export default function ServicoManutencao() {
             cliente: { ...f.cliente, ...data.pedido.cliente },
             pagamento: { ...f.pagamento, ...data.pedido.pagamento },
             execucao: {
-              status: 'em_andamento',
-              observacoes: '',
-              responsavel: '',
+              ...(data.pedido.execucao || {}),
               ...f.execucao,
-              ...(data.pedido.execucao || {})
+              status: (data.pedido.execucao && data.pedido.execucao.status) || (f.execucao && f.execucao.status) || 'em_andamento',
+              observacoes: (data.pedido.execucao && data.pedido.execucao.observacoes) || (f.execucao && f.execucao.observacoes) || '',
+              responsavel: (data.pedido.execucao && data.pedido.execucao.responsavel) || (f.execucao && f.execucao.responsavel) || ''
             },
             entrega: {
               ...f.entrega,
