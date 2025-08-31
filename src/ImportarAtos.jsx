@@ -62,10 +62,33 @@ function ImportarAtos() {
     setEditAto({ ...editAto, [name]: value });
   };
 
-  const handleEditSave = () => {
-    setAtos(atos.map((ato, idx) => idx === editIndex ? editAto : ato));
+  const handleEditSave = async () => {
+    setLoading(true);
+    setMsg('');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${apiURL}/atos/${editAto.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(editAto),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMsg(data.message || 'Erro ao salvar ato.');
+        setLoading(false);
+        return;
+      }
+      setAtos(atos.map((ato, idx) => idx === editIndex ? data.ato : ato));
+      setMsg('Ato salvo com sucesso!');
+    } catch (err) {
+      setMsg('Erro ao salvar ato.');
+    }
     setEditIndex(null);
     setEditAto({});
+    setLoading(false);
   };
 
   // Salvar alterações no backend (um por um)
