@@ -469,8 +469,19 @@ export default function ServicoManutencao() {
         margin: '0 auto',
         padding: '12px 24px 0 24px' // <-- alterado de '48px 24px 0 24px' para diminuir o espaçamento superior
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10, gap: 24, fontSize: 22, fontWeight: 600, color: '#2c3e50' }}>
-          <span style={{ fontFamily: 'monospace', color: '#6c3483', fontWeight: 700, fontSize: 22 }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10, gap: 16 }}>
+          <span style={{
+            background: '#f5f5f5',
+            borderRadius: 8,
+            padding: '2px 16px',
+            color: '#6c3483',
+            fontWeight: 700,
+            fontSize: 18,
+            fontFamily: 'monospace',
+            display: 'inline-block',
+            boxShadow: '0 1px 4px #eee',
+            letterSpacing: 1
+          }}>
             Protocolo: {form.protocolo || 'Novo Pedido'}
           </span>
           {form.status && (
@@ -478,15 +489,15 @@ export default function ServicoManutencao() {
               background: '#f5f5f5',
               borderRadius: 8,
               padding: '2px 16px',
-              color: '#fff',
+              color: (form.status === 'Concluído' || form.status === 'concluido') ? '#27ae60' : (form.status === 'Cancelado' || form.status === 'cancelado') ? '#e74c3c' : (form.status === 'Aguardando documentos' || form.status === 'aguardando') ? '#f39c12' : '#3498db',
               fontWeight: 700,
               fontSize: 18,
-              marginLeft: 0,
+              fontFamily: 'monospace',
               display: 'inline-block',
               boxShadow: '0 1px 4px #eee',
-              backgroundColor: (form.status === 'Concluído' || form.status === 'concluido') ? '#27ae60' : (form.status === 'Cancelado' || form.status === 'cancelado') ? '#e74c3c' : (form.status === 'Aguardando documentos' || form.status === 'aguardando') ? '#f39c12' : '#3498db'
+              letterSpacing: 1
             }}>
-              {form.status}
+              Status: {form.status}
             </span>
           )}
         </div>
