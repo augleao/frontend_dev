@@ -170,9 +170,7 @@ const subtotalPedido = useMemo(() => {
   // Buscar pagamento salvo ao montar
   React.useEffect(() => {
     // Loga sempre que o protocolo mudar
-    console.log('[Pagamento][EFFECT] Protocolo atual:', form.protocolo);
     if (!form.protocolo) {
-      console.log('[Pagamento][EFFECT] Nenhum protocolo informado, não buscando pagamento salvo.');
       setPagamentoSalvo(false);
       return;
     }
@@ -180,20 +178,20 @@ const subtotalPedido = useMemo(() => {
       try {
         const token = localStorage.getItem('token');
         const url = `${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`;
-        console.log('[Pagamento][EFFECT] Buscando pagamento salvo:', url);
+  //
         const res = await fetch(url, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-        console.log('[Pagamento][EFFECT] Status da resposta:', res.status);
+  //
         if (res.ok) {
           const data = await res.json();
-          console.log('[Pagamento][EFFECT] Dados recebidos do backend:', data);
+          //
           if (data && data.id) {
             setPagamentoSalvo(true);
-            console.log('[Pagamento][EFFECT] Pagamento salvo detectado no backend. Exibindo botão Excluir Pagamento.');
+            //
           } else {
             setPagamentoSalvo(false);
-            console.log('[Pagamento][EFFECT] Nenhum pagamento salvo detectado no backend. Exibindo botão Salvar Pagamento.');
+            //
           }
           // Aceita tanto snake_case quanto camelCase por compatibilidade
           const valorAdicionalBackend = data.valorAdicional !== undefined ? data.valorAdicional : data.valor_adicional;
@@ -214,7 +212,7 @@ const subtotalPedido = useMemo(() => {
           // Carrega complementos do backend, se existirem
           let complementosBackend = [];
           if (Array.isArray(data.complemento_pagamento)) {
-            console.log('[Pagamento][EFFECT][DEBUG] Campo "complemento_pagamento" encontrado:', data.complemento_pagamento);
+            //
             complementosBackend = data.complemento_pagamento;
           } else {
             console.log('[Pagamento][EFFECT][DEBUG] Nenhum campo complemento_pagamento encontrado no backend.');
@@ -227,26 +225,26 @@ const subtotalPedido = useMemo(() => {
               const complemento = true;
               const novoItem = { ...item, valor, forma, complemento };
               if (!valor || !forma) {
-                console.warn(`[Pagamento][EFFECT][DEBUG][WARN] Complemento do backend sem valor/forma esperado:`, item, 'idx:', idx);
+                //
               }
               return novoItem;
             });
             setValorAdiantadoDetalhes(prev => {
               const naoComplementos = (prev || []).filter(item => !item.complemento);
               const resultado = [...naoComplementos, ...complementosMarcados];
-              console.log('[Pagamento][EFFECT][DEBUG] Atualizando valorAdiantadoDetalhes. Não complementos:', naoComplementos, 'Novos complementos:', complementosMarcados, 'Resultado final:', resultado);
+              //
               return resultado;
             });
           } else {
-            console.log('[Pagamento][EFFECT][DEBUG] Nenhum complemento para adicionar ao valorAdiantadoDetalhes.');
+            //
           }
         } else {
           setPagamentoSalvo(false);
-          console.log('[Pagamento][EFFECT] Resposta não OK ao buscar pagamento salvo:', res.status, res.statusText);
+          //
         }
       } catch (e) {
         setPagamentoSalvo(false);
-        console.error('[Pagamento][EFFECT] Erro ao buscar pagamento salvo:', e);
+  //
       }
     }
     fetchPagamentoSalvo();

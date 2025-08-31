@@ -191,6 +191,7 @@ export default function ServicoManutencao() {
 
           // Após carregar o pedido, buscar conferências salvas (se existirem) e atualizar o form
           if (data.pedido && data.pedido.protocolo) {
+            // Buscar conferências
             fetchComAuth(`${config.apiURL}/conferencias?protocolo=${encodeURIComponent(data.pedido.protocolo)}`)
               .then(confRes => {
                 if (!confRes || !confRes.ok) return null;
@@ -198,13 +199,30 @@ export default function ServicoManutencao() {
               })
               .then(confData => {
                 if (confData && Array.isArray(confData.conferencias) && confData.conferencias.length > 0) {
-                  // Salva a última conferência encontrada (ou toda a lista, se preferir)
                   setForm(f => ({
                     ...f,
                     conferencia: confData.conferencias[confData.conferencias.length - 1]
                   }));
                 } else {
                   setForm(f => ({ ...f, conferencia: undefined }));
+                }
+              });
+
+            // Buscar pagamento salvo
+            fetchComAuth(`${config.apiURL}/pedido_pagamento/${encodeURIComponent(data.pedido.protocolo)}`)
+              .then(pagRes => {
+                if (!pagRes || !pagRes.ok) return null;
+                return pagRes.json();
+              })
+              .then(pagData => {
+                if (pagData && (pagData.id || pagData.status || pagData.valorPago || pagData.valorTotal)) {
+                  setForm(f => ({
+                    ...f,
+                    pagamento: {
+                      ...f.pagamento,
+                      ...pagData
+                    }
+                  }));
                 }
               });
           }
