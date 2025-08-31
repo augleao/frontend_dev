@@ -534,7 +534,20 @@ export default function ServicoManutencao() {
                 }
                 isFilled = !!pagamentoFilled;
               } else if (tab.key === 'execucao') {
-                isFilled = !!(form.execucao && (form.execucao.id || form.execucao.status === 'concluido' || form.execucao.status === 'concluído'));
+                let execucaoDebug = form.execucao;
+                let execucaoFilled = false;
+                if (execucaoDebug) {
+                  execucaoFilled = (
+                    execucaoDebug.id ||
+                    execucaoDebug.status === 'concluido' ||
+                    execucaoDebug.status === 'concluído'
+                  );
+                }
+                if (window && window.console) {
+                  console.log('[DEBUG][Aba Execucao] form.execucao:', execucaoDebug);
+                  console.log('[DEBUG][Aba Execucao] execucaoFilled:', execucaoFilled);
+                }
+                isFilled = !!execucaoFilled;
               } else if (tab.key === 'entrega') {
                 isFilled = !!(form.entrega && (form.entrega.data || form.entrega.retiradoPor || form.entrega.retirado_por));
               } else if (tab.key === 'historico') {
