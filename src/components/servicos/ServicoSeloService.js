@@ -1,3 +1,4 @@
+import config from '../../config';
 // Serviço para atualizar selo de execução de serviço
 export async function atualizarSeloExecucaoServico(id, seloData) {
   console.log('[atualizarSeloExecucaoServico] Enviando dados para backend:', { id, seloData });
