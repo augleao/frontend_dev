@@ -545,6 +545,11 @@ export default function ServicoManutencao() {
                 }
                 if (window && window.console) {
                   console.log('[DEBUG][Aba Execucao] form.execucao:', execucaoDebug);
+                  if (execucaoDebug && typeof execucaoDebug === 'object') {
+                    Object.entries(execucaoDebug).forEach(([k, v]) => {
+                      console.log(`[DEBUG][Aba Execucao] campo ${k}:`, v);
+                    });
+                  }
                   console.log('[DEBUG][Aba Execucao] execucaoFilled:', execucaoFilled);
                 }
                 isFilled = !!execucaoFilled;
