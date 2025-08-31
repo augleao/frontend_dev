@@ -1,6 +1,7 @@
   import React, { useState, useEffect } from 'react';
 import SeloEletronicoManager from './SeloEletronicoManager';
 import ClipboardImageUpload from './ClipboardImageUpload';
+import SeloFileUpload from './SeloFileUpload';
 import config from '../../config';
 
 const statusExecucao = [
@@ -216,7 +217,20 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
           <ClipboardImageUpload
             protocolo={protocolo}
             onUpload={() => {
-              // Recarrega os selos após upload de imagem
+              if (protocolo) {
+                const token = localStorage.getItem('token');
+                fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocolo)}`, {
+                  headers: { Authorization: `Bearer ${token}` }
+                })
+                  .then(res => res.json())
+                  .then(data => setSelos(data.selos || []))
+                  .catch(() => setSelos([]));
+              }
+            }}
+          />
+          <SeloFileUpload
+            protocolo={protocolo}
+            onUpload={() => {
               if (protocolo) {
                 const token = localStorage.getItem('token');
                 fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocolo)}`, {
