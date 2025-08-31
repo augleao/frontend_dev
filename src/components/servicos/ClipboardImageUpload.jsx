@@ -5,72 +5,31 @@ export default function ClipboardImageUpload({ protocolo, onUpload }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const buttonRef = useRef();
-  const fileInputRef = useRef();
-  // Handler para selecionar arquivo manualmente
-  const handleFileChange = async (e) => {
+
+  // Handler para importar imagem da área de transferência
+  const handleImportFromClipboard = async () => {
     setError('');
-    const file = e.target.files[0];
-    if (file) {
-      await handleImageUpload(file);
-      // Limpa o input para permitir novo upload do mesmo arquivo
-      e.target.value = '';
+    try {
+      const clipboardItems = await navigator.clipboard.read();
+      let foundImage = false;
+      for (const item of clipboardItems) {
+        for (const type of item.types) {
+          if (type.startsWith('image/')) {
+            foundImage = true;
+            const blob = await item.getType(type);
+            await handleImageUpload(blob);
+            break;
+          }
+        }
+        if (foundImage) break;
+      }
+      if (!foundImage) {
+        setError('A área de transferência não contém uma imagem.');
+      }
+    } catch (err) {
+      setError('Erro ao acessar a área de transferência.');
     }
   };
-  return (
-    <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', marginLeft: 8 }}>
-      <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-        <button
-          ref={buttonRef}
-          type="button"
-          onClick={handleImportFromClipboard}
-          disabled={uploading}
-          style={{
-            padding: '4px 10px',
-            background: '#f6c23e',
-            color: '#222',
-            border: '1.5px solid #f6c23e',
-            borderRadius: 6,
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: uploading ? 'not-allowed' : 'pointer',
-            marginLeft: 4
-          }}
-          title="Importar imagem da área de transferência"
-        >
-          {uploading ? 'Importando selo...' : '🖼️ Importar selo da área de transferência'}
-        </button>
-        {error && <span style={{ color: 'red', marginLeft: 6 }}>{error}</span>}
-      </span>
-      <span style={{ display: 'inline-flex', alignItems: 'center', marginTop: 6 }}>
-        <button
-          type="button"
-          onClick={() => fileInputRef.current && fileInputRef.current.click()}
-          disabled={uploading}
-          style={{
-            padding: '4px 10px',
-            background: '#36c2f6',
-            color: '#fff',
-            border: '1.5px solid #36c2f6',
-            borderRadius: 6,
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: uploading ? 'not-allowed' : 'pointer',
-            marginLeft: 4
-          }}
-          title="Selecionar arquivo de imagem do selo"
-        >
-          {uploading ? 'Importando selo...' : '📁 Selecionar arquivo de selo'}
-        </button>
-        <input
-          type="file"
-          accept="image/*"
-          ref={fileInputRef}
-          style={{ display: 'none' }}
-          onChange={handleFileChange}
-        />
-      </span>
-    </span>
-  );
 
   // Envia imagem para o backend (igual SeloEletronicoManager)
   const handleImageUpload = async (file) => {
