@@ -1,5 +1,5 @@
   import React, { useState, useEffect } from 'react';
-import SeloEletronicoManager from './SeloEletronicoManager';
+
 import ClipboardImageUpload from './ClipboardImageUpload';
 import SeloFileUpload from './SeloFileUpload';
 import config from '../../config';
@@ -327,9 +327,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
       </div>
       {/* Selos Eletrônicos - só aparece após salvar execução */}
       {/* Selos Eletrônicos - só aparece após salvar execução */}
-      {form.execucao && form.execucao.id && (
-        <SeloEletronicoManager protocolo={protocolo} onSelosChange={setSelos} />
-      )}
+  {/* (Bloco removido: Selos Eletrônicos) */}
       {/* Tabela de selos utilizada neste pedido - sempre no final do componente */}
       {form.execucao && form.execucao.id && selos.length > 0 && (
         <div style={{ marginTop: 16 }}>
