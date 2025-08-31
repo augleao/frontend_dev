@@ -1,4 +1,5 @@
   import React, { useState, useEffect } from 'react';
+  import { atualizarSeloExecucaoServico } from './ServicoSeloService';
 
 import ClipboardImageUpload from './ClipboardImageUpload';
 import SeloFileUpload from './SeloFileUpload';
@@ -439,7 +440,20 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
                           <button
                             style={{ background: '#388e3c', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
                             title="Salvar"
-                            onClick={() => {/* lógica de salvar será implementada depois */}}
+                            onClick={async () => {
+                              try {
+                                await atualizarSeloExecucaoServico(selo.id, editSelo);
+                                setSelos(prevSelos =>
+                                  prevSelos.map(s =>
+                                    s.id === selo.id ? { ...s, ...editSelo } : s
+                                  )
+                                );
+                                setEditingSeloId(null);
+                                setEditSelo({});
+                              } catch (error) {
+                                alert('Erro ao salvar selo: ' + error.message);
+                              }
+                            }}
                           >Salvar</button>
                           <button
                             style={{ background: '#aaa', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
