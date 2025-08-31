@@ -34,7 +34,7 @@ function ImportarAtos() {
       setMsg('');
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${apiURL}/api/atos`, {
+        const res = await fetch(`${apiURL}/atos`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -75,7 +75,7 @@ function ImportarAtos() {
     try {
       const token = localStorage.getItem('token');
       for (const ato of atos) {
-        const res = await fetch(`${apiURL}/api/atos/${ato.id}`, {
+        const res = await fetch(`${apiURL}/atos/${ato.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -108,7 +108,7 @@ function ImportarAtos() {
     setMsg('');
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${apiURL}/api/atos`, {
+      const res = await fetch(`${apiURL}/atos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
