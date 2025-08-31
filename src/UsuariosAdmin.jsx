@@ -93,6 +93,7 @@ export default function UsuariosAdmin() {
             <th>Email</th>
             <th>Serventia</th>
             <th>Cargo</th>
+            <th>Status</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -143,6 +144,14 @@ export default function UsuariosAdmin() {
                 )}
               </td>
               <td>
+                <span style={{
+                  color: usuario.status === 'ativo' ? 'green' : 'red',
+                  fontWeight: 'bold',
+                }}>
+                  {usuario.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                </span>
+              </td>
+              <td>
                 {editId === usuario.id ? (
                   <>
                     <button onClick={handleSave} style={buttonSaveStyle}>
@@ -156,9 +165,6 @@ export default function UsuariosAdmin() {
                   <>
                     <button onClick={() => handleEdit(usuario)} style={buttonEditStyle}>
                       Editar
-                    </button>
-                    <button onClick={() => handleDelete(usuario.id)} style={{ ...buttonDeleteStyle, marginLeft: 8 }}>
-                      Excluir
                     </button>
                   </>
                 )}
