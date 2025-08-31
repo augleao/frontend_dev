@@ -403,6 +403,9 @@ export default function ServicoManutencao() {
 
 
 
+  // Estado para abas
+  const [aba, setAba] = useState('cliente');
+
   return (
     <div style={{
       minHeight: '100vh',
