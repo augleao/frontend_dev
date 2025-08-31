@@ -499,7 +499,10 @@ export default function ServicoManutencao() {
               } else if (tab.key === 'entrada') {
                 isFilled = Array.isArray(atosPedido) && atosPedido.length > 0;
               } else if (tab.key === 'conferencia') {
-                isFilled = Array.isArray(atosPedido) && atosPedido.length > 0;
+                // Só fica verde se houver dados salvos em form.conferencia
+                isFilled = !!(form.conferencia && (
+                  (typeof form.conferencia === 'object' && Object.values(form.conferencia).some(v => v && v !== ''))
+                ));
               } else if (tab.key === 'pagamento') {
                 isFilled = !!(form.pagamento && (form.pagamento.valorPago || form.pagamento.status === 'pago'));
               } else if (tab.key === 'execucao') {
