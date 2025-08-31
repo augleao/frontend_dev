@@ -498,13 +498,23 @@ export default function ServicoManutencao() {
                   (typeof form.conferencia === 'object' && Object.values(form.conferencia).some(v => v && v !== ''))
                 ));
               } else if (tab.key === 'pagamento') {
-                isFilled = !!(form.pagamento && (
-                  (form.pagamento.status && form.pagamento.status !== 'pendente') ||
-                  (form.pagamento.valorPago && parseFloat(form.pagamento.valorPago) > 0) ||
-                  (form.pagamento.valorTotal && parseFloat(form.pagamento.valorTotal) > 0) ||
-                  (form.pagamento.data && form.pagamento.data !== '') ||
-                  (form.pagamento.forma && form.pagamento.forma !== '')
-                ));
+                let pagamentoDebug = form.pagamento;
+                let pagamentoFilled = false;
+                if (pagamentoDebug) {
+                  pagamentoFilled = (
+                    (pagamentoDebug.status && pagamentoDebug.status !== 'pendente') ||
+                    (pagamentoDebug.valorPago && parseFloat(pagamentoDebug.valorPago) > 0) ||
+                    (pagamentoDebug.valorTotal && parseFloat(pagamentoDebug.valorTotal) > 0) ||
+                    (pagamentoDebug.data && pagamentoDebug.data !== '') ||
+                    (pagamentoDebug.forma && pagamentoDebug.forma !== '')
+                  );
+                }
+                // LOG DE DEPURAÇÃO
+                if (window && window.console) {
+                  console.log('[DEBUG][Aba Pagamento] form.pagamento:', pagamentoDebug);
+                  console.log('[DEBUG][Aba Pagamento] pagamentoFilled:', pagamentoFilled);
+                }
+                isFilled = !!pagamentoFilled;
               } else if (tab.key === 'execucao') {
                 isFilled = !!(form.execucao && (form.execucao.status === 'concluido' || form.execucao.status === 'concluído'));
               } else if (tab.key === 'entrega') {
