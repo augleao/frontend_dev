@@ -1,21 +1,3 @@
-  // Buscar dados de execução salvos ao montar ou quando protocolo mudar
-  useEffect(() => {
-    if (protocolo && (!form.execucao || !form.execucao.id)) {
-      const token = localStorage.getItem('token');
-      fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(protocolo)}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => res.ok ? res.json() : null)
-        .then(data => {
-          if (data && (data.id || data.status || data.responsavel)) {
-            if (typeof onChange === 'function') {
-              onChange('execucao', data);
-            }
-          }
-        })
-        .catch(() => {});
-    }
-  }, [protocolo, form.execucao, onChange]);
   import React, { useState, useEffect } from 'react';
 
 import ClipboardImageUpload from './ClipboardImageUpload';
