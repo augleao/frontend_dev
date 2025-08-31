@@ -469,55 +469,24 @@ export default function ServicoManutencao() {
         margin: '0 auto',
         padding: '12px 24px 0 24px' // <-- alterado de '48px 24px 0 24px' para diminuir o espaçamento superior
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10, justifyContent: 'space-between' }}>
-          <h2 style={{
-            color: '#2c3e50',
-            fontWeight: 700,
-            fontSize: 28,
-            letterSpacing: 1,
-            margin: 0,
-            textShadow: '0 2px 8px #fff, 0 1px 0 #fff, 0 0px 2px #fff',
-            display: 'flex',
-            alignItems: 'center'
-          }}>
-            <span style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #fff, 0 0px 2px #fff' }}>Pedido - Protocolo:</span>
-            <span style={{
-              marginLeft: 12,
-              color: '#6c3483',
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              fontSize: 28,
-              textShadow: '0 2px 8px #fff, 0 1px 0 #fff, 0 0px 2px #fff'
-            }}>
-              {form.protocolo || 'Novo Pedido'}
-            </span>
-          </h2>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10, gap: 24, fontSize: 22, fontWeight: 600, color: '#2c3e50' }}>
+          <span style={{ fontFamily: 'monospace', color: '#6c3483', fontWeight: 700, fontSize: 22 }}>
+            Protocolo: {form.protocolo || 'Novo Pedido'}
+          </span>
           {form.status && (
             <span style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginLeft: 24
+              background: '#f5f5f5',
+              borderRadius: 8,
+              padding: '2px 16px',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: 18,
+              marginLeft: 0,
+              display: 'inline-block',
+              boxShadow: '0 1px 4px #eee',
+              backgroundColor: (form.status === 'Concluído' || form.status === 'concluido') ? '#27ae60' : (form.status === 'Cancelado' || form.status === 'cancelado') ? '#e74c3c' : (form.status === 'Aguardando documentos' || form.status === 'aguardando') ? '#f39c12' : '#3498db'
             }}>
-              <span style={{
-                color: '#2c3e50',
-                fontWeight: 700,
-                fontSize: 28,
-                fontFamily: 'monospace',
-                textShadow: '0 2px 8px #fff, 0 1px 0 #fff, 0 0px 2px #fff',
-                marginRight: 8
-              }}>
-                Status:
-              </span>
-              <span style={{
-                color: '#6c3483',
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                fontSize: 28,
-                textShadow: '0 2px 8px #fff, 0 1px 0 #fff, 0 0px 2px #fff',
-                marginLeft: 0
-              }}>
-                {form.status}
-              </span>
+              {form.status}
             </span>
           )}
         </div>
