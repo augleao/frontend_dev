@@ -144,12 +144,24 @@ export default function UsuariosAdmin() {
                 )}
               </td>
               <td>
-                <span style={{
-                  color: usuario.status === 'ativo' ? 'green' : 'red',
-                  fontWeight: 'bold',
-                }}>
-                  {usuario.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                </span>
+                {editId === usuario.id ? (
+                  <select
+                    name="status"
+                    value={editData.status}
+                    onChange={handleEditChange}
+                    style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                  >
+                    <option value="ativo">Ativo</option>
+                    <option value="inativo">Inativo</option>
+                  </select>
+                ) : (
+                  <span style={{
+                    color: usuario.status === 'ativo' ? 'green' : 'red',
+                    fontWeight: 'bold',
+                  }}>
+                    {usuario.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                  </span>
+                )}
               </td>
               <td>
                 {editId === usuario.id ? (
