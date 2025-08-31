@@ -225,6 +225,26 @@ export default function ServicoManutencao() {
                   }));
                 }
               });
+
+            // Buscar execução salva
+            fetchComAuth(`${config.apiURL}/execucao-servico?protocolo=${encodeURIComponent(data.pedido.protocolo)}`)
+              .then(execRes => {
+                if (!execRes || !execRes.ok) return null;
+                return execRes.json();
+              })
+              .then(execData => {
+                if (execData && (execData.id || execData.status)) {
+                  setForm(f => ({
+                    ...f,
+                    execucao: {
+                      ...execData,
+                      status: execData.status || (f.execucao && f.execucao.status) || 'em_andamento',
+                      observacoes: execData.observacoes || (f.execucao && f.execucao.observacoes) || '',
+                      responsavel: execData.responsavel || execData.usuario || (f.execucao && f.execucao.responsavel) || ''
+                    }
+                  }));
+                }
+              });
           }
           // Mapeia os combos do backend para o formato esperado pelo frontend
           const combosFormatados = Array.isArray(data.pedido.combos) 
