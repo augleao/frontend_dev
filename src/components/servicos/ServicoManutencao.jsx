@@ -491,27 +491,46 @@ export default function ServicoManutencao() {
               { key: 'execucao', label: 'Execução' },
               { key: 'entrega', label: 'Entrega' },
               { key: 'historico', label: 'Histórico' }
-            ].map(tab => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setAba(tab.key)}
-                style={{
-                  background: aba === tab.key ? '#fff' : 'transparent',
-                  border: 'none',
-                  borderBottom: aba === tab.key ? '3px solid #3498db' : '3px solid transparent',
-                  color: aba === tab.key ? '#3498db' : '#888',
-                  fontWeight: 700,
-                  fontSize: 16,
-                  padding: '10px 28px',
-                  cursor: aba === tab.key ? 'default' : 'pointer',
-                  outline: 'none',
-                  transition: 'all 0.2s'
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
+            ].map(tab => {
+              // Lógica para definir se cada aba está "preenchida"
+              let isFilled = false;
+              if (tab.key === 'cliente') {
+                isFilled = !!(form.cliente && form.cliente.nome && form.cliente.cpf);
+              } else if (tab.key === 'entrada') {
+                isFilled = Array.isArray(atosPedido) && atosPedido.length > 0;
+              } else if (tab.key === 'conferencia') {
+                isFilled = Array.isArray(atosPedido) && atosPedido.length > 0;
+              } else if (tab.key === 'pagamento') {
+                isFilled = !!(form.pagamento && (form.pagamento.valorPago || form.pagamento.status === 'pago'));
+              } else if (tab.key === 'execucao') {
+                isFilled = !!(form.execucao && (form.execucao.status === 'concluido' || form.execucao.status === 'concluído'));
+              } else if (tab.key === 'entrega') {
+                isFilled = !!(form.entrega && (form.entrega.data || form.entrega.retiradoPor || form.entrega.retirado_por));
+              } else if (tab.key === 'historico') {
+                isFilled = historicoStatus && historicoStatus.length > 0;
+              }
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setAba(tab.key)}
+                  style={{
+                    background: aba === tab.key ? '#fff' : 'transparent',
+                    border: 'none',
+                    borderBottom: aba === tab.key ? '3px solid #3498db' : '3px solid transparent',
+                    color: aba === tab.key ? '#3498db' : (isFilled ? '#27ae60' : '#e74c3c'),
+                    fontWeight: 700,
+                    fontSize: 16,
+                    padding: '10px 28px',
+                    cursor: aba === tab.key ? 'default' : 'pointer',
+                    outline: 'none',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
           {/* Conteúdo das abas */}
           {aba === 'cliente' && (
