@@ -28,26 +28,27 @@ function ImportarAtos() {
   const buttonCancelStyle = { ...buttonStyle, background: '#d32f2f' };
 
   // Busca os atos do backend ao montar o componente
-  useEffect(() => {
-    const fetchAtos = async () => {
-      setLoading(true);
-      setMsg('');
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${apiURL}/atos`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (res.ok) {
-          setAtos(data.atos);
-        } else {
-          setMsg(data.message || 'Erro ao carregar atos.');
-        }
-      } catch (err) {
-        setMsg('Erro ao carregar atos.');
+  // Função para buscar atos do backend
+  const fetchAtos = async () => {
+    setLoading(true);
+    setMsg('');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${apiURL}/atos`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAtos(data.atos);
+      } else {
+        setMsg(data.message || 'Erro ao carregar atos.');
       }
-      setLoading(false);
-    };
+    } catch (err) {
+      setMsg('Erro ao carregar atos.');
+    }
+    setLoading(false);
+  };
+  useEffect(() => {
     fetchAtos();
   }, []);
 
@@ -81,8 +82,8 @@ function ImportarAtos() {
         setLoading(false);
         return;
       }
-      setAtos(atos.map((ato, idx) => idx === editIndex ? data.ato : ato));
       setMsg('Ato salvo com sucesso!');
+      await fetchAtos(); // Recarrega a lista após salvar
     } catch (err) {
       setMsg('Erro ao salvar ato.');
     }
