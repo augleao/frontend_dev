@@ -69,7 +69,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
     } else {
       console.log('[Execucao][EFFECT] Não buscou execução: protocolo=', protocolo, 'form.execucao=', form.execucao);
     }
-  }, [protocolo, form.execucao, onChange]);
+  }, [protocolo, onChange]);
   // Função para salvar ou alterar execução do serviço
   const salvarOuAlterarExecucao = async () => {
     setSalvando(true);
