@@ -478,46 +478,55 @@ export default function ServicoManutencao() {
             marginBottom: 32
           }}
         >
-          {/* Moldura lilás envolvendo ServicoCliente e ServicoEntrada */}
-          <div style={{
-            border: '3px solid #9b59b6',
-            borderRadius: 24,
-            background: '#fdf8feff',
-            padding: 5,
-            marginBottom: 12,
-            boxShadow: '0 6px 32px rgba(155,89,182,0.10)'
-          }}>
-            {/* ServicoCliente - largura total, em cima */}
-            <div style={{ 
-              width: '100%', 
-              marginBottom: 0, // Removido para eliminar espaçamento extra
-              boxSizing: 'border-box'
-            }}>
-              <ServicoCliente form={form} clientes={clientes} onChange={handleFormChange} onClienteChange={handleClienteChange} />
-            </div>
-            {/* ServicoEntrada - largura total, embaixo */}
-            <div style={{ 
-              width: '100%',
-              boxSizing: 'border-box'
-            }}>
-              <ServicoEntrada
-                form={form}
-                tiposServico={tiposServico}
-                onChange={handleFormChange}
-                combosDisponiveis={combosDisponiveis}
-                atosPedido={atosPedido}
-                setAtosPedido={setAtosPedido}
-              />
-            </div>
+          {/* Abas de navegação dos serviços */}
+          <div style={{ display: 'flex', borderBottom: '2px solid #e3eaf5', marginBottom: 24 }}>
+            {[
+              { key: 'cliente', label: 'Cliente' },
+              { key: 'entrada', label: 'Entrada' },
+              { key: 'conferencia', label: 'Conferência' },
+              { key: 'pagamento', label: 'Pagamento' },
+              { key: 'execucao', label: 'Execução' },
+              { key: 'entrega', label: 'Entrega' }
+            ].map(tab => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setAba(tab.key)}
+                style={{
+                  background: aba === tab.key ? '#fff' : 'transparent',
+                  border: 'none',
+                  borderBottom: aba === tab.key ? '3px solid #3498db' : '3px solid transparent',
+                  color: aba === tab.key ? '#3498db' : '#888',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  padding: '10px 28px',
+                  cursor: aba === tab.key ? 'default' : 'pointer',
+                  outline: 'none',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-
-          {/* Novo componente de conferência - sempre habilitado */}
-          <div>
+          {/* Conteúdo das abas */}
+          {aba === 'cliente' && (
+            <ServicoCliente form={form} clientes={clientes} onChange={handleFormChange} onClienteChange={handleClienteChange} />
+          )}
+          {aba === 'entrada' && (
+            <ServicoEntrada
+              form={form}
+              tiposServico={tiposServico}
+              onChange={handleFormChange}
+              combosDisponiveis={combosDisponiveis}
+              atosPedido={atosPedido}
+              setAtosPedido={setAtosPedido}
+            />
+          )}
+          {aba === 'conferencia' && (
             <ServicoConferencia protocolo={form.protocolo} atosPedido={atosPedido} disabled={false} />
-          </div>
-
-          {/* Pagamento - sempre habilitado e visível */}
-          <div>
+          )}
+          {aba === 'pagamento' && (
             <ServicoPagamento
               form={form}
               onChange={handlePagamentoChange}
@@ -525,27 +534,23 @@ export default function ServicoManutencao() {
               valorAdiantadoDetalhes={form.valorAdiantadoDetalhes || []}
               disabled={false}
             />
-          </div>
-
-          {/* Execução - sempre habilitado */}
-          <div>
+          )}
+          {aba === 'execucao' && (
             <ServicoExecucao
               form={form}
               onChange={handleExecucaoChange}
               pedidoId={form.protocolo}
               disabled={false}
             />
-          </div>
-
-          {/* Entrega - sempre habilitado e visível */}
-          <div>
+          )}
+          {aba === 'entrega' && (
             <ServicoEntrega
               form={form}
               onChange={handleEntregaChange}
               pedidoId={form.protocolo}
               disabled={false}
             />
-          </div>
+          )}
           {/* Só mostra o botão de excluir se há um pedido carregado */}
           {form.protocolo && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
