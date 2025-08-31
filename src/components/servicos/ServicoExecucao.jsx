@@ -279,21 +279,16 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
               protocolo={protocolo}
               onUpload={() => {
                 if (protocolo) {
-                  setImportandoSelo(true);
                   const token = localStorage.getItem('token');
                   fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocolo)}`, {
                     headers: { Authorization: `Bearer ${token}` }
                   })
                     .then(res => res.json())
                     .then(data => setSelos(data.selos || []))
-                    .catch(() => setSelos([]))
-                    .finally(() => setImportandoSelo(false));
+                    .catch(() => setSelos([]));
                 }
               }}
-              importando={importandoSelo}
             />
-  // Estado para controlar se está importando selo
-  const [importandoSelo, setImportandoSelo] = useState(false);
           </div>
         </div>
       </div>
