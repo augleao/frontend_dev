@@ -44,11 +44,16 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         })
         .then(data => {
           console.log('[Execucao][EFFECT] Dados recebidos do backend (sempre mostra):', data);
-          if (data && (data.id || data.status || data.responsavel)) {
+          if (data && (data.id || data.status || data.responsavel || data.usuario)) {
+            // Mapeia 'usuario' do backend para 'responsavel' no frontend
+            const execucaoAtualizada = {
+              ...data,
+              responsavel: data.responsavel || data.usuario || ''
+            };
             if (!form.execucao || !form.execucao.id) {
               if (typeof onChange === 'function') {
-                console.log('[Execucao][EFFECT] Chamando onChange para atualizar execucao:', data);
-                onChange('execucao', data);
+                console.log('[Execucao][EFFECT] Chamando onChange para atualizar execucao:', execucaoAtualizada);
+                onChange('execucao', execucaoAtualizada);
               }
             }
           } else {
