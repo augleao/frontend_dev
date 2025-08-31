@@ -50,11 +50,9 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
               ...data,
               responsavel: data.responsavel || data.usuario || ''
             };
-            if (!form.execucao || !form.execucao.id) {
-              if (typeof onChange === 'function') {
-                console.log('[Execucao][EFFECT] Chamando onChange para atualizar execucao:', execucaoAtualizada);
-                onChange('execucao', execucaoAtualizada);
-              }
+            if (typeof onChange === 'function') {
+              console.log('[Execucao][EFFECT] Chamando onChange para atualizar execucao:', execucaoAtualizada);
+              onChange('execucao', execucaoAtualizada);
             }
           } else {
             console.log('[Execucao][EFFECT] Nenhuma execução encontrada no backend para este protocolo.');
