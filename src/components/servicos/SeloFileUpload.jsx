@@ -51,12 +51,13 @@ export default function SeloFileUpload({ protocolo, onUpload }) {
   };
 
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 8, marginTop: 8 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 0, width: '100%' }}>
       <button
         type="button"
         onClick={() => fileInputRef.current && fileInputRef.current.click()}
         disabled={uploading}
         style={{
+          width: 220,
           padding: '4px 10px',
           background: '#36c2f6',
           color: '#fff',
@@ -65,7 +66,7 @@ export default function SeloFileUpload({ protocolo, onUpload }) {
           fontSize: 13,
           fontWeight: 600,
           cursor: uploading ? 'not-allowed' : 'pointer',
-          marginLeft: 4
+          marginLeft: 0
         }}
         title="Selecionar arquivo de imagem do selo"
       >

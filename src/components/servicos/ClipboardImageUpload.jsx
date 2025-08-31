@@ -66,22 +66,23 @@ export default function ClipboardImageUpload({ protocolo, onUpload }) {
   };
 
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 8 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 0, width: '100%' }}>
       <button
         ref={buttonRef}
         type="button"
         onClick={handleImportFromClipboard}
         disabled={uploading}
         style={{
+          width: 220,
           padding: '4px 10px',
-          background: '#f6c23e',
-          color: '#222',
-          border: '1.5px solid #f6c23e',
+          background: '#36c2f6',
+          color: '#fff',
+          border: '1.5px solid #36c2f6',
           borderRadius: 6,
           fontSize: 13,
           fontWeight: 600,
           cursor: uploading ? 'not-allowed' : 'pointer',
-          marginLeft: 4
+          marginLeft: 0
         }}
         title="Importar imagem da área de transferência"
       >

@@ -214,34 +214,36 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
               fontWeight: 500
             }}
           />
-          <ClipboardImageUpload
-            protocolo={protocolo}
-            onUpload={() => {
-              if (protocolo) {
-                const token = localStorage.getItem('token');
-                fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocolo)}`, {
-                  headers: { Authorization: `Bearer ${token}` }
-                })
-                  .then(res => res.json())
-                  .then(data => setSelos(data.selos || []))
-                  .catch(() => setSelos([]));
-              }
-            }}
-          />
-          <SeloFileUpload
-            protocolo={protocolo}
-            onUpload={() => {
-              if (protocolo) {
-                const token = localStorage.getItem('token');
-                fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocolo)}`, {
-                  headers: { Authorization: `Bearer ${token}` }
-                })
-                  .then(res => res.json())
-                  .then(data => setSelos(data.selos || []))
-                  .catch(() => setSelos([]));
-              }
-            }}
-          />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, margin: '8px 0' }}>
+            <ClipboardImageUpload
+              protocolo={protocolo}
+              onUpload={() => {
+                if (protocolo) {
+                  const token = localStorage.getItem('token');
+                  fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocolo)}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                  })
+                    .then(res => res.json())
+                    .then(data => setSelos(data.selos || []))
+                    .catch(() => setSelos([]));
+                }
+              }}
+            />
+            <SeloFileUpload
+              protocolo={protocolo}
+              onUpload={() => {
+                if (protocolo) {
+                  const token = localStorage.getItem('token');
+                  fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocolo)}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                  })
+                    .then(res => res.json())
+                    .then(data => setSelos(data.selos || []))
+                    .catch(() => setSelos([]));
+                }
+              }}
+            />
+          </div>
         </div>
       </div>
       {/* Botões de ação Execução */}
