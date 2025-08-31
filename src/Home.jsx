@@ -38,11 +38,6 @@ function Home() {
       }}>
 
       </div>
-      <img
-        src="https://recivil.com.br/wp-content/uploads/2020/08/logo.jpg"
-        alt="Cartório"
-        style={{ width: 120, opacity: 0.12, position: 'absolute', bottom: 40, right: 40, pointerEvents: 'none' }}
-      />
     </div>
   );
 }
