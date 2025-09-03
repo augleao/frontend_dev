@@ -12,7 +12,7 @@ export default function TributacaoSearch({ tributacaoSelecionada, setTributacaoS
       return;
     }
     setLoading(true);
-    fetch(`${apiURL}/codigos-gratuitos?search=${encodeURIComponent(searchTerm)}`)
+    fetch(`${apiURL}/codigos-tributarios?search=${encodeURIComponent(searchTerm)}`)
       .then(res => res.json())
       .then(data => {
         setSuggestions(data.codigos || []);

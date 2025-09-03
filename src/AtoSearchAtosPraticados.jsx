@@ -48,7 +48,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-  `${config.apiURL}/codigos-gratuitos?search=${encodeURIComponent(term)}`,
+  `${config.apiURL}/codigos-tributarios?search=${encodeURIComponent(term)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
