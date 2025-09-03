@@ -235,7 +235,7 @@ useEffect(() => {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `/api/codigos-gratuitos?search=${encodeURIComponent(
+          `${apiURL}/codigos-tributarios?search=${encodeURIComponent(
             searchTerm
           )}`,
           {
