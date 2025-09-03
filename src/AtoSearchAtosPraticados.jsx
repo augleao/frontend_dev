@@ -39,31 +39,35 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
 
   // Função para buscar códigos tributários
   const buscarCodigosTributarios = async (term) => {
+    console.log('[DEBUG] buscarCodigosTributarios called with term:', term);
     if (term.trim() === '') {
       setCodigoTributarioSuggestions([]);
+      console.log('[DEBUG] term vazio, suggestions limpadas');
       return;
     }
-    
     setLoadingCodigoTributario(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(
-  `${config.apiURL}/codigos-tributarios?search=${encodeURIComponent(term)}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const url = `${config.apiURL}/codigos-tributarios?search=${encodeURIComponent(term)}`;
+      console.log('[DEBUG] Fetching:', url);
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
+      console.log('[DEBUG] codigos-tributarios response:', data);
       if (res.ok) {
         setCodigoTributarioSuggestions(data.codigos || []);
+        console.log('[DEBUG] setCodigoTributarioSuggestions:', data.codigos || []);
       } else {
         setCodigoTributarioSuggestions([]);
+        console.log('[DEBUG] setCodigoTributarioSuggestions: [] (response not ok)');
       }
     } catch (error) {
       console.error('Erro ao buscar códigos tributários:', error);
       setCodigoTributarioSuggestions([]);
     }
     setLoadingCodigoTributario(false);
+    console.log('[DEBUG] setLoadingCodigoTributario(false)');
   };
 
   // Função para selecionar código tributário
@@ -352,6 +356,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
 
   // useEffect para buscar códigos tributários com debounce
   useEffect(() => {
+    console.log('[DEBUG] useEffect codigoTributarioTerm:', codigoTributarioTerm);
     if (codigoTributarioDebounceTimeout.current) {
       clearTimeout(codigoTributarioDebounceTimeout.current);
     }
@@ -455,6 +460,21 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
               type="text"
               value={codigoTributarioTerm}
               onChange={(e) => setCodigoTributarioTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  // Try to find a matching suggestion by code or description
+                  const match = codigoTributarioSuggestions.find(
+                    (c) =>
+                      c.codigo.toLowerCase() === codigoTributarioTerm.trim().toLowerCase() ||
+                      c.descricao.toLowerCase() === codigoTributarioTerm.trim().toLowerCase()
+                  );
+                  if (match) {
+                    handleSelectCodigoTributario(match);
+                  } else {
+                    // Optionally: alert or ignore if not found
+                  }
+                }
+              }}
               placeholder="Digite código ou descrição"
               style={{
                 width: '100%',
