@@ -36,8 +36,13 @@ function MeusFechamentos() {
       // 2. Buscar usuários da serventia se caixa unificado
       if (caixaUnificadoDB) {
         try {
-          const usuariosMap = await getUsuariosMap();
-          usuariosDaServentia = Array.from(usuariosMap.values()).filter(u => u.serventia === usuario.serventia);
+          const token = localStorage.getItem('token');
+          const resUsuarios = await fetch(`${apiURL}/usuarios/mesma-serventia`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (!resUsuarios.ok) throw new Error('Erro ao buscar usuários da mesma serventia');
+          const dataUsuarios = await resUsuarios.json();
+          usuariosDaServentia = dataUsuarios.usuarios || [];
           setUsuariosServentia(usuariosDaServentia);
           console.log('[RelatoriosCaixaDiario] Usuários da mesma serventia:', usuariosDaServentia);
         } catch (e) {
