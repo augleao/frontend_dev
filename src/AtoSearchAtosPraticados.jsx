@@ -14,13 +14,28 @@ import config from './config'; // ajuste o caminho se necessário
   };
 
 export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }) {
-  // Lista de linhas para adicionar atos
-  const [atosParaAdicionar, setAtosParaAdicionar] = useState([
-    { searchTerm: '', suggestions: [], loadingSuggestions: false, selectedAto: null, quantidade: 1, codigoTributarioTerm: '', codigoTributarioSuggestions: [], loadingCodigoTributario: false, selectedCodigoTributario: null }
-  ]);
-  // Um array de refs para debounces por linha
-  const debounceTimeout = useRef([]);
-  const codigoTributarioDebounceTimeout = useRef([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [selectedAto, setSelectedAto] = useState(null);
+  const [pagamentos, setPagamentos] = useState(
+    formasPagamento.reduce((acc, fp) => {
+      acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
+      return acc;
+    }, {})
+  );
+  const [quantidade, setQuantidade] = useState(1);
+  
+  // Estados para busca de código tributário
+  const [codigoTributarioTerm, setCodigoTributarioTerm] = useState('');
+  const [codigoTributarioSuggestions, setCodigoTributarioSuggestions] = useState([]);
+  const [loadingCodigoTributario, setLoadingCodigoTributario] = useState(false);
+  const [selectedCodigoTributario, setSelectedCodigoTributario] = useState(null);
+  
+  const [atosTabela, setAtosTabela] = useState([]);
+  const [loadingAtosTabela, setLoadingAtosTabela] = useState(false);
+  const debounceTimeout = useRef(null);
+  const codigoTributarioDebounceTimeout = useRef(null);
 
   // Função para buscar códigos tributários
   const buscarCodigosTributarios = async (term) => {
