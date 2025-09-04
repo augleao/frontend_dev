@@ -37,7 +37,7 @@ function MeusFechamentos() {
       if (caixaUnificadoDB) {
         try {
           const token = localStorage.getItem('token');
-          const resUsuarios = await fetch(`${apiURL}/usuarios/mesma-serventia`, {
+          const resUsuarios = await fetch(`${apiURL}/usuarios/mesma-serventia?serventia=${encodeURIComponent(usuario.serventia)}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (!resUsuarios.ok) throw new Error('Erro ao buscar usuários da mesma serventia');
