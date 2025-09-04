@@ -7,59 +7,63 @@ function MeusFechamentos() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
   const [usuariosServentia, setUsuariosServentia] = useState([]);
+  const [caixaUnificado, setCaixaUnificado] = useState(false);
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
   const nomeUsuario = usuario?.nome || '';
+  const idServentia = usuario?.serventia_id || usuario?.serventiaId || usuario?.serventia;
 
   useEffect(() => {
-    async function fetchFechamentosEUsuarios() {
+    async function fetchConfigECaixas() {
       setLoading(true);
       setErro('');
-      let usuariosDaServentia = [];
+      let caixaUnificadoDB = false;
+      let usuariosDaServentia = [usuario];
+
+      // 1. Buscar config de caixa unificado
       try {
-        console.log('[MeusFechamentos] Usuário logado:', usuario);
-        // Buscar usuários da mesma serventia
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${apiURL}/serventias/${idServentia}`,
+          { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        caixaUnificadoDB = !!data.caixa_unificado;
+        setCaixaUnificado(caixaUnificadoDB);
+      } catch (e) {
+        setErro('Erro ao buscar configuração da serventia: ' + (e.message || e));
+      }
+
+      // 2. Buscar usuários da serventia se caixa unificado
+      if (caixaUnificadoDB) {
         try {
           const usuariosMap = await getUsuariosMap();
           usuariosDaServentia = Array.from(usuariosMap.values()).filter(u => u.serventia === usuario.serventia);
-          console.log('[MeusFechamentos] Usuários da mesma serventia encontrados:', usuariosDaServentia);
           setUsuariosServentia(usuariosDaServentia);
         } catch (e) {
-          if (e && e.message && e.message.includes('403')) {
-            setErro('Você não tem permissão para listar todos os usuários. Serão exibidos apenas seus próprios fechamentos.');
-            usuariosDaServentia = [usuario];
-            setUsuariosServentia([usuario]);
-          } else {
-            setErro('Erro ao buscar usuários: ' + (e.message || e));
-            setUsuariosServentia([usuario]);
-            usuariosDaServentia = [usuario];
-          }
+          setErro('Erro ao buscar usuários: ' + (e.message || e));
+          usuariosDaServentia = [usuario];
+          setUsuariosServentia([usuario]);
         }
-        // Montar a query string se houver usuários da serventia
+      } else {
+        setUsuariosServentia([usuario]);
+      }
+
+      // 3. Buscar fechamentos
+      try {
         let url = `${apiURL}/meus-fechamentos`;
-        if (usuariosDaServentia.length > 0) {
+        if (caixaUnificadoDB && usuariosDaServentia.length > 0) {
           const nomes = usuariosDaServentia.map(u => u.nome).join(',');
           url += `?usuarios=${encodeURIComponent(nomes)}`;
-          console.log('[MeusFechamentos] Enviando lista de usuários na query:', nomes);
         }
         const token = localStorage.getItem('token');
-        const res = await fetch(
-          url,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
-        console.log('[MeusFechamentos] Fechamentos recebidos:', data.fechamentos);
         setFechamentos(data.fechamentos || []);
       } catch (e) {
-        setErro(e.message);
-        console.error('[MeusFechamentos] Erro ao buscar usuários/fechamentos:', e);
+        setErro('Erro ao buscar fechamentos: ' + (e.message || e));
       }
       setLoading(false);
     }
-    fetchFechamentosEUsuarios();
+    fetchConfigECaixas();
   }, [nomeUsuario, usuario?.serventia]);
-
-  console.log('Usuários da mesma serventia:', usuariosServentia);
-  console.log('Fechamentos:', fechamentos);
 
   return (
     <div style={{
@@ -70,11 +74,9 @@ function MeusFechamentos() {
       maxWidth: 900,
       boxShadow: '0 4px 16px rgba(0,0,0,0.08)'
     }}>
-      <h2 style={{ marginBottom: 18, color: '#2c3e50' }}>🗂️ Meus Fechamentos de Caixa</h2>
-  {/* Lista de usuários da mesma serventia removida */}
+      <h2 style={{ marginBottom: 18, color: '#2c3e50' }}>🗂️ Fechamentos de Caixa</h2>
       {loading && <div>Carregando...</div>}
       {erro && <div style={{ color: 'red' }}>{erro}</div>}
-      {/* A tabela de fechamentos permanece igual por enquanto */}
       {!loading && fechamentos.length === 0 && <div>Nenhum fechamento encontrado.</div>}
       {!loading && fechamentos.length > 0 && (
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15 }}>
@@ -90,11 +92,9 @@ function MeusFechamentos() {
           <tbody>
             {fechamentos
               .filter(f => {
-                // Se houver lista de usuários da serventia, filtra só os fechamentos desses usuários
                 if (usuariosServentia.length > 0) {
                   return f.codigo === '0001' && usuariosServentia.some(u => u.nome === f.usuario);
                 }
-                // Caso não tenha lista, mantém filtro antigo (apenas código 0001)
                 return f.codigo === '0001';
               })
               .map((f, idx) => {
