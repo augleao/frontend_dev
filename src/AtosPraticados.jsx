@@ -6,7 +6,7 @@ import {
   gerarRelatorioPDFAtosPraticados,
 } from './utils';
 import DataSelector from './DataSelector';
-import AdicionarAtoModal from './AdicionarAtoModal';
+import AtoSearchAtosPraticados from './AtoSearchAtosPraticados';
 import FormasPagamento from './FormasPagamento';
 import AtosTable from './AtosTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
@@ -16,7 +16,6 @@ import TributacaoSearch from './TributacaoSearch'; // Adicione esta linha no top
 //import { gerarRelatorioPDFAtosPraticados } from './components/RelatorioPDF';
 
 function AtosPraticados() {
-  const [showAdicionarAtoModal, setShowAdicionarAtoModal] = useState(false);
   // Estados
   const [dataSelecionada, setDataSelecionada] = useState(() => {
     const hoje = new Date();
@@ -350,81 +349,112 @@ useEffect(() => {
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '12px',
+      padding: '12px', // reduzido de 20px
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
     }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+      {/* Container Principal */}
+      <div style={{
+        maxWidth: '1400px',
+        margin: '0 auto',
+        width: '100%'
+      }}>
+        {/* Header */}
         <div style={{
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(10px)',
           borderRadius: '16px',
-          padding: '16px',
-          marginBottom: '12px',
+          padding: '16px', // reduzido de 25px
+          marginBottom: '12px', // reduzido de 20px
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '10px'
+          gap: '10px' // reduzido de 15px
+        }}>      <h1 style={{ 
+          margin: 0, 
+          color: '#2c3e50',
+          fontSize: '24px', // reduzido de 28px
+          fontWeight: '600'
         }}>
-          <h1 style={{ margin: 0, color: '#2c3e50', fontSize: '24px', fontWeight: '600' }}>
-            🔗 Atos Praticados Neste Dia
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ color: '#666', fontSize: '13px' }}>👤 Usuário:</span>
-              <input
-                type="text"
-                value={nomeUsuario}
-                readOnly
-                tabIndex={-1}
-                style={{
-                  padding: '6px 10px',
-                  borderRadius: '8px',
-                  border: '2px solid rgb(0, 0, 0)',
-                  backgroundColor: '#e3f2fd',
-                  fontWeight: '600',
-                  color: '#000',
-                  fontSize: '13px',
-                  pointerEvents: 'none',
-                }}
-              />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ color: '#666', fontSize: '13px' }}>📅</span>
-              <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-          gap: '12px',
-          marginBottom: '12px',
-          maxWidth: '100%',
-          overflow: 'hidden'
+          🔗 Atos Praticados Neste Dia
+        </h1>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '10px', // reduzido de 15px
+          flexWrap: 'wrap'
         }}>
-          <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)' }}>
-            <h3 style={{ margin: '0 0 12px 0', color: '#2c3e50', fontSize: '16px', fontWeight: '600', borderBottom: '2px solid #27ae60', paddingBottom: '6px' }}>
-              ➕ Adicionar Ato
-            </h3>
-            <button onClick={() => setShowAdicionarAtoModal(true)} style={{ marginBottom: 12, padding: '8px 16px', background: '#27ae60', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}>
-              Adicionar Ato/Combo
-            </button>
-            <AdicionarAtoModal
-              open={showAdicionarAtoModal}
-              onClose={() => setShowAdicionarAtoModal(false)}
-              onAdicionar={(novoAto) => {
-                setAtos(prev => [...prev, { ...novoAto, usuario: nomeUsuario, data: dataSelecionada }]);
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px' // reduzido de 8px
+          }}>
+            <span style={{ color: '#666', fontSize: '13px' }}>👤 Usuário:</span>
+            <input
+              type="text"
+              value={nomeUsuario}
+              readOnly
+              tabIndex={-1}
+              style={{
+                padding: '6px 10px', // reduzido de 8px 12px
+                borderRadius: '8px',
+                border: '2px solid rgb(0, 0, 0)',
+                backgroundColor: '#e3f2fd',
+                fontWeight: '600',
+                color: '#000',
+                fontSize: '13px', // reduzido de 14px
+                pointerEvents: 'none',
               }}
-              combosDisponiveis={[]} // TODO: passar combos reais se houver
             />
+          </div>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px' // reduzido de 8px
+          }}>
+            <span style={{ color: '#666', fontSize: '13px' }}>📅</span>
+            <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
           </div>
         </div>
       </div>
+
+      {/* Layout Principal - Grid Responsivo */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+        gap: '12px', // reduzido de 20px
+        marginBottom: '12px', // reduzido de 20px
+        maxWidth: '100%',
+        overflow: 'hidden'
+      }}>
+        {/* Seção de Adição de Atos */}
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '16px', // reduzido de 25px
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+        }}>
+          <h3 style={{
+            margin: '0 0 12px 0', // reduzido de 0 0 20px 0
+            color: '#2c3e50',
+            fontSize: '16px', // reduzido de 18px
+            fontWeight: '600',
+            borderBottom: '2px solid #27ae60',
+            paddingBottom: '6px' // reduzido de 10px
+          }}>
+            ➕ Adicionar Ato
+          </h3>
+          {/* Integração do AtoSearchAtosPraticados */}
+          <AtoSearchAtosPraticados
+            dataSelecionada={dataSelecionada}
+            nomeUsuario={nomeUsuario}
+          />
+        </div>
+      </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default AtosPraticados;
