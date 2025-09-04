@@ -18,7 +18,7 @@ function MeusFechamentos() {
       setErro('');
       let caixaUnificadoDB = false;
       let usuariosDaServentia = [usuario];
-
+      console.log('[RelatoriosCaixaDiario] Usuário logado:', usuario);
       // 1. Buscar config de caixa unificado
       try {
         const token = localStorage.getItem('token');
@@ -27,8 +27,10 @@ function MeusFechamentos() {
         const data = await res.json();
         caixaUnificadoDB = !!data.caixa_unificado;
         setCaixaUnificado(caixaUnificadoDB);
+        console.log('[RelatoriosCaixaDiario] Configuração caixa_unificado:', data.caixa_unificado, '| caixaUnificadoDB:', caixaUnificadoDB);
       } catch (e) {
         setErro('Erro ao buscar configuração da serventia: ' + (e.message || e));
+        console.error('[RelatoriosCaixaDiario] Erro ao buscar configuração da serventia:', e);
       }
 
       // 2. Buscar usuários da serventia se caixa unificado
@@ -37,13 +39,16 @@ function MeusFechamentos() {
           const usuariosMap = await getUsuariosMap();
           usuariosDaServentia = Array.from(usuariosMap.values()).filter(u => u.serventia === usuario.serventia);
           setUsuariosServentia(usuariosDaServentia);
+          console.log('[RelatoriosCaixaDiario] Usuários da mesma serventia:', usuariosDaServentia);
         } catch (e) {
           setErro('Erro ao buscar usuários: ' + (e.message || e));
           usuariosDaServentia = [usuario];
           setUsuariosServentia([usuario]);
+          console.error('[RelatoriosCaixaDiario] Erro ao buscar usuários:', e);
         }
       } else {
         setUsuariosServentia([usuario]);
+        console.log('[RelatoriosCaixaDiario] Caixa não unificado, usando apenas usuário logado:', usuario);
       }
 
       // 3. Buscar fechamentos
@@ -52,13 +57,18 @@ function MeusFechamentos() {
         if (caixaUnificadoDB && usuariosDaServentia.length > 0) {
           const nomes = usuariosDaServentia.map(u => u.nome).join(',');
           url += `?usuarios=${encodeURIComponent(nomes)}`;
+          console.log('[RelatoriosCaixaDiario] URL de fechamentos (unificado):', url);
+        } else {
+          console.log('[RelatoriosCaixaDiario] URL de fechamentos (não unificado):', url);
         }
         const token = localStorage.getItem('token');
         const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
         setFechamentos(data.fechamentos || []);
+        console.log('[RelatoriosCaixaDiario] Fechamentos recebidos:', data.fechamentos);
       } catch (e) {
         setErro('Erro ao buscar fechamentos: ' + (e.message || e));
+        console.error('[RelatoriosCaixaDiario] Erro ao buscar fechamentos:', e);
       }
       setLoading(false);
     }
