@@ -22,7 +22,7 @@ function MeusFechamentos() {
       // 1. Buscar config de caixa unificado
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${apiURL}/serventias/${idServentia}`,
+        const res = await fetch(`${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(usuario.serventia)}`,
           { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
         caixaUnificadoDB = !!data.caixa_unificado;
