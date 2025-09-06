@@ -14,6 +14,20 @@ import config from './config'; // ajuste o caminho se necessário
   };
 
 export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }) {
+  // Função para importar atos via API
+  async function handleImportarAtos() {
+    try {
+      const token = localStorage.getItem('token');
+      const url = `${config.apiURL}/selos-execucao-servico/${encodeURIComponent(dataSelecionada)}`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      // TODO: lógica para importar os atos para a lista
+      console.log('Atos importados:', data);
+      alert('Importação de atos concluída (lógica de integração pendente).');
+    } catch (e) {
+      alert('Erro ao importar atos: ' + e.message);
+    }
+  }
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
