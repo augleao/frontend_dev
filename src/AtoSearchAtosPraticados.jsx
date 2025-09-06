@@ -40,6 +40,22 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
   // Função para buscar códigos tributários
   const buscarCodigosTributarios = async (term) => {
     console.log('[DEBUG] buscarCodigosTributarios called with term:', term);
+      const [atosParaAdicionar, setAtosParaAdicionar] = useState([]);
+      
+      // Função para importar atos via API
+      async function handleImportarAtos() {
+        try {
+          const token = localStorage.getItem('token');
+          const url = `${config.apiURL}/selos-execucao-servico/${encodeURIComponent(dataSelecionada)}`;
+          const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+          const data = await res.json();
+          // TODO: lógica para importar os atos para a lista
+          console.log('Atos importados:', data);
+          alert('Importação de atos concluída (lógica de integração pendente).');
+        } catch (e) {
+          alert('Erro ao importar atos: ' + e.message);
+        }
+      }
     if (term.trim() === '') {
       setCodigoTributarioSuggestions([]);
       console.log('[DEBUG] term vazio, suggestions limpadas');
