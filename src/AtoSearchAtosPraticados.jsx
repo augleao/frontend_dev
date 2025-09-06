@@ -616,12 +616,28 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
               borderRadius: 8,
               cursor: (selectedAto && selectedCodigoTributario) ? 'pointer' : 'not-allowed',
               fontWeight: 'bold',
-              fontSize: '15px' // reduzido de 16px
+              fontSize: '15px', // reduzido de 16px
+              marginRight: '10px'
             }}
             onClick={adicionarAto}
             disabled={!selectedAto || !selectedCodigoTributario}
           >
             ➕ Adicionar Ato
+          </button>
+          <button
+            style={{
+              padding: '8px 16px',
+              background: '#1976d2',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '15px'
+            }}
+            onClick={handleImportarAtos}
+          >
+            ⬇️ Importar Atos
           </button>
         </div>
       </div>
