@@ -25,37 +25,22 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     }, {})
   );
   const [quantidade, setQuantidade] = useState(1);
-  
+
   // Estados para busca de código tributário
   const [codigoTributarioTerm, setCodigoTributarioTerm] = useState('');
   const [codigoTributarioSuggestions, setCodigoTributarioSuggestions] = useState([]);
   const [loadingCodigoTributario, setLoadingCodigoTributario] = useState(false);
   const [selectedCodigoTributario, setSelectedCodigoTributario] = useState(null);
-  
+
   const [atosTabela, setAtosTabela] = useState([]);
   const [loadingAtosTabela, setLoadingAtosTabela] = useState(false);
+  const [atosParaAdicionar, setAtosParaAdicionar] = useState([]); // <-- MOVIDO PARA O TOPO
   const debounceTimeout = useRef(null);
   const codigoTributarioDebounceTimeout = useRef(null);
 
   // Função para buscar códigos tributários
   const buscarCodigosTributarios = async (term) => {
     console.log('[DEBUG] buscarCodigosTributarios called with term:', term);
-      const [atosParaAdicionar, setAtosParaAdicionar] = useState([]);
-      
-      // Função para importar atos via API
-      async function handleImportarAtos() {
-        try {
-          const token = localStorage.getItem('token');
-          const url = `${config.apiURL}/selos-execucao-servico/${encodeURIComponent(dataSelecionada)}`;
-          const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-          const data = await res.json();
-          // TODO: lógica para importar os atos para a lista
-          console.log('Atos importados:', data);
-          alert('Importação de atos concluída (lógica de integração pendente).');
-        } catch (e) {
-          alert('Erro ao importar atos: ' + e.message);
-        }
-      }
     if (term.trim() === '') {
       setCodigoTributarioSuggestions([]);
       console.log('[DEBUG] term vazio, suggestions limpadas');
