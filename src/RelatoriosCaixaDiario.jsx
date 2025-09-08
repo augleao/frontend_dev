@@ -127,7 +127,7 @@ function MeusFechamentos() {
                 );
 
                 // Determinar cor de fundo baseada na comparação com fechamento anterior
-                let backgroundColor = '#e8f5e8'; // verde claro padrão
+                let backgroundColor = '#d4edda'; // verde padrão (mesma cor do CaixaDiario)
                 
                 if (idx > 0) {
                   const fechamentoAnterior = sortedArray[idx - 1];
@@ -137,7 +137,7 @@ function MeusFechamentos() {
                   const diferenca = Math.abs(valorFinalAnterior - valorInicialAtual);
                   
                   if (diferenca > 2.00) {
-                    backgroundColor = '#ffe8e8'; // vermelho claro se diferença > R$2,00
+                    backgroundColor = '#ffd1d1'; // vermelho se diferença > R$2,00 (mesma cor do CaixaDiario)
                   }
                   
                   console.log(`[RelatoriosCaixaDiario] Comparação ${idx}: Fechamento anterior: R$${valorFinalAnterior.toFixed(2)}, Abertura atual: R$${valorInicialAtual.toFixed(2)}, Diferença: R$${diferenca.toFixed(2)}, Cor: ${diferenca > 2.00 ? 'vermelho' : 'verde'}`);
