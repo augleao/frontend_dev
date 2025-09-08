@@ -112,15 +112,39 @@ function MeusFechamentos() {
                 }
                 return f.codigo === '0001';
               })
-              .map((f, idx) => {
+              .sort((a, b) => {
+                // Ordena por data e hora para comparação sequencial
+                const dateA = new Date(a.data + ' ' + (a.hora || '00:00:00'));
+                const dateB = new Date(b.data + ' ' + (b.hora || '00:00:00'));
+                return dateA - dateB;
+              })
+              .map((f, idx, sortedArray) => {
                 const valorInicial = fechamentos.find(
                   fi =>
                     fi.codigo === '0005' &&
                     fi.data === f.data &&
                     fi.usuario === f.usuario
                 );
+
+                // Determinar cor de fundo baseada na comparação com fechamento anterior
+                let backgroundColor = '#e8f5e8'; // verde claro padrão
+                
+                if (idx > 0) {
+                  const fechamentoAnterior = sortedArray[idx - 1];
+                  const valorFinalAnterior = Number(fechamentoAnterior.total_valor || 0);
+                  const valorInicialAtual = Number(valorInicial?.valor_unitario || valorInicial?.total_valor || 0);
+                  
+                  const diferenca = Math.abs(valorFinalAnterior - valorInicialAtual);
+                  
+                  if (diferenca > 2.00) {
+                    backgroundColor = '#ffe8e8'; // vermelho claro se diferença > R$2,00
+                  }
+                  
+                  console.log(`[RelatoriosCaixaDiario] Comparação ${idx}: Fechamento anterior: R$${valorFinalAnterior.toFixed(2)}, Abertura atual: R$${valorInicialAtual.toFixed(2)}, Diferença: R$${diferenca.toFixed(2)}, Cor: ${diferenca > 2.00 ? 'vermelho' : 'verde'}`);
+                }
+
                 return (
-                  <tr key={f.data + f.hora + f.codigo + idx}>
+                  <tr key={f.data + f.hora + f.codigo + idx} style={{ backgroundColor }}>
                     <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
                       {f.data ? f.data.slice(0, 10).split('-').reverse().join('/') : ''}
                     </td>
