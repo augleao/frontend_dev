@@ -33,6 +33,7 @@ function CaixaDiario() {
   const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
   const [valorFinalCaixa, ValorFinalCaixa] = useState(0); // Deixe só esta!
   const [percentualISS, setPercentualISS] = useState(0); // Estado para ISS
+  const [ultimoFechamento, setUltimoFechamento] = useState(null); // Valor sugerido do fechamento anterior
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
@@ -427,6 +428,45 @@ function CaixaDiario() {
     }
   };
 
+  // Função para buscar último fechamento de caixa
+  const buscarUltimoFechamento = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${apiURL}/meus-fechamentos`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        const fechamentos = data.fechamentos || [];
+        
+        // Filtra fechamentos do tipo '0001' (valor final) do usuário atual
+        const fechamentosUsuario = fechamentos.filter(f => 
+          f.codigo === '0001' && f.usuario === nomeUsuario
+        );
+        
+        // Ordena por data decrescente para pegar o mais recente
+        fechamentosUsuario.sort((a, b) => {
+          const dateA = new Date(a.data + ' ' + (a.hora || '00:00:00'));
+          const dateB = new Date(b.data + ' ' + (b.hora || '00:00:00'));
+          return dateB - dateA;
+        });
+        
+        if (fechamentosUsuario.length > 0) {
+          const ultimoValor = Number(fechamentosUsuario[0].total_valor || 0);
+          setUltimoFechamento(ultimoValor);
+          console.log('[CaixaDiario] Último fechamento encontrado:', ultimoValor);
+        } else {
+          console.log('[CaixaDiario] Nenhum fechamento anterior encontrado');
+          setUltimoFechamento(null);
+        }
+      }
+    } catch (error) {
+      console.error('[CaixaDiario] Erro ao buscar último fechamento:', error);
+      setUltimoFechamento(null);
+    }
+  };
+
   // Função para carregar atos do backend
   const carregarDadosDaData = async () => {
     try {
@@ -486,6 +526,7 @@ function CaixaDiario() {
 // Adicione este useEffect:
 useEffect(() => {
   carregarDadosDaData();
+  buscarUltimoFechamento(); // Busca o último fechamento ao carregar
 }, []);
 
   // useEffect para carregar atos ao mudar a data
@@ -804,22 +845,70 @@ useEffect(() => {
             }}>
               💰 Valor Inicial do Caixa:
             </span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={valorInicialCaixa}
-              onChange={e => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
-              onBlur={salvarValorInicialCaixa}
-              style={{
-                width: '100px',
-                padding: '4px 6px',
-                borderRadius: '4px',
-                border: '1px solid #27ae60',
-                fontSize: '16px',
-                fontWeight: '600'
-              }}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={valorInicialCaixa}
+                onChange={e => setValorInicialCaixa(parseFloat(e.target.value) || 0)}
+                onBlur={salvarValorInicialCaixa}
+                placeholder={ultimoFechamento ? `Sugerido: R$ ${ultimoFechamento.toFixed(2)}` : ''}
+                style={{
+                  width: '140px',
+                  padding: '4px 6px',
+                  borderRadius: '4px',
+                  border: '1px solid #27ae60',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  background: ultimoFechamento && !valorInicialCaixa 
+                    ? `linear-gradient(45deg, transparent 25%, rgba(39,174,96,0.1) 25%, rgba(39,174,96,0.1) 50%, transparent 50%, transparent 75%, rgba(39,174,96,0.1) 75%), linear-gradient(45deg, rgba(39,174,96,0.1) 25%, transparent 25%, transparent 50%, rgba(39,174,96,0.1) 50%, rgba(39,174,96,0.1) 75%, transparent 75%)`
+                    : 'white',
+                  backgroundSize: ultimoFechamento && !valorInicialCaixa ? '8px 8px' : 'auto',
+                  backgroundPosition: ultimoFechamento && !valorInicialCaixa ? '0 0, 4px 4px' : 'auto'
+                }}
+                title={ultimoFechamento ? `Valor sugerido baseado no último fechamento: R$ ${ultimoFechamento.toFixed(2)}` : ''}
+              />
+              {ultimoFechamento && !valorInicialCaixa && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-25px',
+                  left: '0',
+                  background: '#27ae60',
+                  color: 'white',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  whiteSpace: 'nowrap',
+                  zIndex: 1000
+                }}>
+                  💡 Sugerido: R$ {ultimoFechamento.toFixed(2)}
+                </div>
+              )}
+            </div>
+            {ultimoFechamento && (
+              <button
+                onClick={() => {
+                  setValorInicialCaixa(ultimoFechamento);
+                  salvarValorInicialCaixa();
+                }}
+                style={{
+                  padding: '4px 8px',
+                  background: '#27ae60',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  marginLeft: '4px'
+                }}
+                title="Aplicar valor sugerido"
+              >
+                ✓ Aplicar
+              </button>
+            )}
           </div>
 
           {/* Valor Final do Caixa */}
