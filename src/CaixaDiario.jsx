@@ -16,10 +16,6 @@ import { apiURL } from './config';
 import { gerarRelatorioPDF } from './components/RelatorioPDF';
 
 function CaixaDiario() {
-  // Usuário logado
-  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-  const [caixaUnificado, setCaixaUnificado] = useState(false);
-  const [loadingConfig, setLoadingConfig] = useState(true);
   // Estados
   const [dataSelecionada, setDataSelecionada] = useState(() => {
     const hoje = new Date();
@@ -33,7 +29,6 @@ function CaixaDiario() {
   const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
   const [valorFinalCaixa, ValorFinalCaixa] = useState(0); // Deixe só esta!
   const [percentualISS, setPercentualISS] = useState(0); // Estado para ISS
-  const [ultimoFechamento, setUltimoFechamento] = useState(null); // Valor sugerido do fechamento anterior
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
@@ -48,8 +43,8 @@ function CaixaDiario() {
 
   const [quantidade, setQuantidade] = useState(1);
   const [atos, setAtos] = useState([]);
-  const [atosFiltrados, setAtosFiltrados] = useState([]);
   const [fechamentos, setFechamentos] = useState([]);
+  const [ultimoFechamento, setUltimoFechamento] = useState(null); // Valor sugerido do fechamento anterior
   const debounceTimeout = useRef(null);
 
   const [nomeUsuario, setNomeUsuario] = useState(() => {
@@ -242,7 +237,7 @@ function CaixaDiario() {
   const calcularValorComISS = (valorBase) => {
     if (!valorBase || percentualISS === 0) return valorBase;
     const valorComISS = valorBase * (1 + percentualISS / 100);
-  // Valor base/ISS log REMOVIDO
+    console.log(`Valor base: ${valorBase}, ISS: ${percentualISS}%, Valor final: ${valorComISS}`);
     return valorComISS;
   };
 
@@ -428,7 +423,7 @@ function CaixaDiario() {
     }
   };
 
-  // Função para buscar último fechamento de caixa
+  // Função para buscar último fechamento de caixa do dia anterior
   const buscarUltimoFechamento = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -452,12 +447,21 @@ function CaixaDiario() {
           return dateB - dateA;
         });
         
-        if (fechamentosUsuario.length > 0) {
-          const ultimoValor = Number(fechamentosUsuario[0].total_valor || 0);
+        // Busca o fechamento do dia anterior ao selecionado
+        const dataAnterior = new Date(dataSelecionada);
+        dataAnterior.setDate(dataAnterior.getDate() - 1);
+        const dataAnteriorStr = dataAnterior.toISOString().split('T')[0];
+        
+        const fechamentoDiaAnterior = fechamentosUsuario.find(f => 
+          f.data && f.data.startsWith(dataAnteriorStr)
+        );
+        
+        if (fechamentoDiaAnterior) {
+          const ultimoValor = Number(fechamentoDiaAnterior.total_valor || 0);
           setUltimoFechamento(ultimoValor);
-          console.log('[CaixaDiario] Último fechamento encontrado:', ultimoValor);
+          console.log('[CaixaDiario] Fechamento do dia anterior encontrado:', ultimoValor, 'Data:', dataAnteriorStr);
         } else {
-          console.log('[CaixaDiario] Nenhum fechamento anterior encontrado');
+          console.log('[CaixaDiario] Nenhum fechamento do dia anterior encontrado para:', dataAnteriorStr);
           setUltimoFechamento(null);
         }
       }
@@ -471,17 +475,14 @@ function CaixaDiario() {
   const carregarDadosDaData = async () => {
     try {
       const token = localStorage.getItem('token');
-      // Adiciona o parâmetro serventia na requisição
-      const serventiaParam = usuario?.serventia ? `&serventia=${encodeURIComponent(usuario.serventia)}` : '';
       const resAtos = await fetch(
-        `${apiURL}/atos-pagos?data=${dataSelecionada}${serventiaParam}`,
+        `${apiURL}/atos-pagos?data=${dataSelecionada}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
       if (resAtos.ok) {
         const dataAtos = await resAtos.json();
-        console.log('[CaixaDiario] Atos recebidos do backend:', dataAtos.CaixaDiario);
         setAtos(dataAtos.CaixaDiario || []);
       }
     } catch (e) {
@@ -489,50 +490,17 @@ function CaixaDiario() {
     }
   };
 
-  // Buscar config de caixa unificado da serventia
-  useEffect(() => {
-    async function fetchConfig() {
-      setLoadingConfig(true);
-      try {
-        if (!usuario?.serventia) throw new Error('Usuário sem serventia');
-        console.log('[CaixaDiario] Serventia do usuário:', usuario.serventia);
-        const res = await fetch(`${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(usuario.serventia)}`);
-        if (!res.ok) throw new Error('Erro ao buscar configuração da serventia');
-        const data = await res.json();
-        setCaixaUnificado(!!data.caixa_unificado);
-        console.log('[CaixaDiario] Valor de caixaUnificado:', !!data.caixa_unificado);
-      } catch (e) {
-        setCaixaUnificado(false);
-        console.error('Erro ao buscar config de caixa unificado:', e);
-      } finally {
-        setLoadingConfig(false);
-      }
-    }
-    fetchConfig();
-  }, [usuario?.serventia]);
-
-  // Filtrar atos conforme config
-  useEffect(() => {
-    if (caixaUnificado) {
-      setAtosFiltrados(atos);
-      console.log('[CaixaDiario] caixaUnificado=true, exibindo todos os atos:', atos);
-    } else {
-      const filtrados = atos.filter(a => a.usuario === usuario?.nome);
-      setAtosFiltrados(filtrados);
-      console.log('[CaixaDiario] caixaUnificado=false, exibindo só do usuário', usuario?.nome, filtrados);
-    }
-  }, [caixaUnificado, atos, usuario?.nome]);
-
 // Adicione este useEffect:
 useEffect(() => {
   carregarDadosDaData();
-  buscarUltimoFechamento(); // Busca o último fechamento ao carregar
+  buscarUltimoFechamento(); // Busca o fechamento do dia anterior
 }, []);
 
   // useEffect para carregar atos ao mudar a data
   useEffect(() => {
     let isMounted = true;
     carregarDadosDaData();
+    buscarUltimoFechamento(); // Busca o fechamento do dia anterior quando muda a data
     return () => { isMounted = false; };
   }, [dataSelecionada]);
 
@@ -867,48 +835,27 @@ useEffect(() => {
                   backgroundSize: ultimoFechamento && !valorInicialCaixa ? '8px 8px' : 'auto',
                   backgroundPosition: ultimoFechamento && !valorInicialCaixa ? '0 0, 4px 4px' : 'auto'
                 }}
-                title={ultimoFechamento ? `Valor sugerido baseado no último fechamento: R$ ${ultimoFechamento.toFixed(2)}` : ''}
+                title={ultimoFechamento ? `Valor sugerido baseado no fechamento do dia anterior: R$ ${ultimoFechamento.toFixed(2)}` : ''}
               />
               {ultimoFechamento && !valorInicialCaixa && (
                 <div style={{
                   position: 'absolute',
-                  top: '-25px',
+                  top: '-28px',
                   left: '0',
                   background: '#27ae60',
                   color: 'white',
-                  padding: '2px 6px',
+                  padding: '3px 8px',
                   borderRadius: '4px',
                   fontSize: '12px',
                   fontWeight: '600',
                   whiteSpace: 'nowrap',
-                  zIndex: 1000
+                  zIndex: 1000,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                 }}>
-                  💡 Sugerido: R$ {ultimoFechamento.toFixed(2)}
+                  💡 Fechamento anterior: R$ {ultimoFechamento.toFixed(2)}
                 </div>
               )}
             </div>
-            {ultimoFechamento && (
-              <button
-                onClick={() => {
-                  setValorInicialCaixa(ultimoFechamento);
-                  salvarValorInicialCaixa();
-                }}
-                style={{
-                  padding: '4px 8px',
-                  background: '#27ae60',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  marginLeft: '4px'
-                }}
-                title="Aplicar valor sugerido"
-              >
-                ✓ Aplicar
-              </button>
-            )}
           </div>
 
           {/* Valor Final do Caixa */}
@@ -1260,11 +1207,7 @@ useEffect(() => {
         }}>
           📋 Movimentos do Dia
         </h3>
-        {loadingConfig ? (
-          <div>Carregando configuração da serventia...</div>
-        ) : (
-          <AtosTable atos={atosFiltrados} onRemover={removerAto} />
-        )}
+        <AtosTable atos={atos} onRemover={removerAto} />
       </div>
       
       </div> {/* Fim do Container Principal */}
