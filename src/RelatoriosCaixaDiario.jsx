@@ -119,11 +119,11 @@ function MeusFechamentos() {
                 return dateA - dateB;
               })
               .map((f, idx, sortedArray) => {
+                // Busca valor de abertura de qualquer usuário da mesma serventia na mesma data
                 const valorInicial = fechamentos.find(
                   fi =>
                     fi.codigo === '0005' &&
-                    fi.data === f.data &&
-                    fi.usuario === f.usuario
+                    fi.data === f.data
                 );
 
                 // Determinar cor de fundo baseada na comparação com fechamento anterior
