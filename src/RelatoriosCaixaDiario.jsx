@@ -126,10 +126,10 @@ function MeusFechamentos() {
                     fi.data === f.data
                 );
 
-                // Determinar cor de fundo baseada na comparação entre Valor Inicial da linha atual e Valor Final da linha anterior
+                // Determinar cor de fundo baseada na comparação entre Valor Inicial da linha atual e Valor Final da linha posterior
                 let backgroundColor = '#d4edda'; // verde padrão (mesma cor do CaixaDiario)
 
-                if (idx > 0) {
+                if (idx < sortedArray.length - 1) {
                   // Busca valor de abertura da linha atual
                   const valorInicialAtual = fechamentos.find(
                     fi =>
@@ -137,16 +137,16 @@ function MeusFechamentos() {
                       fi.data === f.data
                   );
                   const valorInicialAtualNum = Number(valorInicialAtual?.valor_unitario || valorInicialAtual?.total_valor || 0);
-                  const fechamentoAnterior = sortedArray[idx - 1];
-                  const valorFinalAnterior = Number(fechamentoAnterior.total_valor || 0);
+                  const fechamentoPosterior = sortedArray[idx + 1];
+                  const valorFinalPosterior = Number(fechamentoPosterior.total_valor || 0);
 
-                  const diferenca = Math.abs(valorInicialAtualNum - valorFinalAnterior);
+                  const diferenca = Math.abs(valorInicialAtualNum - valorFinalPosterior);
 
                   if (diferenca > 2.00) {
                     backgroundColor = '#ffd1d1'; // vermelho se diferença > R$2,00 (mesma cor do CaixaDiario)
                   }
 
-                  console.log(`[RelatoriosCaixaDiario] Comparação ${idx}: Abertura atual: R$${valorInicialAtualNum.toFixed(2)}, Fechamento anterior: R$${valorFinalAnterior.toFixed(2)}, Diferença: R$${diferenca.toFixed(2)}, Cor: ${diferenca > 2.00 ? 'vermelho' : 'verde'}`);
+                  console.log(`[RelatoriosCaixaDiario] Comparação ${idx}: Abertura atual: R$${valorInicialAtualNum.toFixed(2)}, Fechamento posterior: R$${valorFinalPosterior.toFixed(2)}, Diferença: R$${diferenca.toFixed(2)}, Cor: ${diferenca > 2.00 ? 'vermelho' : 'verde'}`);
                 }
 
                 return (
