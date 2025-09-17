@@ -126,21 +126,27 @@ function MeusFechamentos() {
                     fi.data === f.data
                 );
 
-                // Determinar cor de fundo baseada na comparação com fechamento anterior
+                // Determinar cor de fundo baseada na comparação entre Valor Final da linha anterior e Valor Inicial da linha atual
                 let backgroundColor = '#d4edda'; // verde padrão (mesma cor do CaixaDiario)
-                
+
                 if (idx > 0) {
                   const fechamentoAnterior = sortedArray[idx - 1];
+                  // Busca valor de abertura da linha atual
+                  const valorInicialAtual = fechamentos.find(
+                    fi =>
+                      fi.codigo === '0005' &&
+                      fi.data === f.data
+                  );
                   const valorFinalAnterior = Number(fechamentoAnterior.total_valor || 0);
-                  const valorInicialAtual = Number(valorInicial?.valor_unitario || valorInicial?.total_valor || 0);
-                  
-                  const diferenca = Math.abs(valorFinalAnterior - valorInicialAtual);
-                  
+                  const valorInicialAtualNum = Number(valorInicialAtual?.valor_unitario || valorInicialAtual?.total_valor || 0);
+
+                  const diferenca = Math.abs(valorFinalAnterior - valorInicialAtualNum);
+
                   if (diferenca > 2.00) {
                     backgroundColor = '#ffd1d1'; // vermelho se diferença > R$2,00 (mesma cor do CaixaDiario)
                   }
-                  
-                  console.log(`[RelatoriosCaixaDiario] Comparação ${idx}: Fechamento anterior: R$${valorFinalAnterior.toFixed(2)}, Abertura atual: R$${valorInicialAtual.toFixed(2)}, Diferença: R$${diferenca.toFixed(2)}, Cor: ${diferenca > 2.00 ? 'vermelho' : 'verde'}`);
+
+                  console.log(`[RelatoriosCaixaDiario] Comparação ${idx}: Fechamento anterior: R$${valorFinalAnterior.toFixed(2)}, Abertura atual: R$${valorInicialAtualNum.toFixed(2)}, Diferença: R$${diferenca.toFixed(2)}, Cor: ${diferenca > 2.00 ? 'vermelho' : 'verde'}`);
                 }
 
                 return (
