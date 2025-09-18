@@ -9,7 +9,7 @@ const statusPagamento = [
   { value: 'pago', label: 'Pago' }
 ];
 
-export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes: valorAdiantadoDetalhesProp = [] }) {
+export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes: valorAdiantadoDetalhesProp = [], onAvancarEtapa, onVoltarEtapa }) {
   // Estado local para valorAdiantadoDetalhes
   const [valorAdiantadoDetalhes, setValorAdiantadoDetalhes] = useState(valorAdiantadoDetalhesProp);
   // Sincroniza estado local com prop se ela mudar externamente
@@ -531,6 +531,10 @@ const subtotalPedido = useMemo(() => {
       } else {
         alert('✅ Pagamento confirmado com sucesso! Status atualizado para "Aguardando Execução".');
       }
+      // Avança para o componente ServicoEntrega.jsx via prop
+      if (typeof onAvancarEtapa === 'function') {
+        onAvancarEtapa();
+      }
     } catch (error) {
       console.error('Erro ao confirmar pagamento:', error);
       if (!error.message.includes('local')) {
@@ -578,6 +582,10 @@ const subtotalPedido = useMemo(() => {
           alert('✅ Pagamento cancelado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
         } else {
           alert('✅ Pagamento cancelado com sucesso! Status atualizado para "Aguardando Conferência".');
+        }
+        // Volta para o componente ServicoConferencia.jsx via prop
+        if (typeof onVoltarEtapa === 'function') {
+          onVoltarEtapa();
         }
       } catch (error) {
         console.error('Erro ao cancelar pagamento:', error);

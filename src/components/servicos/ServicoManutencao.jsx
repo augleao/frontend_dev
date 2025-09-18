@@ -617,6 +617,8 @@ export default function ServicoManutencao() {
               valorTotal={calcularTotalAtosPagos()}
               valorAdiantadoDetalhes={form.valorAdiantadoDetalhes || []}
               disabled={false}
+              onAvancarEtapa={() => setAba('entrega')}
+              onVoltarEtapa={() => setAba('conferencia')}
             />
           )}
           {aba === 'execucao' && (
