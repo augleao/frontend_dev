@@ -635,6 +635,7 @@ export default function ServicoManutencao() {
               onChange={handleEntregaChange}
               pedidoId={form.protocolo}
               disabled={false}
+              onVoltarLista={() => navigate('/lista-servicos')}
             />
           )}
           {aba === 'historico' && form.protocolo && historicoStatus.length > 0 && (

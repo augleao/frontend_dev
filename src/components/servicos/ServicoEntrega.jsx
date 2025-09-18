@@ -4,7 +4,7 @@ import { useState } from 'react';
 import config from '../../config';
 
 
-export default function ServicoEntrega({ form, onChange, pedidoId }) {
+export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista }) {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
 
@@ -79,6 +79,10 @@ export default function ServicoEntrega({ form, onChange, pedidoId }) {
           usuario: usuarioNome
         })
       });
+      // Volta para a lista de serviços após salvar entrega
+      if (typeof onVoltarLista === 'function') {
+        onVoltarLista();
+      }
     } catch (err) {
       setErro(err.message || 'Erro desconhecido');
     }
