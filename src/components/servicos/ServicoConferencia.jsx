@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 
-export default function ServicoConferencia({ protocolo, atosPedido = [] }) {
+export default function ServicoConferencia({ protocolo, atosPedido = [], onAvancarEtapa }) {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState('');
   const [status, setStatus] = useState('Conferido');
@@ -102,8 +102,10 @@ export default function ServicoConferencia({ protocolo, atosPedido = [] }) {
         setStatus('Conferido'); // Volta para o padrão após salvar
         fetchConferencias();
 
-        // Avança para o componente ServicoPagamento.jsx
-        navigate(`/servico/pagamento/${encodeURIComponent(protocolo)}`);
+        // Avança para o componente ServicoPagamento.jsx via prop
+        if (typeof onAvancarEtapa === 'function') {
+          onAvancarEtapa();
+        }
       } else {
         setErro('Erro ao salvar conferência.');
       }

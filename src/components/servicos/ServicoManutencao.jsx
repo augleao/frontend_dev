@@ -601,7 +601,12 @@ export default function ServicoManutencao() {
             />
           )}
           {aba === 'conferencia' && (
-            <ServicoConferencia protocolo={form.protocolo} atosPedido={atosPedido} disabled={false} />
+            <ServicoConferencia 
+              protocolo={form.protocolo} 
+              atosPedido={atosPedido} 
+              disabled={false}
+              onAvancarEtapa={() => setAba('pagamento')}
+            />
           )}
           {aba === 'pagamento' && (
             <ServicoPagamento
