@@ -384,6 +384,11 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         // Pedido enviado com sucesso
         // Grava status 'Aguardando Conferência' na tabela de status
         const protocoloParaStatus = data.protocolo || form.protocolo;
+        // Atualiza protocolo e status no form do pai antes de avançar
+        if (typeof onChange === 'function') {
+          onChange('protocolo', data.protocolo || form.protocolo);
+          onChange('status', 'Aguardando Conferência');
+        }
         if (protocoloParaStatus) {
           try {
             const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
