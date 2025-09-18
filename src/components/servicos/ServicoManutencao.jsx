@@ -598,6 +598,7 @@ export default function ServicoManutencao() {
               combosDisponiveis={combosDisponiveis}
               atosPedido={atosPedido}
               setAtosPedido={setAtosPedido}
+              onAvancarEtapa={() => setAba('conferencia')}
             />
           )}
           {aba === 'conferencia' && (
