@@ -1,19 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import config from '../config';
 
+// Função auxiliar para pegar usuário logado
+function getUsuarioLogado() {
+  try {
+    return JSON.parse(localStorage.getItem('usuario')) || {};
+  } catch {
+    return {};
+  }
+}
+
 function MeusRelatorios() {
   const [relatorios, setRelatorios] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [caixaUnificado, setCaixaUnificado] = useState(false);
+  const usuario = getUsuarioLogado();
+
+  useEffect(() => {
+    async function fetchConfigCaixaUnificado() {
+      if (!usuario?.serventia) return;
+      try {
+        const res = await fetch(`${config.apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(usuario.serventia)}`);
+        if (!res.ok) throw new Error('Erro ao buscar configuração da serventia');
+        const data = await res.json();
+        setCaixaUnificado(!!data.caixa_unificado);
+      } catch (e) {
+        setCaixaUnificado(false);
+      }
+    }
+    fetchConfigCaixaUnificado();
+  }, [usuario?.serventia]);
 
   useEffect(() => {
     carregarRelatorios();
     // eslint-disable-next-line
-  }, []);
+  }, [caixaUnificado]);
 
   const carregarRelatorios = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${config.apiURL}/meus-relatorios`, {
+      let url = `${config.apiURL}/meus-relatorios`;
+      if (caixaUnificado && usuario?.serventia) {
+        url += `?serventia=${encodeURIComponent(usuario.serventia)}`;
+      }
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
