@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 
-export default function ServicoConferencia({ protocolo, atosPedido = [], onAvancarEtapa }) {
+export default function ServicoConferencia({ protocolo, atosPedido = [], onAvancarEtapa, onVoltarEtapa }) {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState('');
   const [status, setStatus] = useState('Conferido');
@@ -142,8 +142,6 @@ export default function ServicoConferencia({ protocolo, atosPedido = [], onAvanc
       if (conferenciaAtualizada.ok) {
         const dataConferencia = await conferenciaAtualizada.json();
         const conferenciasRestantes = dataConferencia.conferencias || [];
-        
-        
         // Se não há mais conferências, volta o status para "Aguardando Conferência"
         if (conferenciasRestantes.length === 0) {
           try {
@@ -158,7 +156,10 @@ export default function ServicoConferencia({ protocolo, atosPedido = [], onAvanc
                 usuario: JSON.parse(localStorage.getItem('usuario') || '{}').nome || 'Sistema'
               })
             });
-          } catch (e) {
+          } catch (e) {}
+          // Avança para o componente ServicoEntrada.jsx via prop
+          if (typeof onVoltarEtapa === 'function') {
+            onVoltarEtapa();
           }
         }
       }

@@ -606,6 +606,7 @@ export default function ServicoManutencao() {
               atosPedido={atosPedido} 
               disabled={false}
               onAvancarEtapa={() => setAba('pagamento')}
+              onVoltarEtapa={() => setAba('entrada')}
             />
           )}
           {aba === 'pagamento' && (
