@@ -9,7 +9,13 @@ const statusPagamento = [
   { value: 'pago', label: 'Pago' }
 ];
 
-export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes: valorAdiantadoDetalhes = [], onAvancarEtapa, onVoltarEtapa }) {
+export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes: valorAdiantadoDetalhesProp = [], onAvancarEtapa, onVoltarEtapa }) {
+  // Estado local para valorAdiantadoDetalhes
+  const [valorAdiantadoDetalhes, setValorAdiantadoDetalhes] = useState(valorAdiantadoDetalhesProp);
+  // Sincroniza estado local com prop se ela mudar externamente
+  React.useEffect(() => {
+    setValorAdiantadoDetalhes(valorAdiantadoDetalhesProp || []);
+  }, [valorAdiantadoDetalhesProp]);
   // Tabela de complementos de pagamento (renderização gradual)
   const renderTabelaComplementos = () => {
     const complementos = valorAdiantadoDetalhes.filter(item => item.complemento && item.valor && item.forma);
@@ -103,6 +109,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
     }
     const novoComplemento = { forma: modalFormaComplemento, valor: parseFloat(modalValorComplemento), complemento: true };
     const novosDetalhes = [...valorAdiantadoDetalhes, novoComplemento];
+    setValorAdiantadoDetalhes(novosDetalhes);
     if (onChange) {
       onChange({ ...form, valorAdiantadoDetalhes: novosDetalhes });
     }
