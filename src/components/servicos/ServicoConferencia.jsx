@@ -1,8 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 
 export default function ServicoConferencia({ protocolo, atosPedido = [] }) {
+  const navigate = useNavigate();
   const [usuario, setUsuario] = useState('');
   const [status, setStatus] = useState('Conferido');
   const [observacao, setObservacao] = useState('');
@@ -92,13 +94,16 @@ export default function ServicoConferencia({ protocolo, atosPedido = [] }) {
             },
             body: JSON.stringify({ status: statusProximaEtapa, usuario })
           });
-  } catch (e) {
+        } catch (e) {
           // Não bloqueia o fluxo se falhar, mas pode exibir um aviso se desejar
         }
-        
+
         setObservacao('');
         setStatus('Conferido'); // Volta para o padrão após salvar
         fetchConferencias();
+
+        // Avança para o componente ServicoPagamento.jsx
+        navigate(`/servico/pagamento/${encodeURIComponent(protocolo)}`);
       } else {
         setErro('Erro ao salvar conferência.');
       }
