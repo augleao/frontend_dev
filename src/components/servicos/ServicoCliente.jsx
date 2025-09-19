@@ -168,6 +168,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             onChange={handleNomeChange}
             style={{ width: 400, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
             autoComplete="off"
+            form="no-autofill-form"
           />
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0, marginLeft: 12 }}>CPF/CNPJ:</label>
           <input
@@ -176,6 +177,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             onChange={handleCpfChange}
             style={{ width: 110, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
             autoComplete="off"
+            form="no-autofill-form"
           />
         </div>
         {/* Sugestões aparecem para ambos os campos */}
@@ -221,6 +223,8 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             value={form.cliente.endereco} 
             onChange={e => onClienteChange('endereco', e.target.value)} 
             style={{ width: '45%', minWidth: 120, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+            autoComplete="off"
+            form="no-autofill-form"
           />
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0, marginLeft: 12 }}>Telefone:</label>
           <input 
@@ -228,6 +232,8 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             value={form.cliente.telefone} 
             onChange={e => onClienteChange('telefone', e.target.value)} 
             style={{ width: 110, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+            autoComplete="off"
+            form="no-autofill-form"
           />
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0, marginLeft: 12 }}>E-mail:</label>
           <input 
@@ -235,6 +241,8 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             value={form.cliente.email} 
             onChange={e => onClienteChange('email', e.target.value)} 
             style={{ width: 160, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+            autoComplete="off"
+            form="no-autofill-form"
           />
         </div>
         {/* Botões */}
