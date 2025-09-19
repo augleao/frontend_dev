@@ -126,6 +126,10 @@ export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista
           usuario: usuarioNome
         })
       });
+      // Atualiza status no componente pai
+      if (typeof onStatusChange === 'function') {
+        onStatusChange('Aguardando Entrega');
+      }
       if (typeof onChange === 'function') {
         onChange('entrega', {});
       }
