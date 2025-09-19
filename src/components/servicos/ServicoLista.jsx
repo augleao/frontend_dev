@@ -57,58 +57,70 @@ export default function ListaServicos() {
   useEffect(() => {
     async function fetchPedidos() {
       setLoadingPedidos(true);
+      console.log('[LOG] Iniciando fetchPedidos...');
       try {
         const token = localStorage.getItem('token');
         const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
         const idServentiaUsuario = usuario.serventia || usuario.serventiaId || usuario.serventia_id;
+        console.log('[LOG] idServentiaUsuario:', idServentiaUsuario);
         // Busca todos os usuários e filtra os da mesma serventia do usuário logado
         const usuariosRes = await fetch(`${config.apiURL}/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const usuariosData = await usuariosRes.json();
+        console.log('[LOG] usuariosData:', usuariosData);
         const usuariosDaServentia = (usuariosData.usuarios || []).filter(u => u.serventia === idServentiaUsuario);
-  const nomesUsuariosDaServentia = new Set(usuariosDaServentia.map(u => u.nome));
-  console.log('[DEBUG] Usuários da mesma serventia:', usuariosDaServentia);
+        const nomesUsuariosDaServentia = new Set(usuariosDaServentia.map(u => u.nome));
+        console.log('[LOG] Usuários da mesma serventia:', usuariosDaServentia);
         // Busca todos os pedidos
         const res = await fetch(`${config.apiURL}/pedidos`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
+        console.log('[LOG] pedidos recebidos:', data.pedidos);
         // Filtra pedidos criados por qualquer usuário da serventia (comparando pelo nome)
         const pedidosFiltradosServentia = (data.pedidos || []).filter(p => {
           const nomeUsuarioPedido = p.usuario;
           if (!nomeUsuarioPedido) {
-            console.log('[DEBUG] Pedido sem nomeUsuarioPedido:', p);
+            console.log('[LOG] Pedido sem nomeUsuarioPedido:', p);
             return false;
           }
           return nomesUsuariosDaServentia.has(nomeUsuarioPedido);
         });
+        console.log('[LOG] pedidosFiltradosServentia:', pedidosFiltradosServentia);
         setPedidos(pedidosFiltradosServentia);
         setPedidosFiltrados(pedidosFiltradosServentia); // Inicializa os pedidos filtrados
         // Buscar status de todos os pedidos
         if (pedidosFiltradosServentia.length > 0) {
           const statusMap = {};
-          await Promise.all(pedidosFiltradosServentia.map(async (pedido) => {
+          console.log('[LOG] Iniciando busca de status dos pedidos...');
+          await Promise.all(pedidosFiltradosServentia.map(async (pedido, idx) => {
             try {
+              console.log(`[LOG] Buscando status para pedido ${pedido.protocolo} (${idx + 1}/${pedidosFiltradosServentia.length})`);
               const resStatus = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(pedido.protocolo)}/status/ultimo`, {
                 headers: { Authorization: `Bearer ${token}` }
               });
               if (resStatus.ok) {
                 const dataStatus = await resStatus.json();
+                console.log(`[LOG] Status recebido para ${pedido.protocolo}:`, dataStatus.status);
                 statusMap[pedido.protocolo] = dataStatus.status || '-';
               } else {
+                console.log(`[LOG] Falha ao buscar status para ${pedido.protocolo}`);
                 statusMap[pedido.protocolo] = '-';
               }
-            } catch {
+            } catch (err) {
+              console.log(`[LOG] Erro ao buscar status para ${pedido.protocolo}:`, err);
               statusMap[pedido.protocolo] = '-';
             }
           }));
+          console.log('[LOG] statusMap final:', statusMap);
           setStatusPedidos(statusMap);
         }
       } catch (err) {
-        console.error('Erro ao buscar pedidos:', err);
+        console.error('[LOG] Erro ao buscar pedidos:', err);
       }
       setLoadingPedidos(false);
+      console.log('[LOG] Finalizando fetchPedidos, loadingPedidos =', false);
     }
     fetchPedidos();
   }, []);

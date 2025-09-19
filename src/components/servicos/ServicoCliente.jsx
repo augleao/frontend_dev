@@ -100,7 +100,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
       onChange('clienteId', novoCliente.id);
       setSearchTerm(novoCliente.nome);
       setSuggestions([]);
-      alert('Cliente salvo com sucesso!');
+      //alert('Cliente salvo com sucesso!');
       // Avança para a próxima etapa (ServicoEntrada) após salvar cliente
       if (typeof onAvancarEtapa === 'function') {
         onAvancarEtapa();
