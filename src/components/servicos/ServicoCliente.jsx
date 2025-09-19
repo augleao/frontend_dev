@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import config from '../../config';
 
-export default function ServicoCliente({ form, onChange, onClienteChange }) {
+export default function ServicoCliente({ form, onChange, onClienteChange, onAvancarEtapa }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -101,6 +101,10 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
       setSearchTerm(novoCliente.nome);
       setSuggestions([]);
       alert('Cliente salvo com sucesso!');
+      // Avança para a próxima etapa (ServicoEntrada) após salvar cliente
+      if (typeof onAvancarEtapa === 'function') {
+        onAvancarEtapa();
+      }
     } else {
       const errorData = await res.json();
       alert(errorData.error || 'Erro ao salvar cliente.');

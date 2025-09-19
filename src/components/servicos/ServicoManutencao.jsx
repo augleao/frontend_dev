@@ -588,7 +588,13 @@ export default function ServicoManutencao() {
           </div>
           {/* Conteúdo das abas */}
           {aba === 'cliente' && (
-            <ServicoCliente form={form} clientes={clientes} onChange={handleFormChange} onClienteChange={handleClienteChange} />
+            <ServicoCliente
+              form={form}
+              clientes={clientes}
+              onChange={handleFormChange}
+              onClienteChange={handleClienteChange}
+              onAvancarEtapa={() => setAba('entrada')}
+            />
           )}
           {aba === 'entrada' && (
             <ServicoEntrada
