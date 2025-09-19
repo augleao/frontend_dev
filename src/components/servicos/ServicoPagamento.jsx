@@ -528,9 +528,7 @@ const subtotalPedido = useMemo(() => {
 
       if (resultado && resultado.local) {
         alert('✅ Pagamento confirmado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
-      } else {
-        alert('✅ Pagamento confirmado com sucesso! Status atualizado para "Aguardando Execução".');
-      }
+      } else {}
       // Avança para o componente ServicoEntrega.jsx via prop
       if (typeof onAvancarEtapa === 'function') {
         onAvancarEtapa();
