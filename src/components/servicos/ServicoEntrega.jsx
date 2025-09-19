@@ -4,7 +4,7 @@ import { useState } from 'react';
 import config from '../../config';
 
 
-export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista }) {
+export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista, onStatusChange }) {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
 
@@ -79,6 +79,10 @@ export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista
           usuario: usuarioNome
         })
       });
+      // Atualiza status no componente pai
+      if (typeof onStatusChange === 'function') {
+        onStatusChange('Concluído');
+      }
       // Volta para a lista de serviços após salvar entrega
       if (typeof onVoltarLista === 'function') {
         onVoltarLista();

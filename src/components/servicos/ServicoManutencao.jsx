@@ -628,6 +628,7 @@ export default function ServicoManutencao() {
               onChange={handleExecucaoChange}
               pedidoId={form.protocolo}
               disabled={false}
+              onStatusChange={status => handleFormChange('status', status)}
             />
           )}
           {aba === 'entrega' && (
@@ -637,6 +638,7 @@ export default function ServicoManutencao() {
               pedidoId={form.protocolo}
               disabled={false}
               onVoltarLista={() => navigate('/lista-servicos')}
+              onStatusChange={status => handleFormChange('status', status)}
             />
           )}
           {aba === 'historico' && form.protocolo && historicoStatus.length > 0 && (

@@ -12,7 +12,7 @@ const statusExecucao = [
   { value: 'cancelado', label: 'Cancelado' }
 ];
 
-export default function ServicoExecucao({ form, onChange, pedidoId }) {
+export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChange }) {
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState('');
   const [selos, setSelos] = useState([]);
@@ -133,6 +133,10 @@ export default function ServicoExecucao({ form, onChange, pedidoId }) {
         } catch (e) {
           // Apenas loga, não bloqueia o fluxo
           console.error('[Execucao] Erro ao registrar status aguardando_entrega:', e);
+        }
+        // Atualiza status no componente pai
+        if (typeof onStatusChange === 'function') {
+          onStatusChange('Aguardando Entrega');
         }
       }
     } catch (err) {
