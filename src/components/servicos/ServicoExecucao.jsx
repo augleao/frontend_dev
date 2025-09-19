@@ -12,7 +12,7 @@ const statusExecucao = [
   { value: 'cancelado', label: 'Cancelado' }
 ];
 
-export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChange }) {
+export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChange, onAvancarEtapa }) {
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState('');
   const [selos, setSelos] = useState([]);
@@ -84,7 +84,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
   const salvarOuAlterarExecucao = async () => {
     setSalvando(true);
     setErroSalvar('');
-    try {
+  try {
       const token = localStorage.getItem('token');
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
       const usuarioNome = usuario.nome || usuario.email || 'Usuário';
@@ -137,6 +137,10 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
         // Atualiza status no componente pai
         if (typeof onStatusChange === 'function') {
           onStatusChange('Aguardando Entrega');
+        }
+        // Avança para a próxima etapa (entrega) após salvar execução
+        if (typeof onAvancarEtapa === 'function') {
+          onAvancarEtapa();
         }
       }
     } catch (err) {
