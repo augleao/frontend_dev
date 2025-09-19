@@ -134,13 +134,13 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
       style={{
         width: '100%',
         margin: '0',
-        padding: '16px', // padding reduzido
-        borderRadius: '16px', // borda menor
+        padding: '16px',
+        borderRadius: '16px',
         border: '2px solid #9b59b6',
         boxShadow: '0 2px 12px rgba(155,89,182,0.10)',
         background: '#f5e6fa',
         overflow: 'hidden',
-  marginBottom: 0,
+        marginBottom: 0,
         boxSizing: 'border-box'
       }}
     >
@@ -153,6 +153,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
       }}>
         👤 Informações do Cliente
       </h2>
+      <form autoComplete="off">
       <div style={{
         display: 'flex',
         flexDirection: 'column',
@@ -167,7 +168,8 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             value={form.cliente.nome}
             onChange={handleNomeChange}
             style={{ width: 400, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
-            autoComplete="off"
+            autoComplete="new-password"
+            inputMode="text"
             form="no-autofill-form"
           />
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0, marginLeft: 12 }}>CPF/CNPJ:</label>
@@ -176,7 +178,8 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             value={form.cliente.cpf}
             onChange={handleCpfChange}
             style={{ width: 110, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
-            autoComplete="off"
+            autoComplete="new-password"
+            inputMode="text"
             form="no-autofill-form"
           />
         </div>
@@ -223,7 +226,8 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             value={form.cliente.endereco} 
             onChange={e => onClienteChange('endereco', e.target.value)} 
             style={{ width: '45%', minWidth: 120, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
-            autoComplete="off"
+            autoComplete="new-password"
+            inputMode="text"
             form="no-autofill-form"
           />
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0, marginLeft: 12 }}>Telefone:</label>
@@ -232,7 +236,8 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             value={form.cliente.telefone} 
             onChange={e => onClienteChange('telefone', e.target.value)} 
             style={{ width: 110, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
-            autoComplete="off"
+            autoComplete="new-password"
+            inputMode="text"
             form="no-autofill-form"
           />
           <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0, marginLeft: 12 }}>E-mail:</label>
@@ -241,7 +246,8 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             value={form.cliente.email} 
             onChange={e => onClienteChange('email', e.target.value)} 
             style={{ width: 160, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
-            autoComplete="off"
+            autoComplete="new-password"
+            inputMode="email"
             form="no-autofill-form"
           />
         </div>
@@ -288,7 +294,8 @@ export default function ServicoCliente({ form, onChange, onClienteChange }) {
             </button>
           )}
         </div>
-      </div>
+  </div>
+  </form>
     </div>
   );
 }
