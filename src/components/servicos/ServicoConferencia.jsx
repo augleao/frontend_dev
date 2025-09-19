@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 
-export default function ServicoConferencia({ protocolo, atosPedido = [], onAvancarEtapa, onVoltarEtapa }) {
+export default function ServicoConferencia({ protocolo, atosPedido = [], onAvancarEtapa, onVoltarEtapa, onStatusChange }) {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState('');
   const [status, setStatus] = useState('Conferido');
@@ -96,6 +96,11 @@ export default function ServicoConferencia({ protocolo, atosPedido = [], onAvanc
           });
         } catch (e) {
           // Não bloqueia o fluxo se falhar, mas pode exibir um aviso se desejar
+        }
+
+        // Atualiza status no componente pai
+        if (typeof onStatusChange === 'function') {
+          onStatusChange(statusProximaEtapa);
         }
 
         setObservacao('');

@@ -608,6 +608,7 @@ export default function ServicoManutencao() {
               disabled={false}
               onAvancarEtapa={() => setAba('pagamento')}
               onVoltarEtapa={() => setAba('entrada')}
+              onStatusChange={status => handleFormChange('status', status)}
             />
           )}
           {aba === 'pagamento' && (
