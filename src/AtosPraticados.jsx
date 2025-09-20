@@ -415,7 +415,7 @@ useEffect(() => {
       }
 
       const resultData = await resImportar.json();
-      alert(`Importação concluída! ${resultData.atosImportados || 0} atos foram importados.`);
+      alert(`Importação concluída! ${resultData.atosImportados || 0} atos foram importados de ${resultData.atosEncontrados || 0} encontrados.`);
 
       // Recarregar os dados após a importação
       await carregarDadosPraticadosDaData();
