@@ -345,6 +345,87 @@ useEffect(() => {
   }
 }, []);
 
+  // Função para importar atos praticados
+  const importarAtosPraticados = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      const serventiaUsuario = usuario?.serventia;
+
+      if (!serventiaUsuario) {
+        alert('Usuário não tem serventia configurada');
+        return;
+      }
+
+      // 1. Verificar se a serventia tem caixa unificado
+      const resConfig = await fetch(`${apiURL}/serventia-config/${encodeURIComponent(serventiaUsuario)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!resConfig.ok) {
+        alert('Erro ao verificar configuração da serventia');
+        return;
+      }
+
+      const configData = await resConfig.json();
+      const caixaUnificado = configData?.caixa_unificado;
+
+      if (!caixaUnificado) {
+        alert('Esta serventia não possui caixa unificado configurado. Não é possível importar atos de outros usuários.');
+        return;
+      }
+
+      // 2. Buscar todos os usuários da mesma serventia
+      const resUsuarios = await fetch(`${apiURL}/users`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!resUsuarios.ok) {
+        alert('Erro ao buscar usuários da serventia');
+        return;
+      }
+
+      const usuariosData = await resUsuarios.json();
+      const usuariosDaServentia = (usuariosData.usuarios || []).filter(u => u.serventia === serventiaUsuario);
+      const nomesUsuarios = usuariosDaServentia.map(u => u.nome);
+
+      if (nomesUsuarios.length === 0) {
+        alert('Nenhum usuário encontrado para esta serventia');
+        return;
+      }
+
+      // 3. Importar atos da tabela selos_execucao_servico
+      const resImportar = await fetch(`${apiURL}/atos-praticados/importar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          data: dataSelecionada,
+          usuarios: nomesUsuarios,
+          serventia: serventiaUsuario
+        })
+      });
+
+      if (!resImportar.ok) {
+        const errorData = await resImportar.json();
+        alert('Erro ao importar atos: ' + (errorData.message || 'Erro desconhecido'));
+        return;
+      }
+
+      const resultData = await resImportar.json();
+      alert(`Importação concluída! ${resultData.atosImportados || 0} atos foram importados.`);
+
+      // Recarregar os dados após a importação
+      await carregarDadosPraticadosDaData();
+
+    } catch (error) {
+      console.error('Erro ao importar atos praticados:', error);
+      alert('Erro ao importar atos: ' + error.message);
+    }
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -435,16 +516,42 @@ useEffect(() => {
           padding: '16px', // reduzido de 25px
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
         }}>
-          <h3 style={{
-            margin: '0 0 12px 0', // reduzido de 0 0 20px 0
-            color: '#2c3e50',
-            fontSize: '16px', // reduzido de 18px
-            fontWeight: '600',
-            borderBottom: '2px solid #27ae60',
-            paddingBottom: '6px' // reduzido de 10px
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '12px'
           }}>
-            ➕ Adicionar Ato
-          </h3>
+            <h3 style={{
+              margin: '0',
+              color: '#2c3e50',
+              fontSize: '16px',
+              fontWeight: '600',
+              borderBottom: '2px solid #27ae60',
+              paddingBottom: '6px'
+            }}>
+              ➕ Adicionar Ato
+            </h3>
+            <button
+              onClick={importarAtosPraticados}
+              style={{
+                background: '#3498db',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(52, 152, 219, 0.3)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => e.target.style.background = '#2980b9'}
+              onMouseOut={(e) => e.target.style.background = '#3498db'}
+            >
+              📥 Importar Atos
+            </button>
+          </div>
           {/* Integração do AtoSearchAtosPraticados */}
           <AtoSearchAtosPraticados
             dataSelecionada={dataSelecionada}
