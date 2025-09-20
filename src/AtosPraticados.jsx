@@ -358,7 +358,7 @@ useEffect(() => {
       }
 
       // 1. Verificar se a serventia tem caixa unificado
-      const resConfig = await fetch(`${apiURL}/serventia-config/${encodeURIComponent(serventiaUsuario)}`, {
+      const resConfig = await fetch(`${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(serventiaUsuario)}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
