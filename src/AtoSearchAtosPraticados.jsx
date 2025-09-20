@@ -14,20 +14,6 @@ import config from './config'; // ajuste o caminho se necessário
   };
 
 export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }) {
-  // Função para importar atos via API
-  async function handleImportarAtos() {
-    try {
-      const token = localStorage.getItem('token');
-      const url = `${config.apiURL}/selos-execucao-servico/${encodeURIComponent(dataSelecionada)}`;
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      // TODO: lógica para importar os atos para a lista
-      console.log('Atos importados:', data);
-      alert('Importação de atos concluída (lógica de integração pendente).');
-    } catch (e) {
-      alert('Erro ao importar atos: ' + e.message);
-    }
-  }
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
@@ -631,27 +617,11 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
               cursor: (selectedAto && selectedCodigoTributario) ? 'pointer' : 'not-allowed',
               fontWeight: 'bold',
               fontSize: '15px', // reduzido de 16px
-              marginRight: '10px'
             }}
             onClick={adicionarAto}
             disabled={!selectedAto || !selectedCodigoTributario}
           >
             ➕ Adicionar Ato
-          </button>
-          <button
-            style={{
-              padding: '8px 16px',
-              background: '#1976d2',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              fontSize: '15px'
-            }}
-            onClick={handleImportarAtos}
-          >
-            ⬇️ Importar Atos
           </button>
         </div>
       </div>
