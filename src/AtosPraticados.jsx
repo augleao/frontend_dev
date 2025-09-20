@@ -395,7 +395,7 @@ useEffect(() => {
       }
 
       // 3. Importar atos da tabela selos_execucao_servico
-      const resImportar = await fetch(`${apiURL}/atos-praticados/importar`, {
+      const resImportar = await fetch(`${apiURL}/atos-praticados/importar-servicos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
