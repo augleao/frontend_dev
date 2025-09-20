@@ -363,6 +363,8 @@ useEffect(() => {
       });
 
       if (!resConfig.ok) {
+        const configText = await resConfig.text();
+        console.error('Erro config response:', resConfig.status, configText);
         alert('Erro ao verificar configuração da serventia');
         return;
       }
@@ -381,6 +383,8 @@ useEffect(() => {
       });
 
       if (!resUsuarios.ok) {
+        const usuariosText = await resUsuarios.text();
+        console.error('Erro usuarios response:', resUsuarios.status, usuariosText);
         alert('Erro ao buscar usuários da serventia');
         return;
       }
@@ -395,6 +399,13 @@ useEffect(() => {
       }
 
       // 3. Importar atos da tabela selos_execucao_servico
+      console.log('🔄 Iniciando importação de atos:', { 
+        data: dataSelecionada, 
+        usuarios: nomesUsuarios, 
+        serventia: serventiaUsuario,
+        apiURL: apiURL
+      });
+      
       const resImportar = await fetch(`${apiURL}/atos-praticados/importar-servicos`, {
         method: 'POST',
         headers: {
@@ -408,21 +419,62 @@ useEffect(() => {
         })
       });
 
+      console.log('📡 Response status:', resImportar.status);
+      console.log('📡 Response headers:', resImportar.headers);
+
       if (!resImportar.ok) {
-        const errorData = await resImportar.json();
-        alert('Erro ao importar atos: ' + (errorData.message || 'Erro desconhecido'));
+        let errorMessage = `Erro HTTP ${resImportar.status}: ${resImportar.statusText}`;
+        
+        // Tentar obter detalhes do erro
+        try {
+          const errorText = await resImportar.text();
+          console.error('❌ Resposta de erro completa:', errorText);
+          
+          // Tentar fazer parse como JSON
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorMessage;
+          } catch (jsonError) {
+            // Se não for JSON, usar o texto como está
+            if (errorText.length > 0 && !errorText.includes('<!DOCTYPE')) {
+              errorMessage = errorText;
+            }
+          }
+        } catch (textError) {
+          console.error('Erro ao ler texto da resposta:', textError);
+        }
+        
+        alert('❌ Erro ao importar atos: ' + errorMessage);
         return;
       }
 
+      // Resposta de sucesso
       const resultData = await resImportar.json();
-      alert(`Importação concluída! ${resultData.atosImportados || 0} atos foram importados de ${resultData.atosEncontrados || 0} encontrados.`);
+      console.log('✅ Resultado da importação:', resultData);
+
+      const atosImportados = resultData.atosImportados || 0;
+      const atosEncontrados = resultData.atosEncontrados || 0;
+
+      if (atosImportados === 0) {
+        alert(`ℹ️ ${resultData.message || 'Nenhum ato novo encontrado para importar'}\n\nAtos encontrados: ${atosEncontrados}`);
+      } else {
+        alert(`✅ Importação concluída com sucesso!\n\n${atosImportados} atos foram importados de ${atosEncontrados} encontrados.`);
+      }
 
       // Recarregar os dados após a importação
       await carregarDadosPraticadosDaData();
 
     } catch (error) {
-      console.error('Erro ao importar atos praticados:', error);
-      alert('Erro ao importar atos: ' + error.message);
+      console.error('💥 Erro ao importar atos praticados:', error);
+      
+      // Análise detalhada do erro
+      if (error.message.includes('Failed to fetch')) {
+        alert('❌ Erro de conexão: Não foi possível conectar ao servidor.\n\nVerifique sua conexão com a internet e se o servidor está funcionando.');
+      } else if (error.message.includes('Unexpected token')) {
+        alert('❌ Erro de formato: O servidor retornou dados inválidos.\n\nEste é um erro interno do servidor.');
+      } else {
+        alert('❌ Erro ao importar atos: ' + error.message);
+      }
     }
   };
 
