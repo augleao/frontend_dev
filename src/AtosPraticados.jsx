@@ -44,6 +44,19 @@ function AtosPraticados() {
   const [atos, setAtos] = useState([]);
   const debounceTimeout = useRef(null);
 
+  // useEffect para monitorar mudanças no estado dos atos
+  useEffect(() => {
+    console.log('📊 [AtosPraticados] Estado dos atos atualizado:', {
+      total: atos.length,
+      atos: atos.map(a => ({
+        id: a.id,
+        codigo: a.codigo,
+        usuario: a.usuario,
+        origem_importacao: a.origem_importacao
+      }))
+    });
+  }, [atos]);
+
   const [nomeUsuario, setNomeUsuario] = useState(() => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     console.log('🧑 nomeUsuario recebido atosPraticados:', usuario);
@@ -175,10 +188,15 @@ function AtosPraticados() {
 
   // Função para carregar atos do backend
   const carregarDadosPraticadosDaData = async () => {
+    console.log('🔄 [AtosPraticados] Iniciando carregamento de dados para data:', dataSelecionada);
+    
     try {
       const token = localStorage.getItem('token');
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
       const nomeLogado = usuario?.nome || usuario?.email;
+
+      console.log('👤 [AtosPraticados] Usuario logado:', { nomeLogado, usuario });
+      console.log('🔗 [AtosPraticados] URL da requisição:', `${apiURL}/atos-praticados?data=${dataSelecionada}`);
 
       const resAtos = await fetch(
         `${apiURL}/atos-praticados?data=${dataSelecionada}`,
@@ -186,22 +204,47 @@ function AtosPraticados() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      
+      console.log('📡 [AtosPraticados] Response status:', resAtos.status);
+      console.log('📡 [AtosPraticados] Response ok:', resAtos.ok);
+      
       if (resAtos.ok) {
         const dataAtos = await resAtos.json();
+        console.log('📊 [AtosPraticados] Dados recebidos do backend:', dataAtos);
+        
         // Suporte para diferentes formatos de retorno
         const listaAtos = Array.isArray(dataAtos)
           ? dataAtos
           : Array.isArray(dataAtos.CaixaDiario)
             ? dataAtos.CaixaDiario
             : [];
+            
+        console.log('📋 [AtosPraticados] Lista de atos extraída:', listaAtos);
+        console.log('📋 [AtosPraticados] Total de atos na lista:', listaAtos.length);
+        
         // Filtra os atos pelo usuário logado
         const atosFiltrados = listaAtos.filter(
           ato => ato.usuario === nomeLogado
         );
+        
+        console.log('🔍 [AtosPraticados] Atos após filtrar por usuário:', atosFiltrados);
+        console.log('📈 [AtosPraticados] Total de atos filtrados:', atosFiltrados.length);
+        
+        if (atosFiltrados.length !== listaAtos.length) {
+          console.log('⚠️ [AtosPraticados] Alguns atos foram filtrados. Usuários nos atos:');
+          const usuariosNosAtos = [...new Set(listaAtos.map(ato => ato.usuario))];
+          console.log('👥 [AtosPraticados] Usuários encontrados nos atos:', usuariosNosAtos);
+          console.log('🎯 [AtosPraticados] Usuário sendo filtrado:', nomeLogado);
+        }
+        
         setAtos(atosFiltrados);
+        console.log('✅ [AtosPraticados] Estado dos atos atualizado com', atosFiltrados.length, 'atos');
+      } else {
+        const errorText = await resAtos.text();
+        console.error('❌ [AtosPraticados] Erro na resposta:', resAtos.status, errorText);
       }
     } catch (e) {
-      console.error('Erro ao carregar dados da data:', e);
+      console.error('💥 [AtosPraticados] Erro ao carregar dados da data:', e);
     }
   };
 
@@ -212,9 +255,13 @@ useEffect(() => {
 
   // useEffect para carregar atos ao mudar a data
   useEffect(() => {
+    console.log('🔄 [AtosPraticados] useEffect disparado - mudança de data para:', dataSelecionada);
     let isMounted = true;
     carregarDadosPraticadosDaData();
-    return () => { isMounted = false; };
+    return () => { 
+      console.log('🧹 [AtosPraticados] useEffect cleanup executado');
+      isMounted = false; 
+    };
   }, [dataSelecionada]);
 
   // useEffect para buscar sugestões com debounce

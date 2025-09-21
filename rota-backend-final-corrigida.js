@@ -1,6 +1,83 @@
 // POST /api/atos-praticados/importar-servicos
 // Rota final corrigida com JOIN correto entre as tabelas
 
+// GET /api/atos-praticados - Buscar atos praticados por data
+app.get('/api/atos-praticados', authenticateToken, async (req, res) => {
+  try {
+    const { data } = req.query;
+    
+    console.log('🔍 [GET] /api/atos-praticados chamada com data:', data);
+    console.log('📋 [GET] Parâmetros da query:', req.query);
+    
+    if (!data) {
+      console.log('❌ [GET] Data não fornecida');
+      return res.status(400).json({ message: 'Parâmetro data é obrigatório' });
+    }
+
+    // Garantir que a data está no formato correto (YYYY-MM-DD)
+    let dataFormatada = data;
+    if (data.includes('/')) {
+      // Se vier no formato DD/MM/YYYY, converter para YYYY-MM-DD
+      const partesData = data.split('/');
+      if (partesData.length === 3) {
+        dataFormatada = `${partesData[2]}-${partesData[1].padStart(2, '0')}-${partesData[0].padStart(2, '0')}`;
+      }
+    }
+    
+    console.log('📅 [GET] Data formatada para consulta:', dataFormatada);
+
+    const query = `
+      SELECT 
+        id,
+        data,
+        hora,
+        codigo,
+        tributacao,
+        descricao,
+        quantidade,
+        valor_unitario,
+        pagamentos,
+        detalhes_pagamentos,
+        usuario,
+        origem_importacao,
+        criado_em,
+        atualizado_em
+      FROM atos_praticados 
+      WHERE data = $1 
+      ORDER BY data DESC, hora DESC, id DESC
+    `;
+    
+    console.log('🔍 [GET] Executando query:', query);
+    console.log('🔍 [GET] Parâmetros:', [dataFormatada]);
+
+    const result = await pool.query(query, [dataFormatada]);
+    const atos = result.rows;
+    
+    console.log(`📊 [GET] Encontrados ${atos.length} atos na data ${dataFormatada}`);
+    
+    if (atos.length > 0) {
+      console.log('👥 [GET] Usuários únicos nos atos:', [...new Set(atos.map(a => a.usuario))]);
+      console.log('🔍 [GET] Primeiros 2 atos:', atos.slice(0, 2).map(a => ({
+        id: a.id,
+        codigo: a.codigo,
+        descricao: a.descricao,
+        usuario: a.usuario,
+        origem_importacao: a.origem_importacao
+      })));
+    }
+    
+    console.log(`📤 [GET] /api/atos-praticados - retornando ${atos.length} atos`);
+    res.json(atos);
+
+  } catch (error) {
+    console.error('💥 [GET] Erro ao buscar atos praticados:', error);
+    res.status(500).json({ 
+      message: 'Erro interno do servidor ao buscar atos praticados',
+      erro: error.message 
+    });
+  }
+});
+
 app.post('/api/atos-praticados/importar-servicos', authenticateToken, async (req, res) => {
   try {
     const { data, usuarios, serventia } = req.body;
