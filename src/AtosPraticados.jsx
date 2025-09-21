@@ -611,6 +611,89 @@ useEffect(() => {
           />
         </div>
       </div>
+
+      {/* Seção da Tabela de Atos Praticados */}
+      <div style={{
+        background: 'white',
+        borderRadius: '12px',
+        padding: '20px',
+        marginBottom: '20px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px'
+        }}>
+          <h3 style={{
+            margin: '0',
+            color: '#2c3e50',
+            fontSize: '18px',
+            fontWeight: '600',
+            borderBottom: '2px solid #3498db',
+            paddingBottom: '8px'
+          }}>
+            📋 Atos Praticados ({atos.length})
+          </h3>
+          
+          {/* Botões de Ação */}
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button
+              onClick={() => carregarDadosPraticadosDaData()}
+              style={{
+                background: '#27ae60',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(39, 174, 96, 0.3)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => e.target.style.background = '#229954'}
+              onMouseOut={(e) => e.target.style.background = '#27ae60'}
+            >
+              🔄 Atualizar
+            </button>
+            
+            <FechamentoDiarioButton
+              onFechamento={fechamentoDiario}
+              atos={atos}
+              dataSelecionada={dataSelecionada}
+              nomeUsuario={nomeUsuario}
+            />
+          </div>
+        </div>
+
+        {/* Tabela de Atos */}
+        {atos.length === 0 ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '40px',
+            color: '#666',
+            fontSize: '16px',
+            background: '#f8f9fa',
+            borderRadius: '8px',
+            border: '2px dashed #ddd'
+          }}>
+            📝 Nenhum ato praticado encontrado para {formatarDataBR(dataSelecionada)}
+            <br />
+            <span style={{ fontSize: '14px', marginTop: '10px', display: 'block' }}>
+              Use o botão "Importar Atos" para carregar atos do sistema de selos ou adicione atos manualmente.
+            </span>
+          </div>
+        ) : (
+          <AtosTable
+            atos={atos}
+            onRemoverAto={removerAto}
+            dataSelecionada={dataSelecionada}
+            usuarioLogado={nomeUsuario}
+          />
+        )}
+      </div>
     </div>
   </div>
 );
