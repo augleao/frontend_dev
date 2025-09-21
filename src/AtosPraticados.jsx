@@ -211,13 +211,30 @@ function AtosPraticados() {
       if (resAtos.ok) {
         const dataAtos = await resAtos.json();
         console.log('📊 [AtosPraticados] Dados recebidos do backend:', dataAtos);
+        console.log('📊 [AtosPraticados] Tipo dos dados:', typeof dataAtos);
+        console.log('📊 [AtosPraticados] É array?', Array.isArray(dataAtos));
+        console.log('📊 [AtosPraticados] Chaves do objeto:', Object.keys(dataAtos));
         
         // Suporte para diferentes formatos de retorno
-        const listaAtos = Array.isArray(dataAtos)
-          ? dataAtos
-          : Array.isArray(dataAtos.CaixaDiario)
-            ? dataAtos.CaixaDiario
-            : [];
+        let listaAtos = [];
+        
+        if (Array.isArray(dataAtos)) {
+          // Se é um array direto
+          listaAtos = dataAtos;
+          console.log('📋 [AtosPraticados] Usando dados como array direto');
+        } else if (dataAtos && Array.isArray(dataAtos.atos)) {
+          // Se tem propriedade 'atos' que é um array
+          listaAtos = dataAtos.atos;
+          console.log('📋 [AtosPraticados] Usando dados.atos');
+        } else if (dataAtos && Array.isArray(dataAtos.CaixaDiario)) {
+          // Se tem propriedade 'CaixaDiario' que é um array (compatibilidade)
+          listaAtos = dataAtos.CaixaDiario;
+          console.log('📋 [AtosPraticados] Usando dados.CaixaDiario');
+        } else {
+          // Última tentativa - se não é array nem tem propriedades conhecidas
+          console.log('⚠️ [AtosPraticados] Formato não reconhecido, tentando converter para array');
+          listaAtos = [];
+        }
             
         console.log('📋 [AtosPraticados] Lista de atos extraída:', listaAtos);
         console.log('📋 [AtosPraticados] Total de atos na lista:', listaAtos.length);
