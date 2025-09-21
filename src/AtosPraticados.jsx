@@ -194,9 +194,52 @@ function AtosPraticados() {
       const token = localStorage.getItem('token');
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
       const nomeLogado = usuario?.nome || usuario?.email;
+      const serventiaUsuario = usuario?.serventia;
 
-      console.log('👤 [AtosPraticados] Usuario logado:', { nomeLogado, usuario });
-      console.log('🔗 [AtosPraticados] URL da requisição:', `${apiURL}/atos-praticados?data=${dataSelecionada}`);
+      console.log('👤 [AtosPraticados] Usuario logado:', { nomeLogado, usuario, serventia: serventiaUsuario });
+
+      // 1. Verificar se a serventia tem caixa unificado
+      let caixaUnificado = false;
+      let usuariosDaServentia = [];
+
+      if (serventiaUsuario) {
+        console.log('🔍 [AtosPraticados] Verificando configuração de caixa unificado para serventia:', serventiaUsuario);
+        
+        try {
+          const resConfig = await fetch(`${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(serventiaUsuario)}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          if (resConfig.ok) {
+            const configData = await resConfig.json();
+            caixaUnificado = configData?.caixa_unificado || false;
+            console.log('⚙️ [AtosPraticados] Configuração caixa unificado:', caixaUnificado);
+
+            // 2. Se tem caixa unificado, buscar todos os usuários da serventia
+            if (caixaUnificado) {
+              console.log('� [AtosPraticados] Buscando usuários da serventia para caixa unificado');
+              
+              const resUsuarios = await fetch(`${apiURL}/users`, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+
+              if (resUsuarios.ok) {
+                const usuariosData = await resUsuarios.json();
+                usuariosDaServentia = (usuariosData.usuarios || []).filter(u => u.serventia === serventiaUsuario);
+                console.log('👥 [AtosPraticados] Usuários da serventia encontrados:', usuariosDaServentia.map(u => u.nome));
+              } else {
+                console.warn('⚠️ [AtosPraticados] Erro ao buscar usuários da serventia, usando apenas usuário logado');
+              }
+            }
+          } else {
+            console.warn('⚠️ [AtosPraticados] Erro ao verificar configuração da serventia, usando apenas usuário logado');
+          }
+        } catch (configError) {
+          console.warn('⚠️ [AtosPraticados] Erro ao verificar configurações:', configError);
+        }
+      }
+
+      console.log('�🔗 [AtosPraticados] URL da requisição:', `${apiURL}/atos-praticados?data=${dataSelecionada}`);
 
       const resAtos = await fetch(
         `${apiURL}/atos-praticados?data=${dataSelecionada}`,
@@ -239,19 +282,76 @@ function AtosPraticados() {
         console.log('📋 [AtosPraticados] Lista de atos extraída:', listaAtos);
         console.log('📋 [AtosPraticados] Total de atos na lista:', listaAtos.length);
         
-        // Filtra os atos pelo usuário logado
-        const atosFiltrados = listaAtos.filter(
-          ato => ato.usuario === nomeLogado
-        );
+        // Determinar quais usuários incluir baseado na configuração de caixa unificado
+        let atosFiltrados = [];
+
+        if (caixaUnificado && usuariosDaServentia.length > 0) {
+          // Caixa unificado: mostrar atos de todos os usuários da serventia
+          const nomesUsuariosServentia = usuariosDaServentia.map(u => u.nome);
+          console.log('🏢 [AtosPraticados] Modo caixa unificado - incluindo usuários:', nomesUsuariosServentia);
+          
+          atosFiltrados = listaAtos.filter(ato => {
+            return nomesUsuariosServentia.some(nomeServentia => {
+              // Usar comparação flexível para cada usuário da serventia
+              return usuarioCorresponde(ato.usuario, nomeServentia);
+            });
+          });
+          
+          console.log('🏢 [AtosPraticados] Atos filtrados por serventia (caixa unificado):', atosFiltrados.length);
+        } else {
+          // Caixa individual: mostrar apenas atos do usuário logado
+          console.log('👤 [AtosPraticados] Modo caixa individual - apenas usuário logado:', nomeLogado);
+          
+          atosFiltrados = listaAtos.filter(ato => usuarioCorresponde(ato.usuario, nomeLogado));
+          
+          console.log('👤 [AtosPraticados] Atos filtrados por usuário individual:', atosFiltrados.length);
+        }
+
+        // Função para verificar se um usuário corresponde ao usuário de referência
+        function usuarioCorresponde(usuarioAto, usuarioReferencia) {
+          if (!usuarioAto || !usuarioReferencia) return false;
+          
+          // Comparação exata primeiro
+          if (usuarioAto === usuarioReferencia) return true;
+          
+          // Normalizar nomes para comparação flexível
+          const normalizar = (nome) => nome.toLowerCase().trim();
+          const usuarioAtoNorm = normalizar(usuarioAto);
+          const usuarioReferenciaNo = normalizar(usuarioReferencia);
+          
+          // Se são iguais após normalização
+          if (usuarioAtoNorm === usuarioReferenciaNo) return true;
+          
+          // Separar palavras dos nomes
+          const palavrasAto = usuarioAtoNorm.split(/\s+/).filter(p => p.length > 0);
+          const palavrasReferencia = usuarioReferenciaNo.split(/\s+/).filter(p => p.length > 0);
+          
+          // Se o usuário de referência é apenas um nome, verificar se está contido no nome do ato
+          if (palavrasReferencia.length === 1) {
+            return palavrasAto.includes(palavrasReferencia[0]);
+          }
+          
+          // Se ambos têm múltiplas palavras, verificar primeiro e último nome
+          if (palavrasReferencia.length >= 2 && palavrasAto.length >= 2) {
+            const primeiroReferencia = palavrasReferencia[0];
+            const ultimoReferencia = palavrasReferencia[palavrasReferencia.length - 1];
+            const primeiroAto = palavrasAto[0];
+            const ultimoAto = palavrasAto[palavrasAto.length - 1];
+            
+            return primeiroReferencia === primeiroAto && ultimoReferencia === ultimoAto;
+          }
+          
+          return false;
+        }
         
-        console.log('🔍 [AtosPraticados] Atos após filtrar por usuário:', atosFiltrados);
+        console.log('🔍 [AtosPraticados] Atos após filtrar:', atosFiltrados);
         console.log('📈 [AtosPraticados] Total de atos filtrados:', atosFiltrados.length);
         
         if (atosFiltrados.length !== listaAtos.length) {
-          console.log('⚠️ [AtosPraticados] Alguns atos foram filtrados. Usuários nos atos:');
+          console.log('⚠️ [AtosPraticados] Alguns atos foram filtrados. Detalhes do filtro:');
           const usuariosNosAtos = [...new Set(listaAtos.map(ato => ato.usuario))];
           console.log('👥 [AtosPraticados] Usuários encontrados nos atos:', usuariosNosAtos);
-          console.log('🎯 [AtosPraticados] Usuário sendo filtrado:', nomeLogado);
+          console.log('🎯 [AtosPraticados] Filtro aplicado:', caixaUnificado ? 'Caixa Unificado (serventia)' : 'Usuário Individual');
         }
         
         setAtos(atosFiltrados);
@@ -700,36 +800,6 @@ useEffect(() => {
           }}>
             📋 Atos Praticados ({atos.length})
           </h3>
-          
-          {/* Botões de Ação */}
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <button
-              onClick={() => carregarDadosPraticadosDaData()}
-              style={{
-                background: '#27ae60',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(39, 174, 96, 0.3)',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseOver={(e) => e.target.style.background = '#229954'}
-              onMouseOut={(e) => e.target.style.background = '#27ae60'}
-            >
-              🔄 Atualizar
-            </button>
-            
-            <FechamentoDiarioButton
-              onFechamento={fechamentoDiario}
-              atos={atos}
-              dataSelecionada={dataSelecionada}
-              nomeUsuario={nomeUsuario}
-            />
-          </div>
         </div>
 
         {/* Tabela de Atos */}
