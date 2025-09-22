@@ -108,7 +108,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             usuario: usuario,
             data: data,
             hora: hora,
-            valor_adiantado_detalhes: valoresPagos // envia array editado
+            detalhes_pagamento: valoresPagos // envia array editado
           })
         });
         setPagamentoSalvo(true);
