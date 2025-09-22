@@ -130,6 +130,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           })
         });
         setPagamentoSalvo(true);
+        // Atualiza status para 'Aguardando Entrega'
+        await atualizarStatusPedido('Aguardando Entrega');
         // Avança para o componente ServicoEntrega.jsx via prop
         if (typeof onAvancarEtapa === 'function') {
           onAvancarEtapa();
@@ -365,8 +367,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           }
 
           // NOVO: Atualiza pagamentoFinal com os dados salvos do backend
-          // Se detalhesBackend tem dados válidos, atualiza pagamentoFinal
-          if (Array.isArray(detalhesBackend) && detalhesBackend.length > 0) {
+          // Só atualiza pagamentoFinal se não houver pagamento salvo localmente
+          if (!pagamentoSalvo && Array.isArray(detalhesBackend) && detalhesBackend.length > 0) {
             setPagamentoFinal(
               detalhesBackend.map(item => ({
                 valor: item.valor,
