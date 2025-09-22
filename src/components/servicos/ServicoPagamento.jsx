@@ -84,8 +84,11 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   const handleSalvarPagamentoFinal = async () => {
     try {
       setProcessando(true);
-      // Filtra apenas linhas válidas
-      const valoresPagos = pagamentoFinal.filter(item => item.valor && item.forma);
+  // Filtra apenas linhas válidas
+  const valoresPagos = pagamentoFinal.filter(item => item.valor && item.forma);
+  // Log para depuração do formato enviado
+  console.log('[FRONTEND] pagamentoFinal:', pagamentoFinal);
+  console.log('[FRONTEND] valoresPagos (detalhes_pagamento):', valoresPagos);
       const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
       const usuario = usuarioLogado.nome || usuarioLogado.email || 'Sistema';
       const dataHora = new Date();
@@ -686,7 +689,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         if (resultado && resultado.local) {
           alert('✅ Pagamento cancelado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
         } else {
-          alert('✅ Pagamento cancelado com sucesso! Status atualizado para "Aguardando Conferência".');
+          alert('✅ Pagamento cancelado com sucesso! Status atualizado para "Aguardando Pagamento.".');
         }
         // Volta para o componente ServicoConferencia.jsx via prop
         if (typeof onVoltarEtapa === 'function') {
