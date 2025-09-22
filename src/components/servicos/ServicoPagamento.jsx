@@ -16,6 +16,39 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   React.useEffect(() => {
     setValorAdiantadoDetalhes(valorAdiantadoDetalhesProp || []);
   }, [valorAdiantadoDetalhesProp]);
+
+  // Modal de conferência/edição dos valores adiantados
+  const [showEditarValoresModal, setShowEditarValoresModal] = useState(false);
+  const [editValores, setEditValores] = useState([]);
+
+  // Abrir modal de edição
+  const abrirEditarValoresModal = () => {
+    setEditValores(valorAdiantadoDetalhes.map(item => ({ ...item })));
+    setShowEditarValoresModal(true);
+  };
+  // Fechar modal de edição
+  const fecharEditarValoresModal = () => {
+    setShowEditarValoresModal(false);
+    setEditValores([]);
+  };
+  // Atualizar valor/forma de pagamento editado
+  const handleEditValorChange = (idx, field, value) => {
+    setEditValores(editValores => editValores.map((item, i) => i === idx ? { ...item, [field]: field === 'valor' ? value.replace(',', '.') : value } : item));
+  };
+  // Remover linha
+  const handleRemoverEditValor = (idx) => {
+    setEditValores(editValores => editValores.filter((_, i) => i !== idx));
+  };
+  // Confirmar edição
+  const handleConfirmarEditarValores = () => {
+    // Filtra apenas valores válidos
+    const novosDetalhes = editValores.filter(item => item.valor && item.forma);
+    setValorAdiantadoDetalhes(novosDetalhes);
+    if (onChange) {
+      onChange({ ...form, valorAdiantadoDetalhes: novosDetalhes });
+    }
+    fecharEditarValoresModal();
+  };
   // Tabela de complementos de pagamento (renderização gradual)
   const renderTabelaComplementos = () => {
     const complementos = valorAdiantadoDetalhes.filter(item => item.complemento && item.valor && item.forma);
@@ -178,20 +211,15 @@ const subtotalPedido = useMemo(() => {
       try {
         const token = localStorage.getItem('token');
         const url = `${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`;
-  //
         const res = await fetch(url, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-  //
         if (res.ok) {
           const data = await res.json();
-          //
           if (data && data.id) {
             setPagamentoSalvo(true);
-            //
           } else {
             setPagamentoSalvo(false);
-            //
           }
           // Aceita tanto snake_case quanto camelCase por compatibilidade
           const valorAdicionalBackend = data.valorAdicional !== undefined ? data.valorAdicional : data.valor_adicional;
@@ -209,42 +237,25 @@ const subtotalPedido = useMemo(() => {
             setStatusPedido(statusBackend);
             if (onChange) onChange({ ...form, status: statusBackend });
           }
-          // Carrega complementos do backend, se existirem
-          let complementosBackend = [];
-          if (Array.isArray(data.complemento_pagamento)) {
-            //
-            complementosBackend = data.complemento_pagamento;
-          } else {
-            console.log('[Pagamento][EFFECT][DEBUG] Nenhum campo complemento_pagamento encontrado no backend.');
+          // Carrega valores adiantados do backend, se existirem
+          let detalhesBackend = [];
+          if (Array.isArray(data.valor_adiantado_detalhes)) {
+            detalhesBackend = data.valor_adiantado_detalhes;
+          } else if (typeof data.valor_adiantado_detalhes === 'string') {
+            try {
+              detalhesBackend = JSON.parse(data.valor_adiantado_detalhes);
+            } catch {
+              detalhesBackend = [];
+            }
           }
-          if (complementosBackend.length > 0) {
-            // Garante que todos os complementos têm valor, forma e complemento: true
-            const complementosMarcados = complementosBackend.map((item, idx) => {
-              const valor = item.valor !== undefined ? item.valor : item.valor_complemento;
-              const forma = item.forma !== undefined ? item.forma : item.forma_pagamento;
-              const complemento = true;
-              const novoItem = { ...item, valor, forma, complemento };
-              if (!valor || !forma) {
-                //
-              }
-              return novoItem;
-            });
-            setValorAdiantadoDetalhes(prev => {
-              const naoComplementos = (prev || []).filter(item => !item.complemento);
-              const resultado = [...naoComplementos, ...complementosMarcados];
-              //
-              return resultado;
-            });
-          } else {
-            //
+          if (detalhesBackend.length > 0) {
+            setValorAdiantadoDetalhes(detalhesBackend);
           }
         } else {
           setPagamentoSalvo(false);
-          //
         }
       } catch (e) {
         setPagamentoSalvo(false);
-  //
       }
     }
     fetchPagamentoSalvo();
@@ -771,7 +782,7 @@ const subtotalPedido = useMemo(() => {
 
 
 
-      {/* Tabela de Valores Adiantados */}
+      {/* Tabela de Valores Adiantados + botão de edição */}
       {valorAdiantadoDetalhes && valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
         <>
           <div style={{
@@ -781,12 +792,29 @@ const subtotalPedido = useMemo(() => {
             border: '2px solid #feb2b2',
             borderRadius: 8
           }}>
-            <h4 style={{
-              margin: '0 0 12px 0',
-              color: '#742a2a',
-              fontSize: '16px',
-              fontWeight: '600'
-            }}>💰 Valores Adiantados pelo Usuário</h4>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h4 style={{
+                margin: '0 0 12px 0',
+                color: '#742a2a',
+                fontSize: '16px',
+                fontWeight: '600'
+              }}>💰 Valores Adiantados pelo Usuário</h4>
+              <button
+                type="button"
+                onClick={abrirEditarValoresModal}
+                style={{
+                  padding: '6px 18px',
+                  background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 6,
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  marginLeft: 12
+                }}
+              >Conferir e Editar</button>
+            </div>
             <table style={{
               width: '100%',
               borderCollapse: 'collapse',
@@ -862,6 +890,82 @@ const subtotalPedido = useMemo(() => {
             </table>
           </div>
 
+          {/* Modal de edição dos valores adiantados */}
+          {showEditarValoresModal && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(0,0,0,0.25)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <div style={{
+                background: '#fff',
+                border: '2px solid #3182ce',
+                borderRadius: 12,
+                padding: 32,
+                minWidth: 340,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.18)'
+              }}>
+                <h3 style={{ color: '#3182ce', marginBottom: 18, textAlign: 'center' }}>Conferir e Editar Valores Adiantados</h3>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '15px', marginBottom: 18 }}>
+                  <thead>
+                    <tr style={{ background: '#e3f2fd' }}>
+                      <th style={{ padding: '8px', border: '1px solid #3182ce', color: '#3182ce' }}>Valor</th>
+                      <th style={{ padding: '8px', border: '1px solid #3182ce', color: '#3182ce' }}>Forma</th>
+                      <th style={{ padding: '8px', border: '1px solid #3182ce', color: '#3182ce' }}>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {editValores.map((item, idx) => (
+                      <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#e3f2fd' }}>
+                        <td style={{ padding: '8px', border: '1px solid #3182ce' }}>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={item.valor}
+                            onChange={e => handleEditValorChange(idx, 'valor', e.target.value)}
+                            style={{ width: 90, padding: '4px', borderRadius: 4, border: '1px solid #3182ce', fontSize: '15px' }}
+                          />
+                        </td>
+                        <td style={{ padding: '8px', border: '1px solid #3182ce' }}>
+                          <select value={item.forma} onChange={e => handleEditValorChange(idx, 'forma', e.target.value)} style={{ width: 120, padding: '4px', borderRadius: 4, border: '1px solid #3182ce', fontSize: '15px' }}>
+                            <option value="">Selecione</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Cartão de Débito">Cartão de Débito</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="PIX">PIX</option>
+                            <option value="Cheque">Cheque</option>
+                          </select>
+                        </td>
+                        <td style={{ padding: '8px', border: '1px solid #3182ce', textAlign: 'center' }}>
+                          <button type="button" onClick={() => handleRemoverEditValor(idx)} style={{ background: '#e53e3e', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontWeight: 'bold', cursor: 'pointer' }}>Remover</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={handleConfirmarEditarValores}
+                    style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
+                  >Confirmar</button>
+                  <button
+                    type="button"
+                    onClick={fecharEditarValoresModal}
+                    style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
+                  >Cancelar</button>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
       
