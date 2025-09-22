@@ -12,29 +12,20 @@ const statusPagamento = [
 export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes: valorAdiantadoDetalhesProp = [], onAvancarEtapa, onVoltarEtapa }) {
   // Estado local para valorAdiantadoDetalhes
   const [valorAdiantadoDetalhes, setValorAdiantadoDetalhes] = useState(valorAdiantadoDetalhesProp);
-  // Sincroniza estado local com prop se ela mudar externamente
   React.useEffect(() => {
     setValorAdiantadoDetalhes(valorAdiantadoDetalhesProp || []);
   }, [valorAdiantadoDetalhesProp]);
 
-  // Estado para modal de edição do pagamento final
-  const [showPagamentoModal, setShowPagamentoModal] = useState(false);
+  // Estado para tabela de edição da distribuição final
   const [pagamentoFinal, setPagamentoFinal] = useState([]);
+  // Inicializa tabela de pagamento final ao montar ou ao mudar valores adiantados
+  React.useEffect(() => {
+    // Se já existe pagamentoFinal, não sobrescreve
+    if (pagamentoFinal.length === 0 && valorAdiantadoDetalhes.length > 0) {
+      setPagamentoFinal(valorAdiantadoDetalhes.map(item => ({ valor: item.valor, forma: item.forma })));
+    }
+  }, [valorAdiantadoDetalhes]);
 
-  // Abrir modal de edição do pagamento final
-  const abrirPagamentoModal = () => {
-    // Inicializa com os valores adiantados, mas permite edição
-    setPagamentoFinal(valorAdiantadoDetalhes.map(item => ({
-      valor: item.valor,
-      forma: item.forma
-    })));
-    setShowPagamentoModal(true);
-  };
-  // Fechar modal de edição do pagamento final
-  const fecharPagamentoModal = () => {
-    setShowPagamentoModal(false);
-    setPagamentoFinal([]);
-  };
   // Editar valor/forma de pagamento final
   const handleEditPagamentoFinal = (idx, field, value) => {
     setPagamentoFinal(pagamentoFinal => pagamentoFinal.map((item, i) => i === idx ? { ...item, [field]: field === 'valor' ? value.replace(',', '.') : value } : item));
@@ -47,13 +38,12 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   const handleAdicionarPagamentoFinal = () => {
     setPagamentoFinal(pagamentoFinal => [...pagamentoFinal, { valor: '', forma: '' }]);
   };
-  // Confirmar e salvar pagamento final
-  const handleConfirmarPagamentoFinal = async () => {
+  // Salvar pagamento final no backend
+  const handleSalvarPagamentoFinal = async () => {
     try {
       setProcessando(true);
       // Filtra apenas linhas válidas
       const valoresPagos = pagamentoFinal.filter(item => item.valor && item.forma);
-      const totalPago = valoresPagos.reduce((total, item) => total + parseFloat(item.valor || 0), 0);
       const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
       const usuario = usuarioLogado.nome || usuarioLogado.email || 'Sistema';
       const dataHora = new Date();
@@ -80,7 +70,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           })
         });
         setPagamentoSalvo(true);
-        fecharPagamentoModal();
         // Avança para o componente ServicoEntrega.jsx via prop
         if (typeof onAvancarEtapa === 'function') {
           onAvancarEtapa();
@@ -859,204 +848,179 @@ const subtotalPedido = useMemo(() => {
 
 
 
-      {/* Tabela de Valores Adiantados + botão de edição */}
+      {/* Tabela de Valores Adiantados (não editável) */}
       {valorAdiantadoDetalhes && valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
-        <>
-          {/* Tabela de valores adiantados pelo usuário (não editável) */}
-          <div style={{
-            marginBottom: 20,
-            padding: 16,
-            background: '#fff5f5',
-            border: '2px solid #feb2b2',
-            borderRadius: 8
+        <div style={{
+          marginBottom: 20,
+          padding: 16,
+          background: '#fff5f5',
+          border: '2px solid #feb2b2',
+          borderRadius: 8
+        }}>
+          <h4 style={{
+            margin: '0 0 12px 0',
+            color: '#742a2a',
+            fontSize: '16px',
+            fontWeight: '600'
+          }}>💰 Valores Adiantados pelo Usuário</h4>
+          <table style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            fontSize: '14px'
           }}>
-            <h4 style={{
-              margin: '0 0 12px 0',
-              color: '#742a2a',
-              fontSize: '16px',
-              fontWeight: '600'
-            }}>💰 Valores Adiantados pelo Usuário</h4>
-            <table style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontSize: '14px'
-            }}>
-              <thead>
-                <tr style={{ background: '#fdf2f8' }}>
-                  <th style={{
-                    padding: '2px 2px 2px 2px',
-                    textAlign: 'left',
-                    color: '#742a2a',
-                    fontWeight: '600',
-                    border: '1px solid #feb2b2'
-                  }}>
-                    Valor
-                  </th>
-                  <th style={{
+            <thead>
+              <tr style={{ background: '#fdf2f8' }}>
+                <th style={{
+                  padding: '2px 2px 2px 2px',
+                  textAlign: 'left',
+                  color: '#742a2a',
+                  fontWeight: '600',
+                  border: '1px solid #feb2b2'
+                }}>
+                  Valor
+                </th>
+                <th style={{
+                  padding: '8px 12px',
+                  textAlign: 'left',
+                  color: '#742a2a',
+                  fontWeight: '600',
+                  border: '1px solid #feb2b2'
+                }}>
+                  Forma de Pagamento
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {valorAdiantadoDetalhes
+                .filter(item => item.valor && item.forma)
+                .map((item, idx) => (
+                <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fef5f5' }}>
+                  <td style={{
                     padding: '8px 12px',
-                    textAlign: 'left',
-                    color: '#742a2a',
-                    fontWeight: '600',
-                    border: '1px solid #feb2b2'
-                  }}>
-                    Forma de Pagamento
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {valorAdiantadoDetalhes
-                  .filter(item => item.valor && item.forma)
-                  .map((item, idx) => (
-                  <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fef5f5' }}>
-                    <td style={{
-                      padding: '8px 12px',
-                      border: '1px solid #feb2b2',
-                      fontFamily: 'monospace',
-                      fontWeight: '600',
-                      color: '#e53e3e'
-                    }}>
-                      R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </td>
-                    <td style={{
-                      padding: '8px 12px',
-                      border: '1px solid #feb2b2',
-                      color: '#742a2a'
-                    }}>
-                      {item.forma}
-                    </td>
-                  </tr>
-                ))}
-                {/* Linha de Total */}
-                <tr style={{ background: '#f3d5d5', fontWeight: 'bold' }}>
-                  <td style={{
-                    padding: '10px 12px',
-                    border: '2px solid #e53e3e',
+                    border: '1px solid #feb2b2',
                     fontFamily: 'monospace',
-                    fontWeight: 'bold',
-                    color: '#8b1a1a',
-                    fontSize: '16px'
+                    fontWeight: '600',
+                    color: '#e53e3e'
                   }}>
-                    R$ {calcularTotalAdiantado().toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td style={{
-                    padding: '10px 12px',
-                    border: '2px solid #e53e3e',
-                    fontWeight: 'bold',
-                    color: '#8b1a1a'
+                    padding: '8px 12px',
+                    border: '1px solid #feb2b2',
+                    color: '#742a2a'
                   }}>
-                    TOTAL ADIANTADO
+                    {item.forma}
                   </td>
                 </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {/* Botão para abrir modal de edição do pagamento final */}
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <button
-              type="button"
-              onClick={abrirPagamentoModal}
-              style={{
-                padding: '14px 32px',
-                background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                fontSize: '16px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
-                transition: 'all 0.2s ease'
-              }}
-            >Salvar Pagamento</button>
-          </div>
-
-          {/* Modal de edição do pagamento final */}
-          {showPagamentoModal && (
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              background: 'rgba(0,0,0,0.25)',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <div style={{
-                background: '#fff',
-                border: '2px solid #38a169',
-                borderRadius: 12,
-                padding: 32,
-                minWidth: 380,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.18)'
-              }}>
-                <h3 style={{ color: '#2f855a', marginBottom: 18, textAlign: 'center' }}>Pagamento do Pedido</h3>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '15px', marginBottom: 18 }}>
-                  <thead>
-                    <tr style={{ background: '#e6fffa' }}>
-                      <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Valor</th>
-                      <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Forma</th>
-                      <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pagamentoFinal.map((item, idx) => (
-                      <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#e6fffa' }}>
-                        <td style={{ padding: '8px', border: '1px solid #38a169' }}>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.valor}
-                            onChange={e => handleEditPagamentoFinal(idx, 'valor', e.target.value)}
-                            style={{ width: 90, padding: '4px', borderRadius: 4, border: '1px solid #38a169', fontSize: '15px' }}
-                          />
-                        </td>
-                        <td style={{ padding: '8px', border: '1px solid #38a169' }}>
-                          <select value={item.forma} onChange={e => handleEditPagamentoFinal(idx, 'forma', e.target.value)} style={{ width: 140, padding: '4px', borderRadius: 4, border: '1px solid #38a169', fontSize: '15px' }}>
-                            <option value="">Selecione</option>
-                            <option value="Dinheiro">Dinheiro</option>
-                            <option value="PIX">PIX</option>
-                            <option value="Cartão de Débito">Cartão de Débito</option>
-                            <option value="Cartão de Crédito">Cartão de Crédito</option>
-                            <option value="CRC">CRC</option>
-                            <option value="Depósito Prévio">Depósito Prévio</option>
-                          </select>
-                        </td>
-                        <td style={{ padding: '8px', border: '1px solid #38a169', textAlign: 'center' }}>
-                          <button type="button" onClick={() => handleRemoverPagamentoFinal(idx)} style={{ background: '#e53e3e', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontWeight: 'bold', cursor: 'pointer' }}>Remover</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 12 }}>
-                  <button
-                    type="button"
-                    onClick={handleAdicionarPagamentoFinal}
-                    style={{ padding: '8px 18px', background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}
-                  >Adicionar Forma</button>
-                </div>
-                <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-                  <button
-                    type="button"
-                    onClick={handleConfirmarPagamentoFinal}
-                    style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
-                  >Confirmar Pagamento</button>
-                  <button
-                    type="button"
-                    onClick={fecharPagamentoModal}
-                    style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
-                  >Cancelar</button>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
+              ))}
+              {/* Linha de Total */}
+              <tr style={{ background: '#f3d5d5', fontWeight: 'bold' }}>
+                <td style={{
+                  padding: '10px 12px',
+                  border: '2px solid #e53e3e',
+                  fontFamily: 'monospace',
+                  fontWeight: 'bold',
+                  color: '#8b1a1a',
+                  fontSize: '16px'
+                }}>
+                  R$ {calcularTotalAdiantado().toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </td>
+                <td style={{
+                  padding: '10px 12px',
+                  border: '2px solid #e53e3e',
+                  fontWeight: 'bold',
+                  color: '#8b1a1a'
+                }}>
+                  TOTAL ADIANTADO
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       )}
+
+      {/* Tabela de edição da distribuição final entre formas de pagamento */}
+      <div style={{
+        marginBottom: 24,
+        padding: 16,
+        background: '#e6fffa',
+        border: '2px solid #38a169',
+        borderRadius: 8
+      }}>
+        <h4 style={{
+          margin: '0 0 12px 0',
+          color: '#2f855a',
+          fontSize: '16px',
+          fontWeight: '600'
+        }}>📝 Distribuição Final do Pagamento</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '15px', marginBottom: 18 }}>
+          <thead>
+            <tr style={{ background: '#b2f5ea' }}>
+              <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Valor</th>
+              <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Forma</th>
+              <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pagamentoFinal.map((item, idx) => (
+              <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#e6fffa' }}>
+                <td style={{ padding: '8px', border: '1px solid #38a169' }}>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={item.valor}
+                    onChange={e => handleEditPagamentoFinal(idx, 'valor', e.target.value)}
+                    style={{ width: 90, padding: '4px', borderRadius: 4, border: '1px solid #38a169', fontSize: '15px' }}
+                  />
+                </td>
+                <td style={{ padding: '8px', border: '1px solid #38a169' }}>
+                  <select value={item.forma} onChange={e => handleEditPagamentoFinal(idx, 'forma', e.target.value)} style={{ width: 140, padding: '4px', borderRadius: 4, border: '1px solid #38a169', fontSize: '15px' }}>
+                    <option value="">Selecione</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="PIX">PIX</option>
+                    <option value="Cartão de Débito">Cartão de Débito</option>
+                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    <option value="CRC">CRC</option>
+                    <option value="Depósito Prévio">Depósito Prévio</option>
+                  </select>
+                </td>
+                <td style={{ padding: '8px', border: '1px solid #38a169', textAlign: 'center' }}>
+                  <button type="button" onClick={() => handleRemoverPagamentoFinal(idx)} style={{ background: '#e53e3e', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontWeight: 'bold', cursor: 'pointer' }}>Remover</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={handleAdicionarPagamentoFinal}
+            style={{ padding: '8px 18px', background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}
+          >Adicionar Forma</button>
+        </div>
+      </div>
+
+      {/* Botão único para salvar pagamento */}
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <button
+          type="button"
+          onClick={handleSalvarPagamentoFinal}
+          disabled={processando}
+          style={{
+            padding: '14px 32px',
+            background: processando ? '#a0aec0' : 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            fontSize: '16px',
+            fontWeight: '700',
+            cursor: processando ? 'not-allowed' : 'pointer',
+            boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
+            transition: 'all 0.2s ease'
+          }}
+        >{processando ? '⏳ Processando...' : 'Salvar Pagamento'}</button>
+      </div>
       
   {/* Tabela de complementos de pagamento acima do bloco de mensagens */}
   {renderTabelaComplementos()}
