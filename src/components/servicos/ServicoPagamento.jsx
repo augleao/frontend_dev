@@ -10,6 +10,10 @@ const statusPagamento = [
 ];
 
 export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes: valorAdiantadoDetalhesProp = [], onAvancarEtapa, onVoltarEtapa }) {
+  // Estado para valor adicional (deve vir antes do useMemo)
+  const [valorAdicional, setValorAdicional] = useState(0);
+  const [valorAdicionalInput, setValorAdicionalInput] = useState('');
+
   // Estado local para valorAdiantadoDetalhes
   const [valorAdiantadoDetalhes, setValorAdiantadoDetalhes] = useState(valorAdiantadoDetalhesProp);
   React.useEffect(() => {
@@ -277,9 +281,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   }, [form.serventiaId, form.serventia_id, form.serventia]);
   const [statusPedido, setStatusPedido] = useState(form.status || 'Em Análise');
   const [processando, setProcessando] = useState(false);
-  // Estado para valor adicional
-  const [valorAdicional, setValorAdicional] = useState(0);
-  const [valorAdicionalInput, setValorAdicionalInput] = useState('');
+  // ...existing code...
   // Estado para saber se já existe pagamento salvo
   const [pagamentoSalvo, setPagamentoSalvo] = useState(false);
 // ...existing code...
