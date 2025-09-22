@@ -20,10 +20,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   const [pagamentoFinal, setPagamentoFinal] = useState([]);
   // Inicializa tabela de pagamento final ao montar ou ao mudar valores adiantados
   React.useEffect(() => {
-    // Se já existe pagamentoFinal, não sobrescreve
-    if (pagamentoFinal.length === 0) {
+    // Garante que subtotalPedido está definido e é número
+    if (pagamentoFinal.length === 0 && typeof subtotalPedido === 'number' && !isNaN(subtotalPedido)) {
       if (valorAdiantadoDetalhes.length > 0) {
-        // Pré-preenche com subtotal e forma do primeiro adiantamento
         setPagamentoFinal([
           {
             valor: subtotalPedido,
@@ -31,7 +30,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           }
         ]);
       } else {
-        // Se não houver adiantamento, só valor subtotal
         setPagamentoFinal([
           {
             valor: subtotalPedido,
