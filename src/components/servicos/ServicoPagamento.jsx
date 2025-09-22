@@ -94,6 +94,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       // Salvar informações do pagamento final no backend
       try {
         const token = localStorage.getItem('token');
+        // Log do valor enviado para o backend
+        console.log('[FRONTEND] detalhes_pagamento enviado:', valoresPagos);
         await fetch(`${config.apiURL}/pedido_pagamento`, {
           method: 'POST',
           headers: {
@@ -108,7 +110,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             usuario: usuario,
             data: data,
             hora: hora,
-            detalhes_pagamento: valoresPagos // envia array editado
+            detalhes_pagamento: Array.isArray(valoresPagos) ? valoresPagos : [] // envia array editado
           })
         });
         setPagamentoSalvo(true);
