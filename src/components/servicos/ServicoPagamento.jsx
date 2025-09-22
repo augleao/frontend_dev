@@ -324,11 +324,20 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           }
           // Carrega valores adiantados do backend, se existirem
           let detalhesBackend = [];
-          if (Array.isArray(data.valor_adiantado_detalhes)) {
-            detalhesBackend = data.valor_adiantado_detalhes;
-          } else if (typeof data.valor_adiantado_detalhes === 'string') {
+          // Preferencialmente busca por complementos_pagamento (backend padronizado), senão detalhes_pagamento
+          if (Array.isArray(data.complementos_pagamento)) {
+            detalhesBackend = data.complementos_pagamento;
+          } else if (typeof data.complementos_pagamento === 'string') {
             try {
-              detalhesBackend = JSON.parse(data.valor_adiantado_detalhes);
+              detalhesBackend = JSON.parse(data.complementos_pagamento);
+            } catch {
+              detalhesBackend = [];
+            }
+          } else if (Array.isArray(data.detalhes_pagamento)) {
+            detalhesBackend = data.detalhes_pagamento;
+          } else if (typeof data.detalhes_pagamento === 'string') {
+            try {
+              detalhesBackend = JSON.parse(data.detalhes_pagamento);
             } catch {
               detalhesBackend = [];
             }
