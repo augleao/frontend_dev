@@ -1215,7 +1215,10 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                   <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <button
                       type="button"
-                      onClick={handleConfirmarPagamento}
+                      onClick={() => {
+                        console.log('[FRONTEND][LOG] Clique no botão Salvar Pagamento');
+                        handleSalvarPagamentoFinal();
+                      }}
                       disabled={processando}
                       style={{
                         padding: '14px 32px',
@@ -1229,10 +1232,10 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                         boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
                         transition: 'all 0.2s ease'
                       }}
-                      onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
-                      onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
+                      onMouseEnter={e => !processando && (e.target.style.transform = 'translateY(-2px)')}
+                      onMouseLeave={e => !processando && (e.target.style.transform = 'translateY(0px)')}
                     >
-                      {processando ? '⏳ Processando...' : '✅ Salvar Pagamento'}
+                      {processando ? '⏳ Salvando...' : '💾 Salvar Pagamento'}
                     </button>
                     {excesso > 0 && (
                       <button
@@ -1250,8 +1253,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                           boxShadow: '0 4px 12px rgba(49,130,206,0.3)',
                           transition: 'all 0.2s ease'
                         }}
-                        onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
-                        onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
+                        onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
                       >
                         📄 Gerar Recibo do Troco
                       </button>
