@@ -359,6 +359,17 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           if (detalhesBackend.length > 0) {
             setValorAdiantadoDetalhes(detalhesBackend);
           }
+
+          // NOVO: Atualiza pagamentoFinal com os dados salvos do backend
+          // Se detalhesBackend tem dados válidos, atualiza pagamentoFinal
+          if (Array.isArray(detalhesBackend) && detalhesBackend.length > 0) {
+            setPagamentoFinal(
+              detalhesBackend.map(item => ({
+                valor: item.valor,
+                forma: item.forma || ''
+              }))
+            );
+          }
         } else {
           setPagamentoSalvo(false);
         }
