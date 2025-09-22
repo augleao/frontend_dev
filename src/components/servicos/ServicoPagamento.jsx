@@ -1021,25 +1021,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       </div>
 
       {/* Botão único para salvar pagamento */}
-      <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <button
-          type="button"
-          onClick={handleSalvarPagamentoFinal}
-          disabled={processando}
-          style={{
-            padding: '14px 32px',
-            background: processando ? '#a0aec0' : 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            fontSize: '16px',
-            fontWeight: '700',
-            cursor: processando ? 'not-allowed' : 'pointer',
-            boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
-            transition: 'all 0.2s ease'
-          }}
-        >{processando ? '⏳ Processando...' : 'Salvar Pagamento'}</button>
-      </div>
+      {/* Removido botão fixo de salvar pagamento. O botão agora aparece apenas na lógica condicional ao lado do Gerar Recibo do Troco. */}
       
   {/* Tabela de complementos de pagamento acima do bloco de mensagens */}
   {renderTabelaComplementos()}
