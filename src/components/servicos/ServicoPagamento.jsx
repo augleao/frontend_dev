@@ -362,13 +362,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               detalhesBackend = [];
             }
           }
-          if (detalhesBackend.length > 0) {
+          // Só atualiza valorAdiantadoDetalhes e pagamentoFinal se não houver pagamento salvo localmente
+          if (!pagamentoSalvo && detalhesBackend.length > 0) {
             setValorAdiantadoDetalhes(detalhesBackend);
-          }
-
-          // NOVO: Atualiza pagamentoFinal com os dados salvos do backend
-          // Só atualiza pagamentoFinal se não houver pagamento salvo localmente
-          if (!pagamentoSalvo && Array.isArray(detalhesBackend) && detalhesBackend.length > 0) {
             setPagamentoFinal(
               detalhesBackend.map(item => ({
                 valor: item.valor,
