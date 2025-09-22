@@ -366,7 +366,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             setPagamentoFinal(
               detalhesBackend.map(item => ({
                 valor: item.valor,
-                forma: item.forma || ''
+                forma: item.forma || '',
+                complemento: item.complemento || false
               }))
             );
           }
