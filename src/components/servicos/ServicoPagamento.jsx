@@ -21,10 +21,26 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   // Inicializa tabela de pagamento final ao montar ou ao mudar valores adiantados
   React.useEffect(() => {
     // Se já existe pagamentoFinal, não sobrescreve
-    if (pagamentoFinal.length === 0 && valorAdiantadoDetalhes.length > 0) {
-      setPagamentoFinal(valorAdiantadoDetalhes.map(item => ({ valor: item.valor, forma: item.forma })));
+    if (pagamentoFinal.length === 0) {
+      if (valorAdiantadoDetalhes.length > 0) {
+        // Pré-preenche com subtotal e forma do primeiro adiantamento
+        setPagamentoFinal([
+          {
+            valor: subtotalPedido,
+            forma: valorAdiantadoDetalhes[0].forma || ''
+          }
+        ]);
+      } else {
+        // Se não houver adiantamento, só valor subtotal
+        setPagamentoFinal([
+          {
+            valor: subtotalPedido,
+            forma: ''
+          }
+        ]);
+      }
     }
-  }, [valorAdiantadoDetalhes]);
+  }, [valorAdiantadoDetalhes, subtotalPedido]);
 
   // Editar valor/forma de pagamento final
   const handleEditPagamentoFinal = (idx, field, value) => {
