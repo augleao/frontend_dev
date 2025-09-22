@@ -83,12 +83,21 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   // Salvar pagamento final no backend
   const handleSalvarPagamentoFinal = async () => {
     try {
+      console.log('[FRONTEND][LOG] handleSalvarPagamentoFinal chamado');
       setProcessando(true);
-  // Filtra apenas linhas válidas
-  const valoresPagos = pagamentoFinal.filter(item => item.valor && item.forma);
-  // Log para depuração do formato enviado
-  console.log('[FRONTEND] pagamentoFinal:', pagamentoFinal);
-  console.log('[FRONTEND] valoresPagos (detalhes_pagamento):', valoresPagos);
+      console.log('[FRONTEND][LOG] setProcessando(true) executado');
+      // Verifica se pagamentoFinal está definido
+      if (!pagamentoFinal) {
+        console.warn('[FRONTEND][LOG] pagamentoFinal está undefined ou null');
+      } else {
+        console.log('[FRONTEND][LOG] pagamentoFinal existe, length:', pagamentoFinal.length);
+      }
+      // Filtra apenas linhas válidas
+      const valoresPagos = pagamentoFinal ? pagamentoFinal.filter(item => item.valor && item.forma) : [];
+      console.log('[FRONTEND][LOG] valoresPagos calculado, length:', valoresPagos.length);
+      // Log para depuração do formato enviado
+      console.log('[FRONTEND] pagamentoFinal:', pagamentoFinal);
+      console.log('[FRONTEND] valoresPagos (detalhes_pagamento):', valoresPagos);
       const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
       const usuario = usuarioLogado.nome || usuarioLogado.email || 'Sistema';
       const dataHora = new Date();
