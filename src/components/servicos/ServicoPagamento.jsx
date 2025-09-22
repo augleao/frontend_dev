@@ -1073,9 +1073,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             const pagamentoConfirmado = statusPedido === 'Pago';
 
             // LOGS para depuração do fluxo dos botões
-            console.log('[Pagamento][RENDER] pagamentoSalvo:', pagamentoSalvo, '| statusPedido:', statusPedido, '| pagamentoConfirmado:', pagamentoConfirmado, '| totalAdiantado:', totalAdiantado, '| subtotalPedido:', subtotalPedido);
+            console.log('[Pagamento][RENDER] pagamentoSalvo:', pagamentoSalvo, '| statusPedido:', statusPedido, '| pagamentoConfirmado:', pagamentoConfirmado, '| totalAdiantado:', totalAdiantado, '| subtotalPedido:', subtotalPedido, '| excesso:', excesso);
 
-            // NOVA LÓGICA: se houver pagamento salvo, sempre mostra o botão de excluir
+            // Exibe botão de recibo do troco sempre que houver excesso, independente do status
             if (pagamentoSalvo && !pagamentoConfirmado) {
               console.log('[Pagamento][RENDER] Exibindo botão Excluir Pagamento (pagamentoSalvo = true)');
               return (
@@ -1114,6 +1114,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                     >
                       {processando ? '⏳ Processando...' : '❌ Excluir Pagamento'}
                     </button>
+                    {/* Força exibição do botão Gerar Recibo do Troco se excesso > 0 */}
                     {excesso > 0 && (
                       <button
                         type="button"
