@@ -371,12 +371,11 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             }
           }
           console.log('[DEBUG-RECIBO] detalhesBackend processados:', detalhesBackend);
-          if (detalhesBackend.length > 0) {
-            console.log('[DEBUG-RECIBO] Atualizando valorAdiantadoDetalhes com:', detalhesBackend);
-            setValorAdiantadoDetalhes(detalhesBackend);
-          } else {
-            console.log('[DEBUG-RECIBO] Nenhum detalhe encontrado no backend');
-          }
+          
+          // CORREÇÃO: NÃO sobrescrever valorAdiantadoDetalhes com dados do backend
+          // Os valores adiantados originais devem ser preservados para calcular o excesso corretamente
+          // O backend retorna os dados da "distribuição final" que não são os mesmos que os "valores adiantados"
+          console.log('[DEBUG-RECIBO] Preservando valorAdiantadoDetalhes originais para manter cálculo de excesso');
 
           // NOVO: Atualiza pagamentoFinal com os dados salvos do backend
           // Atualiza pagamentoFinal sempre que há dados do backend
