@@ -126,7 +126,8 @@ app.post('/api/atos-praticados/importar-servicos', authenticateToken, async (req
         p.usuario as pagamento_usuario,
         p.data as pagamento_data,
         p.hora as pagamento_hora,
-        p.complemento_pagamento
+        p.complemento_pagamento,
+        p.detalhes_pagamento
       FROM selos_execucao_servico s
       LEFT JOIN pedido_pagamento p ON p.protocolo = s.execucao_servico_id
       WHERE DATE(s.criado_em) = $1::date
@@ -383,8 +384,8 @@ app.post('/api/atos-praticados/importar-servicos', authenticateToken, async (req
       return atos;
     };
 
-    // 5. Função para extrair formas de pagamento do JSONB
-    const extrairFormasPagamento = (complementoPagamento) => {
+    // 5. Função para extrair formas de pagamento do JSONB (complemento_pagamento ou detalhes_pagamento)
+    const extrairFormasPagamento = (dadosPagamento) => {
       const pagamentos = {
         dinheiro: { quantidade: 0, valor: 0, manual: false },
         cartao: { quantidade: 0, valor: 0, manual: false },
@@ -393,46 +394,78 @@ app.post('/api/atos-praticados/importar-servicos', authenticateToken, async (req
         depositoPrevio: { quantidade: 0, valor: 0, manual: false }
       };
 
-      if (!complementoPagamento) {
-        console.log('⚠️ Sem dados de complemento_pagamento');
+      if (!dadosPagamento) {
+        console.log('⚠️ Sem dados de pagamento');
         return pagamentos;
       }
 
       try {
         // Se já é um objeto, usar diretamente; se é string, fazer parse
-        const dadosPagamento = typeof complementoPagamento === 'string' 
-          ? JSON.parse(complementoPagamento) 
-          : complementoPagamento;
+        const dadosProcessados = typeof dadosPagamento === 'string' 
+          ? JSON.parse(dadosPagamento) 
+          : dadosPagamento;
 
-        console.log('💳 Dados de pagamento extraídos:', dadosPagamento);
+        console.log('💳 Dados de pagamento extraídos:', dadosProcessados);
 
-        // Mapear os dados conforme a estrutura encontrada
-        Object.keys(dadosPagamento).forEach(chave => {
-          const valor = dadosPagamento[chave];
+        // Verificar se é um array (formato detalhes_pagamento) ou objeto (formato complemento_pagamento)
+        if (Array.isArray(dadosProcessados)) {
+          // Formato detalhes_pagamento: [{valor: 100, forma: "Dinheiro", complemento: false}, ...]
+          console.log('💳 Processando formato detalhes_pagamento (array)');
           
-          // Mapear para as chaves esperadas pelo frontend
-          const mapeamento = {
-            'dinheiro': 'dinheiro',
-            'cartao': 'cartao',
-            'cartão': 'cartao',
-            'pix': 'pix',
-            'crc': 'crc',
-            'deposito_previo': 'depositoPrevio',
-            'depositoPrevio': 'depositoPrevio'
-          };
-
-          const chaveCorreta = mapeamento[chave.toLowerCase()];
-          if (chaveCorreta && typeof valor === 'object' && valor !== null) {
-            pagamentos[chaveCorreta] = {
-              quantidade: parseInt(valor.quantidade) || 0,
-              valor: parseFloat(valor.valor) || 0,
-              manual: Boolean(valor.manual)
+          dadosProcessados.forEach(item => {
+            if (item.valor && item.forma) {
+              const mapeamento = {
+                'dinheiro': 'dinheiro',
+                'cartao': 'cartao',
+                'cartão': 'cartao',
+                'pix': 'pix',
+                'crc': 'crc',
+                'deposito_previo': 'depositoPrevio',
+                'deposito previo': 'depositoPrevio',
+                'depósito prévio': 'depositoPrevio',
+                'depositoPrevio': 'depositoPrevio'
+              };
+              
+              const chaveCorreta = mapeamento[item.forma.toLowerCase()];
+              if (chaveCorreta) {
+                pagamentos[chaveCorreta].quantidade += 1;
+                pagamentos[chaveCorreta].valor += parseFloat(item.valor) || 0;
+                pagamentos[chaveCorreta].manual = Boolean(item.complemento);
+              }
+            }
+          });
+          
+        } else {
+          // Formato complemento_pagamento: {dinheiro: {quantidade: 1, valor: 100, manual: false}, ...}
+          console.log('💳 Processando formato complemento_pagamento (objeto)');
+          
+          Object.keys(dadosProcessados).forEach(chave => {
+            const valor = dadosProcessados[chave];
+            
+            // Mapear para as chaves esperadas pelo frontend
+            const mapeamento = {
+              'dinheiro': 'dinheiro',
+              'cartao': 'cartao',
+              'cartão': 'cartao',
+              'pix': 'pix',
+              'crc': 'crc',
+              'deposito_previo': 'depositoPrevio',
+              'depositoPrevio': 'depositoPrevio'
             };
-          }
-        });
+
+            const chaveCorreta = mapeamento[chave.toLowerCase()];
+            if (chaveCorreta && typeof valor === 'object' && valor !== null) {
+              pagamentos[chaveCorreta] = {
+                quantidade: parseInt(valor.quantidade) || 0,
+                valor: parseFloat(valor.valor) || 0,
+                manual: Boolean(valor.manual)
+              };
+            }
+          });
+        }
 
       } catch (error) {
-        console.error('❌ Erro ao processar complemento_pagamento:', error);
+        console.error('❌ Erro ao processar dados de pagamento:', error);
       }
 
       return pagamentos;
@@ -445,14 +478,14 @@ app.post('/api/atos-praticados/importar-servicos', authenticateToken, async (req
     const queryInserir = `
       INSERT INTO atos_praticados (
         data, hora, codigo, descricao, quantidade, valor_unitario, 
-        pagamentos, usuario, origem_importacao
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        pagamentos, detalhes_pagamentos, usuario, origem_importacao
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     `;
 
     for (const selo of atosNovos) {
       try {
-        // Extrair formas de pagamento
-        const formasPagamento = extrairFormasPagamento(selo.complemento_pagamento);
+        // Extrair formas de pagamento priorizando detalhes_pagamento se disponível
+        const formasPagamento = extrairFormasPagamento(selo.detalhes_pagamento || selo.complemento_pagamento);
 
         // Extrair atos do campo qtd_atos
         const atosExtraidos = extrairAtosDoTexto(selo.qtd_atos);
@@ -467,6 +500,15 @@ app.post('/api/atos-praticados/importar-servicos', authenticateToken, async (req
           // Usar o nome do usuário mapeado do frontend ao invés do nome do banco
           const usuarioFrontend = mapeamentoUsuarios[selo.usuario_execucao] || selo.usuario_execucao;
           
+          // Preparar detalhes_pagamento do pedido_pagamento se disponível
+          let detalhesPagamentoStr = null;
+          if (selo.detalhes_pagamento) {
+            // Se já é string JSON, usar diretamente; se é objeto, fazer stringify
+            detalhesPagamentoStr = typeof selo.detalhes_pagamento === 'string' 
+              ? selo.detalhes_pagamento 
+              : JSON.stringify(selo.detalhes_pagamento);
+          }
+          
           console.log(`📝 Inserindo ato ${selo.execucao_servico_id} - Código: ${ato.codigo}, Quantidade: ${ato.quantidade}:`, {
             codigo: ato.codigo,
             descricao: `Ato ${ato.codigo} importado do sistema de selos`,
@@ -474,7 +516,8 @@ app.post('/api/atos-praticados/importar-servicos', authenticateToken, async (req
             quantidade: ato.quantidade,
             usuario_banco: selo.usuario_execucao,
             usuario_frontend: usuarioFrontend,
-            formasPagamento: formasPagamento
+            formasPagamento: formasPagamento,
+            detalhes_pagamento: detalhesPagamentoStr
           });
 
           await pool.query(queryInserir, [
@@ -485,6 +528,7 @@ app.post('/api/atos-praticados/importar-servicos', authenticateToken, async (req
             ato.quantidade, // Quantidade extraída do campo qtd_atos
             parseFloat(selo.valor_atos) || 0, // Usar valor_atos da tabela pedido_pagamento
             JSON.stringify(formasPagamento),
+            detalhesPagamentoStr, // Detalhes de pagamento da tabela pedido_pagamento
             usuarioFrontend, // USAR O NOME DO FRONTEND, NÃO O DO BANCO
             'selos_execucao_servico' // origem da importação
           ]);
