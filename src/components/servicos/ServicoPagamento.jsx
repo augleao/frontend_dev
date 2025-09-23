@@ -1210,35 +1210,6 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                       📄 Gerar Recibo do Troco
                     </button>
                   )}
-
-                  {/* Botão Avançar para Entrega - aparece após pagamento salvo */}
-                  {pagamentoSalvo && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        console.log('[FRONTEND][LOG] Avançando para etapa de entrega');
-                        if (typeof onAvancarEtapa === 'function') {
-                          onAvancarEtapa();
-                        }
-                      }}
-                      style={{
-                        padding: '14px 32px',
-                        background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
-                      onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
-                    >
-                      ➡️ Avançar para Entrega
-                    </button>
-                  )}
                 </div>
               </div>
             );
