@@ -470,7 +470,7 @@ app.post('/api/atos-praticados/importar-servicos', authenticateToken, async (req
 
       return pagamentos;
     };
-
+    
     // 5.1. Função para buscar descrição do ato na tabela atos baseado no código
     const buscarDescricaoAto = async (codigo) => {
       try {
