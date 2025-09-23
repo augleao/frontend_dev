@@ -10,6 +10,11 @@ const statusPagamento = [
 ];
 
 export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes: valorAdiantadoDetalhesProp = [], onAvancarEtapa, onVoltarEtapa }) {
+  console.log('[DEBUG-RECIBO] COMPONENTE RENDERIZADO. Props recebidas:');
+  console.log('[DEBUG-RECIBO] - form.protocolo:', form.protocolo);
+  console.log('[DEBUG-RECIBO] - valorTotal:', valorTotal);
+  console.log('[DEBUG-RECIBO] - valorAdiantadoDetalhesProp:', valorAdiantadoDetalhesProp);
+  
   // Estado para valor adicional (deve vir antes do useMemo)
   const [valorAdicional, setValorAdicional] = useState(0);
   const [valorAdicionalInput, setValorAdicionalInput] = useState('');
@@ -306,7 +311,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   // Buscar pagamento salvo ao montar
   React.useEffect(() => {
     // Loga sempre que o protocolo mudar
+    console.log('[DEBUG-RECIBO] useEffect fetchPagamentoSalvo executado. Protocolo:', form.protocolo);
     if (!form.protocolo) {
+      console.log('[DEBUG-RECIBO] Sem protocolo, setPagamentoSalvo(false)');
       setPagamentoSalvo(false);
       return;
     }
@@ -319,9 +326,12 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         });
         if (res.ok) {
           const data = await res.json();
+          console.log('[DEBUG-RECIBO] Dados recebidos do backend:', data);
           if (data && data.id) {
+            console.log('[DEBUG-RECIBO] Pagamento encontrado, setPagamentoSalvo(true)');
             setPagamentoSalvo(true);
           } else {
+            console.log('[DEBUG-RECIBO] Nenhum pagamento encontrado, setPagamentoSalvo(false)');
             setPagamentoSalvo(false);
           }
           // Aceita tanto snake_case quanto camelCase por compatibilidade
@@ -360,13 +370,18 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               detalhesBackend = [];
             }
           }
+          console.log('[DEBUG-RECIBO] detalhesBackend processados:', detalhesBackend);
           if (detalhesBackend.length > 0) {
+            console.log('[DEBUG-RECIBO] Atualizando valorAdiantadoDetalhes com:', detalhesBackend);
             setValorAdiantadoDetalhes(detalhesBackend);
+          } else {
+            console.log('[DEBUG-RECIBO] Nenhum detalhe encontrado no backend');
           }
 
           // NOVO: Atualiza pagamentoFinal com os dados salvos do backend
           // Atualiza pagamentoFinal sempre que há dados do backend
           if (Array.isArray(detalhesBackend) && detalhesBackend.length > 0) {
+            console.log('[DEBUG-RECIBO] Atualizando pagamentoFinal com detalhesBackend');
             setPagamentoFinal(
               detalhesBackend.map(item => ({
                 valor: item.valor,
@@ -387,9 +402,12 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
 
   // Função para calcular o total adiantado
   const calcularTotalAdiantado = () => {
-    return valorAdiantadoDetalhes
-      .filter(item => item.valor && item.forma)
-      .reduce((total, item) => total + parseFloat(item.valor || 0), 0);
+    const detalhesValidos = valorAdiantadoDetalhes.filter(item => item.valor && item.forma);
+    const total = detalhesValidos.reduce((total, item) => total + parseFloat(item.valor || 0), 0);
+    console.log('[DEBUG-RECIBO] calcularTotalAdiantado - valorAdiantadoDetalhes:', valorAdiantadoDetalhes);
+    console.log('[DEBUG-RECIBO] calcularTotalAdiantado - detalhesValidos:', detalhesValidos);
+    console.log('[DEBUG-RECIBO] calcularTotalAdiantado - total:', total);
+    return total;
   };
 
   // Função para atualizar status no banco de dados
@@ -1073,6 +1091,14 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             const valorRestante = subtotalPedido - totalAdiantado;
             const excesso = totalAdiantado - subtotalPedido;
             const pagamentoConfirmado = statusPedido === 'Pago';
+            
+            console.log('[DEBUG-RECIBO] Renderização dos botões:');
+            console.log('[DEBUG-RECIBO] - subtotalPedido:', subtotalPedido);
+            console.log('[DEBUG-RECIBO] - totalAdiantado:', totalAdiantado);
+            console.log('[DEBUG-RECIBO] - excesso:', excesso);
+            console.log('[DEBUG-RECIBO] - pagamentoSalvo:', pagamentoSalvo);
+            console.log('[DEBUG-RECIBO] - valorAdiantadoDetalhes.length:', valorAdiantadoDetalhes.length);
+            console.log('[DEBUG-RECIBO] - Condição excesso > 0:', excesso > 0);
 
             // Status do pagamento - simplificado para focar na funcionalidade
             let statusMessage = '';
@@ -1183,7 +1209,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                   )}
 
                   {/* Botão Gerar Recibo do Troco - SEMPRE VISÍVEL quando há excesso */}
-                  {excesso > 0 && (
+                  {excesso > 0 ? (
                     <button
                       type="button"
                       onClick={() => {
@@ -1207,6 +1233,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                     >
                       📄 Gerar Recibo do Troco
                     </button>
+                  ) : (
+                    console.log('[DEBUG-RECIBO] Botão do troco NÃO renderizado. Excesso:', excesso, 'Condição excesso > 0:', excesso > 0)
                   )}
                 </div>
               </div>
