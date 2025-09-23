@@ -1076,18 +1076,15 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             const excesso = totalAdiantado - subtotalPedido;
             const pagamentoConfirmado = statusPedido === 'Pago';
 
-            // Status do pagamento
+            // Status do pagamento - simplificado para focar na funcionalidade
             let statusMessage = '';
             let statusStyle = {};
             
-            if (pagamentoSalvo && !pagamentoConfirmado) {
-              statusMessage = '✅ Pagamento já salvo!';
-              statusStyle = { background: '#e8f5e8', border: '2px solid #38a169', color: '#2d5016' };
-            } else if (pagamentoConfirmado) {
-              statusMessage = '✅ Pagamento Confirmado!';
+            if (pagamentoSalvo) {
+              statusMessage = '✅ Pagamento salvo com sucesso!';
               statusStyle = { background: '#e8f5e8', border: '2px solid #38a169', color: '#2d5016' };
             } else if (totalAdiantado >= subtotalPedido) {
-              statusMessage = '✅ Valor adiantado suficiente!';
+              statusMessage = '✅ Valor adiantado suficiente para pagamento!';
               statusStyle = { background: '#e8f5e8', border: '2px solid #38a169', color: '#2d5016' };
             } else {
               statusMessage = `⚠️ Valor insuficiente para pagamento. Restam: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -1111,7 +1108,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                 {/* Botões de ação */}
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   {/* Botão Salvar Pagamento - só aparece se não foi salvo e valor é suficiente */}
-                  {!pagamentoSalvo && !pagamentoConfirmado && totalAdiantado >= subtotalPedido && (
+                  {!pagamentoSalvo && totalAdiantado >= subtotalPedido && (
                     <button
                       type="button"
                       onClick={() => {
@@ -1139,7 +1136,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                   )}
 
                   {/* Botão Excluir/Cancelar Pagamento - aparece se foi salvo */}
-                  {(pagamentoSalvo || pagamentoConfirmado) && (
+                  {pagamentoSalvo && (
                     <button
                       type="button"
                       onClick={handleCancelarPagamento}
@@ -1159,12 +1156,12 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                       onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
                       onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
                     >
-                      {processando ? '⏳ Processando...' : (pagamentoConfirmado ? '❌ Cancelar Pagamento' : '❌ Excluir Pagamento')}
+                      {processando ? '⏳ Processando...' : '❌ Excluir Pagamento'}
                     </button>
                   )}
 
-                  {/* Botão Adicionar Complemento - aparece se valor é insuficiente */}
-                  {!pagamentoSalvo && !pagamentoConfirmado && totalAdiantado < subtotalPedido && (
+                  {/* Botão Adicionar Complemento - aparece se valor é insuficiente e não foi salvo */}
+                  {!pagamentoSalvo && totalAdiantado < subtotalPedido && (
                     <button
                       type="button"
                       onClick={abrirComplementoModal}
@@ -1191,7 +1188,10 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                   {excesso > 0 && (
                     <button
                       type="button"
-                      onClick={() => gerarReciboExcesso(excesso)}
+                      onClick={() => {
+                        console.log('[FRONTEND][LOG] Gerando recibo do troco para excesso de:', excesso);
+                        gerarReciboExcesso(excesso);
+                      }}
                       style={{
                         padding: '14px 32px',
                         background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
