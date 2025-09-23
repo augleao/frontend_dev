@@ -17,10 +17,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   // Estado local para valorAdiantadoDetalhes
   const [valorAdiantadoDetalhes, setValorAdiantadoDetalhes] = useState(valorAdiantadoDetalhesProp);
   React.useEffect(() => {
-    // Só atualiza se não há pagamento salvo
-    if (!pagamentoSalvo) {
-      setValorAdiantadoDetalhes(valorAdiantadoDetalhesProp || []);
-    }
+    // Atualiza sempre que o prop mudar, independente do pagamento salvo
+    setValorAdiantadoDetalhes(valorAdiantadoDetalhesProp || []);
   }, [valorAdiantadoDetalhesProp]);
 
   // Calcular subtotalPedido antes de qualquer uso
@@ -52,8 +50,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   // Inicializa tabela de pagamento final ao montar ou ao mudar valores adiantados
   React.useEffect(() => {
     // Garante que subtotalPedido está definido e é número
-    // Só inicializa se não há pagamento salvo
-    if (!pagamentoSalvo && pagamentoFinal.length === 0 && typeof subtotalPedido === 'number' && !isNaN(subtotalPedido)) {
+    // Inicializa se não há dados na tabela de pagamento final
+    if (pagamentoFinal.length === 0 && typeof subtotalPedido === 'number' && !isNaN(subtotalPedido)) {
       if (valorAdiantadoDetalhes.length > 0) {
         setPagamentoFinal([
           {
@@ -367,8 +365,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           }
 
           // NOVO: Atualiza pagamentoFinal com os dados salvos do backend
-          // Só atualiza pagamentoFinal se não houver pagamento salvo localmente
-          if (!pagamentoSalvo && Array.isArray(detalhesBackend) && detalhesBackend.length > 0) {
+          // Atualiza pagamentoFinal sempre que há dados do backend
+          if (Array.isArray(detalhesBackend) && detalhesBackend.length > 0) {
             setPagamentoFinal(
               detalhesBackend.map(item => ({
                 valor: item.valor,
