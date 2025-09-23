@@ -471,6 +471,34 @@ app.post('/api/atos-praticados/importar-servicos', authenticateToken, async (req
       return pagamentos;
     };
 
+    // 5.1. Função para buscar descrição do ato na tabela atos baseado no código
+    const buscarDescricaoAto = async (codigo) => {
+      try {
+        const queryAto = `
+          SELECT descricao 
+          FROM atos 
+          WHERE codigo = $1
+          LIMIT 1
+        `;
+        
+        const resultAto = await pool.query(queryAto, [codigo]);
+        
+        if (resultAto.rows.length > 0) {
+          const descricaoOriginal = resultAto.rows[0].descricao;
+          // Adicionar prefixo "Importado: " à descrição encontrada
+          return `Importado: ${descricaoOriginal}`;
+        }
+        
+        // Se não encontrar o ato na tabela, retornar descrição padrão com prefixo
+        console.log(`⚠️ Ato com código ${codigo} não encontrado na tabela atos, usando descrição padrão`);
+        return `Importado: Ato ${codigo} do sistema de selos`;
+        
+      } catch (error) {
+        console.error(`❌ Erro ao buscar descrição do ato ${codigo}:`, error);
+        return `Importado: Ato ${codigo} do sistema de selos`;
+      }
+    };
+
     // 6. Inserir os atos novos na tabela atos_praticados
     console.log('💾 Inserindo novos atos na tabela atos_praticados...');
     
@@ -500,6 +528,9 @@ app.post('/api/atos-praticados/importar-servicos', authenticateToken, async (req
           // Usar o nome do usuário mapeado do frontend ao invés do nome do banco
           const usuarioFrontend = mapeamentoUsuarios[selo.usuario_execucao] || selo.usuario_execucao;
           
+          // Buscar descrição do ato na tabela atos
+          const descricaoAto = await buscarDescricaoAto(ato.codigo);
+          
           // Preparar detalhes_pagamento do pedido_pagamento se disponível
           let detalhesPagamentoStr = null;
           if (selo.detalhes_pagamento) {
@@ -511,7 +542,7 @@ app.post('/api/atos-praticados/importar-servicos', authenticateToken, async (req
           
           console.log(`📝 Inserindo ato ${selo.execucao_servico_id} - Código: ${ato.codigo}, Quantidade: ${ato.quantidade}:`, {
             codigo: ato.codigo,
-            descricao: `Ato ${ato.codigo} importado do sistema de selos`,
+            descricao: descricaoAto,
             valor_unitario: selo.valor_atos || 0,
             quantidade: ato.quantidade,
             usuario_banco: selo.usuario_execucao,
@@ -524,7 +555,7 @@ app.post('/api/atos-praticados/importar-servicos', authenticateToken, async (req
             selo.data_execucao, // Já extraído como DATE(s.criado_em)
             selo.hora_execucao || '00:00:00', // Já extraído como TO_CHAR(s.criado_em, 'HH24:MI:SS')
             ato.codigo, // Código extraído do campo qtd_atos
-            `Ato ${ato.codigo} importado do sistema de selos`, // Descrição com o código
+            descricaoAto, // Descrição da tabela atos com prefixo "Importado: "
             ato.quantidade, // Quantidade extraída do campo qtd_atos
             parseFloat(selo.valor_atos) || 0, // Usar valor_atos da tabela pedido_pagamento
             JSON.stringify(formasPagamento),

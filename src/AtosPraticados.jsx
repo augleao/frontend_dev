@@ -151,8 +151,26 @@ function AtosPraticados() {
 
 
 
-  const removerAto = async (index) => {
-    const atoParaRemover = atos[index];
+  const removerAto = async (atoIdOuIndex) => {
+    // Se for um número maior que o array, provavelmente é um ID
+    // Se for um número menor que o array, provavelmente é um índice
+    let atoParaRemover;
+    let indexParaRemover;
+    
+    if (typeof atoIdOuIndex === 'number' && atoIdOuIndex < atos.length) {
+      // É um índice
+      indexParaRemover = atoIdOuIndex;
+      atoParaRemover = atos[atoIdOuIndex];
+    } else {
+      // É um ID, procurar no array
+      indexParaRemover = atos.findIndex(ato => ato.id === atoIdOuIndex);
+      atoParaRemover = atos[indexParaRemover];
+    }
+    
+    if (!atoParaRemover) {
+      console.error('Ato não encontrado para remoção:', atoIdOuIndex);
+      return;
+    }
     
     // Verificar se o ato tem ID (foi salvo no backend)
     if (atoParaRemover.id) {
@@ -168,7 +186,7 @@ function AtosPraticados() {
         );
         
         if (res.ok) {
-          setAtos(atos.filter((_, i) => i !== index));
+          setAtos(atos.filter((_, i) => i !== indexParaRemover));
           console.log('Ato removido do backend e da lista local:', atoParaRemover);
         } else {
           const errorData = await res.json();
@@ -181,7 +199,7 @@ function AtosPraticados() {
       }
     } else {
       // Ato só existe localmente, remover apenas da lista
-      setAtos(atos.filter((_, i) => i !== index));
+      setAtos(atos.filter((_, i) => i !== indexParaRemover));
       console.log('Ato removido apenas da lista local (não tinha ID):', atoParaRemover);
     }
   };
@@ -822,7 +840,7 @@ useEffect(() => {
         ) : (
           <AtosTable
             atos={atos}
-            onRemoverAto={removerAto}
+            onRemover={removerAto}
             dataSelecionada={dataSelecionada}
             usuarioLogado={nomeUsuario}
           />
