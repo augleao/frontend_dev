@@ -362,9 +362,13 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               detalhesBackend = [];
             }
           }
-          // Só atualiza valorAdiantadoDetalhes e pagamentoFinal se não houver pagamento salvo localmente
-          if (!pagamentoSalvo && detalhesBackend.length > 0) {
+          if (detalhesBackend.length > 0) {
             setValorAdiantadoDetalhes(detalhesBackend);
+          }
+
+          // NOVO: Atualiza pagamentoFinal com os dados salvos do backend
+          // Só atualiza pagamentoFinal se não houver pagamento salvo localmente
+          if (!pagamentoSalvo && Array.isArray(detalhesBackend) && detalhesBackend.length > 0) {
             setPagamentoFinal(
               detalhesBackend.map(item => ({
                 valor: item.valor,
@@ -917,214 +921,197 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             margin: '0 0 12px 0',
             color: '#742a2a',
             fontSize: '16px',
-            <div style={{
-              marginBottom: 20,
-              textAlign: 'center',
-              display: 'flex',
-              gap: '12px',
-              justifyContent: 'center',
-              flexWrap: 'wrap'
-            }}>
-              <button
-                type="button"
-                onClick={handleCancelarPagamento}
-                disabled={processando}
-                style={{
-                  padding: '14px 32px',
-                  background: processando ? '#a0aec0' : 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontSize: '16px',
-                  fontWeight: '700',
-                  cursor: processando ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 4px 12px rgba(229,62,62,0.3)',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
-                onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
-              >
-                {processando ? '⏳ Processando...' : '❌ Excluir Pagamento'}
-              </button>
-              <button
-                type="button"
-                onClick={() => gerarReciboExcesso(calcularTotalAdiantado() - subtotalPedido)}
-                style={{
-                  padding: '14px 32px',
-                  background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontSize: '16px',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(49,130,206,0.3)',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
-                onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
-              >
-                📄 Gerar Recibo do Troco
-              </button>
-            </div>
+            fontWeight: '600'
+          }}>💰 Valores Adiantados pelo Usuário</h4>
+          <table style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            fontSize: '14px'
+          }}>
+            <thead>
+              <tr style={{ background: '#fdf2f8' }}>
+                <th style={{
+                  padding: '2px 2px 2px 2px',
+                  textAlign: 'left',
+                  color: '#742a2a',
+                  fontWeight: '600',
+                  border: '1px solid #feb2b2'
+                }}>
+                  Valor
+                </th>
+                <th style={{
+                  padding: '8px 12px',
+                  textAlign: 'left',
+                  color: '#742a2a',
+                  fontWeight: '600',
+                  border: '1px solid #feb2b2'
+                }}>
+                  Forma de Pagamento
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {valorAdiantadoDetalhes
+                .filter(item => item.valor && item.forma)
+                .map((item, idx) => (
+                <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fef5f5' }}>
+                  <td style={{
+                    padding: '8px 12px',
+                    border: '1px solid #feb2b2',
+                    fontFamily: 'monospace',
+                    fontWeight: '600',
+                    color: '#e53e3e'
+                  }}>
+                    R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                  <td style={{
+                    padding: '8px 12px',
+                    border: '1px solid #feb2b2',
+                    color: '#742a2a'
+                  }}>
+                    {item.forma}
+                  </td>
+                </tr>
+              ))}
+              {/* Linha de Total */}
+              <tr style={{ background: '#f3d5d5', fontWeight: 'bold' }}>
+                <td style={{
+                  padding: '10px 12px',
+                  border: '2px solid #e53e3e',
+                  fontFamily: 'monospace',
+                  fontWeight: 'bold',
+                  color: '#8b1a1a',
+                  fontSize: '16px'
+                }}>
+                  R$ {calcularTotalAdiantado().toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </td>
+                <td style={{
+                  padding: '10px 12px',
+                  border: '2px solid #e53e3e',
+                  fontWeight: 'bold',
+                  color: '#8b1a1a'
+                }}>
+                  TOTAL ADIANTADO
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Tabela de edição da distribuição final entre formas de pagamento */}
+      <div style={{
+        marginBottom: 24,
+        padding: 16,
+        background: '#e6fffa',
+        border: '2px solid #38a169',
+        borderRadius: 8
+      }}>
+        <h4 style={{
+          margin: '0 0 12px 0',
+          color: '#2f855a',
+          fontSize: '16px',
+          fontWeight: '600'
+        }}>📝 Distribuição Final do Pagamento</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '15px', marginBottom: 18 }}>
+          <thead>
+            <tr style={{ background: '#b2f5ea' }}>
+              <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Valor</th>
+              <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Forma</th>
+              <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pagamentoFinal.map((item, idx) => (
+              <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#e6fffa' }}>
+                <td style={{ padding: '8px', border: '1px solid #38a169' }}>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={item.valor}
+                    onChange={e => handleEditPagamentoFinal(idx, 'valor', e.target.value)}
+                    style={{ width: 90, padding: '4px', borderRadius: 4, border: '1px solid #38a169', fontSize: '15px' }}
+                  />
+                </td>
+                <td style={{ padding: '8px', border: '1px solid #38a169' }}>
+                  <select value={item.forma} onChange={e => handleEditPagamentoFinal(idx, 'forma', e.target.value)} style={{ width: 140, padding: '4px', borderRadius: 4, border: '1px solid #38a169', fontSize: '15px' }}>
+                    <option value="">Selecione</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="PIX">PIX</option>
+                    <option value="Cartão de Débito">Cartão de Débito</option>
+                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    <option value="CRC">CRC</option>
+                    <option value="Depósito Prévio">Depósito Prévio</option>
+                  </select>
+                </td>
+                <td style={{ padding: '8px', border: '1px solid #38a169', textAlign: 'center' }}>
+                  <button type="button" onClick={() => handleRemoverPagamentoFinal(idx)} style={{ background: '#e53e3e', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontWeight: 'bold', cursor: 'pointer' }}>Remover</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={handleAdicionarPagamentoFinal}
+            style={{ padding: '8px 18px', background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}
+          >Adicionar Forma</button>
+        </div>
+      </div>
+
+      {/* Tabela de complementos de pagamento */}
+      {renderTabelaComplementos()}
+
+      {/* Seção simplificada de botões de pagamento */}
+      {valorAdiantadoDetalhes && valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
+        <div style={{
+          marginBottom: 20,
+          textAlign: 'center'
+        }}>
+          {(() => {
+            const totalAdiantado = calcularTotalAdiantado();
             const valorRestante = subtotalPedido - totalAdiantado;
             const excesso = totalAdiantado - subtotalPedido;
             const pagamentoConfirmado = statusPedido === 'Pago';
 
-            // LOGS para depuração do fluxo dos botões
-            console.log('[Pagamento][RENDER] pagamentoSalvo:', pagamentoSalvo, '| statusPedido:', statusPedido, '| pagamentoConfirmado:', pagamentoConfirmado, '| totalAdiantado:', totalAdiantado, '| subtotalPedido:', subtotalPedido, '| excesso:', excesso);
-
-            // Exibe botão de recibo do troco sempre que houver excesso, independente do status
+            // Status do pagamento
+            let statusMessage = '';
+            let statusStyle = {};
+            
             if (pagamentoSalvo && !pagamentoConfirmado) {
-              console.log('[Pagamento][RENDER] Exibindo botão Excluir Pagamento (pagamentoSalvo = true)');
-              return (
-                <div>
-                  <div style={{
-                    marginBottom: 12,
-                    padding: 12,
-                    background: '#e8f5e8',
-                    border: '2px solid #38a169',
-                    borderRadius: 8,
-                    color: '#2d5016',
-                    fontWeight: 'bold'
-                  }}>
-                    {'✅ Pagamento já salvo!'}
-                    {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                  </div>
-                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button
-                      type="button"
-                      onClick={handleCancelarPagamento}
-                      disabled={processando}
-                      style={{
-                        padding: '14px 32px',
-                        background: processando ? '#a0aec0' : 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        cursor: processando ? 'not-allowed' : 'pointer',
-                        boxShadow: '0 4px 12px rgba(229,62,62,0.3)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
-                      onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
-                    >
-                      {processando ? '⏳ Processando...' : '❌ Excluir Pagamento'}
-                    </button>
-                    {/* Força exibição do botão Gerar Recibo do Troco se excesso > 0 */}
-                    {excesso > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => gerarReciboExcesso(excesso)}
-                        style={{
-                          padding: '14px 32px',
-                          background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 8,
-                          fontSize: '16px',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(49,130,206,0.3)',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
-                        onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
-                      >
-                        📄 Gerar Recibo do Troco
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
+              statusMessage = '✅ Pagamento já salvo!';
+              statusStyle = { background: '#e8f5e8', border: '2px solid #38a169', color: '#2d5016' };
+            } else if (pagamentoConfirmado) {
+              statusMessage = '✅ Pagamento Confirmado!';
+              statusStyle = { background: '#e8f5e8', border: '2px solid #38a169', color: '#2d5016' };
+            } else if (totalAdiantado >= subtotalPedido) {
+              statusMessage = '✅ Valor adiantado suficiente!';
+              statusStyle = { background: '#e8f5e8', border: '2px solid #38a169', color: '#2d5016' };
+            } else {
+              statusMessage = `⚠️ Valor insuficiente para pagamento. Restam: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              statusStyle = { background: '#fef5e7', border: '2px solid #f6ad55', color: '#b7791f' };
             }
 
-            // Se pagamento confirmado, mostra botão cancelar
-            if (pagamentoConfirmado) {
-              console.log('[Pagamento][RENDER] Exibindo botão Cancelar Pagamento');
-              return (
-                <div>
-                  <div style={{
-                    marginBottom: 12,
-                    padding: 12,
-                    background: '#e8f5e8',
-                    border: '2px solid #38a169',
-                    borderRadius: 8,
-                    color: '#2d5016',
-                    fontWeight: 'bold'
-                  }}>
-                    {'✅ Pagamento Confirmado!'}
-                    {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                  </div>
-                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button
-                      type="button"
-                      onClick={handleCancelarPagamento}
-                      disabled={processando}
-                      style={{
-                        padding: '14px 32px',
-                        background: processando ? '#a0aec0' : 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        cursor: processando ? 'not-allowed' : 'pointer',
-                        boxShadow: '0 4px 12px rgba(229,62,62,0.3)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
-                      onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
-                    >
-                      {processando ? '⏳ Processando...' : '❌ Cancelar Pagamento'}
-                    </button>
-                    {excesso > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => gerarReciboExcesso(excesso)}
-                        style={{
-                          padding: '14px 32px',
-                          background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 8,
-                          fontSize: '16px',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(49,130,206,0.3)',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
-                        onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
-                      >
-                        📄 Gerar Recibo do Troco
-                      </button>
-                    )}
-                  </div>
+            return (
+              <div>
+                {/* Status do pagamento */}
+                <div style={{
+                  marginBottom: 12,
+                  padding: 12,
+                  borderRadius: 8,
+                  fontWeight: 'bold',
+                  ...statusStyle
+                }}>
+                  {statusMessage}
+                  {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                 </div>
-              );
-            }
 
-            // Caso padrão: valor insuficiente, mostra salvar e complemento
-            if (totalAdiantado >= subtotalPedido) {
-              console.log('[Pagamento][RENDER] Exibindo botão Salvar Pagamento');
-              return (
-                <div>
-                  <div style={{
-                    marginBottom: 12,
-                    padding: 12,
-                    background: '#e8f5e8',
-                    border: '2px solid #38a169',
-                    borderRadius: 8,
-                    color: '#2d5016',
-                    fontWeight: 'bold'
-                  }}>
-                    {'✅ Valor adiantado suficiente!'}
-                    {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                  </div>
-                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                {/* Botões de ação */}
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  {/* Botão Salvar Pagamento - só aparece se não foi salvo e valor é suficiente */}
+                  {!pagamentoSalvo && !pagamentoConfirmado && totalAdiantado >= subtotalPedido && (
                     <button
                       type="button"
                       onClick={() => {
@@ -1149,154 +1136,142 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                     >
                       {processando ? '⏳ Salvando...' : '💾 Salvar Pagamento'}
                     </button>
-                    {excesso > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => gerarReciboExcesso(excesso)}
-                        style={{
-                          padding: '14px 32px',
-                          background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 8,
-                          fontSize: '16px',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(49,130,206,0.3)',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
-                        onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
-                      >
-                        📄 Gerar Recibo do Troco
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            } else {
-              console.log('[Pagamento][RENDER] Exibindo botão Salvar Pagamento e Adicionar Complemento (valor insuficiente)');
-              return (
-                <div>
-                  <div style={{
-                    marginBottom: 12,
-                    padding: 12,
-                    background: '#fff5f5',
-                    border: '2px solid #e53e3e',
-                    borderRadius: 8,
-                    color: '#8b1a1a',
-                    fontWeight: 'bold'
-                  }}>
-                    ⚠️ Valor insuficiente! Falta: R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                  {/* Botão Salvar Pagamento sempre visível quando não confirmado */}
-                  {!pagamentoConfirmado && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={handleConfirmarPagamento}
-                        disabled={processando}
-                        style={{
-                          padding: '14px 32px',
-                          background: processando ? '#a0aec0' : 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 8,
-                          fontSize: '16px',
-                          fontWeight: '700',
-                          cursor: processando ? 'not-allowed' : 'pointer',
-                          boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
-                          transition: 'all 0.2s ease',
-                          marginRight: 8
-                        }}
-                        onMouseEnter={e => !processando && (e.target.style.transform = 'translateY(-2px)')}
-                        onMouseLeave={e => !processando && (e.target.style.transform = 'translateY(0px)')}
-                      >
-                        {processando ? '⏳ Processando...' : '✅ Salvar Pagamento'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={abrirComplementoModal}
-                        style={{
-                          padding: '14px 32px',
-                          background: 'linear-gradient(135deg, #f6ad55 0%, #dd6b20 100%)',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 8,
-                          fontSize: '16px',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 12px rgba(237,137,54,0.3)',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
-                        onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
-                      >
-                        ➕ Adicionar Complemento
-                      </button>
-                    </>
                   )}
-                  {/* Modal de complemento de pagamento */}
-                  {showComplementoModal && !pagamentoConfirmado && (
-                    <div style={{
-                      position: 'fixed',
-                      top: 0,
-                      left: 0,
-                      width: '100vw',
-                      height: '100vh',
-                      background: 'rgba(0,0,0,0.25)',
-                      zIndex: 9999,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <div style={{
-                        background: '#fffbe5',
-                        border: '2px solid #f6ad55',
-                        borderRadius: 12,
-                        padding: 32,
-                        minWidth: 320,
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.18)'
-                      }}>
-                        <h3 style={{ color: '#b7791f', marginBottom: 18, textAlign: 'center' }}>Adicionar Complemento</h3>
-                        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 18, justifyContent: 'center' }}>
-                          <select value={modalFormaComplemento} onChange={e => setModalFormaComplemento(e.target.value)} style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', minWidth: 140 }}>
-                            <option value="">Selecione a forma</option>
-                            <option value="Dinheiro">Dinheiro</option>
-                            <option value="Cartão de Débito">Cartão de Débito</option>
-                            <option value="Cartão de Crédito">Cartão de Crédito</option>
-                            <option value="PIX">PIX</option>
-                            <option value="Cheque">Cheque</option>
-                          </select>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={modalValorComplemento}
-                            onChange={e => setModalValorComplemento(e.target.value)}
-                            placeholder="Valor"
-                            style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', width: 120 }}
-                          />
-                        </div>
-                        <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-                          <button
-                            type="button"
-                            onClick={handleAdicionarComplementoModal}
-                            style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
-                          >Adicionar</button>
-                          <button
-                            type="button"
-                            onClick={fecharComplementoModal}
-                            style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
-                          >Cancelar</button>
-                        </div>
-                      </div>
-                    </div>
+
+                  {/* Botão Excluir/Cancelar Pagamento - aparece se foi salvo */}
+                  {(pagamentoSalvo || pagamentoConfirmado) && (
+                    <button
+                      type="button"
+                      onClick={handleCancelarPagamento}
+                      disabled={processando}
+                      style={{
+                        padding: '14px 32px',
+                        background: processando ? '#a0aec0' : 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 8,
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        cursor: processando ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 4px 12px rgba(229,62,62,0.3)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
+                      onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
+                    >
+                      {processando ? '⏳ Processando...' : (pagamentoConfirmado ? '❌ Cancelar Pagamento' : '❌ Excluir Pagamento')}
+                    </button>
+                  )}
+
+                  {/* Botão Adicionar Complemento - aparece se valor é insuficiente */}
+                  {!pagamentoSalvo && !pagamentoConfirmado && totalAdiantado < subtotalPedido && (
+                    <button
+                      type="button"
+                      onClick={abrirComplementoModal}
+                      style={{
+                        padding: '14px 32px',
+                        background: 'linear-gradient(135deg, #f6ad55 0%, #ed8936 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 8,
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(246,173,85,0.3)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
+                      onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
+                    >
+                      � Adicionar Complemento
+                    </button>
+                  )}
+
+                  {/* Botão Gerar Recibo do Troco - SEMPRE VISÍVEL quando há excesso */}
+                  {excesso > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => gerarReciboExcesso(excesso)}
+                      style={{
+                        padding: '14px 32px',
+                        background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 8,
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(49,130,206,0.3)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
+                      onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
+                    >
+                      📄 Gerar Recibo do Troco
+                    </button>
                   )}
                 </div>
-              );
-            }
+              </div>
+            );
           })()}
+        </div>
+      )}
+
+      {/* Modal de complemento de pagamento */}
+      {showComplementoModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.25)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{
+            background: '#fffbe5',
+            border: '2px solid #f6ad55',
+            borderRadius: 12,
+            padding: 32,
+            minWidth: 320,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.18)'
+          }}>
+            <h3 style={{ color: '#b7791f', marginBottom: 18, textAlign: 'center' }}>Adicionar Complemento</h3>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 18, justifyContent: 'center' }}>
+              <select value={modalFormaComplemento} onChange={e => setModalFormaComplemento(e.target.value)} style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', minWidth: 140 }}>
+                <option value="">Selecione a forma</option>
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Cartão de Débito">Cartão de Débito</option>
+                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                <option value="PIX">PIX</option>
+                <option value="Cheque">Cheque</option>
+              </select>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={modalValorComplemento}
+                onChange={e => setModalValorComplemento(e.target.value)}
+                placeholder="Valor"
+                style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', width: 120 }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={handleAdicionarComplementoModal}
+                style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
+              >Adicionar</button>
+              <button
+                type="button"
+                onClick={fecharComplementoModal}
+                style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
+              >Cancelar</button>
+            </div>
+          </div>
         </div>
       )}
       
