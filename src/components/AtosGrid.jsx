@@ -115,7 +115,7 @@ export default function AtosGrid({ atos, agrupados, handleAtoChange }) {
                       <td style={{ textAlign: 'center', fontWeight: 500 }}>{agrupado.quantidade}</td>
                       <td style={{ textAlign: 'center', fontWeight: 500 }}>{ato.codigo}</td>
                       <td style={{ fontStyle: 'italic', color: '#888' }}>Totais do dia (atos praticados)</td>
-                      <td colSpan={2}></td>
+                      <td colSpan={3}></td>
                       <td>
                         <div style={{ color: '#888' }}>
                           qnt. {agrupado.pagamentos.dinheiro.quantidade} <br />
