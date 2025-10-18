@@ -612,6 +612,96 @@ export default function PesquisaAtosPraticados() {
           </div>
         )}
 
+        {/* Tabela de Resumo Agrupado */}
+        {atosPraticados.length > 0 && (
+          <div style={{
+            backgroundColor: '#fff',
+            borderRadius: '16px',
+            padding: '30px',
+            marginBottom: '20px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          }}>
+            <h3 style={{ 
+              margin: '0 0 20px 0', 
+              color: '#2c3e50', 
+              fontSize: '20px',
+              fontWeight: '600'
+            }}>
+              📊 Resumo de Atos Agrupados
+            </h3>
+            
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#e3f2fd' }}>
+                    <th style={{ padding: '12px 8px', textAlign: 'left', borderBottom: '2px solid #2196f3', fontWeight: '600', color: '#1976d2' }}>Código</th>
+                    <th style={{ padding: '12px 8px', textAlign: 'left', borderBottom: '2px solid #2196f3', fontWeight: '600', color: '#1976d2' }}>Descrição</th>
+                    <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '2px solid #2196f3', fontWeight: '600', color: '#1976d2' }}>Quantidade Total</th>
+                    <th style={{ padding: '12px 8px', textAlign: 'right', borderBottom: '2px solid #2196f3', fontWeight: '600', color: '#1976d2' }}>Valor Total</th>
+                    <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '2px solid #2196f3', fontWeight: '600', color: '#1976d2' }}>Registros</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(() => {
+                    // Agrupar atos por código
+                    const atosAgrupados = {};
+                    
+                    atosPraticados.forEach(ato => {
+                      const codigo = ato.codigo;
+                      
+                      if (!atosAgrupados[codigo]) {
+                        atosAgrupados[codigo] = {
+                          codigo: codigo,
+                          descricao: ato.descricao,
+                          quantidadeTotal: 0,
+                          valorTotal: 0,
+                          registros: 0
+                        };
+                      }
+                      
+                      atosAgrupados[codigo].quantidadeTotal += parseInt(ato.quantidade) || 0;
+                      atosAgrupados[codigo].registros += 1;
+                      
+                      // Calcular valor total dos pagamentos
+                      let valorPagamento = 0;
+                      if (ato.detalhes_pagamentos && ato.detalhes_pagamentos.valor_total) {
+                        valorPagamento = parseFloat(ato.detalhes_pagamentos.valor_total) || 0;
+                      } else if (ato.pagamentos && Object.keys(ato.pagamentos).length > 0) {
+                        valorPagamento = Object.values(ato.pagamentos).reduce((acc, pagamento) => {
+                          return acc + (parseFloat(pagamento.valor) || 0);
+                        }, 0);
+                      }
+                      
+                      atosAgrupados[codigo].valorTotal += valorPagamento;
+                    });
+                    
+                    // Converter para array e ordenar por código
+                    return Object.values(atosAgrupados)
+                      .sort((a, b) => a.codigo.localeCompare(b.codigo))
+                      .map((grupo, index) => (
+                        <tr key={grupo.codigo} style={{ 
+                          borderBottom: '1px solid #bbdefb',
+                          backgroundColor: index % 2 === 0 ? '#fff' : '#f8fafe'
+                        }}>
+                          <td style={{ padding: '12px 8px', fontWeight: 'bold', color: '#1976d2' }}>{grupo.codigo}</td>
+                          <td style={{ padding: '12px 8px', maxWidth: '300px', wordWrap: 'break-word' }}>{grupo.descricao}</td>
+                          <td style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 'bold', color: '#2e7d32' }}>{grupo.quantidadeTotal}</td>
+                          <td style={{ padding: '12px 8px', textAlign: 'right', fontWeight: 'bold', color: '#1976d2' }}>
+                            {grupo.valorTotal > 0 
+                              ? `R$ ${grupo.valorTotal.toFixed(2).replace('.', ',')}`
+                              : 'ISENTO'
+                            }
+                          </td>
+                          <td style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 'bold', color: '#666' }}>{grupo.registros}</td>
+                        </tr>
+                      ));
+                  })()}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {/* Tabela de Resultados */}
         {atosPraticados.length > 0 && (
           <div style={{
