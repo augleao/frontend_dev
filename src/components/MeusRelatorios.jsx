@@ -139,10 +139,11 @@ function MeusRelatorios() {
             <div><strong>Cargo:</strong> {dados.cargo || relatorio.cargo}</div>
             <div><strong>Responsável:</strong> {dados.responsavel}</div>
             <div><strong>ISS (%):</strong> {dados.iss_percentual}</div>
-            <div><strong>Valor Inicial do Caixa:</strong> R$ {Number(dados.valor_inicial_caixa).toFixed(2)}</div>
-            <div><strong>Depósitos do Caixa:</strong> R$ {Number(dados.depositos_caixa).toFixed(2)}</div>
-            <div><strong>Saídas do Caixa:</strong> R$ {Number(dados.saidas_caixa).toFixed(2)}</div>
-            <div><strong>Valor Final do Caixa:</strong> R$ {Number(dados.valor_final_caixa).toFixed(2)}</div>
+            <div><strong>Total em Dinheiro:</strong> R$ {Number(dados.valor_final_caixa).toFixed(2)}</div>
+            <div><strong>Total em Cartão:</strong> R$ {Number(dados.total_cartao || 0).toFixed(2)}</div>
+            <div><strong>Total em PIX:</strong> R$ {Number(dados.total_pix || 0).toFixed(2)}</div>
+            <div><strong>Total em CRC:</strong> R$ {Number(dados.total_crc || 0).toFixed(2)}</div>
+            <div><strong>Total em Depósito Prévio:</strong> R$ {Number(dados.total_deposito_previo || 0).toFixed(2)}</div>
             <div><strong>Observações:</strong> {dados.observacoes_gerais}</div>
             <div style={{ marginTop: 12 }}>
               <strong>Atos:</strong>
