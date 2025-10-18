@@ -116,16 +116,20 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         
         // Criar nova máscara de pagamento
         const valorTotalPagamento = calcularTotalAdiantado();
-        const formasUtilizadas = valoresPagos.map(item => {
-          // Mapear formas de pagamento para nomes padronizados
-          const formaLower = item.forma.toLowerCase();
-          if (formaLower.includes('dinheiro')) return 'dinheiro';
-          if (formaLower.includes('pix')) return 'pix';
-          if (formaLower.includes('cartão') || formaLower.includes('cartao')) return 'cartao';
-          if (formaLower.includes('crc')) return 'crc';
-          if (formaLower.includes('depósito') || formaLower.includes('deposito')) return 'depositoPrevio';
-          return 'outros';
-        });
+        
+        // Usar valorAdiantadoDetalhes em vez de valoresPagos para pegar as formas reais
+        const formasUtilizadas = valorAdiantadoDetalhes
+          .filter(item => item.valor && item.forma)
+          .map(item => {
+            // Mapear formas de pagamento para nomes padronizados
+            const formaLower = item.forma.toLowerCase();
+            if (formaLower.includes('dinheiro')) return 'dinheiro';
+            if (formaLower.includes('pix')) return 'pix';
+            if (formaLower.includes('cartão') || formaLower.includes('cartao')) return 'cartao';
+            if (formaLower.includes('crc')) return 'crc';
+            if (formaLower.includes('depósito') || formaLower.includes('deposito')) return 'depositoPrevio';
+            return 'outros';
+          });
         
         const pagamentoMascara = {
           valor_total: valorTotalPagamento,
