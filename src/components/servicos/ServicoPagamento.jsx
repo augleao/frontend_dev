@@ -113,28 +113,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       // Salvar informações do pagamento final no backend
       try {
         const token = localStorage.getItem('token');
-        
-        // Criar nova máscara de pagamento
-        const valorTotalPagamento = calcularTotalAdiantado();
-        const formasUtilizadas = valoresPagos.map(item => {
-          // Mapear formas de pagamento para nomes padronizados
-          const formaLower = item.forma.toLowerCase();
-          if (formaLower.includes('dinheiro')) return 'dinheiro';
-          if (formaLower.includes('pix')) return 'pix';
-          if (formaLower.includes('cartão') || formaLower.includes('cartao')) return 'cartao';
-          if (formaLower.includes('crc')) return 'crc';
-          if (formaLower.includes('depósito') || formaLower.includes('deposito')) return 'depositoPrevio';
-          return 'outros';
-        });
-        
-        const pagamentoMascara = {
-          valor_total: valorTotalPagamento,
-          data_pagamento: new Date().toISOString().split('T')[0], // formato YYYY-MM-DD
-          formas_utilizadas: [...new Set(formasUtilizadas)] // remove duplicatas
-        };
-        
         // Log do valor enviado para o backend
-        console.log('[FRONTEND] detalhes_pagamento enviado:', pagamentoMascara);
+        console.log('[FRONTEND] detalhes_pagamento enviado:', valoresPagos);
         await fetch(`${config.apiURL}/pedido_pagamento`, {
           method: 'POST',
           headers: {
@@ -149,7 +129,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             usuario: usuario,
             data: data,
             hora: hora,
-            detalhes_pagamento: pagamentoMascara // envia nova máscara
+            detalhes_pagamento: Array.isArray(valoresPagos) ? valoresPagos : [] // envia array editado
           })
         });
         setPagamentoSalvo(true);
