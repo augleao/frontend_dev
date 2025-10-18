@@ -95,7 +95,7 @@ export default function CaixaInfo({
         display: 'flex', 
         alignItems: 'center', 
         gap: '20px',
-        marginBottom: '8px'
+        marginBottom: '4px'
       }}>
         <div style={{ 
           display: 'flex', 
@@ -140,16 +140,12 @@ export default function CaixaInfo({
           </span>
         </div>
       </div>
-      <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block' }}></label>
-        <div style={{ ...infoStyle, marginBottom: 2 }}>{}</div>
-      </div>
       <div style={{ flex: '1 1 100%', minWidth: 180 }}>
         <label style={{ fontSize: 14, color: '#fff', verticalAlign: 'top', marginBottom: 2, display: 'block', fontWeight: 'bold' }}>OBS:</label>
         <textarea
           value={observacoesGerais}
           onChange={e => setObservacoesGerais(e.target.value)}
-          placeholder="Observações gerais do relatório"
+          placeholder="Caso necessário, coloque aqui as Observações que se fizerem necessárias sobre este relatório"
           style={{
             width: '100%',
             height: '48px', // reduzido de 60px
