@@ -90,13 +90,55 @@ export default function CaixaInfo({
         alignItems: 'flex-start'
       }}
     >
-      <div style={{ flex: '1 1 140px', minWidth: 120, maxWidth: 200 }}>
-        <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block', fontWeight: 'bold' }}>Responsável:</label>
-        <div style={{ ...infoStyle, marginBottom: 2 }}>{responsavel}</div>
-      </div>
-      <div style={{ flex: '1 1 80px', minWidth: 80, maxWidth: 120 }}>
-        <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block', fontWeight: 'bold' }}>ISS (%):</label>
-        <div style={{ ...infoStyle, marginBottom: 2 }}>{ISS}</div>
+      <div style={{ 
+        flex: '1 1 100%', 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '20px',
+        marginBottom: '8px'
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px'
+        }}>
+          <label style={{ 
+            fontSize: 14, 
+            color: '#fff', 
+            fontWeight: 'bold',
+            margin: 0
+          }}>
+            Responsável:
+          </label>
+          <span style={{ 
+            fontSize: 15, 
+            color: '#fff', 
+            fontWeight: 'bold'
+          }}>
+            {responsavel}
+          </span>
+        </div>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px'
+        }}>
+          <label style={{ 
+            fontSize: 14, 
+            color: '#fff', 
+            fontWeight: 'bold',
+            margin: 0
+          }}>
+            ISS (%):
+          </label>
+          <span style={{ 
+            fontSize: 15, 
+            color: '#fff', 
+            fontWeight: 'bold'
+          }}>
+            {ISS}
+          </span>
+        </div>
       </div>
       <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
         <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block' }}></label>
