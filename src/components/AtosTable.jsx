@@ -376,7 +376,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
 
       <div
         style={{
-          marginTop: 10, // reduzido de 20
+          marginTop: 4, // reduzido de 10
           display: 'flex',
           gap: 8, // reduzido de 10
           justifyContent: 'left',
@@ -415,7 +415,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
 
       <div
         style={{
-          marginTop: 16, // reduzido de 32
+          marginTop: 8, // reduzido de 16
           background: azulFundo,
           borderRadius: '16px',
           boxShadow: '0 4px 16px rgba(0,0,0,0.07)',
