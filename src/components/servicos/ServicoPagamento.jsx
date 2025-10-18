@@ -102,9 +102,49 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       // Filtra apenas linhas válidas
       const valoresPagos = pagamentoFinal ? pagamentoFinal.filter(item => item.valor && item.forma) : [];
       console.log('[FRONTEND][LOG] valoresPagos calculado, length:', valoresPagos.length);
+      
+      // Converter para o formato de máscara de pagamentos
+      const pagamentosMascara = {
+        dinheiro: { quantidade: 0, valor: 0, manual: false },
+        cartao: { quantidade: 0, valor: 0, manual: false },
+        pix: { quantidade: 0, valor: 0, manual: false },
+        crc: { quantidade: 0, valor: 0, manual: false },
+        depositoPrevio: { quantidade: 0, valor: 0, manual: false }
+      };
+
+      // Mapear as formas de pagamento para a máscara
+      valoresPagos.forEach(item => {
+        const valor = parseFloat(item.valor) || 0;
+        const forma = item.forma.toLowerCase();
+        
+        if (forma === 'dinheiro') {
+          pagamentosMascara.dinheiro.valor += valor;
+          pagamentosMascara.dinheiro.quantidade += 1;
+          pagamentosMascara.dinheiro.manual = true;
+        } else if (forma === 'pix') {
+          pagamentosMascara.pix.valor += valor;
+          pagamentosMascara.pix.quantidade += 1;
+          pagamentosMascara.pix.manual = true;
+        } else if (forma.includes('cartão') || forma.includes('cartao')) {
+          pagamentosMascara.cartao.valor += valor;
+          pagamentosMascara.cartao.quantidade += 1;
+          pagamentosMascara.cartao.manual = true;
+        } else if (forma === 'crc') {
+          pagamentosMascara.crc.valor += valor;
+          pagamentosMascara.crc.quantidade += 1;
+          pagamentosMascara.crc.manual = true;
+        } else if (forma.includes('depósito') || forma.includes('deposito')) {
+          pagamentosMascara.depositoPrevio.valor += valor;
+          pagamentosMascara.depositoPrevio.quantidade += 1;
+          pagamentosMascara.depositoPrevio.manual = true;
+        }
+      });
+
       // Log para depuração do formato enviado
       console.log('[FRONTEND] pagamentoFinal:', pagamentoFinal);
       console.log('[FRONTEND] valoresPagos (detalhes_pagamento):', valoresPagos);
+      console.log('[FRONTEND] pagamentosMascara enviado:', pagamentosMascara);
+      
       const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
       const usuario = usuarioLogado.nome || usuarioLogado.email || 'Sistema';
       const dataHora = new Date();
@@ -114,7 +154,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       try {
         const token = localStorage.getItem('token');
         // Log do valor enviado para o backend
-        console.log('[FRONTEND] detalhes_pagamento enviado:', valoresPagos);
+        console.log('[FRONTEND] detalhes_pagamento enviado:', pagamentosMascara);
         await fetch(`${config.apiURL}/pedido_pagamento`, {
           method: 'POST',
           headers: {
@@ -129,7 +169,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             usuario: usuario,
             data: data,
             hora: hora,
-            detalhes_pagamento: Array.isArray(valoresPagos) ? valoresPagos : [] // envia array editado
+            detalhes_pagamento: pagamentosMascara // envia objeto com máscara de pagamentos
           })
         });
         setPagamentoSalvo(true);
@@ -378,16 +418,61 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           console.log('[DEBUG-RECIBO] Preservando valorAdiantadoDetalhes originais para manter cálculo de excesso');
 
           // NOVO: Atualiza pagamentoFinal com os dados salvos do backend
-          // Atualiza pagamentoFinal sempre que há dados do backend
-          if (Array.isArray(detalhesBackend) && detalhesBackend.length > 0) {
-            console.log('[DEBUG-RECIBO] Atualizando pagamentoFinal com detalhesBackend');
-            setPagamentoFinal(
-              detalhesBackend.map(item => ({
-                valor: item.valor,
-                forma: item.forma || '',
-                complemento: item.complemento || false
-              }))
-            );
+          // Verifica se detalhesBackend é um objeto com máscara de pagamentos ou array
+          if (detalhesBackend && typeof detalhesBackend === 'object') {
+            console.log('[DEBUG-RECIBO] Processando detalhesBackend:', detalhesBackend);
+            
+            // Se é array (formato antigo), usar como antes
+            if (Array.isArray(detalhesBackend) && detalhesBackend.length > 0) {
+              console.log('[DEBUG-RECIBO] Formato array - usando detalhesBackend diretamente');
+              setPagamentoFinal(
+                detalhesBackend.map(item => ({
+                  valor: item.valor,
+                  forma: item.forma || '',
+                  complemento: item.complemento || false
+                }))
+              );
+            } 
+            // Se é objeto com máscara de pagamentos (formato novo)
+            else if (detalhesBackend.dinheiro !== undefined || detalhesBackend.cartao !== undefined) {
+              console.log('[DEBUG-RECIBO] Formato máscara - convertendo para tabela');
+              const pagamentosTabela = [];
+              
+              // Converter cada forma de pagamento da máscara para linhas da tabela
+              Object.entries(detalhesBackend).forEach(([chave, dados]) => {
+                if (dados && dados.valor > 0) {
+                  let nomeForma = '';
+                  switch (chave) {
+                    case 'dinheiro':
+                      nomeForma = 'Dinheiro';
+                      break;
+                    case 'cartao':
+                      nomeForma = 'Cartão de Débito';
+                      break;
+                    case 'pix':
+                      nomeForma = 'PIX';
+                      break;
+                    case 'crc':
+                      nomeForma = 'CRC';
+                      break;
+                    case 'depositoPrevio':
+                      nomeForma = 'Depósito Prévio';
+                      break;
+                    default:
+                      nomeForma = chave;
+                  }
+                  
+                  pagamentosTabela.push({
+                    valor: dados.valor,
+                    forma: nomeForma,
+                    complemento: false
+                  });
+                }
+              });
+              
+              console.log('[DEBUG-RECIBO] Pagamentos convertidos para tabela:', pagamentosTabela);
+              setPagamentoFinal(pagamentosTabela);
+            }
           }
         } else {
           setPagamentoSalvo(false);
