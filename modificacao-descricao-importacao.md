@@ -2,12 +2,12 @@
 
 ## Alterações Implementadas
 
-### 1. **Nova Função: `buscarDescricaoAto(codigo)`**
+### 1. **Nova Função: `buscarDescricaoAto(codigo, execucaoServicoId)`**
 
 Criada uma função para buscar a descrição oficial do ato na tabela `atos`:
 
 ```javascript
-const buscarDescricaoAto = async (codigo) => {
+const buscarDescricaoAto = async (codigo, execucaoServicoId) => {
   const queryAto = `
     SELECT descricao 
     FROM atos 
@@ -23,8 +23,8 @@ const buscarDescricaoAto = async (codigo) => {
     return `Importado: ${descricaoOriginal}`;
   }
   
-  // Se não encontrar, retornar descrição padrão com prefixo
-  return `Importado: Ato ${codigo} do sistema de selos`;
+  // Se não encontrar, retornar descrição padrão com número do pedido
+  return `Importado: Ato ${codigo} importado do pedido ${execucaoServicoId}`;
 };
 ```
 
@@ -35,12 +35,13 @@ const buscarDescricaoAto = async (codigo) => {
 
 #### **Agora:**
 - **Descrição:** `"Importado: " + {descricao da tabela atos}` (descrição oficial + prefixo)
+- **Fallback:** `"Importado: Ato ${codigo} importado do pedido ${execucaoServicoId}"` (com número do pedido)
 
 ### 3. **Lógica de Busca e Prefixo**
 
 1. **Busca a descrição:** Na tabela `atos` onde `codigo = ato.codigo`
 2. **Adiciona prefixo:** "Importado: " a todas as descrições
-3. **Fallback:** Se não encontrar, usa descrição padrão com prefixo
+3. **Fallback:** Se não encontrar, usa `"Ato ${codigo} importado do pedido ${execucaoServicoId}"`
 
 ### 4. **Exemplos de Saída**
 
@@ -50,22 +51,22 @@ const buscarDescricaoAto = async (codigo) => {
 - **Output:** `"Importado: Certidão de Nascimento"`
 
 #### **Cenário B: Código Não Encontrado**
-- **Input:** `codigo = "99"`
+- **Input:** `codigo = "99"`, `execucaoServicoId = "PED123456"`
 - **Tabela atos:** (não encontrado)
-- **Output:** `"Importado: Ato 99 do sistema de selos"`
+- **Output:** `"Importado: Ato 99 importado do pedido PED123456"`
 
 ### 5. **Fluxo de Importação Atualizado**
 
 ```javascript
 // Para cada ato extraído do campo qtd_atos
 for (const ato of atosExtraidos) {
-  // 1. Buscar descrição na tabela atos
-  const descricaoAto = await buscarDescricaoAto(ato.codigo);
+  // 1. Buscar descrição na tabela atos (passando também o execucaoServicoId)
+  const descricaoAto = await buscarDescricaoAto(ato.codigo, execucaoServicoId);
   
   // 2. Inserir na tabela atos_praticados
   await pool.query(queryInserir, [
     // ... outros campos ...
-    descricaoAto,  // "Importado: Certidão de Nascimento"
+    descricaoAto,  // "Importado: Certidão de Nascimento" ou "Importado: Ato XX importado do pedido YYYYYY"
     // ... outros campos ...
   ]);
 }
@@ -109,13 +110,13 @@ qtd_atos: "1(7802), 2(1234)"
 3. Para código "1234":
    - Busca: `SELECT descricao FROM atos WHERE codigo = '1234'`
    - Não encontrado
-   - Descrição final: `"Importado: Ato 1234 do sistema de selos"`
+   - Descrição final: `"Importado: Ato 1234 importado do pedido ABC789123"`
 
 #### **Output na tabela atos_praticados:**
 ```sql
 INSERT INTO atos_praticados (codigo, descricao, quantidade) VALUES 
 ('7802', 'Importado: Certidão de Óbito', 1),
-('1234', 'Importado: Ato 1234 do sistema de selos', 2);
+('1234', 'Importado: Ato 1234 importado do pedido ABC789123', 2);
 ```
 
 ## Benefícios
