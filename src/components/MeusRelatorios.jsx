@@ -104,6 +104,21 @@ function MeusRelatorios() {
         } catch {
           dados = {};
         }
+
+        // Calcular totais por forma de pagamento a partir dos atos
+        let totalCartao = 0;
+        let totalPix = 0;
+        let totalCrc = 0;
+        let totalDepositoPrevio = 0;
+
+        if (dados.atos && dados.atos.length > 0) {
+          dados.atos.forEach(ato => {
+            totalCartao += Number(ato.cartao_valor || 0);
+            totalPix += Number(ato.pix_valor || 0);
+            totalCrc += Number(ato.crc_valor || 0);
+            totalDepositoPrevio += Number(ato.deposito_previo_valor || 0);
+          });
+        }
         return (
           <div
             key={relatorio.id}
@@ -140,10 +155,10 @@ function MeusRelatorios() {
             <div><strong>Responsável:</strong> {dados.responsavel}</div>
             <div><strong>ISS (%):</strong> {dados.iss_percentual}</div>
             <div><strong>Total em Dinheiro:</strong> R$ {Number(dados.valor_final_caixa).toFixed(2)}</div>
-            <div><strong>Total em Cartão:</strong> R$ {Number(dados.total_cartao || 0).toFixed(2)}</div>
-            <div><strong>Total em PIX:</strong> R$ {Number(dados.total_pix || 0).toFixed(2)}</div>
-            <div><strong>Total em CRC:</strong> R$ {Number(dados.total_crc || 0).toFixed(2)}</div>
-            <div><strong>Total em Depósito Prévio:</strong> R$ {Number(dados.total_deposito_previo || 0).toFixed(2)}</div>
+            <div><strong>Total em Cartão:</strong> R$ {totalCartao.toFixed(2)}</div>
+            <div><strong>Total em PIX:</strong> R$ {totalPix.toFixed(2)}</div>
+            <div><strong>Total em CRC:</strong> R$ {totalCrc.toFixed(2)}</div>
+            <div><strong>Total em Depósito Prévio:</strong> R$ {totalDepositoPrevio.toFixed(2)}</div>
             <div><strong>Observações:</strong> {dados.observacoes_gerais}</div>
             <div style={{ marginTop: 12 }}>
               <strong>Atos:</strong>
