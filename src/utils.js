@@ -730,3 +730,96 @@ export function gerarRelatorioPDFAtosPraticados({
   const dataFormatada = formatarDataParaNomeArquivo(dataRelatorio);
   doc.save(`${dataFormatada}_${nomeArquivo || 'FechamentoCaixa.pdf'}`);
 }
+
+// Função para converter string de detalhes de pagamento para máscara de pagamentos
+export function converterDetalhesPagamentoParaMascara(detalhesString) {
+  // Inicializa a máscara padrão
+  const mascaraPagamentos = {
+    dinheiro: { quantidade: 0, valor: 0, manual: false },
+    cartao: { quantidade: 0, valor: 0, manual: false },
+    pix: { quantidade: 0, valor: 0, manual: false },
+    crc: { quantidade: 0, valor: 0, manual: false },
+    depositoPrevio: { quantidade: 0, valor: 0, manual: false }
+  };
+
+  if (!detalhesString) {
+    return mascaraPagamentos;
+  }
+
+  try {
+    let detalhes;
+    
+    // Se é string, tenta fazer parse
+    if (typeof detalhesString === 'string') {
+      detalhes = JSON.parse(detalhesString);
+    } else {
+      detalhes = detalhesString;
+    }
+
+    // Se tem o novo formato com valor_total e formas_utilizadas
+    if (detalhes.valor_total && detalhes.formas_utilizadas) {
+      const valorTotal = parseFloat(detalhes.valor_total) || 0;
+      const formas = detalhes.formas_utilizadas || [];
+      
+      // Distribui o valor total entre as formas utilizadas
+      const valorPorForma = formas.length > 0 ? valorTotal / formas.length : 0;
+      
+      formas.forEach(forma => {
+        if (mascaraPagamentos[forma]) {
+          mascaraPagamentos[forma].valor = valorPorForma;
+          mascaraPagamentos[forma].quantidade = valorPorForma > 0 ? 1 : 0;
+        }
+      });
+    }
+    // Se tem o formato antigo com array de {forma, valor}
+    else if (Array.isArray(detalhes)) {
+      detalhes.forEach(item => {
+        if (item.forma && item.valor) {
+          const formaKey = mapearFormaParaChave(item.forma);
+          if (mascaraPagamentos[formaKey]) {
+            mascaraPagamentos[formaKey].valor = parseFloat(item.valor) || 0;
+            mascaraPagamentos[formaKey].quantidade = 1;
+          }
+        }
+      });
+    }
+    // Se tem campos diretos
+    else if (typeof detalhes === 'object') {
+      Object.keys(mascaraPagamentos).forEach(key => {
+        if (detalhes[key]) {
+          if (typeof detalhes[key] === 'object') {
+            mascaraPagamentos[key] = {
+              quantidade: detalhes[key].quantidade || 0,
+              valor: parseFloat(detalhes[key].valor) || 0,
+              manual: detalhes[key].manual || false
+            };
+          } else {
+            // Se é só um valor numérico
+            mascaraPagamentos[key].valor = parseFloat(detalhes[key]) || 0;
+            mascaraPagamentos[key].quantidade = mascaraPagamentos[key].valor > 0 ? 1 : 0;
+          }
+        }
+      });
+    }
+
+  } catch (error) {
+    console.error('Erro ao converter detalhes de pagamento:', error);
+  }
+
+  return mascaraPagamentos;
+}
+
+// Função auxiliar para mapear nomes de forma para chaves da máscara
+function mapearFormaParaChave(nomeForma) {
+  if (!nomeForma) return 'dinheiro';
+  
+  const formaLower = nomeForma.toLowerCase();
+  
+  if (formaLower.includes('dinheiro')) return 'dinheiro';
+  if (formaLower.includes('pix')) return 'pix';
+  if (formaLower.includes('cartão') || formaLower.includes('cartao')) return 'cartao';
+  if (formaLower.includes('crc')) return 'crc';
+  if (formaLower.includes('depósito') || formaLower.includes('deposito')) return 'depositoPrevio';
+  
+  return 'dinheiro'; // fallback
+}

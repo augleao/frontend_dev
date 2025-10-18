@@ -4,6 +4,7 @@ import {
   formatarMoeda,
   formatarDataBR,
   gerarRelatorioPDFAtosPraticados,
+  converterDetalhesPagamentoParaMascara,
 } from './utils';
 import DataSelector from './DataSelector';
 import AtoSearchAtosPraticados from './AtoSearchAtosPraticados';
@@ -372,8 +373,30 @@ function AtosPraticados() {
           console.log('🎯 [AtosPraticados] Filtro aplicado:', caixaUnificado ? 'Caixa Unificado (serventia)' : 'Usuário Individual');
         }
         
-        setAtos(atosFiltrados);
-        console.log('✅ [AtosPraticados] Estado dos atos atualizado com', atosFiltrados.length, 'atos');
+        // Converter detalhes de pagamento para a máscara esperada
+        const atosComPagamentosConvertidos = atosFiltrados.map(ato => {
+          if (ato.detalhes_pagamentos || ato.detalhes_pagamento) {
+            console.log('🔄 [AtosPraticados] Convertendo detalhes de pagamento para ato:', ato.codigo);
+            
+            // Preferir detalhes_pagamentos, depois detalhes_pagamento
+            const detalhesOriginais = ato.detalhes_pagamentos || ato.detalhes_pagamento;
+            
+            // Converter para a máscara de pagamentos
+            const pagamentosConvertidos = converterDetalhesPagamentoParaMascara(detalhesOriginais);
+            
+            console.log('📦 [AtosPraticados] Detalhes originais:', detalhesOriginais);
+            console.log('✅ [AtosPraticados] Pagamentos convertidos:', pagamentosConvertidos);
+            
+            return {
+              ...ato,
+              pagamentos: pagamentosConvertidos
+            };
+          }
+          return ato;
+        });
+        
+        setAtos(atosComPagamentosConvertidos);
+        console.log('✅ [AtosPraticados] Estado dos atos atualizado com', atosComPagamentosConvertidos.length, 'atos (com conversão de pagamentos)');
       } else {
         const errorText = await resAtos.text();
         console.error('❌ [AtosPraticados] Erro na resposta:', resAtos.status, errorText);
