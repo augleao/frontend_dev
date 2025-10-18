@@ -494,46 +494,7 @@ const subtotalPedido = useMemo(() => {
       // Filtra apenas complementos
       const complementos = (valorAdiantadoDetalhes || []).filter(item => item.complemento && item.valor && item.forma);
 
-      // Criar máscara de pagamentos baseada nos valores adiantados
-      const pagamentosMascara = {
-        dinheiro: { quantidade: 0, valor: 0, manual: false },
-        cartao: { quantidade: 0, valor: 0, manual: false },
-        pix: { quantidade: 0, valor: 0, manual: false },
-        crc: { quantidade: 0, valor: 0, manual: false },
-        depositoPrevio: { quantidade: 0, valor: 0, manual: false }
-      };
-
-      // Mapear valores adiantados para a máscara
-      valorAdiantadoDetalhes.forEach(item => {
-        if (item.valor && item.forma) {
-          const valor = parseFloat(item.valor) || 0;
-          const forma = item.forma.toLowerCase();
-          
-          if (forma === 'dinheiro') {
-            pagamentosMascara.dinheiro.valor += valor;
-            pagamentosMascara.dinheiro.quantidade += 1;
-            pagamentosMascara.dinheiro.manual = true;
-          } else if (forma === 'pix') {
-            pagamentosMascara.pix.valor += valor;
-            pagamentosMascara.pix.quantidade += 1;
-            pagamentosMascara.pix.manual = true;
-          } else if (forma.includes('cartão') || forma.includes('cartao')) {
-            pagamentosMascara.cartao.valor += valor;
-            pagamentosMascara.cartao.quantidade += 1;
-            pagamentosMascara.cartao.manual = true;
-          } else if (forma === 'crc') {
-            pagamentosMascara.crc.valor += valor;
-            pagamentosMascara.crc.quantidade += 1;
-            pagamentosMascara.crc.manual = true;
-          } else if (forma.includes('depósito') || forma.includes('deposito')) {
-            pagamentosMascara.depositoPrevio.valor += valor;
-            pagamentosMascara.depositoPrevio.quantidade += 1;
-            pagamentosMascara.depositoPrevio.manual = true;
-          }
-        }
-      });
-
-      // Salvar informações do pagamento na nova tabela pedido_pagamento, incluindo complementos e máscara
+      // Salvar informações do pagamento na nova tabela pedido_pagamento, incluindo complementos
       try {
         const token = localStorage.getItem('token');
         await fetch(`${config.apiURL}/pedido_pagamento`, {
@@ -550,8 +511,7 @@ const subtotalPedido = useMemo(() => {
             usuario: usuario,
             data: data,
             hora: hora,
-            complementos: complementos, // envia array de complementos
-            detalhes_pagamento: pagamentosMascara // envia máscara de pagamentos
+            complementos: complementos // envia array de complementos
           })
         });
         setPagamentoSalvo(true);
