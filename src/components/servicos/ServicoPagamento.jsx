@@ -117,12 +117,20 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         // Criar nova máscara de pagamento
         const valorTotalPagamento = calcularTotalAdiantado();
         
+        // Debug: Log valorAdiantadoDetalhes
+        console.log('[DEBUG] valorAdiantadoDetalhes:', valorAdiantadoDetalhes);
+        console.log('[DEBUG] valorAdiantadoDetalhes.length:', valorAdiantadoDetalhes?.length);
+        
         // Usar valorAdiantadoDetalhes em vez de valoresPagos para pegar as formas reais
         const formasUtilizadas = valorAdiantadoDetalhes
-          .filter(item => item.valor && item.forma)
+          .filter(item => {
+            console.log('[DEBUG] Filtrando item:', item, 'tem valor?', !!item.valor, 'tem forma?', !!item.forma);
+            return item.valor && item.forma;
+          })
           .map(item => {
             // Mapear formas de pagamento para nomes padronizados
             const formaLower = item.forma.toLowerCase();
+            console.log('[DEBUG] Mapeando forma:', item.forma, 'para lowercase:', formaLower);
             if (formaLower.includes('dinheiro')) return 'dinheiro';
             if (formaLower.includes('pix')) return 'pix';
             if (formaLower.includes('cartão') || formaLower.includes('cartao')) return 'cartao';
@@ -131,11 +139,15 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             return 'outros';
           });
         
+        console.log('[DEBUG] formasUtilizadas após mapeamento:', formasUtilizadas);
+        
         const pagamentoMascara = {
           valor_total: valorTotalPagamento,
           data_pagamento: new Date().toISOString().split('T')[0], // formato YYYY-MM-DD
           formas_utilizadas: [...new Set(formasUtilizadas)] // remove duplicatas
         };
+        
+        console.log('[DEBUG] pagamentoMascara final:', pagamentoMascara);
         
         // Log do valor enviado para o backend
         console.log('[FRONTEND] detalhes_pagamento enviado:', pagamentoMascara);
