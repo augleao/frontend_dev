@@ -102,39 +102,6 @@ export default function CaixaInfo({
         <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block' }}></label>
         <div style={{ ...infoStyle, marginBottom: 2 }}>{}</div>
       </div>
-      <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block', fontWeight: 'bold' }}>Valor Inicial do Caixa:</label>
-        <input
-          type="number"
-          step="0.01"
-          value={valorInicialCaixa}
-          onChange={e => setValorInicialCaixa(Number(e.target.value))}
-          placeholder="0.00"
-          style={{ ...inputStyle, marginBottom: 2 }}
-        />
-      </div>
-      <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block', fontWeight: 'bold' }}>Entradas do Caixa:</label>
-        <input
-          type="number"
-          step="0.01"
-          value={depositosCaixa}
-          onChange={e => setDepositosCaixa(Number(e.target.value))}
-          placeholder="0.00"
-          style={{ ...inputStyle, marginBottom: 2 }}
-        />
-      </div>
-      <div style={{ flex: '1 1 120px', minWidth: 100, maxWidth: 160 }}>
-        <label style={{ fontSize: 14, color: '#fff', marginBottom: 2, display: 'block', fontWeight: 'bold' }}>Saídas do Caixa:</label>
-        <input
-          type="number"
-          step="0.01"
-          value={saidasCaixa}
-          onChange={e => setSaidasCaixa(Number(e.target.value))}
-          placeholder="0.00"
-          style={{ ...inputStyle, marginBottom: 2 }}
-        />
-      </div>
       <div style={{ flex: '1 1 100%', minWidth: 180 }}>
         <label style={{ fontSize: 14, color: '#fff', verticalAlign: 'top', marginBottom: 2, display: 'block', fontWeight: 'bold' }}>OBS:</label>
         <textarea
