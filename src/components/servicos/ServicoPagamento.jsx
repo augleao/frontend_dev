@@ -10,216 +10,12 @@ const statusPagamento = [
 ];
 
 export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes: valorAdiantadoDetalhesProp = [], onAvancarEtapa, onVoltarEtapa }) {
-  console.log('[DEBUG-RECIBO] COMPONENTE RENDERIZADO. Props recebidas:');
-  console.log('[DEBUG-RECIBO] - form.protocolo:', form.protocolo);
-  console.log('[DEBUG-RECIBO] - valorTotal:', valorTotal);
-  console.log('[DEBUG-RECIBO] - valorAdiantadoDetalhesProp:', valorAdiantadoDetalhesProp);
-  
-  // Estado para valor adicional (deve vir antes do useMemo)
-  const [valorAdicional, setValorAdicional] = useState(0);
-  const [valorAdicionalInput, setValorAdicionalInput] = useState('');
-
   // Estado local para valorAdiantadoDetalhes
   const [valorAdiantadoDetalhes, setValorAdiantadoDetalhes] = useState(valorAdiantadoDetalhesProp);
+  // Sincroniza estado local com prop se ela mudar externamente
   React.useEffect(() => {
-    // Atualiza sempre que o prop mudar, independente do pagamento salvo
     setValorAdiantadoDetalhes(valorAdiantadoDetalhesProp || []);
   }, [valorAdiantadoDetalhesProp]);
-
-  // Calcular subtotalPedido antes de qualquer uso
-  const subtotalPedido = useMemo(() => {
-    const atos = (form.atosPedido || form.atos || []);
-    const combos = Array.isArray(form.combos) ? form.combos : [];
-    let listaAtos = atos.length > 0 ? atos : combos;
-    listaAtos = listaAtos.filter(ato => ato.codigoTributario === '01' || ato.codigo_tributario === '01');
-    let subtotal = 0;
-    listaAtos.forEach(ato => {
-      const valor = parseFloat(ato.valor_final || ato.valorFinal || 0);
-      const issqn = parseFloat(ato.issqn || 0);
-      const quantidade = ato.quantidade || 1;
-      let valorFinalAto = valor;
-      if (!isNaN(issqn) && issqn > 0) {
-        valorFinalAto = valor + issqn;
-      }
-      subtotal += valorFinalAto * quantidade;
-    });
-    let adicional = 0;
-    if (!isNaN(parseFloat(valorAdicional))) {
-      adicional = parseFloat(valorAdicional) || 0;
-    }
-    return subtotal + adicional;
-  }, [form.atosPedido, form.atos, form.combos, valorAdicional]);
-
-  // Estado para tabela de edição da distribuição final
-  const [pagamentoFinal, setPagamentoFinal] = useState([]);
-  // Inicializa tabela de pagamento final ao montar ou ao mudar valores adiantados
-  React.useEffect(() => {
-    // Garante que subtotalPedido está definido e é número
-    // Inicializa se não há dados na tabela de pagamento final
-    if (pagamentoFinal.length === 0 && typeof subtotalPedido === 'number' && !isNaN(subtotalPedido)) {
-      if (valorAdiantadoDetalhes.length > 0) {
-        setPagamentoFinal([
-          {
-            valor: subtotalPedido,
-            forma: valorAdiantadoDetalhes[0].forma || ''
-          }
-        ]);
-      } else {
-        setPagamentoFinal([
-          {
-            valor: subtotalPedido,
-            forma: ''
-          }
-        ]);
-      }
-    }
-  }, [valorAdiantadoDetalhes, subtotalPedido]);
-
-  // Editar valor/forma de pagamento final
-  const handleEditPagamentoFinal = (idx, field, value) => {
-    setPagamentoFinal(pagamentoFinal => pagamentoFinal.map((item, i) => i === idx ? { ...item, [field]: field === 'valor' ? value.replace(',', '.') : value } : item));
-  };
-  // Remover linha da tabela de pagamento final
-  const handleRemoverPagamentoFinal = (idx) => {
-    setPagamentoFinal(pagamentoFinal => pagamentoFinal.filter((_, i) => i !== idx));
-  };
-  // Adicionar nova linha de pagamento final
-  const handleAdicionarPagamentoFinal = () => {
-    setPagamentoFinal(pagamentoFinal => [...pagamentoFinal, { valor: '', forma: '' }]);
-  };
-  // Salvar pagamento final no backend
-  const handleSalvarPagamentoFinal = async () => {
-    try {
-      console.log('[FRONTEND][LOG] handleSalvarPagamentoFinal chamado');
-      setProcessando(true);
-      console.log('[FRONTEND][LOG] setProcessando(true) executado');
-      // Verifica se pagamentoFinal está definido
-      if (!pagamentoFinal) {
-        console.warn('[FRONTEND][LOG] pagamentoFinal está undefined ou null');
-      } else {
-        console.log('[FRONTEND][LOG] pagamentoFinal existe, length:', pagamentoFinal.length);
-      }
-      // Filtra apenas linhas válidas
-      const valoresPagos = pagamentoFinal ? pagamentoFinal.filter(item => item.valor && item.forma) : [];
-      console.log('[FRONTEND][LOG] valoresPagos calculado, length:', valoresPagos.length);
-      
-      // Converter para o formato de máscara de pagamentos
-      const pagamentosMascara = {
-        dinheiro: { quantidade: 0, valor: 0, manual: false },
-        cartao: { quantidade: 0, valor: 0, manual: false },
-        pix: { quantidade: 0, valor: 0, manual: false },
-        crc: { quantidade: 0, valor: 0, manual: false },
-        depositoPrevio: { quantidade: 0, valor: 0, manual: false }
-      };
-
-      // Mapear as formas de pagamento para a máscara
-      valoresPagos.forEach(item => {
-        const valor = parseFloat(item.valor) || 0;
-        const forma = item.forma.toLowerCase();
-        
-        if (forma === 'dinheiro') {
-          pagamentosMascara.dinheiro.valor += valor;
-          pagamentosMascara.dinheiro.quantidade += 1;
-          pagamentosMascara.dinheiro.manual = true;
-        } else if (forma === 'pix') {
-          pagamentosMascara.pix.valor += valor;
-          pagamentosMascara.pix.quantidade += 1;
-          pagamentosMascara.pix.manual = true;
-        } else if (forma.includes('cartão') || forma.includes('cartao')) {
-          pagamentosMascara.cartao.valor += valor;
-          pagamentosMascara.cartao.quantidade += 1;
-          pagamentosMascara.cartao.manual = true;
-        } else if (forma === 'crc') {
-          pagamentosMascara.crc.valor += valor;
-          pagamentosMascara.crc.quantidade += 1;
-          pagamentosMascara.crc.manual = true;
-        } else if (forma.includes('depósito') || forma.includes('deposito')) {
-          pagamentosMascara.depositoPrevio.valor += valor;
-          pagamentosMascara.depositoPrevio.quantidade += 1;
-          pagamentosMascara.depositoPrevio.manual = true;
-        }
-      });
-
-      // Log para depuração do formato enviado
-      console.log('[FRONTEND] pagamentoFinal:', pagamentoFinal);
-      console.log('[FRONTEND] valoresPagos (detalhes_pagamento):', valoresPagos);
-      console.log('[FRONTEND] pagamentosMascara enviado:', pagamentosMascara);
-      
-      const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
-      const usuario = usuarioLogado.nome || usuarioLogado.email || 'Sistema';
-      const dataHora = new Date();
-      const data = dataHora.toLocaleDateString('pt-BR');
-      const hora = dataHora.toLocaleTimeString('pt-BR');
-      // Salvar informações do pagamento final no backend
-      try {
-        const token = localStorage.getItem('token');
-        // Log do valor enviado para o backend
-        console.log('[FRONTEND] detalhes_pagamento enviado:', pagamentosMascara);
-        await fetch(`${config.apiURL}/pedido_pagamento`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            protocolo: form.protocolo,
-            valorAtos: parseFloat(valorTotal || 0),
-            valorAdicional: parseFloat(valorAdicional || 0),
-            totalAdiantado: calcularTotalAdiantado(),
-            usuario: usuario,
-            data: data,
-            hora: hora,
-            detalhes_pagamento: pagamentosMascara // envia objeto com máscara de pagamentos
-          })
-        });
-        setPagamentoSalvo(true);
-        // Atualiza status para 'Aguardando Entrega'
-        await atualizarStatusPedido('Aguardando Entrega');
-        // Avança automaticamente para a próxima etapa
-        if (typeof onAvancarEtapa === 'function') {
-          onAvancarEtapa();
-        }
-      } catch (e) {
-        console.error('Erro ao salvar informações de pagamento:', e);
-        alert('❌ Erro ao salvar informações de pagamento. Verifique sua conexão e tente novamente.');
-      }
-    } finally {
-      setProcessando(false);
-    }
-  };
-
-  // Modal de conferência/edição dos valores adiantados
-  const [showEditarValoresModal, setShowEditarValoresModal] = useState(false);
-  const [editValores, setEditValores] = useState([]);
-
-  // Abrir modal de edição
-  const abrirEditarValoresModal = () => {
-    setEditValores(valorAdiantadoDetalhes.map(item => ({ ...item })));
-    setShowEditarValoresModal(true);
-  };
-  // Fechar modal de edição
-  const fecharEditarValoresModal = () => {
-    setShowEditarValoresModal(false);
-    setEditValores([]);
-  };
-  // Atualizar valor/forma de pagamento editado
-  const handleEditValorChange = (idx, field, value) => {
-    setEditValores(editValores => editValores.map((item, i) => i === idx ? { ...item, [field]: field === 'valor' ? value.replace(',', '.') : value } : item));
-  };
-  // Remover linha
-  const handleRemoverEditValor = (idx) => {
-    setEditValores(editValores => editValores.filter((_, i) => i !== idx));
-  };
-  // Confirmar edição
-  const handleConfirmarEditarValores = () => {
-    // Filtra apenas valores válidos
-    const novosDetalhes = editValores.filter(item => item.valor && item.forma);
-    setValorAdiantadoDetalhes(novosDetalhes);
-    if (onChange) {
-      onChange({ ...form, valorAdiantadoDetalhes: novosDetalhes });
-    }
-    fecharEditarValoresModal();
-  };
   // Tabela de complementos de pagamento (renderização gradual)
   const renderTabelaComplementos = () => {
     const complementos = valorAdiantadoDetalhes.filter(item => item.complemento && item.valor && item.forma);
@@ -344,16 +140,37 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   }, [form.serventiaId, form.serventia_id, form.serventia]);
   const [statusPedido, setStatusPedido] = useState(form.status || 'Em Análise');
   const [processando, setProcessando] = useState(false);
-  // ...existing code...
+  // Estado para valor adicional
+  const [valorAdicional, setValorAdicional] = useState(0);
+  const [valorAdicionalInput, setValorAdicionalInput] = useState('');
   // Estado para saber se já existe pagamento salvo
   const [pagamentoSalvo, setPagamentoSalvo] = useState(false);
-// ...existing code...
+const subtotalPedido = useMemo(() => {
+  const atos = (form.atosPedido || form.atos || []);
+  const combos = Array.isArray(form.combos) ? form.combos : [];
+  let listaAtos = atos.length > 0 ? atos : combos;
+  listaAtos = listaAtos.filter(ato => ato.codigoTributario === '01' || ato.codigo_tributario === '01');
+  let subtotal = 0;
+  listaAtos.forEach(ato => {
+    const valor = parseFloat(ato.valor_final || ato.valorFinal || 0);
+    const issqn = parseFloat(ato.issqn || 0);
+    const quantidade = ato.quantidade || 1;
+    let valorFinalAto = valor;
+    if (!isNaN(issqn) && issqn > 0) {
+      valorFinalAto = valor + issqn;
+    }
+    subtotal += valorFinalAto * quantidade;
+  });
+  let adicional = 0;
+  if (!isNaN(parseFloat(valorAdicional))) {
+    adicional = parseFloat(valorAdicional) || 0;
+  }
+  return subtotal + adicional;
+}, [form.atosPedido, form.atos, form.combos, valorAdicional]);
   // Buscar pagamento salvo ao montar
   React.useEffect(() => {
     // Loga sempre que o protocolo mudar
-    console.log('[DEBUG-RECIBO] useEffect fetchPagamentoSalvo executado. Protocolo:', form.protocolo);
     if (!form.protocolo) {
-      console.log('[DEBUG-RECIBO] Sem protocolo, setPagamentoSalvo(false)');
       setPagamentoSalvo(false);
       return;
     }
@@ -361,18 +178,20 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       try {
         const token = localStorage.getItem('token');
         const url = `${config.apiURL}/pedido_pagamento/${encodeURIComponent(form.protocolo)}`;
+  //
         const res = await fetch(url, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
+  //
         if (res.ok) {
           const data = await res.json();
-          console.log('[DEBUG-RECIBO] Dados recebidos do backend:', data);
+          //
           if (data && data.id) {
-            console.log('[DEBUG-RECIBO] Pagamento encontrado, setPagamentoSalvo(true)');
             setPagamentoSalvo(true);
+            //
           } else {
-            console.log('[DEBUG-RECIBO] Nenhum pagamento encontrado, setPagamentoSalvo(false)');
             setPagamentoSalvo(false);
+            //
           }
           // Aceita tanto snake_case quanto camelCase por compatibilidade
           const valorAdicionalBackend = data.valorAdicional !== undefined ? data.valorAdicional : data.valor_adicional;
@@ -390,95 +209,42 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             setStatusPedido(statusBackend);
             if (onChange) onChange({ ...form, status: statusBackend });
           }
-          // Carrega valores adiantados do backend, se existirem
-          let detalhesBackend = [];
-          // Preferencialmente busca por complementos_pagamento (backend padronizado), senão detalhes_pagamento
-          if (Array.isArray(data.complementos_pagamento)) {
-            detalhesBackend = data.complementos_pagamento;
-          } else if (typeof data.complementos_pagamento === 'string') {
-            try {
-              detalhesBackend = JSON.parse(data.complementos_pagamento);
-            } catch {
-              detalhesBackend = [];
-            }
-          } else if (Array.isArray(data.detalhes_pagamento)) {
-            detalhesBackend = data.detalhes_pagamento;
-          } else if (typeof data.detalhes_pagamento === 'string') {
-            try {
-              detalhesBackend = JSON.parse(data.detalhes_pagamento);
-            } catch {
-              detalhesBackend = [];
-            }
+          // Carrega complementos do backend, se existirem
+          let complementosBackend = [];
+          if (Array.isArray(data.complemento_pagamento)) {
+            //
+            complementosBackend = data.complemento_pagamento;
+          } else {
+            console.log('[Pagamento][EFFECT][DEBUG] Nenhum campo complemento_pagamento encontrado no backend.');
           }
-          console.log('[DEBUG-RECIBO] detalhesBackend processados:', detalhesBackend);
-          
-          // CORREÇÃO: NÃO sobrescrever valorAdiantadoDetalhes com dados do backend
-          // Os valores adiantados originais devem ser preservados para calcular o excesso corretamente
-          // O backend retorna os dados da "distribuição final" que não são os mesmos que os "valores adiantados"
-          console.log('[DEBUG-RECIBO] Preservando valorAdiantadoDetalhes originais para manter cálculo de excesso');
-
-          // NOVO: Atualiza pagamentoFinal com os dados salvos do backend
-          // Verifica se detalhesBackend é um objeto com máscara de pagamentos ou array
-          if (detalhesBackend && typeof detalhesBackend === 'object') {
-            console.log('[DEBUG-RECIBO] Processando detalhesBackend:', detalhesBackend);
-            
-            // Se é array (formato antigo), usar como antes
-            if (Array.isArray(detalhesBackend) && detalhesBackend.length > 0) {
-              console.log('[DEBUG-RECIBO] Formato array - usando detalhesBackend diretamente');
-              setPagamentoFinal(
-                detalhesBackend.map(item => ({
-                  valor: item.valor,
-                  forma: item.forma || '',
-                  complemento: item.complemento || false
-                }))
-              );
-            } 
-            // Se é objeto com máscara de pagamentos (formato novo)
-            else if (detalhesBackend.dinheiro !== undefined || detalhesBackend.cartao !== undefined) {
-              console.log('[DEBUG-RECIBO] Formato máscara - convertendo para tabela');
-              const pagamentosTabela = [];
-              
-              // Converter cada forma de pagamento da máscara para linhas da tabela
-              Object.entries(detalhesBackend).forEach(([chave, dados]) => {
-                if (dados && dados.valor > 0) {
-                  let nomeForma = '';
-                  switch (chave) {
-                    case 'dinheiro':
-                      nomeForma = 'Dinheiro';
-                      break;
-                    case 'cartao':
-                      nomeForma = 'Cartão de Débito';
-                      break;
-                    case 'pix':
-                      nomeForma = 'PIX';
-                      break;
-                    case 'crc':
-                      nomeForma = 'CRC';
-                      break;
-                    case 'depositoPrevio':
-                      nomeForma = 'Depósito Prévio';
-                      break;
-                    default:
-                      nomeForma = chave;
-                  }
-                  
-                  pagamentosTabela.push({
-                    valor: dados.valor,
-                    forma: nomeForma,
-                    complemento: false
-                  });
-                }
-              });
-              
-              console.log('[DEBUG-RECIBO] Pagamentos convertidos para tabela:', pagamentosTabela);
-              setPagamentoFinal(pagamentosTabela);
-            }
+          if (complementosBackend.length > 0) {
+            // Garante que todos os complementos têm valor, forma e complemento: true
+            const complementosMarcados = complementosBackend.map((item, idx) => {
+              const valor = item.valor !== undefined ? item.valor : item.valor_complemento;
+              const forma = item.forma !== undefined ? item.forma : item.forma_pagamento;
+              const complemento = true;
+              const novoItem = { ...item, valor, forma, complemento };
+              if (!valor || !forma) {
+                //
+              }
+              return novoItem;
+            });
+            setValorAdiantadoDetalhes(prev => {
+              const naoComplementos = (prev || []).filter(item => !item.complemento);
+              const resultado = [...naoComplementos, ...complementosMarcados];
+              //
+              return resultado;
+            });
+          } else {
+            //
           }
         } else {
           setPagamentoSalvo(false);
+          //
         }
       } catch (e) {
         setPagamentoSalvo(false);
+  //
       }
     }
     fetchPagamentoSalvo();
@@ -486,12 +252,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
 
   // Função para calcular o total adiantado
   const calcularTotalAdiantado = () => {
-    const detalhesValidos = valorAdiantadoDetalhes.filter(item => item.valor && item.forma);
-    const total = detalhesValidos.reduce((total, item) => total + parseFloat(item.valor || 0), 0);
-    console.log('[DEBUG-RECIBO] calcularTotalAdiantado - valorAdiantadoDetalhes:', valorAdiantadoDetalhes);
-    console.log('[DEBUG-RECIBO] calcularTotalAdiantado - detalhesValidos:', detalhesValidos);
-    console.log('[DEBUG-RECIBO] calcularTotalAdiantado - total:', total);
-    return total;
+    return valorAdiantadoDetalhes
+      .filter(item => item.valor && item.forma)
+      .reduce((total, item) => total + parseFloat(item.valor || 0), 0);
   };
 
   // Função para atualizar status no banco de dados
@@ -731,7 +494,46 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       // Filtra apenas complementos
       const complementos = (valorAdiantadoDetalhes || []).filter(item => item.complemento && item.valor && item.forma);
 
-      // Salvar informações do pagamento na nova tabela pedido_pagamento, incluindo complementos
+      // Criar máscara de pagamentos baseada nos valores adiantados
+      const pagamentosMascara = {
+        dinheiro: { quantidade: 0, valor: 0, manual: false },
+        cartao: { quantidade: 0, valor: 0, manual: false },
+        pix: { quantidade: 0, valor: 0, manual: false },
+        crc: { quantidade: 0, valor: 0, manual: false },
+        depositoPrevio: { quantidade: 0, valor: 0, manual: false }
+      };
+
+      // Mapear valores adiantados para a máscara
+      valorAdiantadoDetalhes.forEach(item => {
+        if (item.valor && item.forma) {
+          const valor = parseFloat(item.valor) || 0;
+          const forma = item.forma.toLowerCase();
+          
+          if (forma === 'dinheiro') {
+            pagamentosMascara.dinheiro.valor += valor;
+            pagamentosMascara.dinheiro.quantidade += 1;
+            pagamentosMascara.dinheiro.manual = true;
+          } else if (forma === 'pix') {
+            pagamentosMascara.pix.valor += valor;
+            pagamentosMascara.pix.quantidade += 1;
+            pagamentosMascara.pix.manual = true;
+          } else if (forma.includes('cartão') || forma.includes('cartao')) {
+            pagamentosMascara.cartao.valor += valor;
+            pagamentosMascara.cartao.quantidade += 1;
+            pagamentosMascara.cartao.manual = true;
+          } else if (forma === 'crc') {
+            pagamentosMascara.crc.valor += valor;
+            pagamentosMascara.crc.quantidade += 1;
+            pagamentosMascara.crc.manual = true;
+          } else if (forma.includes('depósito') || forma.includes('deposito')) {
+            pagamentosMascara.depositoPrevio.valor += valor;
+            pagamentosMascara.depositoPrevio.quantidade += 1;
+            pagamentosMascara.depositoPrevio.manual = true;
+          }
+        }
+      });
+
+      // Salvar informações do pagamento na nova tabela pedido_pagamento, incluindo complementos e máscara
       try {
         const token = localStorage.getItem('token');
         await fetch(`${config.apiURL}/pedido_pagamento`, {
@@ -748,7 +550,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             usuario: usuario,
             data: data,
             hora: hora,
-            complementos: complementos // envia array de complementos
+            complementos: complementos, // envia array de complementos
+            detalhes_pagamento: pagamentosMascara // envia máscara de pagamentos
           })
         });
         setPagamentoSalvo(true);
@@ -816,7 +619,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         if (resultado && resultado.local) {
           alert('✅ Pagamento cancelado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
         } else {
-          alert('✅ Pagamento cancelado com sucesso! Status atualizado para "Aguardando Pagamento.".');
+          alert('✅ Pagamento cancelado com sucesso! Status atualizado para "Aguardando Conferência".');
         }
         // Volta para o componente ServicoConferencia.jsx via prop
         if (typeof onVoltarEtapa === 'function') {
@@ -1008,163 +811,103 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
 
 
 
-      {/* Tabela de Valores Adiantados (não editável) */}
+      {/* Tabela de Valores Adiantados */}
       {valorAdiantadoDetalhes && valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
-        <div style={{
-          marginBottom: 20,
-          padding: 16,
-          background: '#fff5f5',
-          border: '2px solid #feb2b2',
-          borderRadius: 8
-        }}>
-          <h4 style={{
-            margin: '0 0 12px 0',
-            color: '#742a2a',
-            fontSize: '16px',
-            fontWeight: '600'
-          }}>💰 Valores Adiantados pelo Usuário</h4>
-          <table style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            fontSize: '14px'
+        <>
+          <div style={{
+            marginBottom: 20,
+            padding: 16,
+            background: '#fff5f5',
+            border: '2px solid #feb2b2',
+            borderRadius: 8
           }}>
-            <thead>
-              <tr style={{ background: '#fdf2f8' }}>
-                <th style={{
-                  padding: '2px 2px 2px 2px',
-                  textAlign: 'left',
-                  color: '#742a2a',
-                  fontWeight: '600',
-                  border: '1px solid #feb2b2'
-                }}>
-                  Valor
-                </th>
-                <th style={{
-                  padding: '8px 12px',
-                  textAlign: 'left',
-                  color: '#742a2a',
-                  fontWeight: '600',
-                  border: '1px solid #feb2b2'
-                }}>
-                  Forma de Pagamento
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {valorAdiantadoDetalhes
-                .filter(item => item.valor && item.forma)
-                .map((item, idx) => (
-                <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fef5f5' }}>
-                  <td style={{
-                    padding: '8px 12px',
-                    border: '1px solid #feb2b2',
-                    fontFamily: 'monospace',
+            <h4 style={{
+              margin: '0 0 12px 0',
+              color: '#742a2a',
+              fontSize: '16px',
+              fontWeight: '600'
+            }}>💰 Valores Adiantados pelo Usuário</h4>
+            <table style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: '14px'
+            }}>
+              <thead>
+                <tr style={{ background: '#fdf2f8' }}>
+                  <th style={{
+                    padding: '2px 2px 2px 2px',
+                    textAlign: 'left',
+                    color: '#742a2a',
                     fontWeight: '600',
-                    color: '#e53e3e'
+                    border: '1px solid #feb2b2'
                   }}>
-                    R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    Valor
+                  </th>
+                  <th style={{
+                    padding: '8px 12px',
+                    textAlign: 'left',
+                    color: '#742a2a',
+                    fontWeight: '600',
+                    border: '1px solid #feb2b2'
+                  }}>
+                    Forma de Pagamento
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {valorAdiantadoDetalhes
+                  .filter(item => item.valor && item.forma)
+                  .map((item, idx) => (
+                  <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fef5f5' }}>
+                    <td style={{
+                      padding: '8px 12px',
+                      border: '1px solid #feb2b2',
+                      fontFamily: 'monospace',
+                      fontWeight: '600',
+                      color: '#e53e3e'
+                    }}>
+                      R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                    <td style={{
+                      padding: '8px 12px',
+                      border: '1px solid #feb2b2',
+                      color: '#742a2a'
+                    }}>
+                      {item.forma}
+                    </td>
+                  </tr>
+                ))}
+                {/* Linha de Total */}
+                <tr style={{ background: '#f3d5d5', fontWeight: 'bold' }}>
+                  <td style={{
+                    padding: '10px 12px',
+                    border: '2px solid #e53e3e',
+                    fontFamily: 'monospace',
+                    fontWeight: 'bold',
+                    color: '#8b1a1a',
+                    fontSize: '16px'
+                  }}>
+                    R$ {calcularTotalAdiantado().toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td style={{
-                    padding: '8px 12px',
-                    border: '1px solid #feb2b2',
-                    color: '#742a2a'
+                    padding: '10px 12px',
+                    border: '2px solid #e53e3e',
+                    fontWeight: 'bold',
+                    color: '#8b1a1a'
                   }}>
-                    {item.forma}
+                    TOTAL ADIANTADO
                   </td>
                 </tr>
-              ))}
-              {/* Linha de Total */}
-              <tr style={{ background: '#f3d5d5', fontWeight: 'bold' }}>
-                <td style={{
-                  padding: '10px 12px',
-                  border: '2px solid #e53e3e',
-                  fontFamily: 'monospace',
-                  fontWeight: 'bold',
-                  color: '#8b1a1a',
-                  fontSize: '16px'
-                }}>
-                  R$ {calcularTotalAdiantado().toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </td>
-                <td style={{
-                  padding: '10px 12px',
-                  border: '2px solid #e53e3e',
-                  fontWeight: 'bold',
-                  color: '#8b1a1a'
-                }}>
-                  TOTAL ADIANTADO
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+              </tbody>
+            </table>
+          </div>
+
+        </>
       )}
-
-      {/* Tabela de edição da distribuição final entre formas de pagamento */}
-      <div style={{
-        marginBottom: 24,
-        padding: 16,
-        background: '#e6fffa',
-        border: '2px solid #38a169',
-        borderRadius: 8
-      }}>
-        <h4 style={{
-          margin: '0 0 12px 0',
-          color: '#2f855a',
-          fontSize: '16px',
-          fontWeight: '600'
-        }}>📝 Distribuição Final do Pagamento</h4>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '15px', marginBottom: 18 }}>
-          <thead>
-            <tr style={{ background: '#b2f5ea' }}>
-              <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Valor</th>
-              <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Forma</th>
-              <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pagamentoFinal.map((item, idx) => (
-              <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#e6fffa' }}>
-                <td style={{ padding: '8px', border: '1px solid #38a169' }}>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={item.valor}
-                    onChange={e => handleEditPagamentoFinal(idx, 'valor', e.target.value)}
-                    style={{ width: 90, padding: '4px', borderRadius: 4, border: '1px solid #38a169', fontSize: '15px' }}
-                  />
-                </td>
-                <td style={{ padding: '8px', border: '1px solid #38a169' }}>
-                  <select value={item.forma} onChange={e => handleEditPagamentoFinal(idx, 'forma', e.target.value)} style={{ width: 140, padding: '4px', borderRadius: 4, border: '1px solid #38a169', fontSize: '15px' }}>
-                    <option value="">Selecione</option>
-                    <option value="Dinheiro">Dinheiro</option>
-                    <option value="PIX">PIX</option>
-                    <option value="Cartão de Débito">Cartão de Débito</option>
-                    <option value="Cartão de Crédito">Cartão de Crédito</option>
-                    <option value="CRC">CRC</option>
-                    <option value="Depósito Prévio">Depósito Prévio</option>
-                  </select>
-                </td>
-                <td style={{ padding: '8px', border: '1px solid #38a169', textAlign: 'center' }}>
-                  <button type="button" onClick={() => handleRemoverPagamentoFinal(idx)} style={{ background: '#e53e3e', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontWeight: 'bold', cursor: 'pointer' }}>Remover</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 12 }}>
-          <button
-            type="button"
-            onClick={handleAdicionarPagamentoFinal}
-            style={{ padding: '8px 18px', background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}
-          >Adicionar Forma</button>
-        </div>
-      </div>
-
-      {/* Tabela de complementos de pagamento */}
-      {renderTabelaComplementos()}
-
-      {/* Seção simplificada de botões de pagamento */}
+      
+  {/* Tabela de complementos de pagamento acima do bloco de mensagens */}
+  {renderTabelaComplementos()}
+  {/* Botão condicional baseado no valor adiantado */}
       {valorAdiantadoDetalhes && valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
         <div style={{
           marginBottom: 20,
@@ -1175,76 +918,28 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             const valorRestante = subtotalPedido - totalAdiantado;
             const excesso = totalAdiantado - subtotalPedido;
             const pagamentoConfirmado = statusPedido === 'Pago';
-            
-            console.log('[DEBUG-RECIBO] Renderização dos botões:');
-            console.log('[DEBUG-RECIBO] - subtotalPedido:', subtotalPedido);
-            console.log('[DEBUG-RECIBO] - totalAdiantado:', totalAdiantado);
-            console.log('[DEBUG-RECIBO] - excesso:', excesso);
-            console.log('[DEBUG-RECIBO] - pagamentoSalvo:', pagamentoSalvo);
-            console.log('[DEBUG-RECIBO] - valorAdiantadoDetalhes.length:', valorAdiantadoDetalhes.length);
-            console.log('[DEBUG-RECIBO] - Condição excesso > 0:', excesso > 0);
 
-            // Status do pagamento - simplificado para focar na funcionalidade
-            let statusMessage = '';
-            let statusStyle = {};
-            
-            if (pagamentoSalvo) {
-              statusMessage = '✅ Pagamento salvo com sucesso!';
-              statusStyle = { background: '#e8f5e8', border: '2px solid #38a169', color: '#2d5016' };
-            } else if (totalAdiantado >= subtotalPedido) {
-              statusMessage = '✅ Valor adiantado suficiente para pagamento!';
-              statusStyle = { background: '#e8f5e8', border: '2px solid #38a169', color: '#2d5016' };
-            } else {
-              statusMessage = `⚠️ Valor insuficiente para pagamento. Restam: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-              statusStyle = { background: '#fef5e7', border: '2px solid #f6ad55', color: '#b7791f' };
-            }
+            // LOGS para depuração do fluxo dos botões
+            console.log('[Pagamento][RENDER] pagamentoSalvo:', pagamentoSalvo, '| statusPedido:', statusPedido, '| pagamentoConfirmado:', pagamentoConfirmado, '| totalAdiantado:', totalAdiantado, '| subtotalPedido:', subtotalPedido);
 
-            return (
-              <div>
-                {/* Status do pagamento */}
-                <div style={{
-                  marginBottom: 12,
-                  padding: 12,
-                  borderRadius: 8,
-                  fontWeight: 'bold',
-                  ...statusStyle
-                }}>
-                  {statusMessage}
-                  {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                </div>
-
-                {/* Botões de ação */}
-                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                  {/* Botão Salvar Pagamento - só aparece se não foi salvo e valor é suficiente */}
-                  {!pagamentoSalvo && totalAdiantado >= subtotalPedido && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        console.log('[FRONTEND][LOG] Clique no botão Salvar Pagamento');
-                        handleSalvarPagamentoFinal();
-                      }}
-                      disabled={processando}
-                      style={{
-                        padding: '14px 32px',
-                        background: processando ? '#a0aec0' : 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        cursor: processando ? 'not-allowed' : 'pointer',
-                        boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={e => !processando && (e.target.style.transform = 'translateY(-2px)')}
-                      onMouseLeave={e => !processando && (e.target.style.transform = 'translateY(0px)')}
-                    >
-                      {processando ? '⏳ Salvando...' : '💾 Salvar Pagamento'}
-                    </button>
-                  )}
-
-                  {/* Botão Excluir/Cancelar Pagamento - aparece se foi salvo */}
-                  {pagamentoSalvo && (
+            // NOVA LÓGICA: se houver pagamento salvo, sempre mostra o botão de excluir
+            if (pagamentoSalvo && !pagamentoConfirmado) {
+              console.log('[Pagamento][RENDER] Exibindo botão Excluir Pagamento (pagamentoSalvo = true)');
+              return (
+                <div>
+                  <div style={{
+                    marginBottom: 12,
+                    padding: 12,
+                    background: '#e8f5e8',
+                    border: '2px solid #38a169',
+                    borderRadius: 8,
+                    color: '#2d5016',
+                    fontWeight: 'bold'
+                  }}>
+                    {'✅ Pagamento já salvo!'}
+                    {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <button
                       type="button"
                       onClick={handleCancelarPagamento}
@@ -1266,122 +961,286 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                     >
                       {processando ? '⏳ Processando...' : '❌ Excluir Pagamento'}
                     </button>
-                  )}
+                    {excesso > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => gerarReciboExcesso(excesso)}
+                        style={{
+                          padding: '14px 32px',
+                          background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(49,130,206,0.3)',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
+                      >
+                        📄 Gerar Recibo do Troco
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            }
 
-                  {/* Botão Adicionar Complemento - aparece se valor é insuficiente e não foi salvo */}
-                  {!pagamentoSalvo && totalAdiantado < subtotalPedido && (
+            // Se pagamento confirmado, mostra botão cancelar
+            if (pagamentoConfirmado) {
+              console.log('[Pagamento][RENDER] Exibindo botão Cancelar Pagamento');
+              return (
+                <div>
+                  <div style={{
+                    marginBottom: 12,
+                    padding: 12,
+                    background: '#e8f5e8',
+                    border: '2px solid #38a169',
+                    borderRadius: 8,
+                    color: '#2d5016',
+                    fontWeight: 'bold'
+                  }}>
+                    {'✅ Pagamento Confirmado!'}
+                    {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <button
                       type="button"
-                      onClick={abrirComplementoModal}
+                      onClick={handleCancelarPagamento}
+                      disabled={processando}
                       style={{
                         padding: '14px 32px',
-                        background: 'linear-gradient(135deg, #f6ad55 0%, #ed8936 100%)',
+                        background: processando ? '#a0aec0' : 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)',
                         color: '#fff',
                         border: 'none',
                         borderRadius: 8,
                         fontSize: '16px',
                         fontWeight: '700',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 12px rgba(246,173,85,0.3)',
+                        cursor: processando ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 4px 12px rgba(229,62,62,0.3)',
                         transition: 'all 0.2s ease'
                       }}
-                      onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
-                      onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
+                      onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
+                      onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
                     >
-                      � Adicionar Complemento
+                      {processando ? '⏳ Processando...' : '❌ Cancelar Pagamento'}
                     </button>
-                  )}
+                    {excesso > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => gerarReciboExcesso(excesso)}
+                        style={{
+                          padding: '14px 32px',
+                          background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(49,130,206,0.3)',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
+                      >
+                        📄 Gerar Recibo do Troco
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            }
 
-                  {/* Botão Gerar Recibo do Troco - SEMPRE VISÍVEL quando há excesso */}
-                  {excesso > 0 ? (
+            // Caso padrão: valor insuficiente, mostra salvar e complemento
+            if (totalAdiantado >= subtotalPedido) {
+              console.log('[Pagamento][RENDER] Exibindo botão Salvar Pagamento');
+              return (
+                <div>
+                  <div style={{
+                    marginBottom: 12,
+                    padding: 12,
+                    background: '#e8f5e8',
+                    border: '2px solid #38a169',
+                    borderRadius: 8,
+                    color: '#2d5016',
+                    fontWeight: 'bold'
+                  }}>
+                    {'✅ Valor adiantado suficiente!'}
+                    {excesso > 0 && ` Excesso: R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <button
                       type="button"
-                      onClick={() => {
-                        console.log('[FRONTEND][LOG] Gerando recibo do troco para excesso de:', excesso);
-                        gerarReciboExcesso(excesso);
-                      }}
+                      onClick={handleConfirmarPagamento}
+                      disabled={processando}
                       style={{
                         padding: '14px 32px',
-                        background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
+                        background: processando ? '#a0aec0' : 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
                         color: '#fff',
                         border: 'none',
                         borderRadius: 8,
                         fontSize: '16px',
                         fontWeight: '700',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 12px rgba(49,130,206,0.3)',
+                        cursor: processando ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
                         transition: 'all 0.2s ease'
                       }}
-                      onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
-                      onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
+                      onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
+                      onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
                     >
-                      📄 Gerar Recibo do Troco
+                      {processando ? '⏳ Processando...' : '✅ Salvar Pagamento'}
                     </button>
-                  ) : (
-                    console.log('[DEBUG-RECIBO] Botão do troco NÃO renderizado. Excesso:', excesso, 'Condição excesso > 0:', excesso > 0)
+                    {excesso > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => gerarReciboExcesso(excesso)}
+                        style={{
+                          padding: '14px 32px',
+                          background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(49,130,206,0.3)',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={(e) => e.target.style.transform = 'translateY(0px)'}
+                      >
+                        📄 Gerar Recibo do Troco
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            } else {
+              console.log('[Pagamento][RENDER] Exibindo botão Salvar Pagamento e Adicionar Complemento (valor insuficiente)');
+              return (
+                <div>
+                  <div style={{
+                    marginBottom: 12,
+                    padding: 12,
+                    background: '#fff5f5',
+                    border: '2px solid #e53e3e',
+                    borderRadius: 8,
+                    color: '#8b1a1a',
+                    fontWeight: 'bold'
+                  }}>
+                    ⚠️ Valor insuficiente! Falta: R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  {/* Botão Salvar Pagamento sempre visível quando não confirmado */}
+                  {!pagamentoConfirmado && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleConfirmarPagamento}
+                        disabled={processando}
+                        style={{
+                          padding: '14px 32px',
+                          background: processando ? '#a0aec0' : 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          cursor: processando ? 'not-allowed' : 'pointer',
+                          boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
+                          transition: 'all 0.2s ease',
+                          marginRight: 8
+                        }}
+                        onMouseEnter={e => !processando && (e.target.style.transform = 'translateY(-2px)')}
+                        onMouseLeave={e => !processando && (e.target.style.transform = 'translateY(0px)')}
+                      >
+                        {processando ? '⏳ Processando...' : '✅ Salvar Pagamento'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={abrirComplementoModal}
+                        style={{
+                          padding: '14px 32px',
+                          background: 'linear-gradient(135deg, #f6ad55 0%, #dd6b20 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(237,137,54,0.3)',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
+                      >
+                        ➕ Adicionar Complemento
+                      </button>
+                    </>
+                  )}
+                  {/* Modal de complemento de pagamento */}
+                  {showComplementoModal && !pagamentoConfirmado && (
+                    <div style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      width: '100vw',
+                      height: '100vh',
+                      background: 'rgba(0,0,0,0.25)',
+                      zIndex: 9999,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <div style={{
+                        background: '#fffbe5',
+                        border: '2px solid #f6ad55',
+                        borderRadius: 12,
+                        padding: 32,
+                        minWidth: 320,
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.18)'
+                      }}>
+                        <h3 style={{ color: '#b7791f', marginBottom: 18, textAlign: 'center' }}>Adicionar Complemento</h3>
+                        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 18, justifyContent: 'center' }}>
+                          <select value={modalFormaComplemento} onChange={e => setModalFormaComplemento(e.target.value)} style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', minWidth: 140 }}>
+                            <option value="">Selecione a forma</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Cartão de Débito">Cartão de Débito</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="PIX">PIX</option>
+                            <option value="Cheque">Cheque</option>
+                          </select>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={modalValorComplemento}
+                            onChange={e => setModalValorComplemento(e.target.value)}
+                            placeholder="Valor"
+                            style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', width: 120 }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={handleAdicionarComplementoModal}
+                            style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
+                          >Adicionar</button>
+                          <button
+                            type="button"
+                            onClick={fecharComplementoModal}
+                            style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
+                          >Cancelar</button>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
-            );
+              );
+            }
           })()}
-        </div>
-      )}
-
-      {/* Modal de complemento de pagamento */}
-      {showComplementoModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          background: 'rgba(0,0,0,0.25)',
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <div style={{
-            background: '#fffbe5',
-            border: '2px solid #f6ad55',
-            borderRadius: 12,
-            padding: 32,
-            minWidth: 320,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.18)'
-          }}>
-            <h3 style={{ color: '#b7791f', marginBottom: 18, textAlign: 'center' }}>Adicionar Complemento</h3>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 18, justifyContent: 'center' }}>
-              <select value={modalFormaComplemento} onChange={e => setModalFormaComplemento(e.target.value)} style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', minWidth: 140 }}>
-                <option value="">Selecione a forma</option>
-                <option value="Dinheiro">Dinheiro</option>
-                <option value="Cartão de Débito">Cartão de Débito</option>
-                <option value="Cartão de Crédito">Cartão de Crédito</option>
-                <option value="PIX">PIX</option>
-                <option value="Cheque">Cheque</option>
-              </select>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={modalValorComplemento}
-                onChange={e => setModalValorComplemento(e.target.value)}
-                placeholder="Valor"
-                style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', width: 120 }}
-              />
-            </div>
-            <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-              <button
-                type="button"
-                onClick={handleAdicionarComplementoModal}
-                style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
-              >Adicionar</button>
-              <button
-                type="button"
-                onClick={fecharComplementoModal}
-                style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
-              >Cancelar</button>
-            </div>
-          </div>
         </div>
       )}
       
