@@ -6,44 +6,49 @@ export default function ClipboardImageUpload({ protocolo, onUpload }) {
   const [error, setError] = useState('');
   const buttonRef = useRef();
 
-  // Handler para importar imagem da área de transferência
+  // Handler para importar dados de selo da área de transferência
   const handleImportFromClipboard = async () => {
     setError('');
+
+    if (!navigator.clipboard || typeof navigator.clipboard.readText !== 'function') {
+      setError('Navegador não suporta leitura de texto da área de transferência.');
+      return;
+    }
+
     try {
-      const clipboardItems = await navigator.clipboard.read();
-      let foundImage = false;
-      for (const item of clipboardItems) {
-        for (const type of item.types) {
-          if (type.startsWith('image/')) {
-            foundImage = true;
-            const blob = await item.getType(type);
-            await handleImageUpload(blob);
-            break;
-          }
-        }
-        if (foundImage) break;
+      const rawText = await navigator.clipboard.readText();
+      const conteudo = (rawText || '').trim();
+
+      if (!conteudo) {
+        setError('A área de transferência não contém dados de selo.');
+        return;
       }
-      if (!foundImage) {
-        setError('A área de transferência não contém uma imagem.');
-      }
+
+      await handleSeloUpload(conteudo);
     } catch (err) {
       setError('Erro ao acessar a área de transferência.');
     }
   };
 
-  // Envia imagem para o backend (igual SeloEletronicoManager)
-  const handleImageUpload = async (file) => {
+  // Envia conteúdo textual do selo para o backend reutilizando a mesma rota do upload de imagem
+  const handleSeloUpload = async (conteudoSelo) => {
     setUploading(true);
     setError('');
+
     try {
-      const formData = new FormData();
-      formData.append('imagem', file);
       if (!protocolo || typeof protocolo !== 'string') {
         setError('Protocolo inválido para upload.');
         setUploading(false);
         return;
       }
+
+      const formData = new FormData();
+      // Mantém o nome do campo para reaproveitar a rota do backend
+      const blob = new Blob([conteudoSelo], { type: 'text/plain' });
+      formData.append('imagem', blob, 'selo.txt');
+      formData.append('conteudo_selo', conteudoSelo);
       formData.append('execucao_servico_id', protocolo);
+
       const token = localStorage.getItem('token');
       const res = await fetch(`${config.apiURL}/execucaoservico/${protocolo}/selo`, {
         method: 'POST',
@@ -52,16 +57,20 @@ export default function ClipboardImageUpload({ protocolo, onUpload }) {
           'Authorization': `Bearer ${token}`
         }
       });
+
       const text = await res.text();
-      if (!res.ok) throw new Error('Erro ao enviar imagem.');
+      if (!res.ok) throw new Error('Erro ao enviar dados do selo.');
+
       let data = {};
       try {
         data = text ? JSON.parse(text) : {};
       } catch {}
+
       if (onUpload) onUpload(data);
     } catch (err) {
-      setError('Falha ao enviar imagem: ' + (err.message || err));
+      setError('Falha ao enviar dados do selo: ' + (err.message || err));
     }
+
     setUploading(false);
   };
 
@@ -86,7 +95,7 @@ export default function ClipboardImageUpload({ protocolo, onUpload }) {
         }}
         title="Importar imagem da área de transferência"
       >
-        {uploading ? 'Importando selo...' : '🖼️ Importar selo da área de transferência'}
+        {uploading ? 'Importando selo...' : '� Importar selo da área de transferência'}
       </button>
       {error && <span style={{ color: 'red', marginLeft: 6 }}>{error}</span>}
     </span>
