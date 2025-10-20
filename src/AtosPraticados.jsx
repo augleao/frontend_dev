@@ -260,12 +260,15 @@ function AtosPraticados() {
         }
       }
 
-      console.log('🔗 [AtosPraticados] URL da requisição:', `${apiURL}/atos-praticados?data=${dataSelecionada}`);
+      const ts = Date.now();
+      const urlAtos = `${apiURL}/atos-praticados?data=${dataSelecionada}&_ts=${ts}`;
+      console.log('🔗 [AtosPraticados] URL da requisição:', urlAtos);
 
       const resAtos = await fetch(
-        `${apiURL}/atos-praticados?data=${dataSelecionada}`,
+        urlAtos,
         {
           headers: { Authorization: `Bearer ${token}` },
+          cache: 'no-store'
         }
       );
       
@@ -336,7 +339,12 @@ function AtosPraticados() {
           if (usuarioAto === usuarioReferencia) return true;
           
           // Normalizar nomes para comparação flexível
-          const normalizar = (nome) => nome.toLowerCase().trim();
+          const normalizar = (nome) => nome
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // remove acentos
+            .replace(/[^\w\s]/g, '') // remove pontuação
+            .trim();
           const usuarioAtoNorm = normalizar(usuarioAto);
           const usuarioReferenciaNo = normalizar(usuarioReferencia);
           
@@ -639,12 +647,15 @@ useEffect(() => {
       // Limpar os atos atuais para forçar um refresh visual
       setAtos([]);
       
-      // Aguardar um pouco para garantir que o backend processou tudo
-      await new Promise(resolve => setTimeout(resolve, 300));
+  // Aguardar um pouco para garantir que o backend processou tudo
+  await new Promise(resolve => setTimeout(resolve, 800));
+
+  // Recarregar imediatamente os dados (sem depender apenas do trigger)
+  await carregarDadosPraticadosDaData();
       
-      // Incrementar o refreshTrigger para forçar o useEffect a recarregar
-      setRefreshTrigger(prev => prev + 1);
-      console.log('✅ [Importação] Trigger de refresh acionado');
+  // E também acionar o trigger para manter consistência com os efeitos
+  setRefreshTrigger(prev => prev + 1);
+  console.log('✅ [Importação] Trigger de refresh acionado');
 
     } catch (error) {
       console.error('💥 Erro ao importar atos praticados:', error);
