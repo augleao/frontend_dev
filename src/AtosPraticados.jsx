@@ -207,6 +207,17 @@ function AtosPraticados() {
     }
   };
 
+  // Cria uma "assinatura" de um ato para detectar mudanças sem depender de IDs
+  const assinaturaAto = (ato) => {
+    if (!ato) return '';
+    const usuario = (ato.usuario || '').toLowerCase();
+    const codigo = String(ato.codigo || '');
+    const hora = String(ato.hora || '');
+    const valor = String(ato.valor_unitario ?? '');
+    const data = String(ato.data || '');
+    return `${usuario}|${codigo}|${hora}|${valor}|${data}`;
+  };
+
   // Função para carregar atos do backend
   const carregarDadosPraticadosDaData = async () => {
     console.log('🔄 [AtosPraticados] Iniciando carregamento de dados para data:', dataSelecionada);
@@ -563,6 +574,9 @@ useEffect(() => {
   // Função para importar atos praticados
   const importarAtosPraticados = async () => {
     try {
+      // Snapshot antes da importação para detectar novos atos
+      const assinaturasAntes = new Set(atos.map(assinaturaAto));
+
       const token = localStorage.getItem('token');
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
       const nomeLogado = usuario?.nome || usuario?.email;
@@ -652,6 +666,24 @@ useEffect(() => {
 
   // Recarregar imediatamente os dados (sem depender apenas do trigger)
   await carregarDadosPraticadosDaData();
+  
+  // Tentar algumas vezes até detectar os novos atos vindos do backend
+  let detectouMudanca = false;
+  for (let tentativa = 1; tentativa <= 6; tentativa++) {
+    await new Promise(r => setTimeout(r, 400));
+    await carregarDadosPraticadosDaData();
+    const assinaturasDepois = new Set(atos.map(assinaturaAto));
+    // Se qualquer assinatura nova aparecer, consideramos sucesso
+    for (const s of assinaturasDepois) {
+      if (!assinaturasAntes.has(s)) {
+        detectouMudanca = true;
+        console.log(`✅ [Importação] Novos atos detectados na tentativa ${tentativa}.`);
+        break;
+      }
+    }
+    if (detectouMudanca) break;
+    console.log(`⏳ [Importação] Ainda não apareceu no GET, re-tentando (${tentativa}/6)...`);
+  }
       
   // E também acionar o trigger para manter consistência com os efeitos
   setRefreshTrigger(prev => prev + 1);
