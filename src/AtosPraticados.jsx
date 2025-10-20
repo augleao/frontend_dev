@@ -43,6 +43,8 @@ function AtosPraticados() {
 
   const [quantidade, setQuantidade] = useState(1);
   const [atos, setAtos] = useState([]);
+  const [recarregando, setRecarregando] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Trigger para forçar refresh
   const debounceTimeout = useRef(null);
 
   // useEffect para monitorar mudanças no estado dos atos
@@ -413,14 +415,14 @@ useEffect(() => {
 
   // useEffect para carregar atos ao mudar a data
   useEffect(() => {
-    console.log('🔄 [AtosPraticados] useEffect disparado - mudança de data para:', dataSelecionada);
+    console.log('🔄 [AtosPraticados] useEffect disparado - mudança de data para:', dataSelecionada, 'trigger:', refreshTrigger);
     let isMounted = true;
     carregarDadosPraticadosDaData();
     return () => { 
       console.log('🧹 [AtosPraticados] useEffect cleanup executado');
       isMounted = false; 
     };
-  }, [dataSelecionada]);
+  }, [dataSelecionada, refreshTrigger]);
 
   // useEffect para buscar sugestões com debounce
   useEffect(() => {
@@ -632,7 +634,17 @@ useEffect(() => {
       }
 
       // Recarregar os dados após a importação
-      await carregarDadosPraticadosDaData();
+      console.log('🔄 [Importação] Iniciando recarregamento dos dados após importação...');
+      
+      // Limpar os atos atuais para forçar um refresh visual
+      setAtos([]);
+      
+      // Aguardar um pouco para garantir que o backend processou tudo
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Incrementar o refreshTrigger para forçar o useEffect a recarregar
+      setRefreshTrigger(prev => prev + 1);
+      console.log('✅ [Importação] Trigger de refresh acionado');
 
     } catch (error) {
       console.error('💥 Erro ao importar atos praticados:', error);
