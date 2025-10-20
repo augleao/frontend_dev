@@ -238,7 +238,7 @@ function AtosPraticados() {
 
             // 2. Se tem caixa unificado, buscar todos os usuários da serventia
             if (caixaUnificado) {
-              console.log('� [AtosPraticados] Buscando usuários da serventia para caixa unificado');
+              console.log('🏢 [AtosPraticados] Buscando usuários da serventia para caixa unificado');
               
               const resUsuarios = await fetch(`${apiURL}/users`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -260,7 +260,7 @@ function AtosPraticados() {
         }
       }
 
-      console.log('�🔗 [AtosPraticados] URL da requisição:', `${apiURL}/atos-praticados?data=${dataSelecionada}`);
+      console.log('🔗 [AtosPraticados] URL da requisição:', `${apiURL}/atos-praticados?data=${dataSelecionada}`);
 
       const resAtos = await fetch(
         `${apiURL}/atos-praticados?data=${dataSelecionada}`,
