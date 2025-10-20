@@ -834,31 +834,32 @@ useEffect(() => {
             dataSelecionada={dataSelecionada}
             nomeUsuario={nomeUsuario}
           />
-        </div>
 
-        {/* Tabela de Atos Praticados (lista detalhada) */}
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '16px',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-        }}>
+          {/* Tabela de Atos Praticados (lista detalhada) - logo abaixo do resumo agrupado */}
           <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '12px'
+            background: 'white',
+            borderRadius: '12px',
+            padding: '12px',
+            marginTop: '12px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
           }}>
-            <h3 style={{
-              margin: 0,
-              color: '#2c3e50',
-              fontSize: '16px',
-              fontWeight: 600
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '8px'
             }}>
-              📋 Atos praticados por {nomeUsuario} em {formatarDataBR(dataSelecionada)}
-            </h3>
+              <h3 style={{
+                margin: 0,
+                color: '#2c3e50',
+                fontSize: '16px',
+                fontWeight: 600
+              }}>
+                📋 Atos praticados por {nomeUsuario} em {formatarDataBR(dataSelecionada)}
+              </h3>
+            </div>
+            <AtosTable atos={atos} onRemover={removerAto} />
           </div>
-          <AtosTable atos={atos} onRemover={removerAto} />
         </div>
       </div>
     </div>
