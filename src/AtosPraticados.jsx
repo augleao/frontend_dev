@@ -555,6 +555,7 @@ useEffect(() => {
     try {
       const token = localStorage.getItem('token');
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      const nomeLogado = usuario?.nome || usuario?.email;
       const serventiaUsuario = usuario?.serventia;
 
       if (!serventiaUsuario) {
@@ -562,51 +563,15 @@ useEffect(() => {
         return;
       }
 
-      // 1. Verificar se a serventia tem caixa unificado
-      const resConfig = await fetch(`${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(serventiaUsuario)}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!resConfig.ok) {
-        const configText = await resConfig.text();
-        console.error('Erro config response:', resConfig.status, configText);
-        alert('Erro ao verificar configuração da serventia');
+      if (!nomeLogado) {
+        alert('Não foi possível identificar o usuário logado');
         return;
       }
 
-      const configData = await resConfig.json();
-      const caixaUnificado = configData?.caixa_unificado;
-
-      if (!caixaUnificado) {
-        alert('Esta serventia não possui caixa unificado configurado. Não é possível importar atos de outros usuários.');
-        return;
-      }
-
-      // 2. Buscar todos os usuários da mesma serventia
-      const resUsuarios = await fetch(`${apiURL}/users`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!resUsuarios.ok) {
-        const usuariosText = await resUsuarios.text();
-        console.error('Erro usuarios response:', resUsuarios.status, usuariosText);
-        alert('Erro ao buscar usuários da serventia');
-        return;
-      }
-
-      const usuariosData = await resUsuarios.json();
-      const usuariosDaServentia = (usuariosData.usuarios || []).filter(u => u.serventia === serventiaUsuario);
-      const nomesUsuarios = usuariosDaServentia.map(u => u.nome);
-
-      if (nomesUsuarios.length === 0) {
-        alert('Nenhum usuário encontrado para esta serventia');
-        return;
-      }
-
-      // 3. Importar atos da tabela selos_execucao_servico
+      // Importar atos apenas do usuário logado
       console.log('🔄 Iniciando importação de atos:', { 
         data: dataSelecionada, 
-        usuarios: nomesUsuarios, 
+        usuario: nomeLogado, 
         serventia: serventiaUsuario,
         apiURL: apiURL
       });
@@ -619,7 +584,7 @@ useEffect(() => {
         },
         body: JSON.stringify({
           data: dataSelecionada,
-          usuarios: nomesUsuarios,
+          usuarios: [nomeLogado], // Apenas o usuário logado
           serventia: serventiaUsuario
         })
       });
