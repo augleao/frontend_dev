@@ -816,59 +816,6 @@ useEffect(() => {
           />
         </div>
       </div>
-
-      {/* Seção da Tabela de Atos Praticados */}
-      <div style={{
-        background: 'white',
-        borderRadius: '12px',
-        padding: '20px',
-        marginBottom: '20px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '20px'
-        }}>
-          <h3 style={{
-            margin: '0',
-            color: '#2c3e50',
-            fontSize: '18px',
-            fontWeight: '600',
-            borderBottom: '2px solid #3498db',
-            paddingBottom: '8px'
-          }}>
-            📋 Atos Praticados ({atos.length})
-          </h3>
-        </div>
-
-        {/* Tabela de Atos */}
-        {atos.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '40px',
-            color: '#666',
-            fontSize: '16px',
-            background: '#f8f9fa',
-            borderRadius: '8px',
-            border: '2px dashed #ddd'
-          }}>
-            📝 Nenhum ato praticado encontrado para {formatarDataBR(dataSelecionada)}
-            <br />
-            <span style={{ fontSize: '14px', marginTop: '10px', display: 'block' }}>
-              Use o botão "Importar Atos" para carregar atos do sistema de selos ou adicione atos manualmente.
-            </span>
-          </div>
-        ) : (
-          <AtosTable
-            atos={atos}
-            onRemover={removerAto}
-            dataSelecionada={dataSelecionada}
-            usuarioLogado={nomeUsuario}
-          />
-        )}
-      </div>
     </div>
   </div>
 );
