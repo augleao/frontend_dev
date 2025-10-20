@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   formasPagamento,
   formatarMoeda,
@@ -46,6 +46,38 @@ function AtosPraticados() {
   const [recarregando, setRecarregando] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0); // Trigger para forçar refresh
   const debounceTimeout = useRef(null);
+
+  // Helper para comparação robusta de nomes (reuso no render)
+  const normalizarNome = (nome) => {
+    if (!nome) return '';
+    return String(nome)
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // remove acentos
+      .replace(/[^\w\s]/g, '') // remove pontuação
+      .trim();
+  };
+
+  const correspondeUsuario = (usuarioAto, usuarioRef) => {
+    if (!usuarioAto || !usuarioRef) return false;
+    if (usuarioAto === usuarioRef) return true;
+    const a = normalizarNome(usuarioAto);
+    const b = normalizarNome(usuarioRef);
+    if (a === b) return true;
+    const pa = a.split(/\s+/).filter(Boolean);
+    const pb = b.split(/\s+/).filter(Boolean);
+    if (pb.length === 1) return pa.includes(pb[0]);
+    if (pa.length >= 2 && pb.length >= 2) {
+      return pa[0] === pb[0] && pa[pa.length - 1] === pb[pb.length - 1];
+    }
+    return false;
+  };
+
+  // Filtrar somente os atos do usuário logado para a tabela detalhada
+  const atosDoUsuario = useMemo(
+    () => atos.filter((a) => correspondeUsuario(a.usuario, nomeUsuario)),
+    [atos, nomeUsuario]
+  );
 
   // useEffect para monitorar mudanças no estado dos atos
   useEffect(() => {
@@ -858,7 +890,7 @@ useEffect(() => {
                 📋 Atos praticados por {nomeUsuario} em {formatarDataBR(dataSelecionada)}
               </h3>
             </div>
-            <AtosTable atos={atos} onRemover={removerAto} />
+            <AtosTable atos={atosDoUsuario} onRemover={removerAto} />
           </div>
         </div>
       </div>
