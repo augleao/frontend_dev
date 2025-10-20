@@ -53,26 +53,31 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
             </tr>
           )}
           {atos.map((ato, idx) => {
+            const pagamentos = ato.pagamentos || {};
+            const tributacaoTexto = ato.tributacao
+              || (ato.tributacao_codigo
+                ? `${ato.tributacao_codigo}${ato.tributacao_descricao ? ' - ' + ato.tributacao_descricao : ''}`
+                : '-');
             return (
               <tr key={ato.id || idx}>
                 <td>{formatarDataBR(ato.data)}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.hora}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
-                <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.tributacao || '-'}</td>
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>{tributacaoTexto}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.descricao}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.quantidade}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>R$ {formatarValor(ato.valor_unitario)}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>
                   {formasPagamento
                     .filter((fp) => {
-                      const val = ato.pagamentos[fp.key]?.valor;
+                      const val = pagamentos[fp.key]?.valor;
                       return val !== undefined && val !== null && !isNaN(parseFloat(val)) && parseFloat(val) > 0;
                     })
                     .map((fp) => {
-                      const val = ato.pagamentos[fp.key]?.valor;
+                      const val = pagamentos[fp.key]?.valor;
                       const valorNum = parseFloat(val);
                       const valorFormatado = !isNaN(valorNum) ? valorNum.toFixed(2) : '0.00';
-                      return `${fp.label}: Qtd ${ato.pagamentos[fp.key]?.quantidade ?? 0}, Valor R$ ${valorFormatado}`;
+                      return `${fp.label}: Qtd ${pagamentos[fp.key]?.quantidade ?? 0}, Valor R$ ${valorFormatado}`;
                     })
                     .join(' | ')}
                 </td>

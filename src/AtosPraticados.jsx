@@ -835,6 +835,31 @@ useEffect(() => {
             nomeUsuario={nomeUsuario}
           />
         </div>
+
+        {/* Tabela de Atos Praticados (lista detalhada) */}
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '16px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '12px'
+          }}>
+            <h3 style={{
+              margin: 0,
+              color: '#2c3e50',
+              fontSize: '16px',
+              fontWeight: 600
+            }}>
+              📋 Atos praticados por {nomeUsuario} em {formatarDataBR(dataSelecionada)}
+            </h3>
+          </div>
+          <AtosTable atos={atos} onRemover={removerAto} />
+        </div>
       </div>
     </div>
   </div>
