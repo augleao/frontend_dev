@@ -47,6 +47,13 @@ function AtosPraticados() {
   const [refreshTrigger, setRefreshTrigger] = useState(0); // Trigger para forçar refresh
   const debounceTimeout = useRef(null);
 
+  // Nome do usuário logado (precisa estar antes de qualquer uso)
+  const [nomeUsuario, setNomeUsuario] = useState(() => {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    console.log('🧑 nomeUsuario recebido atosPraticados:', usuario);
+    return usuario?.nome || 'Usuário não identificado';
+  });
+
   // Helper para comparação robusta de nomes (reuso no render)
   const normalizarNome = (nome) => {
     if (!nome) return '';
@@ -92,11 +99,6 @@ function AtosPraticados() {
     });
   }, [atos]);
 
-  const [nomeUsuario, setNomeUsuario] = useState(() => {
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    console.log('🧑 nomeUsuario recebido atosPraticados:', usuario);
-    return usuario?.nome || 'Usuário não identificado';
-  });
   const [entradaValor, setEntradaValor] = useState('');
   const [entradaObs, setEntradaObs] = useState('');
   const [saidaValor, setSaidaValor] = useState('');
