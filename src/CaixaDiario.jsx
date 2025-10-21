@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   formasPagamento,
   formatarMoeda,
@@ -6,14 +6,9 @@ import {
   gerarRelatorioPDFCaixaDiario,
 } from './utils';
 import DataSelector from './DataSelector';
-import CaixaInputs from './CaixaInputs';
-import AtoSearch from './AtoSearch';
-import FormasPagamento from './FormasPagamento';
 import AtosTable from './CaixaTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
-import dayjs from 'dayjs';
 import { apiURL } from './config';
-import { gerarRelatorioPDF } from './components/RelatorioPDF';
 
 function CaixaDiario() {
   // Usuário logado
@@ -33,23 +28,10 @@ function CaixaDiario() {
   const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
   const [valorFinalCaixa, ValorFinalCaixa] = useState(0); // Deixe só esta!
   const [percentualISS, setPercentualISS] = useState(0); // Estado para ISS
-  const [searchTerm, setSearchTerm] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-  const [selectedAto, setSelectedAto] = useState(null);
-
-  const [pagamentos, setPagamentos] = useState(
-    formasPagamento.reduce((acc, fp) => {
-      acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
-      return acc;
-    }, {})
-  );
-
-  const [quantidade, setQuantidade] = useState(1);
   const [atos, setAtos] = useState([]);
   const [atosFiltrados, setAtosFiltrados] = useState([]);
   const [fechamentos, setFechamentos] = useState([]);
-  const debounceTimeout = useRef(null);
+  
 
   const [nomeUsuario, setNomeUsuario] = useState(() => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
@@ -247,150 +229,9 @@ function CaixaDiario() {
 
   const valoresIguais = (a, b, tolerancia = 0.01) => Math.abs(a - b) < tolerancia;
 
-  const somaPagamentos = Object.values(pagamentos).reduce(
-    (acc, p) => acc + (parseFloat(p.valor) || 0),
-    0
-  );
+  
 
-  // Aplicar ISS no valor total
-  const valorTotal = selectedAto ? calcularValorComISS((selectedAto.valor_final ?? 0) * quantidade) : 0;
-
-  const corFundoPagamentos = (key) => {
-    const metodosParaValidar = ['dinheiro', 'cartao', 'pix', 'crc', 'depositoPrevio'];
-    if (!metodosParaValidar.includes(key)) return '#ffd1d1';
-    return valoresIguais(somaPagamentos, valorTotal) ? '#d4edda' : '#ffd1d1';
-  };
-
-  const handlePagamentoQuantidadeChange = (key, qtd) => {
-    qtd = parseInt(qtd);
-    if (isNaN(qtd) || qtd < 0) qtd = 0;
-
-    setPagamentos((prev) => {
-      const novo = { ...prev };
-      novo[key].quantidade = qtd;
-
-      const valorUnitarioComISS = selectedAto ? calcularValorComISS(selectedAto.valor_final ?? 0) : 0;
-
-      if (!novo[key].manual) {
-        novo[key].valor = valorUnitarioComISS * qtd;
-      }
-
-      return novo;
-    });
-  };
-
-  const handlePagamentoValorChange = (key, valor) => {
-    valor = parseFloat(valor);
-    if (isNaN(valor) || valor < 0) valor = 0;
-
-    setPagamentos((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], valor: valor, manual: true },
-    }));
-  };
-
-  const handleQuantidadeChange = (qtd) => {
-    qtd = parseInt(qtd);
-    if (isNaN(qtd) || qtd < 1) qtd = 1;
-    setQuantidade(qtd);
-
-    setPagamentos((prev) => {
-      const novo = { ...prev };
-      const valorUnitarioComISS = selectedAto ? calcularValorComISS(selectedAto.valor_final ?? 0) : 0;
-
-      formasPagamento.forEach((fp) => {
-        if (!novo[fp.key].manual) {
-          novo[fp.key].valor = valorUnitarioComISS * novo[fp.key].quantidade;
-        }
-      });
-
-      return novo;
-    });
-  };
-
-  const handleSelectAto = (ato) => {
-    setSelectedAto(ato);
-    setSearchTerm(''); // Limpa o campo de busca
-  };
-
-  const adicionarAto = async () => {
-    if (!selectedAto) {
-      alert('Selecione um ato válido.');
-      return;
-    }
-    const algumPagamento = Object.values(pagamentos).some((p) => p.valor > 0);
-    if (quantidade < 1 || !algumPagamento) {
-      alert('Informe quantidade válida e pelo menos um valor de pagamento.');
-      return;
-    }
-
-    if (!valoresIguais(somaPagamentos, valorTotal)) {
-      alert('A soma dos pagamentos deve ser igual ao Valor Total do ato.');
-      return;
-    }
-
-    //const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    //const nomeUsuario = usuario?.nome || 'Usuário não identificado';
-
-    // Calcular valor unitário com ISS
-    const valorUnitarioComISS = calcularValorComISS(selectedAto.valor_final ?? 0);
-
-    const novoAto = {
-      data: dataSelecionada,
-      hora: new Date().toLocaleTimeString(),
-      codigo: selectedAto.codigo,
-      descricao: selectedAto.descricao,
-      quantidade,
-      valor_unitario: valorUnitarioComISS, // Salvar valor com ISS
-      valor_original: selectedAto.valor_final, // Manter valor original para referência
-      percentual_iss: percentualISS, // Salvar percentual aplicado
-      pagamentos: Object.fromEntries(
-        Object.entries(pagamentos).map(([key, value]) => [
-          key,
-          { quantidade: value.quantidade, valor: value.valor },
-        ])
-      ),
-      usuario: nomeUsuario,
-    };
-
-    console.log('Ato a ser salvo:', novoAto);
-    console.log('Valor original:', selectedAto.valor_final);
-    console.log('Valor com ISS:', valorUnitarioComISS);
-    console.log('Percentual ISS aplicado:', percentualISS);
-
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(
-        `${apiURL}/atos-pagos`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(novoAto),
-        }
-      );
-      if (res.ok) {
-        setAtos((prev) => [...prev, novoAto]);
-        setSelectedAto(null);
-        setSearchTerm('');
-        setQuantidade(1);
-        setPagamentos(
-          formasPagamento.reduce((acc, fp) => {
-            acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
-            return acc;
-          }, {})
-        );
-        setSuggestions([]);
-      } else {
-        alert('Erro ao salvar ato.');
-      }
-    } catch (e) {
-      console.error('Erro ao salvar ato:', e);
-      alert('Erro ao salvar ato.');
-    }
-  };
+  
 
   const removerAto = async (index) => {
     const atoParaRemover = atos[index];
@@ -495,46 +336,7 @@ useEffect(() => {
     return () => { isMounted = false; };
   }, [dataSelecionada]);
 
-  // useEffect para buscar sugestões com debounce
-  useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setSuggestions([]);
-      return;
-    }
-
   
-
-    
-    setLoadingSuggestions(true);
-
-    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-
-    debounceTimeout.current = setTimeout(async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(
-          `${apiURL}/atos?search=${encodeURIComponent(
-            searchTerm
-          )}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const data = await res.json();
-        if (res.ok) {
-          setSuggestions(data.atos || []);
-        } else {
-          setSuggestions([]);
-        }
-      } catch (e) {
-        console.error('Erro ao buscar atos:', e);
-        setSuggestions([]);
-      }
-      setLoadingSuggestions(false);
-    }, 300);
-
-    return () => clearTimeout(debounceTimeout.current);
-  }, [searchTerm]);
 
     const fechamentoDiario = async () => {
     const dataAtual = dataSelecionada;
@@ -847,132 +649,6 @@ useEffect(() => {
         maxWidth: '100%',
         overflow: 'hidden'
       }}>
-        
-        {/* Seção de Adição de Atos */}
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '16px',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h3 style={{ 
-            margin: '0 0 12px 0', 
-            color: '#2c3e50',
-            fontSize: '16px',
-            fontWeight: '600',
-            borderBottom: '2px solid #27ae60',
-            paddingBottom: '8px'
-          }}>
-            ➕ Adicionar Ato
-          </h3>
-          
-          <div style={{ marginBottom: '12px' }}>
-            <AtoSearch
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              suggestions={suggestions}
-              loadingSuggestions={loadingSuggestions}
-              onSelectAto={handleSelectAto}
-            />
-          </div>
-
-          {selectedAto && (
-            <div style={{
-              background: '#f8f9fa',
-              border: '2px solid #27ae60',
-              borderRadius: '8px',
-              padding: '12px',
-              marginBottom: '12px'
-            }}>
-              <h4 style={{ margin: '0 0 8px 0', color: '#27ae60', fontSize: '14px' }}>
-                Ato Selecionado:
-              </h4>
-              <p style={{ margin: '0', fontWeight: '600', fontSize: '14px' }}>
-                {selectedAto.codigo} - {selectedAto.descricao}
-              </p>
-              <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
-                Valor base: {formatarMoeda(selectedAto.valor_final)}
-                {percentualISS > 0 && (
-                  <span style={{ color: '#3498db', fontWeight: '600', fontSize: '14px' }}>
-                    {' '}+ ISS {percentualISS}% = {formatarMoeda(calcularValorComISS(selectedAto.valor_final))}
-                  </span>
-                )}
-              </p>
-            </div>
-          )}
-
-          <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <label style={{ 
-              fontWeight: '600',
-              color: '#2c3e50',
-              minWidth: '80px'
-            }}>
-              Quantidade:
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={quantidade}
-              onChange={(e) => handleQuantidadeChange(e.target.value)}
-              style={{
-                width: '80px',
-                padding: '8px',
-                borderRadius: '6px',
-                border: '2px solid #e3f2fd',
-                fontSize: '14px'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '12px' }}>
-            <FormasPagamento
-              formasPagamento={formasPagamento}
-              pagamentos={pagamentos}
-              onQuantidadeChange={handlePagamentoQuantidadeChange}
-              onValorChange={handlePagamentoValorChange}
-              corFundoPagamentos={corFundoPagamentos}
-              selectedAto={selectedAto}
-            />
-          </div>
-
-          {selectedAto && (
-            <div style={{
-              background: valoresIguais(somaPagamentos, valorTotal) ? '#d4edda' : '#f8d7da',
-              border: `2px solid ${valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#dc3545'}`,
-              borderRadius: '8px',
-              padding: '12px',
-              marginBottom: '12px'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontWeight: '600' }}>Valor Total:</span>
-                <span style={{ fontWeight: '600' }}>{formatarMoeda(valorTotal)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontWeight: '600' }}>Soma Pagamentos:</span>
-                <span style={{ fontWeight: '600' }}>{formatarMoeda(somaPagamentos)}</span>
-              </div>
-            </div>
-          )}
-
-          <button
-            onClick={adicionarAto}
-            disabled={!selectedAto || !valoresIguais(somaPagamentos, valorTotal)}
-            style={{
-              width: '100%',
-              padding: '12px',
-              backgroundColor: selectedAto && valoresIguais(somaPagamentos, valorTotal) ? '#27ae60' : '#95a5a6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: selectedAto && valoresIguais(somaPagamentos, valorTotal) ? 'pointer' : 'not-allowed',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            ➕ Adicionar Ato
-          </button>
-        </div>
 
         {/* Seção de Entradas e Saídas Manuais */}
         <div style={{
