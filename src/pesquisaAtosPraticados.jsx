@@ -248,14 +248,14 @@ export default function PesquisaAtosPraticados() {
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(10px)',
           borderRadius: '16px',
-          padding: '25px',
-          marginBottom: '20px',
+          padding: '12px',
+          marginBottom: '10px',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
         }}>
           <h1 style={{ 
             margin: 0, 
             color: '#2c3e50',
-            fontSize: '28px',
+            fontSize: '22px',
             fontWeight: '600',
             textAlign: 'center'
           }}>
@@ -264,8 +264,8 @@ export default function PesquisaAtosPraticados() {
           <p style={{
             textAlign: 'center',
             color: '#666',
-            margin: '8px 0 0 0',
-            fontSize: '16px'
+            margin: '4px 0 0 0',
+            fontSize: '13px'
           }}>
             Consulte atos praticados por período, escrevente, código e tributação
           </p>
