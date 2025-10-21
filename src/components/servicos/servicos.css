@@ -4,8 +4,8 @@
   --fg: #4b5563;       /* gray-600 */
   --border: #e5e7eb;   /* gray-200 */
   --muted: #9ca3af;    /* gray-400 */
-  --bg: #ffffff;       /* white */
-  --bg-subtle: #fafafa;/* subtle */
+  --bg: #f3f4f6;       /* gray-100 - fundo acinzentado para os componentes */
+  --bg-subtle: #ffffff;/* branco para áreas internas como tabelas */
   --shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
