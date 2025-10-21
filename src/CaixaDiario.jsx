@@ -668,151 +668,153 @@ useEffect(() => {
             💸 Entradas e Saídas Manuais
           </h3>
 
-          {/* Entrada Manual */}
-          <div style={{
-            background: '#f8f9fa',
-            border: '2px solid #27ae60',
-            borderRadius: '8px',
-            padding: '12px',
-            marginBottom: '12px'
-          }}>
-            <h4 style={{ margin: '0 0 10px 0', color: '#27ae60' }}>
-              📈 Entrada de Valor
-            </h4>
-            <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <label style={{ 
-                fontWeight: '600',
-                color: '#2c3e50',
-                minWidth: '60px'
-              }}>
-                Valor:
-              </label>
-              <input
-                type="text"
-                value={entradaValor}
-                onChange={(e) => setEntradaValor(e.target.value)}
-                placeholder="R$ 0,00"
+          {/* Entrada e Saída lado a lado */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '12px' }}>
+            {/* Entrada Manual */}
+            <div style={{
+              background: '#f8f9fa',
+              border: '2px solid #27ae60',
+              borderRadius: '8px',
+              padding: '12px'
+            }}>
+              <h4 style={{ margin: '0 0 10px 0', color: '#27ae60' }}>
+                📈 Entrada de Valor
+              </h4>
+              <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label style={{ 
+                  fontWeight: '600',
+                  color: '#2c3e50',
+                  minWidth: '60px'
+                }}>
+                  Valor:
+                </label>
+                <input
+                  type="text"
+                  value={entradaValor}
+                  onChange={(e) => setEntradaValor(e.target.value)}
+                  placeholder="R$ 0,00"
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '6px',
+                    border: '2px solid #e3f2fd',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label style={{ 
+                  fontWeight: '600',
+                  color: '#2c3e50',
+                  minWidth: '100px'
+                }}>
+                  Observação:
+                </label>
+                <input
+                  type="text"
+                  value={entradaObs}
+                  onChange={(e) => setEntradaObs(e.target.value)}
+                  placeholder="Ex. Troco, abertura de caixa, outras entradas"
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '6px',
+                    border: '2px solid #e3f2fd',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+              <button
+                onClick={adicionarEntrada}
                 style={{
-                  flex: 1,
-                  padding: '8px',
-                  borderRadius: '6px',
-                  border: '2px solid #e3f2fd',
-                  fontSize: '14px'
+                  width: '100%',
+                  padding: '10px',
+                  backgroundColor: '#27ae60',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
                 }}
-              />
+              >
+                ➕ Adicionar Entrada
+              </button>
             </div>
-            <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <label style={{ 
-                fontWeight: '600',
-                color: '#2c3e50',
-                minWidth: '100px'
-              }}>
-                Observação:
-              </label>
-              <input
-                type="text"
-                value={entradaObs}
-                onChange={(e) => setEntradaObs(e.target.value)}
-                placeholder="Ex. Troco, abertura de caixa, outras entradas"
-                style={{
-                  flex: 1,
-                  padding: '8px',
-                  borderRadius: '6px',
-                  border: '2px solid #e3f2fd',
-                  fontSize: '14px'
-                }}
-              />
-            </div>
-            <button
-              onClick={adicionarEntrada}
-              style={{
-                width: '100%',
-                padding: '10px',
-                backgroundColor: '#27ae60',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              ➕ Adicionar Entrada
-            </button>
-          </div>
 
-          {/* Saída Manual */}
-          <div style={{
-            background: '#f8f9fa',
-            border: '2px solid #e74c3c',
-            borderRadius: '8px',
-            padding: '12px'
-          }}>
-            <h4 style={{ margin: '0 0 10px 0', color: '#e74c3c' }}>
-              📉 Saída de Valor
-            </h4>
-            <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <label style={{ 
-                fontWeight: '600',
-                color: '#2c3e50',
-                minWidth: '60px'
-              }}>
-                Valor:
-              </label>
-              <input
-                type="text"
-                value={saidaValor}
-                onChange={(e) => setSaidaValor(e.target.value)}
-                placeholder="R$ 0,00"
+            {/* Saída Manual */}
+            <div style={{
+              background: '#f8f9fa',
+              border: '2px solid #e74c3c',
+              borderRadius: '8px',
+              padding: '12px'
+            }}>
+              <h4 style={{ margin: '0 0 10px 0', color: '#e74c3c' }}>
+                📉 Saída de Valor
+              </h4>
+              <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label style={{ 
+                  fontWeight: '600',
+                  color: '#2c3e50',
+                  minWidth: '60px'
+                }}>
+                  Valor:
+                </label>
+                <input
+                  type="text"
+                  value={saidaValor}
+                  onChange={(e) => setSaidaValor(e.target.value)}
+                  placeholder="R$ 0,00"
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '6px',
+                    border: '2px solid #e3f2fd',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label style={{ 
+                  fontWeight: '600',
+                  color: '#2c3e50',
+                  minWidth: '100px'
+                }}>
+                  Observação:
+                </label>
+                <input
+                  type="text"
+                  value={saidaObs}
+                  onChange={(e) => setSaidaObs(e.target.value)}
+                  placeholder="Ex. Depósitos, retiradas, outras saídas."
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '6px',
+                    border: '2px solid #e3f2fd',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+              <button
+                onClick={adicionarSaida}
                 style={{
-                  flex: 1,
-                  padding: '8px',
-                  borderRadius: '6px',
-                  border: '2px solid #e3f2fd',
-                  fontSize: '14px'
+                  width: '100%',
+                  padding: '10px',
+                  backgroundColor: '#e74c3c',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
                 }}
-              />
+              >
+                ➖ Adicionar Saída
+              </button>
             </div>
-            <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <label style={{ 
-                fontWeight: '600',
-                color: '#2c3e50',
-                minWidth: '100px'
-              }}>
-                Observação:
-              </label>
-              <input
-                type="text"
-                value={saidaObs}
-                onChange={(e) => setSaidaObs(e.target.value)}
-                placeholder="Ex. Depósitos, retiradas, outras saídas."
-                style={{
-                  flex: 1,
-                  padding: '8px',
-                  borderRadius: '6px',
-                  border: '2px solid #e3f2fd',
-                  fontSize: '14px'
-                }}
-              />
-            </div>
-            <button
-              onClick={adicionarSaida}
-              style={{
-                width: '100%',
-                padding: '10px',
-                backgroundColor: '#e74c3c',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              ➖ Adicionar Saída
-            </button>
           </div>
         </div>
       </div>
