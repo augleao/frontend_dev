@@ -202,6 +202,14 @@ export default function PesquisaAtosPraticados() {
     setDataFinal(ultimoDia.toISOString().split('T')[0]);
   };
 
+  // Função para definir período de hoje
+  const definirHoje = () => {
+    const hoje = new Date();
+    const dataStr = hoje.toISOString().split('T')[0];
+    setDataInicial(dataStr);
+    setDataFinal(dataStr);
+  };
+
   // Funções de formatação
   const formatarDataBR = (data) => {
     if (!data) return '';
@@ -383,6 +391,30 @@ export default function PesquisaAtosPraticados() {
                 }}
               >
                 📅 Últimos 30 dias
+              </button>
+              <button
+                onClick={definirHoje}
+                style={{
+                  padding: '5px 10px',
+                  background: '#e3f2fd',
+                  color: '#1976d2',
+                  border: '1px solid #bbdefb',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#bbdefb';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = '#e3f2fd';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                📅 Hoje
               </button>
               
               <button
