@@ -275,12 +275,12 @@ export default function PesquisaAtosPraticados() {
         <div style={{
           backgroundColor: '#fff',
           borderRadius: '16px',
-          padding: '20px',
-          marginBottom: '16px',
+          padding: '16px',
+          marginBottom: '14px',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
         }}>
           <h3 style={{ 
-            margin: '0 0 16px 0', 
+            margin: '0 0 12px 0', 
             color: '#2c3e50', 
             fontSize: '20px',
             fontWeight: '600'
@@ -290,9 +290,9 @@ export default function PesquisaAtosPraticados() {
           >
           
           {/* Linha 1: Período de Datas */}
-          <div style={{ marginBottom: '14px' }}>
+          <div style={{ marginBottom: '10px' }}>
             <h4 style={{ 
-              margin: '0 0 10px 0', 
+              margin: '0 0 8px 0', 
               color: '#34495e', 
               fontSize: '16px',
               fontWeight: '600'
@@ -300,11 +300,11 @@ export default function PesquisaAtosPraticados() {
               📅 Período de Datas
             </h4>
             
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
               <div style={{ minWidth: '200px', flex: 1 }}>
                 <label style={{ 
                   display: 'block', 
-                  marginBottom: '6px', 
+                  marginBottom: '4px', 
                   fontWeight: '500',
                   color: '#2c3e50',
                   fontSize: '14px'
@@ -317,8 +317,8 @@ export default function PesquisaAtosPraticados() {
                   onChange={(e) => setDataInicial(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px',
-                    borderRadius: '8px',
+                    padding: '8px',
+                    borderRadius: '6px',
                     border: '2px solid #e3f2fd',
                     fontSize: '16px',
                     boxSizing: 'border-box',
@@ -332,7 +332,7 @@ export default function PesquisaAtosPraticados() {
               <div style={{ minWidth: '200px', flex: 1 }}>
                 <label style={{ 
                   display: 'block', 
-                  marginBottom: '6px', 
+                  marginBottom: '4px', 
                   fontWeight: '500',
                   color: '#2c3e50',
                   fontSize: '14px'
@@ -345,8 +345,8 @@ export default function PesquisaAtosPraticados() {
                   onChange={(e) => setDataFinal(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px',
-                    borderRadius: '8px',
+                    padding: '8px',
+                    borderRadius: '6px',
                     border: '2px solid #e3f2fd',
                     fontSize: '16px',
                     boxSizing: 'border-box',
@@ -359,17 +359,17 @@ export default function PesquisaAtosPraticados() {
             </div>
 
             {/* Botões de período rápido */}
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
               <button
                 onClick={definirUltimos30Dias}
                 style={{
-                  padding: '6px 12px',
+                  padding: '5px 10px',
                   background: '#e3f2fd',
                   color: '#1976d2',
                   border: '1px solid #bbdefb',
                   borderRadius: '6px',
                   cursor: 'pointer',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   fontWeight: '500',
                   transition: 'all 0.2s ease'
                 }}
@@ -388,13 +388,13 @@ export default function PesquisaAtosPraticados() {
               <button
                 onClick={definirMesAtual}
                 style={{
-                  padding: '6px 12px',
+                  padding: '5px 10px',
                   background: '#e8f5e8',
                   color: '#2e7d32',
                   border: '1px solid #c8e6c9',
                   borderRadius: '6px',
                   cursor: 'pointer',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   fontWeight: '500',
                   transition: 'all 0.2s ease'
                 }}
@@ -413,11 +413,11 @@ export default function PesquisaAtosPraticados() {
           </div>
 
           {/* Linha 2: Outros Filtros */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '10px', marginBottom: '12px' }}>
             <div>
               <label style={{ 
                 display: 'block', 
-                marginBottom: '6px', 
+                marginBottom: '4px', 
                 fontWeight: '500',
                 color: '#2c3e50',
                 fontSize: '14px'
@@ -432,8 +432,8 @@ export default function PesquisaAtosPraticados() {
                 }}
                 style={{
                   width: '100%',
-                  padding: '10px',
-                  borderRadius: '8px',
+                  padding: '8px',
+                  borderRadius: '6px',
                   border: '2px solid #e3f2fd',
                   fontSize: '16px',
                   boxSizing: 'border-box',
@@ -474,7 +474,7 @@ export default function PesquisaAtosPraticados() {
             <div>
               <label style={{ 
                 display: 'block', 
-                marginBottom: '6px', 
+                marginBottom: '4px', 
                 fontWeight: '500',
                 color: '#2c3e50',
                 fontSize: '14px'
@@ -488,8 +488,8 @@ export default function PesquisaAtosPraticados() {
                 placeholder="Digite o código do ato"
                 style={{
                   width: '100%',
-                  padding: '10px',
-                  borderRadius: '8px',
+                  padding: '8px',
+                  borderRadius: '6px',
                   border: '2px solid #e3f2fd',
                   fontSize: '16px',
                   boxSizing: 'border-box',
@@ -503,7 +503,7 @@ export default function PesquisaAtosPraticados() {
             <div>
               <label style={{ 
                 display: 'block', 
-                marginBottom: '6px', 
+                marginBottom: '4px', 
                 fontWeight: '500',
                 color: '#2c3e50',
                 fontSize: '14px'
@@ -517,8 +517,8 @@ export default function PesquisaAtosPraticados() {
                 placeholder="Digite o código da tributação"
                 style={{
                   width: '100%',
-                  padding: '10px',
-                  borderRadius: '8px',
+                  padding: '8px',
+                  borderRadius: '6px',
                   border: '2px solid #e3f2fd',
                   fontSize: '16px',
                   boxSizing: 'border-box',
@@ -531,19 +531,19 @@ export default function PesquisaAtosPraticados() {
           </div>
 
           {/* Botões de Ação */}
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
               onClick={buscarAtosPraticados}
               disabled={loading}
               style={{
-                padding: '10px 20px',
+                padding: '8px 16px',
                 background: loading ? '#ccc' : '#2196f3',
                 color: '#fff',
                 border: 'none',
-                borderRadius: '8px',
+                borderRadius: '6px',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 fontWeight: 'bold',
-                fontSize: '15px',
+                fontSize: '14px',
                 transition: 'all 0.2s ease',
                 boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
               }}
@@ -568,14 +568,14 @@ export default function PesquisaAtosPraticados() {
             <button
               onClick={limparFiltros}
               style={{
-                padding: '10px 20px',
+                padding: '8px 16px',
                 background: '#6c757d',
                 color: '#fff',
                 border: 'none',
-                borderRadius: '8px',
+                borderRadius: '6px',
                 cursor: 'pointer',
                 fontWeight: 'bold',
-                fontSize: '15px',
+                fontSize: '14px',
                 transition: 'all 0.2s ease',
                 boxShadow: '0 4px 12px rgba(108, 117, 125, 0.3)'
               }}
