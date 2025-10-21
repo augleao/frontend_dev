@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import config from '../../config';
+import './servicos.css';
 
 
 const statusPagamento = [
@@ -787,24 +788,10 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   };
 
   return (
-    <div
-      style={{
-        background: '#fef5f5',
-        borderRadius: 16,
-        padding: 28,
-        boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-        marginBottom: 24,
-        border: '3px solid #8b1a1a'
-      }}
-    >
-      <h3 style={{
-        color: '#742a2a',
-        fontSize: '20px',
-        fontWeight: '700',
-        marginBottom: 20,
-        borderBottom: '2px solid #e53e3e',
-        paddingBottom: 8
-      }}>💳 Informações de Pagamento</h3>
+    <div className="servico-section">
+      <div className="servico-header">
+        <h3 className="servico-title">💳 Informações de Pagamento</h3>
+      </div>
       {/* Valor a ser pago (incluindo ISS, igual ServicoEntrada) */}
       <div style={{
         marginBottom: 20,
@@ -925,24 +912,15 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
 
       {/* Tabela de Valores Adiantados (não editável) */}
       {valorAdiantadoDetalhes && valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
-        <div style={{
-          marginBottom: 20,
-          padding: 16,
-          background: '#fff5f5',
-          border: '2px solid #feb2b2',
-          borderRadius: 8
-        }}>
+        <div style={{ marginBottom: 20 }}>
+          <div className="servico-table-container">
           <h4 style={{
             margin: '0 0 12px 0',
             color: '#742a2a',
             fontSize: '16px',
             fontWeight: '600'
           }}>💰 Valores Adiantados pelo Usuário</h4>
-          <table style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            fontSize: '14px'
-          }}>
+          <table className="servico-table">
             <thead>
               <tr style={{ background: '#fdf2f8' }}>
                 <th style={{
@@ -1011,24 +989,20 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
       {/* Tabela de edição da distribuição final entre formas de pagamento */}
-      <div style={{
-        marginBottom: 24,
-        padding: 16,
-        background: '#e6fffa',
-        border: '2px solid #38a169',
-        borderRadius: 8
-      }}>
+      <div style={{ marginBottom: 24 }}>
+        <div className="servico-table-container">
         <h4 style={{
           margin: '0 0 12px 0',
           color: '#2f855a',
           fontSize: '16px',
           fontWeight: '600'
         }}>📝 Distribuição Final do Pagamento</h4>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '15px', marginBottom: 18 }}>
+        <table className="servico-table" style={{ fontSize: '15px', marginBottom: 18 }}>
           <thead>
             <tr style={{ background: '#b2f5ea' }}>
               <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Valor</th>
@@ -1067,12 +1041,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             ))}
           </tbody>
         </table>
-        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 12 }}>
-          <button
-            type="button"
-            onClick={handleAdicionarPagamentoFinal}
-            style={{ padding: '8px 18px', background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}
-          >Adicionar Forma</button>
+        </div>
+        <div className="servico-actions">
+          <button type="button" onClick={handleAdicionarPagamentoFinal} className="btn btn-secondary">Adicionar Forma</button>
         </div>
       </div>
 
@@ -1129,7 +1100,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                 </div>
 
                 {/* Botões de ação */}
-                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <div className="servico-actions">
                   {/* Botão Salvar Pagamento - só aparece se não foi salvo e valor é suficiente */}
                   {!pagamentoSalvo && totalAdiantado >= subtotalPedido && (
                     <button
@@ -1139,20 +1110,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                         handleSalvarPagamentoFinal();
                       }}
                       disabled={processando}
-                      style={{
-                        padding: '14px 32px',
-                        background: processando ? '#a0aec0' : 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        cursor: processando ? 'not-allowed' : 'pointer',
-                        boxShadow: '0 4px 12px rgba(56,161,105,0.3)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={e => !processando && (e.target.style.transform = 'translateY(-2px)')}
-                      onMouseLeave={e => !processando && (e.target.style.transform = 'translateY(0px)')}
+                      className="btn btn-success"
                     >
                       {processando ? '⏳ Salvando...' : '💾 Salvar Pagamento'}
                     </button>
@@ -1160,50 +1118,15 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
 
                   {/* Botão Excluir/Cancelar Pagamento - aparece se foi salvo */}
                   {pagamentoSalvo && (
-                    <button
-                      type="button"
-                      onClick={handleCancelarPagamento}
-                      disabled={processando}
-                      style={{
-                        padding: '14px 32px',
-                        background: processando ? '#a0aec0' : 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        cursor: processando ? 'not-allowed' : 'pointer',
-                        boxShadow: '0 4px 12px rgba(229,62,62,0.3)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => !processando && (e.target.style.transform = 'translateY(-2px)')}
-                      onMouseLeave={(e) => !processando && (e.target.style.transform = 'translateY(0px)')}
-                    >
+                    <button type="button" onClick={handleCancelarPagamento} disabled={processando} className="btn btn-danger">
                       {processando ? '⏳ Processando...' : '❌ Excluir Pagamento'}
                     </button>
                   )}
 
                   {/* Botão Adicionar Complemento - aparece se valor é insuficiente e não foi salvo */}
                   {!pagamentoSalvo && totalAdiantado < subtotalPedido && (
-                    <button
-                      type="button"
-                      onClick={abrirComplementoModal}
-                      style={{
-                        padding: '14px 32px',
-                        background: 'linear-gradient(135deg, #f6ad55 0%, #ed8936 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 12px rgba(246,173,85,0.3)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
-                      onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
-                    >
-                      � Adicionar Complemento
+                    <button type="button" onClick={abrirComplementoModal} className="btn btn-warning">
+                      ➕ Adicionar Complemento
                     </button>
                   )}
 
@@ -1215,20 +1138,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                         console.log('[FRONTEND][LOG] Gerando recibo do troco para excesso de:', excesso);
                         gerarReciboExcesso(excesso);
                       }}
-                      style={{
-                        padding: '14px 32px',
-                        background: 'linear-gradient(135deg, #3182ce 0%, #2c5282 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 12px rgba(49,130,206,0.3)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
-                      onMouseLeave={e => e.target.style.transform = 'translateY(0px)'}
+                      className="btn btn-secondary"
                     >
                       📄 Gerar Recibo do Troco
                     </button>
@@ -1256,14 +1166,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-          <div style={{
-            background: '#fffbe5',
-            border: '2px solid #f6ad55',
-            borderRadius: 12,
-            padding: 32,
-            minWidth: 320,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.18)'
-          }}>
+          <div className="servico-section" style={{ minWidth: 320 }}>
             <h3 style={{ color: '#b7791f', marginBottom: 18, textAlign: 'center' }}>Adicionar Complemento</h3>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 18, justifyContent: 'center' }}>
               <select value={modalFormaComplemento} onChange={e => setModalFormaComplemento(e.target.value)} style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', minWidth: 140 }}>
@@ -1284,17 +1187,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                 style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', width: 120 }}
               />
             </div>
-            <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-              <button
-                type="button"
-                onClick={handleAdicionarComplementoModal}
-                style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
-              >Adicionar</button>
-              <button
-                type="button"
-                onClick={fecharComplementoModal}
-                style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
-              >Cancelar</button>
+            <div className="servico-actions">
+              <button type="button" onClick={handleAdicionarComplementoModal} className="btn btn-success">Adicionar</button>
+              <button type="button" onClick={fecharComplementoModal} className="btn btn-danger">Cancelar</button>
             </div>
           </div>
         </div>

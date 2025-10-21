@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import config from '../../config';
+import './servicos.css';
 
 export default function ServicoCliente({ form, onChange, onClienteChange, onAvancarEtapa }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -134,54 +135,32 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
   };
 
   return (
-    <div
-      style={{
-        width: '100%',
-        margin: '0',
-        padding: '16px',
-        borderRadius: '16px',
-        border: '2px solid #9b59b6',
-        boxShadow: '0 2px 12px rgba(155,89,182,0.10)',
-        background: '#f5e6fa',
-        overflow: 'hidden',
-        marginBottom: 0,
-        boxSizing: 'border-box'
-      }}
-    >
-      <h2 style={{ 
-        margin: '0 0 12px 0', 
-        color: '#6c3483', 
-        fontWeight: 700, 
-        fontSize: 18,
-        textAlign: 'left'
-      }}>
-        👤 Informações do Cliente
-      </h2>
+    <div className="servico-section">
+      <div className="servico-header">
+        <h2 className="servico-title">👤 Informações do Cliente</h2>
+      </div>
       <form autoComplete="off">
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 6,
-        position: 'relative'
-      }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, position: 'relative' }}>
         {/* Nome e CPF/CNPJ na mesma linha, input nome maior */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 50, margin: 0 }}>Nome:</label>
+        <div className="servico-row">
+          <label className="servico-label" style={{ minWidth: 50, margin: 0 }}>Nome:</label>
           <input
             type="text"
             value={form.cliente.nome}
             onChange={handleNomeChange}
-            style={{ width: 400, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
+            className="servico-input"
+            style={{ width: 400 }}
             autoComplete="new-password"
             inputMode="text"
             form="no-autofill-form"
           />
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0, marginLeft: 12 }}>CPF/CNPJ:</label>
+          <label className="servico-label" style={{ minWidth: 70, margin: 0, marginLeft: 12 }}>CPF/CNPJ:</label>
           <input
             type="text"
             value={form.cliente.cpf}
             onChange={handleCpfChange}
-            style={{ width: 110, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }}
+            className="servico-input"
+            style={{ width: 110 }}
             autoComplete="new-password"
             inputMode="text"
             form="no-autofill-form"
@@ -223,77 +202,52 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
           </ul>
         )}
         {/* Endereço, Telefone e Email na mesma linha */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>Endereço:</label>
+        <div className="servico-row">
+          <label className="servico-label" style={{ minWidth: 70, margin: 0 }}>Endereço:</label>
           <input 
             type="text" 
             value={form.cliente.endereco} 
             onChange={e => onClienteChange('endereco', e.target.value)} 
-            style={{ width: '45%', minWidth: 120, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+            className="servico-input"
+            style={{ width: '45%', minWidth: 120 }} 
             autoComplete="new-password"
             inputMode="text"
             form="no-autofill-form"
           />
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0, marginLeft: 12 }}>Telefone:</label>
+          <label className="servico-label" style={{ minWidth: 70, margin: 0, marginLeft: 12 }}>Telefone:</label>
           <input 
             type="text" 
             value={form.cliente.telefone} 
             onChange={e => onClienteChange('telefone', e.target.value)} 
-            style={{ width: 110, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+            className="servico-input"
+            style={{ width: 110 }} 
             autoComplete="new-password"
             inputMode="text"
             form="no-autofill-form"
           />
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 60, margin: 0, marginLeft: 12 }}>E-mail:</label>
+          <label className="servico-label" style={{ minWidth: 60, margin: 0, marginLeft: 12 }}>E-mail:</label>
           <input 
             type="email" 
             value={form.cliente.email} 
             onChange={e => onClienteChange('email', e.target.value)} 
-            style={{ width: 160, border: '2px solid #d6d6f5', borderRadius: 4, padding: '4px 8px', fontSize: 13, boxSizing: 'border-box' }} 
+            className="servico-input"
+            style={{ width: 160 }} 
             autoComplete="new-password"
             inputMode="email"
             form="no-autofill-form"
           />
         </div>
         {/* Botões */}
-        <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+        <div className="servico-actions" style={{ justifyContent: 'flex-start' }}>
           {/* Exibe botão salvar se não existe clienteId */}
           {!form.clienteId && (
-            <button
-              type="button"
-              onClick={handleSalvarCliente}
-              style={{
-                background: '#27ae60',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 6,
-                padding: '8px 18px',
-                fontWeight: 'bold',
-                fontSize: 13,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-            >
+            <button type="button" onClick={handleSalvarCliente} className="btn btn-success">
               Salvar
             </button>
           )}
           {/* Exibe botão excluir se existe clienteId */}
           {form.clienteId && (
-            <button
-              type="button"
-              onClick={handleExcluirCliente}
-              style={{
-                background: '#e74c3c',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 6,
-                padding: '8px 18px',
-                fontWeight: 'bold',
-                fontSize: 13,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-            >
+            <button type="button" onClick={handleExcluirCliente} className="btn btn-danger">
               Excluir Cadastro do Cliente
             </button>
           )}

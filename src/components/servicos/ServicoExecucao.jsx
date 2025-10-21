@@ -4,6 +4,7 @@
 import ClipboardImageUpload from './ClipboardImageUpload';
 import SeloFileUpload from './SeloFileUpload';
 import config from '../../config';
+  import './servicos.css';
 
 const statusExecucao = [
   { value: 'em_andamento', label: 'Em andamento' },
@@ -189,32 +190,10 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
   };
 
   return (
-    <div
-      style={{
-        border: '2.5px solid #3498db',
-        borderRadius: 16,
-        padding: '18px 32px 18px 32px',
-        background: '#f5faff',
-        boxShadow: '0 2px 12px rgba(52,152,219,0.10)',
-        marginBottom: 24,
-        width: '100%',
-        marginLeft: 0,
-        marginRight: 0,
-        marginTop: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 3,
-        boxSizing: 'border-box'
-      }}
-    >
-      <h3 style={{
-        color: '#2471a3',
-        fontWeight: 700,
-        fontSize: 18,
-        margin: 0,
-        marginBottom: 3,
-        letterSpacing: 0.5
-      }}>Execução do Serviço</h3>
+    <div className="servico-section">
+      <div className="servico-header">
+        <h3 className="servico-title">Execução do Serviço</h3>
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, margin: 0 }}>Responsável:</label>
@@ -307,23 +286,13 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
         </div>
       </div>
       {/* Botões de ação Execução */}
-      <div style={{ margin: '3px 0', display: 'flex', gap: 12 }}>
+      <div className="servico-actions" style={{ justifyContent: 'flex-start' }}>
         {!(form.execucao && form.execucao.id) ? (
           <button
             type="button"
             onClick={salvarOuAlterarExecucao}
             disabled={salvando}
-            style={{
-              padding: '10px 28px',
-              background: '#3498db',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '15px',
-              fontWeight: '600',
-              cursor: salvando ? 'not-allowed' : 'pointer',
-              boxShadow: '0 2px 8px rgba(52,152,219,0.2)'
-            }}
+            className="btn btn-primary"
           >
             {salvando ? 'Salvando...' : 'Salvar Execução'}
           </button>
@@ -370,17 +339,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
                 alert('Erro ao cancelar execução ou atualizar status do pedido.');
               }
             }}
-            style={{
-              padding: '10px 28px',
-              background: '#e74c3c',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '15px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(231,76,60,0.2)'
-            }}
+            className="btn btn-danger"
           >
             Cancelar Execução
           </button>
@@ -394,7 +353,8 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
       {form.execucao && form.execucao.id && selos.length > 0 && (
         <div style={{ marginTop: 16 }}>
           <h4 style={{ color: '#6c3483', marginBottom: 2 }}>Selos Utilizados neste Pedido</h4>
-          <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8 }}>
+          <div className="servico-table-container">
+          <table className="servico-table" style={{ background: '#fff' }}>
             <thead>
               <tr style={{ background: '#ede1f7' }}>
                 <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Selo Consulta</th>
@@ -491,6 +451,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 //import ReciboProtocolo from './ReciboProtocolo';
 import { useNavigate } from 'react-router-dom';
 import config from '../../config';
+import './servicos.css';
 
 export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido, onAvancarEtapa }) {
   // Estado para controlar popup/modal de adicionar atos
@@ -499,34 +500,11 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
   }, [serventiaInfo]);
 
   return (
-    <div style={{ background: 'transparent', padding: '0', borderRadius: '0', width: '100%', boxSizing: 'border-box', display: 'flex', justifyContent: 'flex-start' }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '100%',
-  margin: '3px 0',
-  padding: '8px 4px 8px 16px', // padding superior/inferior reduzido para 8px
-        borderRadius: '16px',
-        border: '2px solid #9b59b6',
-        boxShadow: '0 2px 12px rgba(155,89,182,0.10)',
-        background: '#f5e6fa',
-        // overflow: 'hidden', // Removido para permitir que dropdowns fiquem visíveis acima do container
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'stretch'
-      }}>
-        {/* Header */}
-        <div style={{
-          padding: '10px 16px 6px 16px',
-          marginBottom: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-          <h2 style={{ margin: 0, color: '#6c3483', fontWeight: 700, fontSize: 18 }}>
-            Informações do Serviço:
-          </h2>
-  </div>
+    <div className="servico-section">
+      {/* Header */}
+      <div className="servico-header">
+        <h2 className="servico-title">Informações do Serviço</h2>
+      </div>
         {/* Descrição do Serviço, Origem, campo condicional e Prazo na mesma linha */}
         <div style={{
           padding: '8px 12px',
@@ -643,44 +621,18 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         </div>
 
         {/* Botões de Adicionar Pagamento e Atos */}
-        <div style={{
-          padding: '6px 8px',
-          marginBottom: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12
-        }}>
+        <div className="servico-actions" style={{ justifyContent: 'flex-start' }}>
           <button
             type="button"
             onClick={() => setShowAdicionarPagamentoModal(true)}
-            style={{
-              padding: '6px 18px',
-              background: '#2874a6',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              fontWeight: 'bold',
-              fontSize: 13,
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
-            }}
+            className="btn btn-primary"
           >
             ➕ Adicionar Pagamento
           </button>
           <button
             type="button"
             onClick={() => setShowAdicionarAtosModal(true)}
-            style={{
-              padding: '6px 18px',
-              background: '#9b59b6',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              fontWeight: 'bold',
-              fontSize: 13,
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
-            }}
+            className="btn btn-primary"
           >
             ➕ Adicionar Atos
           </button>
@@ -706,23 +658,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             
             {/* Tabela de Pagamentos */}
             {valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
-              <div style={{
-                overflowX: 'auto',
-                background: '#e8f4fd',
-                borderRadius: 8,
-                border: '2px solid #2874a6',
-                boxShadow: '0 2px 8px rgba(40,116,166,0.06)',
-                padding: '8px 0',
-              }}>
-                <table
-                  style={{
-                    width: '100%',
-                    borderCollapse: 'collapse',
-                    marginBottom: 0,
-                    fontSize: 13,
-                    background: 'transparent',
-                  }}
-                >
+              <div className="servico-table-container">
+                <table className="servico-table">
                   <thead>
                     <tr style={{ background: '#d1ecf1' }}>
                       <th style={{ padding: 8, color: '#2874a6', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Valor</th>
@@ -750,17 +687,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                                   handleRemoveValorAdiantadoDetalhe(originalIndex);
                                 }
                               }}
-                              style={{
-                                background: '#e74c3c',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: 6,
-                                padding: '4px 8px',
-                                fontWeight: 'bold',
-                                fontSize: 10,
-                                cursor: 'pointer',
-                                transition: 'all 0.3s ease'
-                              }}
+                              className="btn btn-danger"
                             >
                               Remover
                             </button>
@@ -1178,24 +1105,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 })()}
               </span>
             </div>
-            <div style={{
-              overflowX: 'auto',
-              background: '#f5e6fa',
-              borderRadius: 8,
-              border: '2px solid #9b59b6',
-              boxShadow: '0 2px 8px rgba(155,89,182,0.06)',
-              padding: '8px 0',
-            }}>
-              <table
-                style={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                  marginBottom: 0,
-                  tableLayout: 'fixed',
-                  fontSize: 13,
-                  background: 'transparent',
-                }}
-              >
+            <div className="servico-table-container">
+              <table className="servico-table" style={{ tableLayout: 'fixed' }}>
                 <thead>
                   <tr style={{ background: '#ede1f7' }}>
                     <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Combo</th>
@@ -1321,17 +1232,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                         <button
                           type="button"
                           onClick={() => handleRemoverAto(idx)}
-                          style={{
-                            background: '#e74c3c',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: 8,
-                            padding: '4px 12px',
-                            fontWeight: 'bold',
-                            fontSize: 10,
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease'
-                          }}
+                          className="btn btn-danger"
                         >
                           Remover
                         </button>
@@ -1345,35 +1246,12 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         )}
 
         {/* Salvar/Atualizar Button e Imprimir Protocolo */}
-        <div style={{
-          padding: '6px 0',
-          marginBottom: '8px',
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'center',
-          gap: 10
-        }}>
-          <button
-            onClick={handleSubmit}
-            style={{
-              padding: '6px 18px',
-              background: '#2ecc71',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              fontWeight: 'bold',
-              fontSize: 15,
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
-            }}
-          >
+        <div className="servico-actions">
+          <button onClick={handleSubmit} className="btn btn-success">
             {form.protocolo && form.protocolo.trim() !== '' ? 'Atualizar Pedido' : 'Salvar Pedido'}
           </button>
           {/* <ReciboProtocolo removido conforme solicitado */}
         </div>
-
-      </div>
     </div>
   );
 }

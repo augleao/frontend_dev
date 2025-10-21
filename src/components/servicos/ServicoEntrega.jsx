@@ -2,6 +2,7 @@ import React from 'react';
 
 import { useState } from 'react';
 import config from '../../config';
+import './servicos.css';
 
 
 export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista, onStatusChange }) {
@@ -140,31 +141,10 @@ export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista
   };
 
   return (
-    <div style={{ background: '#e8f5e8', padding: '0', borderRadius: '24px', width: '100%', boxSizing: 'border-box' }}>
-      <div
-        style={{
-          width: '100%',
-          margin: '0',
-          padding: 0,
-          borderRadius: '24px',
-          border: '3px solid #27ae60',
-          boxShadow: '0 6px 32px rgba(39,174,96,0.10)',
-          background: '#e8f5e8',
-          overflow: 'hidden',
-          boxSizing: 'border-box'
-        }}
-      >
+    <div className="servico-section">
         {/* Header */}
-        <div style={{
-          padding: '16px 24px 8px 24px',
-          marginBottom: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-          <h2 style={{ margin: 0, color: '#1e8449', fontWeight: 700, fontSize: 16 }}>
-            Entrega:
-          </h2>
+        <div className="servico-header">
+          <h2 className="servico-title">Entrega</h2>
         </div>
 
         {/* Linha única com todos os campos de entrega */}
@@ -258,49 +238,16 @@ export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista
           </div>
         </div>
         {/* Botão de ação ao final */}
-        <div style={{ margin: '16px 0 0 0', display: 'flex', gap: 16 }}>
+        <div className="servico-actions" style={{ justifyContent: 'flex-start', marginTop: 8 }}>
           {form.entrega && form.entrega.id ? (
-            <button
-              type="button"
-              onClick={cancelarEntrega}
-              disabled={salvando}
-              style={{
-                padding: '10px 28px',
-                background: '#e74c3c',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '15px',
-                fontWeight: '600',
-                cursor: salvando ? 'not-allowed' : 'pointer',
-                boxShadow: '0 2px 8px rgba(231,76,60,0.2)'
-              }}
-            >
+            <button type="button" onClick={cancelarEntrega} disabled={salvando} className="btn btn-danger">
               Cancelar Entrega
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={salvarEntrega}
-              disabled={salvando}
-              style={{
-                padding: '10px 28px',
-                background: '#27ae60',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '15px',
-                fontWeight: '600',
-                cursor: salvando ? 'not-allowed' : 'pointer',
-                boxShadow: '0 2px 8px rgba(39,174,96,0.2)'
-              }}
-            >
-              {salvando ? 'Salvando...' : 'Salvar Entrega'}
-            </button>
+            <button type="button" onClick={salvarEntrega} disabled={salvando} className="btn btn-success">{salvando ? 'Salvando...' : 'Salvar Entrega'}</button>
           )}
           {erro && <span style={{ color: 'red', marginLeft: 16 }}>{erro}</span>}
         </div>
-      </div>
     </div>
   );
 }
