@@ -421,9 +421,9 @@ export default function PesquisaAtosPraticados() {
                 onClick={definirMesAtual}
                 style={{
                   padding: '5px 10px',
-                  background: '#e8f5e8',
-                  color: '#2e7d32',
-                  border: '1px solid #c8e6c9',
+                  background: '#e3f2fd',
+                  color: '#1976d2',
+                  border: '1px solid #bbdefb',
                   borderRadius: '6px',
                   cursor: 'pointer',
                   fontSize: '12px',
@@ -431,11 +431,11 @@ export default function PesquisaAtosPraticados() {
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.background = '#c8e6c9';
+                  e.target.style.background = '#bbdefb';
                   e.target.style.transform = 'translateY(-1px)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.background = '#e8f5e8';
+                  e.target.style.background = '#e3f2fd';
                   e.target.style.transform = 'translateY(0)';
                 }}
               >
