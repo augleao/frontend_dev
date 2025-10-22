@@ -52,7 +52,55 @@ export default function ListaServicos() {
     'concluído': false
   });
   const [loadingPedidos, setLoadingPedidos] = useState(true);
+  // Compartilhamento
+  const [sharePedido, setSharePedido] = useState(null);
+  const [sharePhone, setSharePhone] = useState('');
   const navigate = useNavigate();
+
+  // Helpers de compartilhamento (gratuitos via deep links)
+  const onlyDigits = (str = '') => (str || '').replace(/\D+/g, '');
+  const toBRDigitsWithCountry = (raw) => {
+    let d = onlyDigits(raw);
+    if (!d) return '';
+    // Se já começa com 55 e tem 12 ou 13 dígitos (com DDD + 9º dígito)
+    if (d.startsWith('55')) return d;
+    // Se veio com 10-11 dígitos (DDD + número), prefixa 55
+    if (d.length >= 10 && d.length <= 11) return '55' + d;
+    // Caso contrário, retorna como está
+    return d;
+  };
+  const buildShareText = (p) => {
+    const clienteNome = p?.cliente?.nome || '-';
+    const descricao = p?.descricao || '-';
+    const criado = formatDateTime(p?.criado_em);
+    return `Olá! Aqui está seu protocolo: ${p?.protocolo}\nCliente: ${clienteNome}\nDescrição: ${descricao}\nCriado em: ${criado}`;
+  };
+  const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const getSmsLink = (phoneDigits, text) => {
+    const sep = isIOS() ? '&' : '?';
+    const target = phoneDigits ? `sms:${phoneDigits}` : 'sms:';
+    return `${target}${sep}body=${encodeURIComponent(text)}`;
+  };
+  const getWhatsAppLink = (phoneDigits, text) => {
+    const base = 'https://wa.me';
+    const encoded = encodeURIComponent(text);
+    if (phoneDigits) return `${base}/${phoneDigits}?text=${encoded}`;
+    // Sem número abre com texto para escolher o contato
+    return `${base}/?text=${encoded}`;
+  };
+  const tryWebShare = async (p) => {
+    const text = buildShareText(p);
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+        return true;
+      } catch (_) {
+        // Usuário cancelou ou não suportado
+        return false;
+      }
+    }
+    return false;
+  };
 
   useEffect(() => {
     async function fetchPedidos() {
@@ -441,6 +489,30 @@ export default function ListaServicos() {
                     </button>
                     <button
                       style={{
+                        background: '#16a085',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 6,
+                        padding: '6px 16px',
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        cursor: 'pointer'
+                      }}
+                      onClick={async () => {
+                        // Tenta o compartilhamento nativo (mobile) primeiro
+                        const ok = await tryWebShare(p);
+                        if (!ok) {
+                          // Abre modal para WhatsApp/SMS
+                          const foneSugerido = p?.cliente?.telefone || p?.cliente?.celular || '';
+                          setSharePhone(foneSugerido || '');
+                          setSharePedido(p);
+                        }
+                      }}
+                    >
+                      COMPARTILHAR
+                    </button>
+                    <button
+                      style={{
                         background: '#e67e22',
                         color: '#fff',
                         border: 'none',
@@ -529,6 +601,98 @@ export default function ListaServicos() {
           </tbody>
         </table>
       </div>
+      {/* Modal de compartilhamento */}
+      {sharePedido && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999
+          }}
+          onClick={() => setSharePedido(null)}
+        >
+          <div
+            style={{
+              background: '#fff',
+              padding: 16,
+              borderRadius: 10,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+              width: 'min(480px, 92vw)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h3 style={{ margin: 0, fontSize: 18 }}>Compartilhar protocolo</h3>
+              <button
+                onClick={() => setSharePedido(null)}
+                style={{
+                  border: 'none', background: 'transparent', cursor: 'pointer',
+                  fontSize: 18, color: '#7f8c8d'
+                }}
+                aria-label="Fechar"
+                title="Fechar"
+              >×</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Telefone (WhatsApp/SMS)</label>
+                  <input
+                    type="tel"
+                    placeholder="(DDD) 9XXXX-XXXX"
+                    value={sharePhone}
+                    onChange={(e) => setSharePhone(e.target.value)}
+                    style={{
+                      width: '100%', padding: '8px 10px',
+                      border: '1.5px solid #bdc3c7', borderRadius: 6, fontSize: 14
+                    }}
+                  />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  style={{ background: '#25D366', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 14px', fontWeight: 700, cursor: 'pointer' }}
+                  onClick={() => {
+                    const phoneDigits = toBRDigitsWithCountry(sharePhone);
+                    const link = getWhatsAppLink(phoneDigits, buildShareText(sharePedido));
+                    window.open(link, '_blank');
+                  }}
+                >WhatsApp</button>
+                <button
+                  style={{ background: '#2c3e50', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 14px', fontWeight: 700, cursor: 'pointer' }}
+                  onClick={() => {
+                    const phoneDigits = onlyDigits(sharePhone);
+                    const link = getSmsLink(phoneDigits, buildShareText(sharePedido));
+                    // Em alguns navegadores, usar window.location é mais eficaz para sms:
+                    window.location.href = link;
+                  }}
+                >SMS</button>
+                <button
+                  style={{ background: '#8e44ad', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 14px', fontWeight: 700, cursor: 'pointer' }}
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(buildShareText(sharePedido));
+                      alert('Mensagem copiada!');
+                    } catch (err) {
+                      alert('Não foi possível copiar a mensagem.');
+                    }
+                  }}
+                >Copiar mensagem</button>
+              </div>
+              <div style={{
+                background: '#f7f9fb', border: '1px solid #e6ecf1', borderRadius: 8,
+                padding: 10, fontSize: 12, color: '#546e7a'
+              }}>
+                Dica: sem preencher o telefone, o WhatsApp abre para escolher o contato. O SMS pode não funcionar em desktops.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
