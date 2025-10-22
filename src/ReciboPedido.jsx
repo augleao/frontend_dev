@@ -87,8 +87,7 @@ export default function ReciboPedido() {
       `- CNS: ${servCNS}\n\n` +
       `Valores antecipados\n` +
       `${valoresBloco}\n\n` +
-      `Acesse o protocolo: ${urlRecibo}\n` +
-      `Se não abrir, use este link alternativo: ${urlReciboHash}`
+      `Acesse o protocolo neste link: ${urlReciboHash}`
     );
   }, [pedido]);
   const getWhatsAppLink = (phoneDigits, text) => {
