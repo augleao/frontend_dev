@@ -31,10 +31,63 @@ export default function ReciboPedido() {
   };
   const buildShareText = useMemo(() => {
     if (!pedido) return '';
-    const clienteNome = pedido?.cliente?.nome || '-';
+    const fmtDateTime = (d) => (d ? new Date(d).toLocaleString('pt-BR') : '-');
+    const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('pt-BR') : '-');
+    const fmtBRL = (v) => {
+      const n = parseFloat(v || 0);
+      try { return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); } catch (_) { return `R$ ${n.toFixed(2)}`; }
+    };
+
+    const protocolo = pedido?.protocolo || '-';
     const descricao = pedido?.descricao || '-';
-    const criado = pedido?.criado_em ? new Date(pedido.criado_em).toLocaleString('pt-BR') : '-';
-    return `Olá! Aqui está seu protocolo: ${pedido?.protocolo}\nCliente: ${clienteNome}\nDescrição: ${descricao}\nCriado em: ${criado}`;
+    const criadoEm = fmtDateTime(pedido?.criado_em);
+    const previsaoEntrega = fmtDate(pedido?.previsao_entrega);
+
+    const clienteNome = pedido?.cliente?.nome || '-';
+    const clienteTelefone = pedido?.cliente?.telefone || pedido?.cliente?.celular || '-';
+    const clienteCPF = pedido?.cliente?.cpf || '-';
+
+    const serv = pedido?.serventia || {};
+    const servNome = serv?.nome_completo || '-';
+    const servEndereco = serv?.endereco || '-';
+    const servTel = [serv?.telefone, serv?.whatsapp].filter(Boolean).join(' / ') || '-';
+    const servEmail = serv?.email || '-';
+    const servCNPJ = serv?.cnpj || '-';
+    const servCNS = serv?.cns || '-';
+
+    let valoresBloco = 'Nenhum valor antecipado informado.';
+    if (Array.isArray(pedido?.valorAdiantadoDetalhes) && pedido.valorAdiantadoDetalhes.length > 0) {
+      const linhas = pedido.valorAdiantadoDetalhes.map((item) => {
+        const valor = fmtBRL(item?.valor);
+        const forma = item?.forma ? ` (${item.forma})` : '';
+        return `- ${valor}${forma}`;
+      });
+      const total = pedido.valorAdiantadoDetalhes.reduce((acc, it) => acc + (parseFloat(it?.valor || 0)), 0);
+      valoresBloco = `${linhas.join('\n')}\nTotal antecipado: ${fmtBRL(total)}`;
+    }
+
+    const urlRecibo = `${window.location.origin}/recibo/${encodeURIComponent(protocolo)}`;
+
+    return (
+      `Protocolo: ${protocolo}\n` +
+      `Tipo de serviço: ${descricao}\n` +
+      `Data da solicitação: ${criadoEm}\n` +
+      `Previsão de entrega: ${previsaoEntrega}\n\n` +
+      `Cliente\n` +
+      `- Nome: ${clienteNome}\n` +
+      `- Telefone: ${clienteTelefone}\n` +
+      `- CPF: ${clienteCPF}\n\n` +
+      `Cartório\n` +
+      `- Nome: ${servNome}\n` +
+      `- Endereço: ${servEndereco}\n` +
+      `- Telefone/WhatsApp: ${servTel}\n` +
+      `- E-mail: ${servEmail}\n` +
+      `- CNPJ: ${servCNPJ}\n` +
+      `- CNS: ${servCNS}\n\n` +
+      `Valores antecipados\n` +
+      `${valoresBloco}\n\n` +
+      `Acesse o protocolo: ${urlRecibo}`
+    );
   }, [pedido]);
   const getWhatsAppLink = (phoneDigits, text) => {
     const base = 'https://wa.me';
