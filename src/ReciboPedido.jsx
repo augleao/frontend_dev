@@ -42,6 +42,25 @@ export default function ReciboPedido() {
     if (phoneDigits) return `${base}/${phoneDigits}?text=${encoded}`;
     return `${base}/?text=${encoded}`;
   };
+  const openWhatsAppDesktopOrWeb = (phoneDigits, text) => {
+    const encoded = encodeURIComponent(text);
+    const deep = phoneDigits
+      ? `whatsapp://send?phone=${phoneDigits}&text=${encoded}`
+      : `whatsapp://send?text=${encoded}`;
+    const web = getWhatsAppLink(phoneDigits, text);
+    // Tenta abrir o app desktop; em caso de falha, cai para WhatsApp Web
+    try {
+      // Navega via esquema personalizado; se não existir app, não fará nada
+      window.location.href = deep;
+      // Fallback após um pequeno atraso (se o app abrir, essa página deixa de estar ativa)
+      setTimeout(() => {
+        try { window.open(web, '_blank'); } catch (_) {}
+      }, 1200);
+    } catch (_) {
+      // Fallback imediato
+      window.open(web, '_blank');
+    }
+  };
   const tryWebShare = async () => {
     if (!buildShareText) return false;
     if (navigator.share) {
@@ -125,16 +144,13 @@ export default function ReciboPedido() {
             }}
           >Imprimir</button>
           <button
-            disabled={sharing}
+            disabled={sharing || !(pedido?.cliente?.telefone || pedido?.cliente?.celular)}
             onClick={async () => {
               setSharing(true);
-              const ok = await tryWebShare();
-              if (!ok) {
-                const tel = pedido?.cliente?.telefone || pedido?.cliente?.celular || '';
-                const phoneDigits = toBRDigitsWithCountry(tel);
-                const link = getWhatsAppLink(phoneDigits, buildShareText);
-                window.open(link, '_blank');
-              }
+              const tel = pedido?.cliente?.telefone || pedido?.cliente?.celular || '';
+              const phoneDigits = toBRDigitsWithCountry(tel);
+              // Em desktop, prioriza abrir o app; se não, cai para Web. Web Share é menos relevante aqui.
+              openWhatsAppDesktopOrWeb(phoneDigits, buildShareText);
               setSharing(false);
             }}
             style={{
