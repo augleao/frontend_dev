@@ -216,11 +216,7 @@ export default function ReciboPedido() {
       </div>
 
       <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(44,62,80,0.08)', padding: 32 }}>
-      <div style={{ textAlign: 'right', marginBottom: 8 }}>
-        <a href={window.location.href} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: '#6c3483', textDecoration: 'underline' }}>
-          ibo em nova guia
-        </a>
-      </div>
+      {/* Link removido conforme solicitado */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div>
           <h2 style={{ margin: 0, fontWeight: 700 }}>Protocolo</h2>
