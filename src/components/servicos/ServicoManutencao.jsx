@@ -392,8 +392,8 @@ export default function ServicoManutencao() {
         });
         setAtosPedido([]);
         setPedidoCarregado(false);
-        // Redireciona para a lista de pedidos
-        navigate('/servicos');
+  // Redireciona para a lista de pedidos (ServicoLista)
+  navigate('/lista-servicos');
       } else {
         const errorText = await res.text();
       }
