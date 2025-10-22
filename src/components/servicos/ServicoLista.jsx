@@ -128,9 +128,9 @@ export default function ListaServicos() {
     if (dataInicial || dataFinal) {
       pedidosFiltradosTemp = pedidosFiltradosTemp.filter(pedido => {
         if (!pedido.criado_em) return false;
-        
+
         const dataPedido = new Date(pedido.criado_em);
-        
+
         // Se só tem data inicial, filtra de data inicial até hoje
         if (dataInicial && !dataFinal) {
           const dataInicialObj = new Date(dataInicial);
@@ -139,14 +139,14 @@ export default function ListaServicos() {
           hoje.setHours(23, 59, 59, 999); // Final do dia de hoje
           return dataPedido >= dataInicialObj && dataPedido <= hoje;
         }
-        
+
         // Se só tem data final, filtra desde o início até data final
         if (!dataInicial && dataFinal) {
           const dataFinalObj = new Date(dataFinal);
           dataFinalObj.setHours(23, 59, 59, 999); // Final do dia selecionado
           return dataPedido <= dataFinalObj;
         }
-        
+
         // Se tem ambas as datas
         if (dataInicial && dataFinal) {
           const dataInicialObj = new Date(dataInicial);
@@ -155,7 +155,7 @@ export default function ListaServicos() {
           dataFinalObj.setHours(23, 59, 59, 999); // Final do dia final
           return dataPedido >= dataInicialObj && dataPedido <= dataFinalObj;
         }
-        
+
         return true;
       });
     }
@@ -450,30 +450,7 @@ export default function ListaServicos() {
                         fontSize: 14,
                         cursor: 'pointer'
                       }}
-                      onClick={async () => {
-                        // LOG: Clique no botão PROTOCOLO
-                        console.log('Clique no botão PROTOCOLO para o pedido:', p.protocolo);
-                        try {
-                          const token = localStorage.getItem('token');
-                          console.log('Buscando dados do pedido na API:', `${config.apiURL}/recibo/${encodeURIComponent(p.protocolo)}`);
-                          const res = await fetch(`${config.apiURL}/recibo/${encodeURIComponent(p.protocolo)}`,
-                            token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
-                          const data = await res.json();
-                          console.log('Resposta recebida da API para o protocolo', p.protocolo, ':', data);
-                          if (!data.pedido) {
-                            alert('Não foi possível obter os dados do pedido para gerar o PDF.');
-                            return;
-                          }
-                          console.log('Chamando gerarReciboProtocoloPDF com:', data.pedido);
-                          const blob = gerarReciboProtocoloPDF(data.pedido);
-                          const url = URL.createObjectURL(blob);
-                          console.log('PDF gerado, abrindo nova aba.');
-                          window.open(url, '_blank');
-                        } catch (err) {
-                          console.error('Erro ao gerar PDF do recibo:', err);
-                          alert('Erro ao gerar PDF do recibo.');
-                        }
-                      }}
+                      onClick={() => navigate(`/recibo/${encodeURIComponent(p.protocolo)}`)}
                     >
                       PROTOCOLO
                     </button>

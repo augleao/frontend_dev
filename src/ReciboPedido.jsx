@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { QRCodeCanvas } from 'qrcode.react';
 import config from './config';
@@ -18,6 +18,42 @@ export default function ReciboPedido() {
   const [pedido, setPedido] = useState(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
+  const [sharing, setSharing] = useState(false);
+
+  // Helpers de WhatsApp (gratuitos)
+  const onlyDigits = (str = '') => (str || '').replace(/\D+/g, '');
+  const toBRDigitsWithCountry = (raw) => {
+    const d = onlyDigits(raw);
+    if (!d) return '';
+    if (d.startsWith('55')) return d;
+    if (d.length >= 10 && d.length <= 11) return '55' + d;
+    return d;
+  };
+  const buildShareText = useMemo(() => {
+    if (!pedido) return '';
+    const clienteNome = pedido?.cliente?.nome || '-';
+    const descricao = pedido?.descricao || '-';
+    const criado = pedido?.criado_em ? new Date(pedido.criado_em).toLocaleString('pt-BR') : '-';
+    return `Olá! Aqui está seu protocolo: ${pedido?.protocolo}\nCliente: ${clienteNome}\nDescrição: ${descricao}\nCriado em: ${criado}`;
+  }, [pedido]);
+  const getWhatsAppLink = (phoneDigits, text) => {
+    const base = 'https://wa.me';
+    const encoded = encodeURIComponent(text);
+    if (phoneDigits) return `${base}/${phoneDigits}?text=${encoded}`;
+    return `${base}/?text=${encoded}`;
+  };
+  const tryWebShare = async () => {
+    if (!buildShareText) return false;
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: buildShareText });
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return false;
+  };
 
   useEffect(() => {
     async function fetchPedido() {
@@ -73,7 +109,43 @@ export default function ReciboPedido() {
   // Sugestão para abrir em nova guia: pode-se usar um botão ou instrução para o usuário
   // Exemplo: <a href={window.location.href} target="_blank" rel="noopener noreferrer">Abrir recibo em nova guia</a>
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(44,62,80,0.08)', padding: 32, fontFamily: 'Arial, sans-serif' }}>
+    <div style={{ maxWidth: 900, margin: '0 auto', padding: 16, fontFamily: 'Arial, sans-serif' }}>
+      {/* Barra superior com ações */}
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 10,
+        background: 'linear-gradient(180deg, #ffffff 70%, rgba(255,255,255,0))',
+        padding: '12px 0 8px 0'
+      }}>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <button
+            onClick={() => window.print()}
+            style={{
+              background: '#2c3e50', color: '#fff', border: 'none', borderRadius: 6,
+              padding: '8px 14px', fontWeight: 700, cursor: 'pointer'
+            }}
+          >Imprimir</button>
+          <button
+            disabled={sharing}
+            onClick={async () => {
+              setSharing(true);
+              const ok = await tryWebShare();
+              if (!ok) {
+                const tel = pedido?.cliente?.telefone || pedido?.cliente?.celular || '';
+                const phoneDigits = toBRDigitsWithCountry(tel);
+                const link = getWhatsAppLink(phoneDigits, buildShareText);
+                window.open(link, '_blank');
+              }
+              setSharing(false);
+            }}
+            style={{
+              background: '#25D366', color: '#fff', border: 'none', borderRadius: 6,
+              padding: '8px 14px', fontWeight: 700, cursor: 'pointer', opacity: sharing ? 0.8 : 1
+            }}
+          >Enviar via WhatsApp</button>
+        </div>
+      </div>
+
+      <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(44,62,80,0.08)', padding: 32 }}>
       <div style={{ textAlign: 'right', marginBottom: 8 }}>
         <a href={window.location.href} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: '#6c3483', textDecoration: 'underline' }}>
           ibo em nova guia
@@ -130,8 +202,7 @@ export default function ReciboPedido() {
           <span>Nenhum valor antecipado informado.</span>
         )}
       </div>
-
-
+      </div>
     </div>
   );
 }
