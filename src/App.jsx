@@ -170,14 +170,7 @@ function App() {
     </AdminRoute>
   }
 />
-        <Route
-          path="/recibo/:protocolo"
-          element={
-            <PrivateRoute>
-              <ReciboPedido />
-            </PrivateRoute>
-          }
-        />
+        <Route path="/recibo/:protocolo" element={<ReciboPedido />} />
         <Route path="/protocolo" element={<ProtocoloAcesso />} />
       </Routes>
     </AuthProvider>
