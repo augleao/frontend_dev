@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Fallback 404 para SPA" />
+    <title>Carregando…</title>
+    <style>
+      body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+      #root { display: flex; align-items: center; justify-content: center; min-height: 100vh; color: #555; }
+    </style>
+  </head>
+  <body>
+    <div id="root">Carregando…</div>
+    <script>
+      // Tenta carregar a aplicação principal (equivalente ao index.html)
+      // Em muitos hosts, servir 404.html aciona este arquivo quando a rota não existe no servidor.
+      // Recarregamos o caminho raiz para bootar a SPA.
+      (function() {
+        var root = location.origin || (location.protocol + '//' + location.host);
+        // mantém o hash para potencial fallback no cliente
+        var hash = location.hash || '';
+        location.replace(root + '/' + hash);
+      })();
+    </script>
+  </body>
+</html>

@@ -66,7 +66,8 @@ export default function ReciboPedido() {
       valoresBloco = `${linhas.join('\n')}\nTotal antecipado: ${fmtBRL(total)}`;
     }
 
-    const urlRecibo = `${window.location.origin}/recibo/${encodeURIComponent(protocolo)}`;
+  const urlRecibo = `${window.location.origin}/recibo/${encodeURIComponent(protocolo)}`;
+  const urlReciboHash = `${window.location.origin}/#${`/recibo/${encodeURIComponent(protocolo)}`}`;
 
     return (
       `Protocolo: ${protocolo}\n` +
@@ -86,7 +87,8 @@ export default function ReciboPedido() {
       `- CNS: ${servCNS}\n\n` +
       `Valores antecipados\n` +
       `${valoresBloco}\n\n` +
-      `Acesse o protocolo: ${urlRecibo}`
+      `Acesse o protocolo: ${urlRecibo}\n` +
+      `Se não abrir, use este link alternativo: ${urlReciboHash}`
     );
   }, [pedido]);
   const getWhatsAppLink = (phoneDigits, text) => {

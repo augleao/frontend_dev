@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './AuthContext';
 import NavBar from './NavBar';
 import Home from './Home';
@@ -28,8 +28,26 @@ import ProtocoloAcesso from './ProtocoloAcesso';
 
 
 function App() {
+  // Fallback: se a URL vier com hash (ex.: /#/recibo/...), redireciona internamente
+  function HashRedirector() {
+    const navigate = useNavigate();
+    const location = useLocation();
+    useEffect(() => {
+      const h = window.location.hash || '';
+      if (h.startsWith('#/')) {
+        const target = h.slice(1);
+        if (location.pathname !== target) {
+          navigate(target, { replace: true });
+        }
+      }
+      // não depende de location para evitar loop
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    return null;
+  }
   return (
     <AuthProvider>
+      <HashRedirector />
       <NavBar />
       <Routes>
         <Route path="/" element={<Home />} />
