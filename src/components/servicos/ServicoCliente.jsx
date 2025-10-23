@@ -1,12 +1,26 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import config from '../../config';
 import './servicos.css';
+import Toast from '../Toast';
 
 export default function ServicoCliente({ form, onChange, onClienteChange, onAvancarEtapa }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [originalCliente, setOriginalCliente] = useState(null);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
+  const toastTimerRef = useRef(null);
+
+  const showToast = (type, message) => {
+    setToastType(type);
+    setToastMessage(message);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => {
+      setToastMessage('');
+      toastTimerRef.current = null;
+    }, 4000);
+  };
 
   // Busca clientes conforme digita
   const buscarClientes = async (term) => {
@@ -67,7 +81,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
   const handleSalvarCliente = async () => {
     // Validação: verifica se CPF/CNPJ já existe
     if (!form.cliente.cpf || form.cliente.cpf.trim() === '') {
-      alert('CPF/CNPJ é obrigatório para salvar o cliente.');
+      showToast('error', 'CPF/CNPJ é obrigatório para salvar o cliente.');
       return;
     }
 
@@ -87,11 +101,11 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
       );
       
       if (cpfExiste) {
-        alert('Já existe um cliente cadastrado com este CPF/CNPJ.');
+        showToast('error', 'Já existe um cliente cadastrado com este CPF/CNPJ.');
         return;
       }
     } catch (err) {
-      alert('Erro ao verificar CPF/CNPJ. Tente novamente.');
+      showToast('error', 'Erro ao verificar CPF/CNPJ. Tente novamente.');
       return;
     }
 
@@ -115,9 +129,10 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
       if (typeof onAvancarEtapa === 'function') {
         onAvancarEtapa();
       }
+      showToast('success', 'Cliente salvo com sucesso!');
     } else {
       const errorData = await res.json();
-      alert(errorData.error || 'Erro ao salvar cliente.');
+      showToast('error', errorData.error || 'Erro ao salvar cliente.');
     }
   };
 
@@ -141,6 +156,14 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
       setSearchTerm('');
       setSuggestions([]);
       setOriginalCliente(null);
+      showToast('success', 'Cliente excluído com sucesso!');
+    } else {
+      try {
+        const errText = await res.text();
+        showToast('error', errText || 'Erro ao excluir cliente.');
+      } catch (_) {
+        showToast('error', 'Erro ao excluir cliente.');
+      }
     }
   };
 
@@ -181,7 +204,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
     if (!form?.clienteId) return;
     // Validação simples
     if (!form?.cliente?.cpf || String(form.cliente.cpf).trim() === '') {
-      alert('CPF/CNPJ é obrigatório para atualizar o cliente.');
+      showToast('error', 'CPF/CNPJ é obrigatório para atualizar o cliente.');
       return;
     }
     try {
@@ -207,11 +230,18 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
       }
       // Atualiza baseline para refletir as alterações salvas
       setOriginalCliente({ id: form.clienteId, ...payload });
-      alert('Cliente atualizado com sucesso!');
+      showToast('success', 'Cliente atualizado com sucesso!');
     } catch (e) {
-      alert(e.message || 'Erro ao atualizar cliente.');
+      showToast('error', e.message || 'Erro ao atualizar cliente.');
     }
   };
+
+  // Cleanup do timer do toast ao desmontar
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   return (
     <div className="servico-section">
@@ -346,6 +376,13 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
         </div>
   </div>
   </form>
+      {/* Toast de feedback */}
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        position="bottom-right"
+        onClose={() => setToastMessage('')}
+      />
     </div>
   );
 }

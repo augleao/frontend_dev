@@ -238,7 +238,7 @@ function AtosPraticados() {
           toastTimerRef.current = setTimeout(() => {
             setToastMessage('');
             toastTimerRef.current = null;
-          }, 2500);
+          }, 4000);
         } else {
           const errorData = await res.json();
           console.error('Erro ao remover ato do backend:', errorData);
@@ -261,7 +261,7 @@ function AtosPraticados() {
           toastTimerRef.current = setTimeout(() => {
             setToastMessage('');
             toastTimerRef.current = null;
-          }, 2500);
+          }, 4000);
     }
   };
 

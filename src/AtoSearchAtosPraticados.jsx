@@ -284,7 +284,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
         mensagemTimeoutRef.current = setTimeout(() => {
           setMensagem('');
           mensagemTimeoutRef.current = null;
-        }, 2500);
+        }, 4000);
 
         // Notifica o componente pai para recarregar a tabela de "Atos praticados por"
         if (typeof onAtoAdicionado === 'function') {
