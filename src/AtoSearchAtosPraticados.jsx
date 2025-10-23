@@ -387,6 +387,25 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
     return () => clearTimeout(codigoTributarioDebounceTimeout.current);
   }, [codigoTributarioTerm]);
 
+  // Auto-seleciona qualquer código quando o input casa exatamente com um código das sugestões
+  useEffect(() => {
+    const term = (codigoTributarioTerm || '').trim().toLowerCase();
+    if (!term) return;
+    // Não fazer nada se já está selecionado o mesmo código
+    if (
+      selectedCodigoTributario &&
+      String(selectedCodigoTributario.codigo).toLowerCase() === term
+    ) {
+      return;
+    }
+    const matchByCode = codigoTributarioSuggestions.find(
+      (c) => String(c.codigo).toLowerCase() === term
+    );
+    if (matchByCode) {
+      handleSelectCodigoTributario(matchByCode);
+    }
+  }, [codigoTributarioSuggestions, codigoTributarioTerm, selectedCodigoTributario]);
+
   // useEffect para buscar atos da tabela quando a data mudar
   useEffect(() => {
     console.log('📅 useEffect - Data mudou:', dataSelecionada);
