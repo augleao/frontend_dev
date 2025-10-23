@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import config from '../../config';
 import './servicos.css';
 
@@ -6,6 +6,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [originalCliente, setOriginalCliente] = useState(null);
 
   // Busca clientes conforme digita
   const buscarClientes = async (term) => {
@@ -50,6 +51,14 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
     onClienteChange('endereco', cliente.endereco);
     onClienteChange('telefone', cliente.telefone);
     onClienteChange('email', cliente.email);
+    setOriginalCliente({
+      id: cliente.id,
+      nome: cliente.nome || '',
+      cpf: cliente.cpf || '',
+      endereco: cliente.endereco || '',
+      telefone: cliente.telefone || '',
+      email: cliente.email || '',
+    });
     setSearchTerm(cliente.nome);
     setSuggestions([]);
   };
@@ -131,6 +140,76 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
       onClienteChange('email', '');
       setSearchTerm('');
       setSuggestions([]);
+      setOriginalCliente(null);
+    }
+  };
+
+  // Seta o cliente "original" quando um cliente existente é carregado pelo formulário
+  useEffect(() => {
+    if (form?.clienteId) {
+      // Captura um snapshot inicial para comparação de alterações
+      setOriginalCliente(prev => {
+        // Se o id mudou, atualiza baseline; se não existir baseline ainda, cria
+        if (!prev || prev.id !== form.clienteId) {
+          return {
+            id: form.clienteId,
+            nome: form.cliente?.nome || '',
+            cpf: form.cliente?.cpf || '',
+            endereco: form.cliente?.endereco || '',
+            telefone: form.cliente?.telefone || '',
+            email: form.cliente?.email || '',
+          };
+        }
+        return prev;
+      });
+    } else {
+      // Sem cliente selecionado
+      setOriginalCliente(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form?.clienteId]);
+
+  // Determina se houve alterações em relação ao baseline (originalCliente)
+  const hasChanges = useMemo(() => {
+    if (!form?.clienteId || !originalCliente) return false;
+    const curr = form.cliente || {};
+    const fields = ['nome', 'cpf', 'endereco', 'telefone', 'email'];
+    return fields.some(k => (curr[k] || '') !== (originalCliente[k] || ''));
+  }, [form?.clienteId, form?.cliente, originalCliente]);
+
+  const handleAtualizarCliente = async () => {
+    if (!form?.clienteId) return;
+    // Validação simples
+    if (!form?.cliente?.cpf || String(form.cliente.cpf).trim() === '') {
+      alert('CPF/CNPJ é obrigatório para atualizar o cliente.');
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        nome: form.cliente?.nome || '',
+        cpf: form.cliente?.cpf || '',
+        endereco: form.cliente?.endereco || '',
+        telefone: form.cliente?.telefone || '',
+        email: form.cliente?.email || '',
+      };
+      const res = await fetch(`${config.apiURL}/clientes/${encodeURIComponent(form.clienteId)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || 'Erro ao atualizar cliente.');
+      }
+      // Atualiza baseline para refletir as alterações salvas
+      setOriginalCliente({ id: form.clienteId, ...payload });
+      alert('Cliente atualizado com sucesso!');
+    } catch (e) {
+      alert(e.message || 'Erro ao atualizar cliente.');
     }
   };
 
@@ -247,9 +326,22 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
           )}
           {/* Exibe botão excluir se existe clienteId */}
           {form.clienteId && (
-            <button type="button" onClick={handleExcluirCliente} className="btn btn-danger">
-              Excluir Cadastro do Cliente
-            </button>
+            <>
+              {/* Botão Atualizar aparece somente quando houver alterações */}
+              {hasChanges && (
+                <button
+                  type="button"
+                  onClick={handleAtualizarCliente}
+                  className="btn btn-primary"
+                  style={{ marginRight: 8 }}
+                >
+                  Atualizar Cliente
+                </button>
+              )}
+              <button type="button" onClick={handleExcluirCliente} className="btn btn-danger">
+                Excluir Cadastro do Cliente
+              </button>
+            </>
           )}
         </div>
   </div>
