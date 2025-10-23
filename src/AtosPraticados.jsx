@@ -867,6 +867,7 @@ useEffect(() => {
           <AtoSearchAtosPraticados
             dataSelecionada={dataSelecionada}
             nomeUsuario={nomeUsuario}
+            onAtoAdicionado={() => setRefreshTrigger((prev) => prev + 1)}
           />
 
           {/* Tabela de Atos Praticados (lista detalhada) - logo abaixo do resumo agrupado */}

@@ -14,7 +14,7 @@ import Toast from './components/Toast';
     return `${dia}-${mes}-${ano}`;
   };
 
-export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }) {
+export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, onAtoAdicionado }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
@@ -285,6 +285,15 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
           setMensagem('');
           mensagemTimeoutRef.current = null;
         }, 2500);
+
+        // Notifica o componente pai para recarregar a tabela de "Atos praticados por"
+        if (typeof onAtoAdicionado === 'function') {
+          try {
+            onAtoAdicionado();
+          } catch (e) {
+            console.warn('onAtoAdicionado callback falhou:', e);
+          }
+        }
       } else {
         console.error('❌ Erro do servidor:', data);
         alert(`Erro ao adicionar ato: ${data.message}`);
