@@ -461,10 +461,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           ? `Pedido ${form.protocolo} atualizado com sucesso!`
           : 'Novo pedido criado com sucesso!';
         alert(mensagem);
-        // Avança para o componente ServicoConferencia.jsx via prop
-        if (typeof onAvancarEtapa === 'function') {
-          onAvancarEtapa();
-        }
+        // Após salvar/atualizar, retornar para a lista de serviços
+        navigate('/lista-servicos');
       } else {
         // Tratar erro no envio do pedido
         console.error('Erro ao enviar pedido:', res.status, res.statusText, data);
