@@ -14,6 +14,7 @@ import FechamentoDiarioButton from './FechamentoDiarioButton';
 import dayjs from 'dayjs';
 import { apiURL } from './config';
 import TributacaoSearch from './TributacaoSearch'; // Adicione esta linha no topo
+import Toast from './components/Toast';
 //import { gerarRelatorioPDFAtosPraticados } from './components/RelatorioPDF';
 
 function AtosPraticados() {
@@ -46,6 +47,9 @@ function AtosPraticados() {
   const [recarregando, setRecarregando] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0); // Trigger para forçar refresh
   const debounceTimeout = useRef(null);
+  const toastTimerRef = useRef(null);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
 
   // Nome do usuário logado (precisa estar antes de qualquer uso)
   const [nomeUsuario, setNomeUsuario] = useState(() => {
@@ -227,6 +231,14 @@ function AtosPraticados() {
           console.log('Ato removido do backend e da lista local:', atoParaRemover);
           // Dispara refresh para atualizar também o resumo (tabela de atos agrupados)
           setRefreshTrigger(prev => prev + 1);
+          // Toast de sucesso
+          setToastType('success');
+          setToastMessage('Ato removido com sucesso!');
+          if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+          toastTimerRef.current = setTimeout(() => {
+            setToastMessage('');
+            toastTimerRef.current = null;
+          }, 2500);
         } else {
           const errorData = await res.json();
           console.error('Erro ao remover ato do backend:', errorData);
@@ -242,6 +254,14 @@ function AtosPraticados() {
       console.log('Ato removido apenas da lista local (não tinha ID):', atoParaRemover);
           // Ainda assim, atualiza o resumo por consistência
           setRefreshTrigger(prev => prev + 1);
+          // Toast de sucesso
+          setToastType('success');
+          setToastMessage('Ato removido com sucesso!');
+          if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+          toastTimerRef.current = setTimeout(() => {
+            setToastMessage('');
+            toastTimerRef.current = null;
+          }, 2500);
     }
   };
 
@@ -469,6 +489,13 @@ function AtosPraticados() {
 useEffect(() => {
   carregarDadosPraticadosDaData();
 }, []);
+
+  // Cleanup do timer do toast ao desmontar
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   // useEffect para carregar atos ao mudar a data
   useEffect(() => {
@@ -902,6 +929,13 @@ useEffect(() => {
           </div>
         </div>
       </div>
+      {/* Toast de feedback de exclusão */}
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        position="bottom-right"
+        onClose={() => setToastMessage('')}
+      />
     </div>
   </div>
 );
