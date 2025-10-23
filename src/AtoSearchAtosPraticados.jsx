@@ -3,6 +3,7 @@ import { formasPagamento } from './utils';
 import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
 import config from './config'; // ajuste o caminho se necessário
+import MensagemStatus from './components/MensagemStatus';
 
   // Funções de formatação
   const formatarDataBR = (data) => {
@@ -25,6 +26,8 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     }, {})
   );
   const [quantidade, setQuantidade] = useState(1);
+  const [mensagem, setMensagem] = useState('');
+  const mensagemTimeoutRef = useRef(null);
 
   // Estados para busca de código tributário
   const [codigoTributarioTerm, setCodigoTributarioTerm] = useState('');
@@ -271,11 +274,17 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
           }, {})
         );
         
-        // Recarregar tabela de atos
-        console.log('🔄 Recarregando tabela de atos...');
-        buscarAtosTabela();
-        
-        alert('Ato adicionado com sucesso!');
+  // Recarregar tabela de atos
+  console.log('🔄 Recarregando tabela de atos...');
+  buscarAtosTabela();
+
+        // Feedback sutil de sucesso
+        setMensagem('Ato adicionado com sucesso!');
+        if (mensagemTimeoutRef.current) clearTimeout(mensagemTimeoutRef.current);
+        mensagemTimeoutRef.current = setTimeout(() => {
+          setMensagem('');
+          mensagemTimeoutRef.current = null;
+        }, 2500);
       } else {
         console.error('❌ Erro do servidor:', data);
         alert(`Erro ao adicionar ato: ${data.message}`);
@@ -391,6 +400,9 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
     console.log('📊 Props recebidas:');
     console.log('- dataSelecionada:', dataSelecionada);
     console.log('- nomeUsuario:', nomeUsuario);
+    return () => {
+      if (mensagemTimeoutRef.current) clearTimeout(mensagemTimeoutRef.current);
+    };
   }, []);
 
   return (
@@ -624,6 +636,9 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
             ➕ Adicionar Ato
           </button>
         </div>
+
+        {/* Feedback sutil */}
+        <MensagemStatus mensagem={mensagem} />
       </div>
 
       {/* Container de Atos Agrupados */}
