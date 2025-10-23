@@ -30,7 +30,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
   const mensagemTimeoutRef = useRef(null);
 
   // Estados para busca de código tributário
-  const [codigoTributarioTerm, setCodigoTributarioTerm] = useState('');
+  const [codigoTributarioTerm, setCodigoTributarioTerm] = useState('01');
   const [codigoTributarioSuggestions, setCodigoTributarioSuggestions] = useState([]);
   const [loadingCodigoTributario, setLoadingCodigoTributario] = useState(false);
   const [selectedCodigoTributario, setSelectedCodigoTributario] = useState(null);
@@ -265,8 +265,8 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
         // Limpar formulário
         setSelectedAto(null);
         setQuantidade(1);
-        setSelectedCodigoTributario(null);
-        setCodigoTributarioTerm('');
+  setSelectedCodigoTributario(null);
+  setCodigoTributarioTerm('01');
         setPagamentos(
           formasPagamento.reduce((acc, fp) => {
             acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
