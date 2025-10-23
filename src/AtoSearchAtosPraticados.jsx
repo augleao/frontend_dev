@@ -3,7 +3,7 @@ import { formasPagamento } from './utils';
 import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
 import config from './config'; // ajuste o caminho se necessário
-import MensagemStatus from './components/MensagemStatus';
+import Toast from './components/Toast';
 
   // Funções de formatação
   const formatarDataBR = (data) => {
@@ -637,8 +637,13 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario }
           </button>
         </div>
 
-        {/* Feedback sutil */}
-        <MensagemStatus mensagem={mensagem} />
+        {/* Toast flutuante */}
+        <Toast
+          message={mensagem}
+          type="success"
+          position="bottom-right"
+          onClose={() => setMensagem('')}
+        />
       </div>
 
       {/* Container de Atos Agrupados */}
