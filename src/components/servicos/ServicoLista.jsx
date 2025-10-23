@@ -451,7 +451,8 @@ export default function ListaServicos() {
                         cursor: 'pointer'
                       }}
                       onClick={() => {
-                        const url = `${window.location.origin}/recibo/${encodeURIComponent(p.protocolo)}`;
+                        // Usa link com hash para garantir carregamento em nova aba em qualquer hospedagem SPA
+                        const url = `${window.location.origin}/#${`/recibo/${encodeURIComponent(p.protocolo)}`}`;
                         window.open(url, '_blank', 'noopener,noreferrer');
                       }}
                     >
