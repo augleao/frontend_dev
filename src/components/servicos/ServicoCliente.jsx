@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import config from '../../config';
 import './servicos.css';
 import Toast from '../Toast';
+import { DEFAULT_TOAST_DURATION } from '../toastConfig';
 
 export default function ServicoCliente({ form, onChange, onClienteChange, onAvancarEtapa }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,7 +20,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
     toastTimerRef.current = setTimeout(() => {
       setToastMessage('');
       toastTimerRef.current = null;
-    }, 4000);
+    }, DEFAULT_TOAST_DURATION);
   };
 
   // Busca clientes conforme digita

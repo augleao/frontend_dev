@@ -15,6 +15,7 @@ import dayjs from 'dayjs';
 import { apiURL } from './config';
 import TributacaoSearch from './TributacaoSearch'; // Adicione esta linha no topo
 import Toast from './components/Toast';
+import { DEFAULT_TOAST_DURATION } from './components/toastConfig';
 //import { gerarRelatorioPDFAtosPraticados } from './components/RelatorioPDF';
 
 function AtosPraticados() {
@@ -238,7 +239,7 @@ function AtosPraticados() {
           toastTimerRef.current = setTimeout(() => {
             setToastMessage('');
             toastTimerRef.current = null;
-          }, 4000);
+          }, DEFAULT_TOAST_DURATION);
         } else {
           const errorData = await res.json();
           console.error('Erro ao remover ato do backend:', errorData);
@@ -261,7 +262,7 @@ function AtosPraticados() {
           toastTimerRef.current = setTimeout(() => {
             setToastMessage('');
             toastTimerRef.current = null;
-          }, 4000);
+          }, DEFAULT_TOAST_DURATION);
     }
   };
 

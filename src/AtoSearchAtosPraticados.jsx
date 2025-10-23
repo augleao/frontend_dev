@@ -4,6 +4,7 @@ import AtoSearch from './AtoSearch';
 import FormasPagamento from './FormasPagamento';
 import config from './config'; // ajuste o caminho se necessário
 import Toast from './components/Toast';
+import { DEFAULT_TOAST_DURATION } from './components/toastConfig';
 
   // Funções de formatação
   const formatarDataBR = (data) => {
@@ -284,7 +285,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
         mensagemTimeoutRef.current = setTimeout(() => {
           setMensagem('');
           mensagemTimeoutRef.current = null;
-        }, 4000);
+        }, DEFAULT_TOAST_DURATION);
 
         // Notifica o componente pai para recarregar a tabela de "Atos praticados por"
         if (typeof onAtoAdicionado === 'function') {
