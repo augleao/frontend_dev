@@ -14,7 +14,7 @@ import Toast from './components/Toast';
     return `${dia}-${mes}-${ano}`;
   };
 
-export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, onAtoAdicionado }) {
+export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, onAtoAdicionado, resumoRefreshTrigger }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
@@ -392,6 +392,14 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
     console.log('📅 useEffect - Data mudou:', dataSelecionada);
     buscarAtosTabela();
   }, [dataSelecionada]);
+
+  // Refresca o resumo quando o trigger externo mudar (ex.: exclusão ou inclusão fora deste componente)
+  useEffect(() => {
+    if (typeof resumoRefreshTrigger !== 'undefined') {
+      console.log('🔁 resumoRefreshTrigger mudou, atualizando resumo de atos...', resumoRefreshTrigger);
+      buscarAtosTabela();
+    }
+  }, [resumoRefreshTrigger]);
 
   // useEffect para monitorar mudanças no selectedAto
   useEffect(() => {

@@ -225,6 +225,8 @@ function AtosPraticados() {
         if (res.ok) {
           setAtos(atos.filter((_, i) => i !== indexParaRemover));
           console.log('Ato removido do backend e da lista local:', atoParaRemover);
+          // Dispara refresh para atualizar também o resumo (tabela de atos agrupados)
+          setRefreshTrigger(prev => prev + 1);
         } else {
           const errorData = await res.json();
           console.error('Erro ao remover ato do backend:', errorData);
@@ -238,6 +240,8 @@ function AtosPraticados() {
       // Ato só existe localmente, remover apenas da lista
       setAtos(atos.filter((_, i) => i !== indexParaRemover));
       console.log('Ato removido apenas da lista local (não tinha ID):', atoParaRemover);
+          // Ainda assim, atualiza o resumo por consistência
+          setRefreshTrigger(prev => prev + 1);
     }
   };
 
@@ -868,6 +872,7 @@ useEffect(() => {
             dataSelecionada={dataSelecionada}
             nomeUsuario={nomeUsuario}
             onAtoAdicionado={() => setRefreshTrigger((prev) => prev + 1)}
+            resumoRefreshTrigger={refreshTrigger}
           />
 
           {/* Tabela de Atos Praticados (lista detalhada) - logo abaixo do resumo agrupado */}
