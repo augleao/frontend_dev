@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import config from '../../config';
 import Toast from '../Toast';
 import { DEFAULT_TOAST_DURATION } from '../toastConfig';
+import { listarSelosAverbacao, criarSeloAverbacao, atualizarSeloAverbacao } from './SeloAverbacaoService';
 
 export default function AverbacaoManutencao() {
   const navigate = useNavigate();
@@ -12,11 +13,24 @@ export default function AverbacaoManutencao() {
   const [form, setForm] = useState({
     data: new Date().toISOString().slice(0, 10),
     tipo: '',
+    tipoOutro: '',
     descricao: '',
     ressarcivel: false,
-    observacoes: ''
+    observacoes: '',
+    livro: '',
+    folha: '',
+    termo: '',
+    nomePessoa1: '',
+    nomePessoa2: '',
+    codigoTributario: '',
+    selo_consulta: '',
+    codigo_seguranca: ''
   });
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [pdfInfo, setPdfInfo] = useState({ originalName: '', storedName: '', url: '', id: null });
+  const [codigoSugestoes, setCodigoSugestoes] = useState([]);
+  const [codigoLoading, setCodigoLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
   const toastTimerRef = useRef(null);
@@ -46,10 +60,27 @@ export default function AverbacaoManutencao() {
           setForm({
             data: (item.data || new Date().toISOString().slice(0, 10)).slice(0,10),
             tipo: item.tipo || '',
+            tipoOutro: item.tipoOutro || '',
             descricao: item.descricao || '',
             ressarcivel: Boolean(item.ressarcivel),
-            observacoes: item.observacoes || ''
+            observacoes: item.observacoes || '',
+            livro: item.livro || '',
+            folha: item.folha || '',
+            termo: item.termo || '',
+            nomePessoa1: item.nomePessoa1 || item.nome || '',
+            nomePessoa2: item.nomePessoa2 || '',
+            codigoTributario: item.codigoTributario || '',
+            selo_consulta: item.selo_consulta || '',
+            codigo_seguranca: item.codigo_seguranca || ''
           });
+          if (item.pdf) {
+            setPdfInfo({
+              originalName: item.pdf.originalName || '',
+              storedName: item.pdf.storedName || item.pdf.nome || '',
+              url: item.pdf.url || '',
+              id: item.pdf.id || null
+            });
+          }
         }
       } catch (e) {}
       setLoading(false);
@@ -59,8 +90,41 @@ export default function AverbacaoManutencao() {
 
   const salvar = async () => {
     try {
+      // Validações mínimas
+      if (!pdfInfo || !pdfInfo.storedName) {
+        showToast('error', 'Anexe o PDF da averbação antes de salvar.');
+        return;
+      }
+      if (!form.tipo || (form.tipo === 'Outras' && !form.tipoOutro)) {
+        showToast('error', 'Informe o tipo de averbação.');
+        return;
+      }
+      if (!form.livro || !form.folha || !form.termo) {
+        showToast('error', 'Preencha Livro, Folha e Termo do registro.');
+        return;
+      }
+      if (!form.nomePessoa1) {
+        showToast('error', 'Informe o nome do registrado.');
+        return;
+      }
+      if (!form.codigoTributario) {
+        showToast('error', 'Informe o código tributário da gratuidade.');
+        return;
+      }
+      if (!form.selo_consulta || !form.codigo_seguranca) {
+        showToast('error', 'Informe o selo de fiscalização (selo e código de segurança).');
+        return;
+      }
       const token = localStorage.getItem('token');
-      const payload = { ...form };
+      const payload = {
+        ...form,
+        tipo: form.tipo === 'Outras' ? (form.tipoOutro || 'Outras') : form.tipo,
+        pdf: pdfInfo && (pdfInfo.id || pdfInfo.storedName) ? {
+          id: pdfInfo.id,
+          storedName: pdfInfo.storedName,
+          originalName: pdfInfo.originalName
+        } : undefined
+      };
       const url = isEdicao
         ? `${config.apiURL}/averbacoes-gratuitas/${encodeURIComponent(id)}`
         : `${config.apiURL}/averbacoes-gratuitas`;
@@ -75,11 +139,102 @@ export default function AverbacaoManutencao() {
         showToast('error', t || 'Erro ao salvar.');
         return;
       }
+      // Tenta obter o id da averbação salva
+      const text = await res.text();
+      let dataResp = {};
+      try { dataResp = text ? JSON.parse(text) : {}; } catch {}
+      const averbacaoId = dataResp?.id || dataResp?.averbacao?.id || id; // no PUT pode usar o id da URL
+
+      // Sincroniza selo na tabela unificada (melhor esforço)
+      try {
+        if (averbacaoId) {
+          const payloadSelo = {
+            selo_consulta: form.selo_consulta,
+            codigo_seguranca: form.codigo_seguranca,
+            qtd_atos: '1',
+            atos_praticados_por: (JSON.parse(localStorage.getItem('usuario') || '{}').nome) || 'Usuário',
+            valores: null,
+            codigo_tributario: form.codigoTributario,
+          };
+          const existentes = await listarSelosAverbacao(averbacaoId).catch(() => []);
+          if (Array.isArray(existentes) && existentes.length > 0) {
+            await atualizarSeloAverbacao(averbacaoId, existentes[0].id, payloadSelo);
+          } else {
+            await criarSeloAverbacao(averbacaoId, payloadSelo);
+          }
+        }
+      } catch (e) {
+        // Não bloqueia o fluxo principal; mostra aviso
+        showToast('error', 'Averbação salva, mas houve erro ao sincronizar o selo.');
+      }
+
       showToast('success', 'Averbação salva com sucesso!');
       setTimeout(() => navigate('/averbacoes-gratuitas', { state: { message: 'Averbação salva com sucesso!', type: 'success' } }), 400);
     } catch (e) {
       showToast('error', 'Erro ao salvar.');
     }
+  };
+
+  const MESES_PT_BR = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+  const getMesReferencia = () => {
+    const d = new Date(form.data || new Date());
+    const idx = d.getMonth();
+    return MESES_PT_BR[idx] || '';
+  };
+
+  const handleUploadPDF = async (file) => {
+    if (!file) return;
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      showToast('error', 'Selecione um arquivo PDF válido.');
+      return;
+    }
+    setUploading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('arquivo', file);
+      formData.append('mesReferencia', getMesReferencia());
+      const res = await fetch(`${config.apiURL}/averbacoes-gratuitas/upload-pdf`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+      const text = await res.text();
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch {}
+      if (!res.ok) {
+        showToast('error', data.error || 'Erro ao enviar PDF.');
+      } else {
+        const info = data.arquivo || data;
+        setPdfInfo({
+          originalName: info.originalName || file.name,
+          storedName: info.storedName || info.nome || '',
+          url: info.url || '',
+          id: info.id || null
+        });
+        showToast('success', 'PDF enviado e renomeado com sucesso.');
+      }
+    } catch (e) {
+      showToast('error', 'Falha no upload do PDF.');
+    }
+    setUploading(false);
+  };
+
+  const buscarCodigosTributarios = async (term) => {
+    if (!term || term.length < 1) { setCodigoSugestoes([]); return; }
+    setCodigoLoading(true);
+    try {
+      const res = await fetch(`${config.apiUrl || config.apiURL}/codigos-tributarios?s=${encodeURIComponent(term)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCodigoSugestoes(data.sugestoes || []);
+      } else {
+        setCodigoSugestoes([]);
+      }
+    } catch (e) {
+      setCodigoSugestoes([]);
+    }
+    setCodigoLoading(false);
   };
 
   return (
@@ -102,15 +257,43 @@ export default function AverbacaoManutencao() {
           <p>Carregando...</p>
         ) : (
           <form onSubmit={e => { e.preventDefault(); salvar(); }}>
+            {/* Passo 1: Upload PDF */}
+            <div style={{ marginBottom: 16, paddingBottom: 12, borderBottom: '1px dashed #e1e5ea' }}>
+              <h3 style={{ margin: '0 0 8px 0' }}>1) Anexar PDF da Averbação</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <input type="file" accept="application/pdf,.pdf" onChange={e => handleUploadPDF(e.target.files?.[0])} disabled={uploading} />
+                {uploading && <span style={{ color: '#888' }}>Enviando...</span>}
+                {pdfInfo?.storedName && (
+                  <span style={{ fontSize: 13, color: '#2c3e50' }}>
+                    Arquivo salvo como: <strong>{pdfInfo.storedName}</strong> {pdfInfo.url && (<a href={pdfInfo.url} target="_blank" rel="noreferrer" style={{ marginLeft: 8 }}>abrir</a>)}
+                  </span>
+                )}
+              </div>
+              <small style={{ color: '#777' }}>O arquivo será renomeado como AVERBACAO-XXX-{getMesReferencia()}.PDF automaticamente.</small>
+            </div>
+
+            {/* Passo 2: Dados principais */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label>Data</label>
                 <input type="date" value={form.data} onChange={e => setForm(f => ({ ...f, data: e.target.value }))} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label>Tipo</label>
-                <input type="text" value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))} placeholder="Ex.: Averbação de casamento" />
+                <label>Tipo de Averbação</label>
+                <select value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}>
+                  <option value="">Selecione...</option>
+                  <option value="Divórcio">Divórcio</option>
+                  <option value="Reconhecimento de Paternidade">Reconhecimento de Paternidade</option>
+                  <option value="Adoção Unilateral">Adoção Unilateral</option>
+                  <option value="Outras">Outras</option>
+                </select>
               </div>
+              {form.tipo === 'Outras' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label>Informar Tipo</label>
+                  <input type="text" value={form.tipoOutro} onChange={e => setForm(f => ({ ...f, tipoOutro: e.target.value }))} placeholder="Descreva o tipo de averbação" />
+                </div>
+              )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label>Ressarcível?</label>
                 <select value={form.ressarcivel ? 'sim' : 'nao'} onChange={e => setForm(f => ({ ...f, ressarcivel: e.target.value === 'sim' }))}>
@@ -119,6 +302,72 @@ export default function AverbacaoManutencao() {
                 </select>
               </div>
             </div>
+
+            {/* Registro */}
+            <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label>Livro</label>
+                <input type="text" value={form.livro} onChange={e => setForm(f => ({ ...f, livro: e.target.value }))} placeholder="Ex.: A25" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label>Folha</label>
+                <input type="text" value={form.folha} onChange={e => setForm(f => ({ ...f, folha: e.target.value }))} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label>Termo</label>
+                <input type="text" value={form.termo} onChange={e => setForm(f => ({ ...f, termo: e.target.value }))} />
+              </div>
+            </div>
+
+            {/* Nomes */}
+            <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label>Nome do Registrado</label>
+                <input type="text" value={form.nomePessoa1} onChange={e => setForm(f => ({ ...f, nomePessoa1: e.target.value }))} placeholder="Nome completo" />
+              </div>
+              {form.tipo === 'Divórcio' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label>Segundo Nome (casamento)</label>
+                  <input type="text" value={form.nomePessoa2} onChange={e => setForm(f => ({ ...f, nomePessoa2: e.target.value }))} placeholder="Nome completo" />
+                </div>
+              )}
+            </div>
+
+            {/* Código Tributário */}
+            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6, position: 'relative' }}>
+              <label>Código Tributário da Gratuidade</label>
+              <input
+                type="text"
+                value={form.codigoTributario}
+                onChange={async e => { const v = e.target.value; setForm(f => ({ ...f, codigoTributario: v })); await buscarCodigosTributarios(v); }}
+                placeholder="Digite para buscar..."
+                autoComplete="off"
+              />
+              {codigoLoading && <span style={{ fontSize: 12, color: '#888' }}>Buscando...</span>}
+              {codigoSugestoes.length > 0 && (
+                <ul style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ccc', borderRadius: 6, margin: 0, padding: '4px 0', listStyle: 'none', zIndex: 9999, maxHeight: 220, overflowY: 'auto' }}>
+                  {codigoSugestoes.map(sug => (
+                    <li key={sug.codigo} style={{ padding: '6px 10px', cursor: 'pointer' }} onClick={() => { setForm(f => ({ ...f, codigoTributario: sug.codigo })); setCodigoSugestoes([]); }} onMouseEnter={e => e.currentTarget.style.background = '#f7f7f7'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      {sug.codigo} - {sug.descricao}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Selo de Fiscalização */}
+            <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label>Selo (consulta)</label>
+                <input type="text" value={form.selo_consulta} onChange={e => setForm(f => ({ ...f, selo_consulta: e.target.value }))} placeholder="Selo de consulta" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label>Código de Segurança</label>
+                <input type="text" value={form.codigo_seguranca} onChange={e => setForm(f => ({ ...f, codigo_seguranca: e.target.value }))} placeholder="Código de segurança" />
+              </div>
+            </div>
+
+            {/* Descrição e Observações */}
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label>Descrição</label>
               <textarea rows={3} value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} />
@@ -130,6 +379,8 @@ export default function AverbacaoManutencao() {
           </form>
         )}
       </div>
+
+      <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage('')} />
     </div>
   );
 }

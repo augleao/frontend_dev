@@ -58,3 +58,64 @@
 
 > **Observação:**
 > Esta lista foi atualizada automaticamente a partir dos componentes do frontend. Rotas duplicadas ou variantes podem ser ajustadas conforme a padronização do backend.
+
+---
+
+## Averbações Gratuitas
+
+- `GET    /api/averbacoes-gratuitas?dataInicial=YYYY-MM-DD&dataFinal=YYYY-MM-DD&ressarcivel=true|false|todos&tipo=...`  → Lista com filtros
+- `POST   /api/averbacoes-gratuitas`        → Cria uma nova averbação gratuita
+- `GET    /api/averbacoes-gratuitas/:id`    → Detalhe da averbação
+- `PUT    /api/averbacoes-gratuitas/:id`    → Atualiza averbação
+- `DELETE /api/averbacoes-gratuitas/:id`    → Exclui averbação
+
+### Upload de PDF (Averbações)
+
+- `POST   /api/averbacoes-gratuitas/upload-pdf` → Upload multipart/form-data (campo "file"). O backend renomeia para o padrão `AVERBACAO-XXX-MMMM.PDF` e retorna `{ filename, url }`.
+
+### Selos vinculados à Averbação
+
+- `GET    /api/averbacoes-gratuitas/:id/selos`              → Lista selos da averbação
+- `POST   /api/averbacoes-gratuitas/:id/selos`              → Cria selo vinculado
+- `PUT    /api/averbacoes-gratuitas/:id/selos/:seloId`      → Atualiza selo
+- `DELETE /api/averbacoes-gratuitas/:id/selos/:seloId`      → Exclui selo
+
+Payload sugerido (averbação):
+
+```
+{
+	"data": "YYYY-MM-DD",
+	"tipo": "string",
+	"descricao": "string?",
+	"ressarcivel": true,
+	"observacoes": "string?",
+	"livro": "string?",
+	"folha": "string?",
+	"termo": "string?",
+	"nome1": "string?",
+	"nome2": "string?",
+	"codigo_tributario": "string?",
+	"pdf": { "filename": "...", "url": "..." }
+}
+```
+
+Payload sugerido (selo vinculado):
+
+```
+{
+	"selo_consulta": "string",
+	"codigo_seguranca": "string",
+	"codigo_tributario": "string?",
+	"origem": "averbacao",        // backend pode inferir por averbacao_id
+	"execucao_servico_id": null,    // sempre null nos selos de averbação
+	"averbacao_id": "<id>",
+	"valores": "string?",
+	"qtd_atos": "string?",
+	"atos_praticados_por": "string?"
+}
+```
+
+Notas de implementação:
+- A coluna `execucao_servico_id` em `public.selos_execucao_servico` agora aceita NULL, permitindo selos apenas de averbação (com `averbacao_id`).
+- Recomenda-se definir `origem = 'averbacao'` automaticamente quando `averbacao_id` for informado.
+- Opcional (recomendado): adicionar um CHECK garantindo exclusividade entre `execucao_servico_id` e `averbacao_id`.
