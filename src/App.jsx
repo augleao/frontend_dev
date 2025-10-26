@@ -25,6 +25,8 @@ import ReciboPedido from './ReciboPedido';
 import EditarCombos from './components/admin/EditarCombos';
 import ProtocoloAcesso from './ProtocoloAcesso';
 import AtosGratuitos from './AtosGratuitos';
+import AverbacoesLista from './components/averbacoes/AverbacoesLista';
+import AverbacaoManutencao from './components/averbacoes/AverbacaoManutencao';
 
 
 
@@ -178,6 +180,30 @@ function App() {
           element={
             <PrivateRoute>
               <AtosGratuitos />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/averbacoes-gratuitas"
+          element={
+            <PrivateRoute>
+              <AverbacoesLista />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/averbacoes-gratuitas/nova"
+          element={
+            <PrivateRoute>
+              <AverbacaoManutencao />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/averbacoes-gratuitas/:id/editar"
+          element={
+            <PrivateRoute>
+              <AverbacaoManutencao />
             </PrivateRoute>
           }
         />

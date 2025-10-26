@@ -123,7 +123,7 @@ function AtosGratuitos() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <button
-            onClick={() => navigate('/home')}
+            onClick={() => navigate('/home2')}
             style={{
               background: 'rgba(255, 255, 255, 0.1)',
               border: '2px solid rgba(255, 255, 255, 0.3)',
