@@ -24,6 +24,7 @@ import ListaServicos from './components/servicos/ServicoLista'; // adicione esta
 import ReciboPedido from './ReciboPedido';
 import EditarCombos from './components/admin/EditarCombos';
 import ProtocoloAcesso from './ProtocoloAcesso';
+import AtosGratuitos from './AtosGratuitos';
 
 
 
@@ -172,6 +173,14 @@ function App() {
 />
         <Route path="/recibo/:protocolo" element={<ReciboPedido />} />
         <Route path="/protocolo" element={<ProtocoloAcesso />} />
+        <Route
+          path="/atos-gratuitos"
+          element={
+            <PrivateRoute>
+              <AtosGratuitos />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </AuthProvider>
   );

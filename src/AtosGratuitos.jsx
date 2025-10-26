@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function Home() {
+function AtosGratuitos() {
   const navigate = useNavigate();
   const [nomeUsuario, setNomeUsuario] = useState('');
 
@@ -10,105 +10,51 @@ function Home() {
     setNomeUsuario(usuario?.nome || 'Usuário');
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    navigate('/login');
-  };
-
   const featureCards = [
     {
-      id: 'caixa-diario',
-      title: 'CAIXA DIÁRIO',
-      description: 'Registre atos e pagamentos do movimento diário do caixa',
-      icon: '💰',
+      id: 'registrar-atos-gratuitos',
+      title: 'REGISTRAR ATOS GRATUITOS',
+      description: 'Registre novos atos gratuitos no sistema',
+      icon: '✍️',
       color: '#27ae60',
-      route: '/caixa-diario'
+      route: '/registrar-atos-gratuitos'
     },
     {
-      id: 'meus-fechamentos',
-      title: 'CAIXAS FECHADOS',
-      description: 'Visualize seus fechamentos de caixa',
-      icon: '💰',
-      color: '#27ae60',
-      route: '/meus-fechamentos'
-    },
-    {
-      id: 'manutencao-servicos',
-      title: 'PEDIDOS',
-      description: 'Gerencie o ciclo completo de pedidos: entrada, cliente, pagamento, execução e entrega',
-      icon: '📝',
-      color: '#8e44ad',
-      route: '/lista-servicos'
-    },
-    {
-      id: 'atos-praticados',
-      title: 'ATOS PRATICADOS',
-      description: 'Gerencie os atos praticados no dia (atos selados)',
-      icon: '🔗',
-      color: '#27ae60',
-      route: '/atos-praticados'
-    },
-    {
-      id: 'pesquisa-atos',
-      title: 'PESQUISA DE ATOS PRATICADOS',
-      description: 'Pesquise e consulte atos praticados por período, escrevente e tipo',
+      id: 'consultar-atos-gratuitos',
+      title: 'CONSULTAR ATOS GRATUITOS',
+      description: 'Consulte e pesquise atos gratuitos registrados',
       icon: '🔍',
-      color: '#f39c12',
-      route: '/pesquisa-atos-praticados'
-    },
-    {
-      id: 'conciliacao',
-      title: 'CONCILIAÇÃO ATOS PAGOS',
-      description: 'Realize a conciliação e fechamento dos atos pagos',
-      icon: '⚖️',
-      color: '#3498db',
-      route: '/conciliacao'
-    },
-    {
-      id: 'relatorios',
-      title: 'ATOS CONCILIADOS',
-      description: 'Visualize relatórios e histórico de atos conciliados',
-      icon: '⚖️',
-      color: '#3498db',
-      route: '/meus-relatorios'
-    },
-    {
-      id: 'relatorio-cnj',
-      title: 'RELATÓRIO SEMESTRAL CNJ',
-      description: 'Processe arquivos PDF do TJMG para gerar relatório semestral',
-      icon: '📊',
-      color: '#e67e22',
-      route: '/relatorio-cnj'
-    },
-    {
-      id: 'atos-gratuitos',
-      title: 'ATOS GRATUITOS',
-      description: 'Gerencie atos gratuitos e demais funcionalidades relacionadas',
-      icon: '📋',
       color: '#16a085',
-      route: '/atos-gratuitos'
+      route: '/consultar-atos-gratuitos'
+    },
+    {
+      id: 'relatorio-atos-gratuitos',
+      title: 'RELATÓRIOS',
+      description: 'Gere relatórios de atos gratuitos por período',
+      icon: '📊',
+      color: '#1abc9c',
+      route: '/relatorio-atos-gratuitos'
     }
   ];
 
   const futureFeatures = [
     {
-      title: 'BACKUP AUTOMÁTICO',
-      description: 'Em breve: Sistema de backup automático',
+      title: 'ESTATÍSTICAS',
+      description: 'Em breve: Estatísticas detalhadas de atos gratuitos',
+      icon: '📈',
+      color: '#27ae60'
+    },
+    {
+      title: 'EXPORTAÇÃO',
+      description: 'Em breve: Exportar dados para diferentes formatos',
       icon: '💾',
-      color: '#34495e'
-    },
-    {
-      title: 'AUDITORIA',
-      description: 'Em breve: Sistema de auditoria e logs',
-      icon: '🔍',
-      color: '#e74c3c'
-    },
-    {
-      title: 'INTEGRAÇÃO API',
-      description: 'Em breve: Integração com sistemas externos',
-      icon: '🔗',
       color: '#16a085'
+    },
+    {
+      title: 'VALIDAÇÃO AUTOMÁTICA',
+      description: 'Em breve: Validação automática de requisitos',
+      icon: '✅',
+      color: '#1abc9c'
     }
   ];
 
@@ -146,7 +92,7 @@ function Home() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #16a085 0%, #27ae60 100%)',
       fontFamily: 'Arial, sans-serif'
     }}>
       {/* Header */}
@@ -159,15 +105,39 @@ function Home() {
         alignItems: 'center',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
       }}>
-        <h1 style={{
-          color: 'white',
-          margin: 0,
-          fontSize: '24px',
-          fontWeight: '600',
-          letterSpacing: '0.5px'
-        }}>
-          Sistema Auxiliar do RCPN v1.5
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button
+            onClick={() => navigate('/home')}
+            style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+            }}
+          >
+            ← Voltar
+          </button>
+          <h1 style={{
+            color: 'white',
+            margin: 0,
+            fontSize: '24px',
+            fontWeight: '600',
+            letterSpacing: '0.5px'
+          }}>
+            Sistema Auxiliar do RCPN - Atos Gratuitos
+          </h1>
+        </div>
       </header>
 
       {/* Main Content */}
@@ -189,7 +159,7 @@ function Home() {
             textShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
             letterSpacing: '-0.5px'
           }}>
-            Bem-vindo ao Sistema Auxiliar do RCPN
+            📋 Gestão de Atos Gratuitos
           </h2>
           <p style={{
             fontSize: '20px',
@@ -198,7 +168,7 @@ function Home() {
             fontWeight: '300',
             textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
           }}>
-            Gerencie eficientemente atos e conciliações no Registro Civil de Pessoas Naturais
+            Gerencie e acompanhe todos os atos gratuitos do seu cartório
           </p>
         </div>
 
@@ -279,7 +249,7 @@ function Home() {
             margin: '0 0 40px 0',
             textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
           }}>
-            🚀 Mais Funcionalidades
+            🚀 Próximas Funcionalidades
           </h3>
           <div style={{
             display: 'grid',
@@ -320,5 +290,4 @@ function Home() {
   );
 }
 
-export default Home;
-
+export default AtosGratuitos;
