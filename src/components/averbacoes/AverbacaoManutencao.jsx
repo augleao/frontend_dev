@@ -4,6 +4,9 @@ import config from '../../config';
 import Toast from '../Toast';
 import { DEFAULT_TOAST_DURATION } from '../toastConfig';
 import { listarSelosAverbacao, criarSeloAverbacao, atualizarSeloAverbacao } from './SeloAverbacaoService';
+import ClipboardImageUploadAverbacao from './ClipboardImageUploadAverbacao';
+import SeloFileUploadAverbacao from './SeloFileUploadAverbacao';
+import '../servicos/servicos.css';
 
 export default function AverbacaoManutencao() {
   const navigate = useNavigate();
@@ -242,30 +245,27 @@ export default function AverbacaoManutencao() {
   };
 
   return (
-    <div style={{ padding: 16 }}>
-      <div style={{
-        background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(44,62,80,0.12)', padding: 16,
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12
-      }}>
-        <h2 style={{ margin: 0 }}>{isEdicao ? 'Editar Averbação Gratuita' : 'Nova Averbação Gratuita'}</h2>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => navigate('/averbacoes-gratuitas')} style={{ padding: '8px 12px' }}>Cancelar</button>
-          <button onClick={salvar} style={{ background: '#27ae60', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 600 }}>
-            Salvar
-          </button>
+    <div style={{ padding: 12 }}>
+      <div className="servico-section">
+        <div className="servico-header">
+          <h3 className="servico-title">{isEdicao ? 'Editar Averbação Gratuita' : 'Nova Averbação Gratuita'}</h3>
+          <div className="servico-actions" style={{ margin: 0 }}>
+            <button onClick={() => navigate('/averbacoes-gratuitas')} className="btn btn-secondary">Cancelar</button>
+            <button onClick={salvar} className="btn btn-success">Salvar</button>
+          </div>
         </div>
       </div>
 
-      <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(44,62,80,0.12)', padding: 16 }}>
+      <div className="servico-section">
         {loading ? (
           <p>Carregando...</p>
         ) : (
           <form onSubmit={e => { e.preventDefault(); salvar(); }}>
             {/* Passo 1: Upload PDF */}
-            <div style={{ marginBottom: 16, paddingBottom: 12, borderBottom: '1px dashed #e1e5ea' }}>
-              <h3 style={{ margin: '0 0 8px 0' }}>1) Anexar PDF da Averbação</h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <input type="file" accept="application/pdf,.pdf" onChange={e => handleUploadPDF(e.target.files?.[0])} disabled={uploading} />
+            <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px dashed #e1e5ea' }}>
+              <h4 className="servico-title" style={{ fontSize: 16, margin: '0 0 8px 0' }}>1) Anexar PDF da Averbação</h4>
+              <div className="servico-row" style={{ alignItems: 'center' }}>
+                <input className="servico-input" type="file" accept="application/pdf,.pdf" onChange={e => handleUploadPDF(e.target.files?.[0])} disabled={uploading} />
                 {uploading && <span style={{ color: '#888' }}>Enviando...</span>}
                 {pdfInfo?.storedName && (
                   <span style={{ fontSize: 13, color: '#2c3e50' }}>
@@ -279,12 +279,12 @@ export default function AverbacaoManutencao() {
             {/* Passo 2: Dados principais */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label>Data</label>
-                <input type="date" value={form.data} onChange={e => setForm(f => ({ ...f, data: e.target.value }))} />
+                <label className="servico-label">Data</label>
+                <input className="servico-input" type="date" value={form.data} onChange={e => setForm(f => ({ ...f, data: e.target.value }))} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label>Tipo de Averbação</label>
-                <select value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}>
+                <label className="servico-label">Tipo de Averbação</label>
+                <select className="servico-select" value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}>
                   <option value="">Selecione...</option>
                   <option value="Divórcio">Divórcio</option>
                   <option value="Reconhecimento de Paternidade">Reconhecimento de Paternidade</option>
@@ -294,13 +294,13 @@ export default function AverbacaoManutencao() {
               </div>
               {form.tipo === 'Outras' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label>Informar Tipo</label>
-                  <input type="text" value={form.tipoOutro} onChange={e => setForm(f => ({ ...f, tipoOutro: e.target.value }))} placeholder="Descreva o tipo de averbação" />
+                  <label className="servico-label">Informar Tipo</label>
+                  <input className="servico-input" type="text" value={form.tipoOutro} onChange={e => setForm(f => ({ ...f, tipoOutro: e.target.value }))} placeholder="Descreva o tipo de averbação" />
                 </div>
               )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label>Ressarcível?</label>
-                <select value={form.ressarcivel ? 'sim' : 'nao'} onChange={e => setForm(f => ({ ...f, ressarcivel: e.target.value === 'sim' }))}>
+                <label className="servico-label">Ressarcível?</label>
+                <select className="servico-select" value={form.ressarcivel ? 'sim' : 'nao'} onChange={e => setForm(f => ({ ...f, ressarcivel: e.target.value === 'sim' }))}>
                   <option value="nao">Não</option>
                   <option value="sim">Sim</option>
                 </select>
@@ -310,37 +310,38 @@ export default function AverbacaoManutencao() {
             {/* Registro */}
             <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label>Livro</label>
-                <input type="text" value={form.livro} onChange={e => setForm(f => ({ ...f, livro: e.target.value }))} placeholder="Ex.: A25" />
+                <label className="servico-label">Livro</label>
+                <input className="servico-input" type="text" value={form.livro} onChange={e => setForm(f => ({ ...f, livro: e.target.value }))} placeholder="Ex.: A25" />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label>Folha</label>
-                <input type="text" value={form.folha} onChange={e => setForm(f => ({ ...f, folha: e.target.value }))} />
+                <label className="servico-label">Folha</label>
+                <input className="servico-input" type="text" value={form.folha} onChange={e => setForm(f => ({ ...f, folha: e.target.value }))} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label>Termo</label>
-                <input type="text" value={form.termo} onChange={e => setForm(f => ({ ...f, termo: e.target.value }))} />
+                <label className="servico-label">Termo</label>
+                <input className="servico-input" type="text" value={form.termo} onChange={e => setForm(f => ({ ...f, termo: e.target.value }))} />
               </div>
             </div>
 
             {/* Nomes */}
             <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label>Nome do Registrado</label>
-                <input type="text" value={form.nomePessoa1} onChange={e => setForm(f => ({ ...f, nomePessoa1: e.target.value }))} placeholder="Nome completo" />
+                <label className="servico-label">Nome do Registrado</label>
+                <input className="servico-input" type="text" value={form.nomePessoa1} onChange={e => setForm(f => ({ ...f, nomePessoa1: e.target.value }))} placeholder="Nome completo" />
               </div>
               {form.tipo === 'Divórcio' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label>Segundo Nome (casamento)</label>
-                  <input type="text" value={form.nomePessoa2} onChange={e => setForm(f => ({ ...f, nomePessoa2: e.target.value }))} placeholder="Nome completo" />
+                  <label className="servico-label">Segundo Nome (casamento)</label>
+                  <input className="servico-input" type="text" value={form.nomePessoa2} onChange={e => setForm(f => ({ ...f, nomePessoa2: e.target.value }))} placeholder="Nome completo" />
                 </div>
               )}
             </div>
 
             {/* Código Tributário */}
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6, position: 'relative' }}>
-              <label>Código Tributário da Gratuidade</label>
+              <label className="servico-label">Código Tributário da Gratuidade</label>
               <input
+                className="servico-input"
                 type="text"
                 value={form.codigoTributario}
                 onChange={async e => { const v = e.target.value; setForm(f => ({ ...f, codigoTributario: v })); await buscarCodigosTributarios(v); }}
@@ -359,26 +360,72 @@ export default function AverbacaoManutencao() {
               )}
             </div>
 
-            {/* Selo de Fiscalização */}
-            <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label>Selo (consulta)</label>
-                <input type="text" value={form.selo_consulta} onChange={e => setForm(f => ({ ...f, selo_consulta: e.target.value }))} placeholder="Selo de consulta" />
+            {/* Selo de Fiscalização - mesmos botões/elementos da Execução */}
+            <div style={{ marginTop: 16 }}>
+              <h3 className="servico-title" style={{ margin: '0 0 8px 0', fontSize: 16 }}>Selo de Fiscalização</h3>
+              {/* Campos manuais (fallback) */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label className="servico-label">Selo (consulta)</label>
+                  <input className="servico-input" type="text" value={form.selo_consulta} onChange={e => setForm(f => ({ ...f, selo_consulta: e.target.value }))} placeholder="Selo de consulta" />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label className="servico-label">Código de Segurança</label>
+                  <input className="servico-input" type="text" value={form.codigo_seguranca} onChange={e => setForm(f => ({ ...f, codigo_seguranca: e.target.value }))} placeholder="Código de segurança" />
+                </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label>Código de Segurança</label>
-                <input type="text" value={form.codigo_seguranca} onChange={e => setForm(f => ({ ...f, codigo_seguranca: e.target.value }))} placeholder="Código de segurança" />
-              </div>
+              {/* Mesma UX de importação usada no componente de execução */}
+              {isEdicao ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, margin: '8px 0' }}>
+                  <ClipboardImageUploadAverbacao
+                    averbacaoId={id}
+                    onUpload={async (data) => {
+                      // Recarrega selos e tenta preencher campos do formulário
+                      try {
+                        const existentes = await listarSelosAverbacao(id).catch(() => []);
+                        if (Array.isArray(existentes) && existentes.length > 0) {
+                          const s = existentes[0];
+                          setForm(f => ({
+                            ...f,
+                            selo_consulta: s.selo_consulta || s.seloConsulta || f.selo_consulta,
+                            codigo_seguranca: s.codigo_seguranca || s.codigoSeguranca || f.codigo_seguranca,
+                          }));
+                        }
+                      } catch {}
+                    }}
+                  />
+                  <SeloFileUploadAverbacao
+                    averbacaoId={id}
+                    onUpload={async (data) => {
+                      try {
+                        const existentes = await listarSelosAverbacao(id).catch(() => []);
+                        if (Array.isArray(existentes) && existentes.length > 0) {
+                          const s = existentes[0];
+                          setForm(f => ({
+                            ...f,
+                            selo_consulta: s.selo_consulta || s.seloConsulta || f.selo_consulta,
+                            codigo_seguranca: s.codigo_seguranca || s.codigoSeguranca || f.codigo_seguranca,
+                          }));
+                        }
+                      } catch {}
+                    }}
+                  />
+                </div>
+              ) : (
+                <small style={{ color: '#777' }}>
+                  Para importar automaticamente os dados do selo (imagem ou área de transferência), salve primeiro a averbação.
+                </small>
+              )}
             </div>
 
             {/* Descrição e Observações */}
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label>Descrição</label>
-              <textarea rows={3} value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} />
+              <label className="servico-label">Descrição</label>
+              <textarea className="servico-textarea" rows={3} value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} />
             </div>
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label>Observações</label>
-              <textarea rows={3} value={form.observacoes} onChange={e => setForm(f => ({ ...f, observacoes: e.target.value }))} />
+              <label className="servico-label">Observações</label>
+              <textarea className="servico-textarea" rows={3} value={form.observacoes} onChange={e => setForm(f => ({ ...f, observacoes: e.target.value }))} />
             </div>
           </form>
         )}
