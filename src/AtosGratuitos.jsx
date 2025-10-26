@@ -12,12 +12,12 @@ function AtosGratuitos() {
 
   const featureCards = [
     {
-      id: 'registrar-atos-gratuitos',
-      title: 'REGISTRAR ATOS GRATUITOS',
-      description: 'Registre novos atos gratuitos no sistema',
+      id: 'certidoes-gratuitas',
+      title: 'CERTIDÕES GRATUITAS',
+      description: 'Registre e gerencie certidões gratuitas',
       icon: '✍️',
       color: '#27ae60',
-      route: '/registrar-atos-gratuitos'
+      route: '/certidoes-gratuitas'
     },
     {
       id: 'consultar-atos-gratuitos',

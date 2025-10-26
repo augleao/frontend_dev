@@ -7,20 +7,25 @@ function NavBar() {
   const navigate = useNavigate();
 
   const buttonStyle = {
-    fontSize: '1.2rem',
-    padding: '12px 24px',
+    fontSize: '0.9rem',
+    padding: '6px 14px',
     background: '#4CAF50',
     color: '#fff',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '6px',
     cursor: 'pointer',
     textDecoration: 'none',
-    marginLeft: '10px',
+    marginLeft: '8px',
   };
 
   // Função para o botão Voltar
   const handleVoltar = () => {
     navigate(-1);
+  };
+
+  // Função para o botão Home
+  const handleHome = () => {
+    navigate('/home2');
   };
 
   // Função para logout com redirecionamento para home.html
@@ -32,12 +37,18 @@ function NavBar() {
   return (
     <nav
       style={{
-        padding: '10px 20px',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        padding: '6px 20px',
         display: 'flex',
         justifyContent: 'flex-end',
         alignItems: 'center',
         backgroundColor: '#f0f0f0',
         borderBottom: '1px solid #ddd',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
       }}
     >
       {user ? (
@@ -45,8 +56,8 @@ function NavBar() {
           <span style={{ 
             fontWeight: 'bold', 
             color: '#333', 
-            marginRight: '16px', 
-            fontSize: '1.1rem' 
+            marginRight: '12px', 
+            fontSize: '0.9rem' 
           }}>
             👤 {user.nome || user.email}
           </span>
@@ -55,6 +66,9 @@ function NavBar() {
               Administração
             </Link>
           )}
+          <button style={buttonStyle} onClick={handleHome}>
+            Home
+          </button>
           <button style={buttonStyle} onClick={handleVoltar}>
             Voltar
           </button>
