@@ -20,12 +20,12 @@ function AtosGratuitos() {
       route: '/certidoes-gratuitas'
     },
     {
-      id: 'mandados-gratuitos',
-      title: 'MANDADOS GRATUITOS',
-      description: 'Registre e gerencie mandados gratuitos',
+      id: 'averbacoes-gratuitas',
+      title: 'AVERBAÇÕES GRATUITAS',
+      description: 'Registre e gerencie averbações gratuitas',
       icon: '⚖️',
       color: '#16a085',
-      route: '/mandados-gratuitos'
+      route: '/averbacoes-gratuitas'
     },
     {
       id: 'procedimentos-gratuitos',
