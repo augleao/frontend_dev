@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 
@@ -34,8 +34,22 @@ function NavBar() {
     navigate('/home.html'); // redireciona para home.html
   };
 
+  const navRef = useRef(null);
+
+  useEffect(() => {
+    const applyHeight = () => {
+      const h = navRef.current?.offsetHeight || 0;
+      const val = h > 0 ? `${h}px` : '56px';
+      document.documentElement.style.setProperty('--navbar-height', val);
+    };
+    applyHeight();
+    window.addEventListener('resize', applyHeight);
+    return () => window.removeEventListener('resize', applyHeight);
+  }, []);
+
   return (
     <nav
+      ref={navRef}
       style={{
         position: 'fixed',
         top: 0,

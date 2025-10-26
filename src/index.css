@@ -14,6 +14,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Ensure content isn't hidden behind fixed NavBar */
+  padding-top: var(--navbar-height, 56px);
 }
 
 code {
