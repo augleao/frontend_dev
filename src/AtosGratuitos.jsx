@@ -20,6 +20,22 @@ function AtosGratuitos() {
       route: '/certidoes-gratuitas'
     },
     {
+      id: 'mandados-gratuitos',
+      title: 'MANDADOS GRATUITOS',
+      description: 'Registre e gerencie mandados gratuitos',
+      icon: '⚖️',
+      color: '#16a085',
+      route: '/mandados-gratuitos'
+    },
+    {
+      id: 'procedimentos-gratuitos',
+      title: 'PROCEDIMENTOS GRATUITOS',
+      description: 'Registre e gerencie procedimentos gratuitos',
+      icon: '📑',
+      color: '#1abc9c',
+      route: '/procedimentos-gratuitos'
+    },
+    {
       id: 'consultar-atos-gratuitos',
       title: 'CONSULTAR ATOS GRATUITOS',
       description: 'Consulte e pesquise atos gratuitos registrados',
