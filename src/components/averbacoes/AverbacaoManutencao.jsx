@@ -192,8 +192,11 @@ export default function AverbacaoManutencao() {
     try {
       const token = localStorage.getItem('token');
       const formData = new FormData();
-      formData.append('arquivo', file);
-      formData.append('mesReferencia', getMesReferencia());
+      // Backend espera o campo "file" e opcionalmente "data" (YYYY-MM-DD)
+      formData.append('file', file);
+      if (form && form.data) {
+        formData.append('data', form.data);
+      }
       const res = await fetch(`${config.apiURL}/averbacoes-gratuitas/upload-pdf`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -208,7 +211,8 @@ export default function AverbacaoManutencao() {
         const info = data.arquivo || data;
         setPdfInfo({
           originalName: info.originalName || file.name,
-          storedName: info.storedName || info.nome || '',
+          // O backend retorna "filename"; manter compat com outras chaves
+          storedName: info.storedName || info.nome || info.filename || '',
           url: info.url || '',
           id: info.id || null
         });
