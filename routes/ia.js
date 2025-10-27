@@ -241,38 +241,77 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   // 2) Identificar tipo do mandado a partir do texto
   app.post('/api/ia/identificar-tipo', async (req, res) => {
     try {
+      const startedAt = Date.now();
+      const rid = `IA-IDT-${Date.now()}-${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`;
       const { text } = req.body || {};
+      const inLen = typeof text === 'string' ? text.length : 0;
+      const inNonWS = typeof text === 'string' ? (text.replace(/\s+/g, '').length) : 0;
+      console.log(`[IA][identificar-tipo][${rid}] start len=${inLen} nonWS=${inNonWS}`);
       if (!text || typeof text !== 'string' || text.trim().length < 5) {
+        console.warn(`[IA][identificar-tipo][${rid}] input inválido: texto curto ou ausente`);
         return res.status(400).json({ error: 'Campo text é obrigatório.' });
       }
 
       // Stub simples com heurística
       if (process.env.IA_STUB === 'true') {
+        console.log(`[IA][identificar-tipo][${rid}] IA_STUB=true → usando heurística`);
         const t = text.toLowerCase();
         let tipo = 'mandado_generico';
         if (t.includes('penhora')) tipo = 'mandado_penhora';
         else if (t.includes('alimentos') || t.includes('pensão')) tipo = 'mandado_alimentos';
         else if (t.includes('prisão civil')) tipo = 'mandado_prisao_civil';
+        console.log(`[IA][identificar-tipo][${rid}] heuristic tipo=${tipo} confidence=0.8 ms=${Date.now() - startedAt}`);
         return res.json({ tipo, confidence: 0.8 });
       }
 
       // Gemini identifica o tipo e devolve JSON { tipo, confidence }
       const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) return res.status(501).json({ error: 'GEMINI_API_KEY não configurado.' });
+      if (!apiKey) {
+        console.error(`[IA][identificar-tipo][${rid}] GEMINI_API_KEY ausente`);
+        return res.status(501).json({ error: 'GEMINI_API_KEY não configurado.' });
+      }
+      const modelName = process.env.IA_MODEL || 'gemini-1.5-flash';
+      console.log(`[IA][identificar-tipo][${rid}] provider=gemini model=${modelName} key.len=${String(apiKey).length}`);
+      // Import do provedor com erro claro se pacote faltar
+      let GoogleGenerativeAI;
       try {
-        const { GoogleGenerativeAI } = await import('@google/generative-ai');
+        ({ GoogleGenerativeAI } = await import('@google/generative-ai'));
+      } catch (impErr) {
+        console.error('[IA][identificar-tipo] Falha ao importar provedor @google/generative-ai:', impErr && impErr.message ? impErr.message : impErr);
+        return res.status(501).json({ error: "Pacote '@google/generative-ai' não instalado ou indisponível.", hint: "Instale com 'npm i @google/generative-ai' ou ative IA_STUB=true para heurística." });
+      }
+      try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: process.env.IA_MODEL || 'gemini-1.5-flash' });
+        const model = genAI.getGenerativeModel({ model: modelName });
         const prompt = `Classifique o tipo do mandado judicial a partir do texto abaixo. Responda APENAS um JSON com as chaves tipo (string curta, ex.: mandado_penhora) e confidence (0..1). Texto:\n${text.slice(0, 8000)}`;
+        console.log(`[IA][identificar-tipo][${rid}] calling provider prompt.len=${prompt.length}`);
         const resp = await model.generateContent(prompt);
         const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
+        console.log(`[IA][identificar-tipo][${rid}] provider ok out.len=${out.length}`);
         let tipo = 'mandado_generico', confidence = 0.5;
-        try { const parsed = JSON.parse(out); tipo = parsed.tipo || tipo; confidence = Number(parsed.confidence) || confidence; } catch (_) {}
+        try {
+          const parsed = JSON.parse(out);
+          tipo = parsed.tipo || tipo;
+          confidence = Number(parsed.confidence) || confidence;
+          console.log(`[IA][identificar-tipo][${rid}] parsed tipo=${tipo} confidence=${confidence} ms=${Date.now() - startedAt}`);
+        } catch (parseErr) {
+          console.warn(`[IA][identificar-tipo][${rid}] parse JSON falhou:`, parseErr && parseErr.message ? parseErr.message : parseErr);
+          console.warn(`[IA][identificar-tipo][${rid}] out preview:`, out.slice(0, 160));
+        }
         return res.json({ tipo, confidence });
-      } catch (e) {
-        return res.status(502).json({ error: 'Falha ao chamar provedor de IA.' });
+      } catch (provErr) {
+        console.error('[IA][identificar-tipo] Falha ao chamar provedor de IA:', provErr && provErr.message ? provErr.message : provErr);
+        // Fallback heurístico para não bloquear o fluxo
+        const t = text.toLowerCase();
+        let tipo = 'mandado_generico';
+        if (t.includes('penhora')) tipo = 'mandado_penhora';
+        else if (t.includes('alimentos') || t.includes('pensão')) tipo = 'mandado_alimentos';
+        else if (t.includes('prisão civil')) tipo = 'mandado_prisao_civil';
+        console.log(`[IA][identificar-tipo][${rid}] fallback heuristic tipo=${tipo} confidence=0.4 ms=${Date.now() - startedAt}`);
+        return res.json({ tipo, confidence: 0.4, warning: 'Provedor de IA indisponível, resultado heurístico.' });
       }
     } catch (err) {
+      console.error('[IA][identificar-tipo] erro inesperado:', err && err.message ? err.message : err);
       return res.status(500).json({ error: 'Erro ao identificar tipo.' });
     }
   });
