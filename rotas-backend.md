@@ -107,7 +107,7 @@ Configuração necessária (backend):
 - Variáveis de ambiente:
 	- GEMINI_API_KEY: chave do Google AI Studio
 	- IA_MAX_TRECHOS=8 (opcional)
-	- IA_MODEL=gemini-1.5-flash (default)
+	- IA_MODEL=gemini-1.5-flash-latest (default)
 	- IA_STUB=true (opcional; retorna resposta simulada para destravar o frontend)
 - Observações de privacidade:
 	- Enviar apenas trechos relevantes da legislação (RAG) e, se necessário, reduzir/anonimizar dados sensíveis do PDF.

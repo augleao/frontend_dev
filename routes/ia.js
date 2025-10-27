@@ -5,15 +5,35 @@
 
 const multer = require('multer');
 
+// Resolve IA model name to a supported variant. Auto-upgrade known names to "-latest".
+function resolveIaModel(name) {
+  if (!name) return 'gemini-1.5-flash-latest';
+  if (/\-latest$/.test(name)) return name;
+  if (name === 'gemini-1.5-flash') return 'gemini-1.5-flash-latest';
+  if (name === 'gemini-1.5-pro') return 'gemini-1.5-pro-latest';
+  return name; // leave others as-is
+}
+
 // memory storage is enough, we forward the PDF buffer to the parser/provider
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 module.exports = function initIARoutes(app, pool, middlewares = {}) {
   const jobs = new Map(); // in-memory job store { id: { state, step, message, progress, textPreview, result, error } }
 
+  // Resolve IA model name to a supported variant. Auto-upgrade known names to "-latest".
+  function resolveIaModel(name) {
+    if (!name) return 'gemini-1.5-flash-latest';
+    if (/\-latest$/.test(name)) return name;
+    if (name === 'gemini-1.5-flash') return 'gemini-1.5-flash-latest';
+    if (name === 'gemini-1.5-pro') return 'gemini-1.5-pro-latest';
+    return name; // leave others as-is
+  }
+
   // Healthcheck (optional)
   app.get('/api/ia/health', (req, res) => {
-    res.json({ ok: true, provider: process.env.IA_MODEL || 'gemini-1.5-flash', stub: process.env.IA_STUB === 'true' });
+    const raw = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
+    const resolved = resolveIaModel(raw);
+    res.json({ ok: true, provider: resolved, stub: process.env.IA_STUB === 'true' });
   });
 
   // POST /api/ia/analise-mandado
@@ -142,7 +162,11 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
 
       try {
   const genAI = new GoogleGenerativeAI(apiKey);
-        const modelName = process.env.IA_MODEL || 'gemini-1.5-flash';
+        const rawName = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
+        const modelName = resolveIaModel(rawName);
+        if (rawName !== modelName) {
+          console.log(`[IA][analise-mandado] model resolved from '${rawName}' to '${modelName}'`);
+        }
         const model = genAI.getGenerativeModel({ model: modelName });
         const result = await model.generateContent(prompt);
         const output = (result && result.response && result.response.text && result.response.text()) || '';
@@ -270,7 +294,11 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         console.error(`[IA][identificar-tipo][${rid}] GEMINI_API_KEY ausente`);
         return res.status(501).json({ error: 'GEMINI_API_KEY não configurado.' });
       }
-      const modelName = process.env.IA_MODEL || 'gemini-1.5-flash';
+      const rawModel = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
+      const modelName = resolveIaModel(rawModel);
+      if (rawModel !== modelName) {
+        console.log(`[IA][identificar-tipo][${rid}] model resolved from '${rawModel}' to '${modelName}'`);
+      }
       console.log(`[IA][identificar-tipo][${rid}] provider=gemini model=${modelName} key.len=${String(apiKey).length}`);
       // Import do provedor com erro claro se pacote faltar
       let GoogleGenerativeAI;
@@ -345,7 +373,12 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
       try {
         const { GoogleGenerativeAI } = await import('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: process.env.IA_MODEL || 'gemini-1.5-flash' });
+        const rawName = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
+        const modelName = resolveIaModel(rawName);
+        if (rawName !== modelName) {
+          console.log(`[IA][analisar-exigencia] model resolved from '${rawName}' to '${modelName}'`);
+        }
+        const model = genAI.getGenerativeModel({ model: modelName });
         const prompt = `Com base no texto do mandado e nos trechos legais, liste as exigências legais aplicáveis (checklist) e indique se está aprovado. Responda JSON: { aprovado: boolean, motivos: string[], checklist: [{ requisito, ok }], orientacao: string }.\nTipo (se houver): ${tipo || 'n/d'}\nTexto do mandado:\n${text.slice(0, 8000)}\n\nLegislação correlata:\n${contextoLegal}`;
         const resp = await model.generateContent(prompt);
         const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
@@ -389,8 +422,13 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
       if (!apiKey) return res.status(501).json({ error: 'GEMINI_API_KEY não configurado.' });
       try {
         const { GoogleGenerativeAI } = await import('@google/generative-ai');
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: process.env.IA_MODEL || 'gemini-1.5-flash' });
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const rawName = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
+  const modelName = resolveIaModel(rawName);
+  if (rawName !== modelName) {
+    console.log(`[IA][gerar-texto-averbacao] model resolved from '${rawName}' to '${modelName}'`);
+  }
+  const model = genAI.getGenerativeModel({ model: modelName });
         const prompt = `Elabore o texto objetivo da averbação a partir do mandado judicial abaixo, observando as exigências legais pertinentes. O texto deve ser curto, impessoal e adequado para lançamento no livro. Retorne apenas o texto, sem comentários.
 Tipo (se houver): ${tipo || 'n/d'}
 Mandado (texto):\n${text.slice(0, 8000)}\n\nLegislação aplicável (trechos):\n${contextoLegal}`;
@@ -520,7 +558,12 @@ Mandado (texto):\n${text.slice(0, 8000)}\n\nLegislação aplicável (trechos):\n
       try {
         const { GoogleGenerativeAI } = await import('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: process.env.IA_MODEL || 'gemini-1.5-flash' });
+        const rawName = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
+        const modelName = resolveIaModel(rawName);
+        if (rawName !== modelName) {
+          console.log(`[IA][analise-mandado-async] model resolved from '${rawName}' to '${modelName}'`);
+        }
+        const model = genAI.getGenerativeModel({ model: modelName });
         const contextoLegal = (trechos || []).map(t => `• ${t.base_legal}${t.artigo ? ' - ' + t.artigo : ''}: ${t.texto}`).join('\n');
         const prompt = `Analise o mandado judicial abaixo e gere o texto objetivo da averbação.\n\nMandado (texto extraído):\n${(extracted || '').slice(0, 8000)}\n\nContexto legal (trechos selecionados):\n${contextoLegal}`;
         const resp = await model.generateContent(prompt);
