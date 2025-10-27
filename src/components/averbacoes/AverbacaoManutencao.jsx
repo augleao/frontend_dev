@@ -93,29 +93,13 @@ export default function AverbacaoManutencao() {
 
   const salvar = async () => {
     try {
-      // Validações mínimas
-      if (!pdfInfo || !pdfInfo.storedName) {
-        showToast('error', 'Anexe o PDF da averbação antes de salvar.');
-        return;
-      }
+      // Validações mínimas (agora apenas os campos solicitados)
       if (!form.tipo || (form.tipo === 'Outras' && !form.tipoOutro)) {
         showToast('error', 'Informe o tipo de averbação.');
         return;
       }
       if (!form.livro || !form.folha || !form.termo) {
         showToast('error', 'Preencha Livro, Folha e Termo do registro.');
-        return;
-      }
-      if (!form.nomePessoa1) {
-        showToast('error', 'Informe o nome do registrado.');
-        return;
-      }
-      if (!form.codigoTributario) {
-        showToast('error', 'Informe o código tributário da gratuidade.');
-        return;
-      }
-      if (!form.selo_consulta || !form.codigo_seguranca) {
-        showToast('error', 'Informe o selo de fiscalização (selo e código de segurança).');
         return;
       }
       const token = localStorage.getItem('token');
@@ -147,32 +131,13 @@ export default function AverbacaoManutencao() {
       let dataResp = {};
       try { dataResp = text ? JSON.parse(text) : {}; } catch {}
       const averbacaoId = dataResp?.id || dataResp?.averbacao?.id || id; // no PUT pode usar o id da URL
-
-      // Sincroniza selo na tabela unificada (melhor esforço)
-      try {
-        if (averbacaoId) {
-          const payloadSelo = {
-            selo_consulta: form.selo_consulta,
-            codigo_seguranca: form.codigo_seguranca,
-            qtd_atos: '1',
-            atos_praticados_por: (JSON.parse(localStorage.getItem('usuario') || '{}').nome) || 'Usuário',
-            valores: null,
-            codigo_tributario: form.codigoTributario,
-          };
-          const existentes = await listarSelosAverbacao(averbacaoId).catch(() => []);
-          if (Array.isArray(existentes) && existentes.length > 0) {
-            await atualizarSeloAverbacao(averbacaoId, existentes[0].id, payloadSelo);
-          } else {
-            await criarSeloAverbacao(averbacaoId, payloadSelo);
-          }
-        }
-      } catch (e) {
-        // Não bloqueia o fluxo principal; mostra aviso
-        showToast('error', 'Averbação salva, mas houve erro ao sincronizar o selo.');
-      }
-
       showToast('success', 'Averbação salva com sucesso!');
-      setTimeout(() => navigate('/averbacoes-gratuitas', { state: { message: 'Averbação salva com sucesso!', type: 'success' } }), 400);
+      // Após salvar, abre a tela de edição para liberar a seção de Selo Eletrônico
+      if (!isEdicao && averbacaoId) {
+        setTimeout(() => navigate(`/averbacoes-gratuitas/${encodeURIComponent(averbacaoId)}/editar`, {
+          state: { message: 'Averbação salva. Agora adicione o selo eletrônico.', type: 'success' }
+        }), 400);
+      }
     } catch (e) {
       showToast('error', 'Erro ao salvar.');
     }
@@ -360,27 +325,26 @@ export default function AverbacaoManutencao() {
               )}
             </div>
 
-            {/* Selo de Fiscalização - mesmos botões/elementos da Execução */}
-            <div style={{ marginTop: 16 }}>
-              <h3 className="servico-title" style={{ margin: '0 0 8px 0', fontSize: 16 }}>Selo de Fiscalização</h3>
-              {/* Campos manuais (fallback) */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label className="servico-label">Selo (consulta)</label>
-                  <input className="servico-input" type="text" value={form.selo_consulta} onChange={e => setForm(f => ({ ...f, selo_consulta: e.target.value }))} placeholder="Selo de consulta" />
+            {/* Selo de Fiscalização - disponível após salvar (modo edição) */}
+            {isEdicao ? (
+              <div style={{ marginTop: 16 }}>
+                <h3 className="servico-title" style={{ margin: '0 0 8px 0', fontSize: 16 }}>Selo de Fiscalização</h3>
+                {/* Campos manuais (opcional) */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label className="servico-label">Selo (consulta)</label>
+                    <input className="servico-input" type="text" value={form.selo_consulta} onChange={e => setForm(f => ({ ...f, selo_consulta: e.target.value }))} placeholder="Selo de consulta" />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label className="servico-label">Código de Segurança</label>
+                    <input className="servico-input" type="text" value={form.codigo_seguranca} onChange={e => setForm(f => ({ ...f, codigo_seguranca: e.target.value }))} placeholder="Código de segurança" />
+                  </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label className="servico-label">Código de Segurança</label>
-                  <input className="servico-input" type="text" value={form.codigo_seguranca} onChange={e => setForm(f => ({ ...f, codigo_seguranca: e.target.value }))} placeholder="Código de segurança" />
-                </div>
-              </div>
-              {/* Mesma UX de importação usada no componente de execução */}
-              {isEdicao ? (
+                {/* Mesma UX de importação usada no componente de execução */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, margin: '8px 0' }}>
                   <ClipboardImageUploadAverbacao
                     averbacaoId={id}
-                    onUpload={async (data) => {
-                      // Recarrega selos e tenta preencher campos do formulário
+                    onUpload={async () => {
                       try {
                         const existentes = await listarSelosAverbacao(id).catch(() => []);
                         if (Array.isArray(existentes) && existentes.length > 0) {
@@ -396,7 +360,7 @@ export default function AverbacaoManutencao() {
                   />
                   <SeloFileUploadAverbacao
                     averbacaoId={id}
-                    onUpload={async (data) => {
+                    onUpload={async () => {
                       try {
                         const existentes = await listarSelosAverbacao(id).catch(() => []);
                         if (Array.isArray(existentes) && existentes.length > 0) {
@@ -411,12 +375,12 @@ export default function AverbacaoManutencao() {
                     }}
                   />
                 </div>
-              ) : (
-                <small style={{ color: '#777' }}>
-                  Para importar automaticamente os dados do selo (imagem ou área de transferência), salve primeiro a averbação.
-                </small>
-              )}
-            </div>
+              </div>
+            ) : (
+              <small style={{ color: '#777', display: 'block', marginTop: 12 }}>
+                Para adicionar o selo eletrônico, salve a averbação primeiro.
+              </small>
+            )}
 
             {/* Descrição e Observações */}
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
