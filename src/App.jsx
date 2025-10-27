@@ -27,6 +27,7 @@ import ProtocoloAcesso from './ProtocoloAcesso';
 import AtosGratuitos from './AtosGratuitos';
 import AverbacoesLista from './components/averbacoes/AverbacoesLista';
 import AverbacaoManutencao from './components/averbacoes/AverbacaoManutencao';
+import FerramentasIA from './FerramentasIA';
 
 
 
@@ -204,6 +205,14 @@ function App() {
           element={
             <PrivateRoute>
               <AverbacaoManutencao />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/ferramentas-ia"
+          element={
+            <PrivateRoute>
+              <FerramentasIA />
             </PrivateRoute>
           }
         />
