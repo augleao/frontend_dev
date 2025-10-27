@@ -1,7 +1,7 @@
 // Backend routes example for Legislação (Express + pg)
 // Usage in your backend project (server.js):
 //   const initLegislacaoRoutes = require('./routes/legislacao');
-//   initLegislacaoRoutes(app, pool, { ensureAuth, ensureRegistradorOuSubstituto });
+//   initLegislacaoRoutes(app, pool, { ensureAuth }); // role checks are handled in the frontend UI
 
 function normalizeTags(tags) {
   if (!tags) return [];
@@ -35,20 +35,11 @@ function buildTsQuery(q) {
 }
 
 module.exports = function initLegislacaoRoutes(app, pool, middlewares = {}) {
+  // If your backend has authentication, pass it via middlewares.ensureAuth; otherwise it's a no-op.
   const ensureAuth = middlewares.ensureAuth || ((req, res, next) => next());
-  const ensureRegistradorOuSubstituto =
-    middlewares.ensureRegistradorOuSubstituto ||
-    ((req, res, next) => {
-      try {
-        const usuario = req.user || {};
-        const cargo = String(usuario.cargo || '').toLowerCase();
-        if (cargo === 'registrador' || cargo === 'substituto') return next();
-      } catch (_) {}
-      return res.status(403).json({ error: 'Acesso negado.' });
-    });
 
   // GET /api/legislacao?q=&indexador=&ativo=
-  app.get('/api/legislacao', ensureAuth, ensureRegistradorOuSubstituto, async (req, res) => {
+  app.get('/api/legislacao', ensureAuth, async (req, res) => {
     try {
       const { q, indexador } = req.query;
       const ativoMaybe = parseBooleanMaybe(req.query.ativo);
@@ -94,7 +85,7 @@ module.exports = function initLegislacaoRoutes(app, pool, middlewares = {}) {
   });
 
   // POST /api/legislacao
-  app.post('/api/legislacao', ensureAuth, ensureRegistradorOuSubstituto, async (req, res) => {
+  app.post('/api/legislacao', ensureAuth, async (req, res) => {
     try {
       const {
         indexador,
@@ -142,7 +133,7 @@ module.exports = function initLegislacaoRoutes(app, pool, middlewares = {}) {
   });
 
   // PUT /api/legislacao/:id
-  app.put('/api/legislacao/:id', ensureAuth, ensureRegistradorOuSubstituto, async (req, res) => {
+  app.put('/api/legislacao/:id', ensureAuth, async (req, res) => {
     try {
       const id = Number(req.params.id);
       if (!id) return res.status(400).json({ error: 'ID inválido.' });
@@ -180,7 +171,7 @@ module.exports = function initLegislacaoRoutes(app, pool, middlewares = {}) {
   });
 
   // DELETE /api/legislacao/:id
-  app.delete('/api/legislacao/:id', ensureAuth, ensureRegistradorOuSubstituto, async (req, res) => {
+  app.delete('/api/legislacao/:id', ensureAuth, async (req, res) => {
     try {
       const id = Number(req.params.id);
       if (!id) return res.status(400).json({ error: 'ID inválido.' });

@@ -158,6 +158,7 @@ Notas de implementação:
 - `DELETE /api/legislacao/:id` → Exclui item
 
 Notas de implementação:
+- Autorização por perfil (Registrador/Substituto) é aplicada no frontend (exibição do componente). O backend não realiza checagem de papel nestas rotas.
 - Popular searchable com to_tsvector('portuguese', …) (já suportado pela migration)
 - Filtros: se `q` informado, usar to_tsquery/plainto_tsquery; se `ativo` omitido, retornar ativos por padrão
 - Ordenação sugerida: updated_at DESC, id DESC

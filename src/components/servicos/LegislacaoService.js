@@ -11,7 +11,8 @@ export async function listarLegislacao({ search = '', indexador = '', ativo } = 
   if (indexador) params.set('indexador', indexador);
   if (typeof ativo === 'boolean') params.set('ativo', String(ativo));
 
-  const resp = await fetch(`${apiURL}/api/legislacao?${params.toString()}`, {
+  // apiURL already includes '/api'
+  const resp = await fetch(`${apiURL}/legislacao?${params.toString()}`, {
     headers: { 'Content-Type': 'application/json', ...authHeaders() }
   });
   if (!resp.ok) throw new Error('Falha ao listar legislação');
@@ -19,7 +20,7 @@ export async function listarLegislacao({ search = '', indexador = '', ativo } = 
 }
 
 export async function criarLegislacao(payload) {
-  const resp = await fetch(`${apiURL}/api/legislacao`, {
+  const resp = await fetch(`${apiURL}/legislacao`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(payload)
@@ -29,7 +30,7 @@ export async function criarLegislacao(payload) {
 }
 
 export async function atualizarLegislacao(id, payload) {
-  const resp = await fetch(`${apiURL}/api/legislacao/${id}`, {
+  const resp = await fetch(`${apiURL}/legislacao/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(payload)
@@ -39,7 +40,7 @@ export async function atualizarLegislacao(id, payload) {
 }
 
 export async function excluirLegislacao(id) {
-  const resp = await fetch(`${apiURL}/api/legislacao/${id}`, {
+  const resp = await fetch(`${apiURL}/legislacao/${id}`, {
     method: 'DELETE',
     headers: { ...authHeaders() }
   });

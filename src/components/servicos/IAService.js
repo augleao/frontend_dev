@@ -10,7 +10,8 @@ export async function analisarMandado(file, metadata = {}) {
     formData.append('metadata', JSON.stringify(metadata));
   }
 
-  const resp = await fetch(`${apiURL}/api/ia/analise-mandado`, {
+  // apiURL already includes '/api'
+  const resp = await fetch(`${apiURL}/ia/analise-mandado`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token || ''}`
