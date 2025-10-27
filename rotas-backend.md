@@ -132,6 +132,36 @@ Verificação rápida pós-deploy
 - Acesse GET /api/ia/health e confirme { ok: true }
 - Se POST /api/ia/analise-mandado-async retornar 404, o módulo de IA ainda não está registrado/deployado; o frontend cairá no fallback síncrono automaticamente.
 
+### IA - Fluxo estruturado (3 passos)
+
+1) POST /api/ia/extrair-texto (multipart/form-data)
+- file: PDF obrigatório
+- Respostas:
+	- 200 { text }
+	- 400 arquivo inválido | 422 sem texto extraível | 500 erro interno
+
+2) POST /api/ia/identificar-tipo (application/json)
+- body: { text }
+- Respostas:
+	- 200 { tipo: string, confidence: number }
+	- 400 falta de texto | 501 chave GEMINI ausente (quando não estiver com IA_STUB) | 502 provedor
+
+3) POST /api/ia/analisar-exigencia (application/json)
+- body: { text, legislacao: Array<Legislacao>, tipo?: string }
+- Respostas:
+	- 200 { aprovado: boolean, motivos: string[], checklist: { requisito, ok }[], orientacao: string }
+	- 400 payload inválido | 501/502 provedor | 500 erro interno
+
+4) POST /api/ia/gerar-texto-averbacao (application/json)
+- body: { text, legislacao: Array<Legislacao>, tipo?: string }
+- Respostas:
+	- 200 { textoAverbacao: string }
+	- 400 payload inválido | 501/502 provedor | 500 erro interno
+
+Observações:
+- Com IA_STUB=true, as respostas são simuladas (heurística no identificar-tipo e checklist genérica na análise).
+- A listagem de legislação correlata é obtida via GET /api/legislacao?indexador=<tipo>&ativo=true.
+
 ### Upload de PDF (Averbações)
 
 - `POST   /api/averbacoes-gratuitas/upload-pdf` → Upload multipart/form-data (campo "file"). O backend renomeia para o padrão `AVERBACAO-XXX-MMMM.PDF` e retorna `{ filename, url }`.

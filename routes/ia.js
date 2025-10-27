@@ -166,6 +166,183 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
     }
   });
 
+  // New structured flow endpoints
+  // 1) Extrair texto do PDF e devolver ao frontend
+  app.post('/api/ia/extrair-texto', ensureAuth, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ error: 'Arquivo PDF (file) é obrigatório.' });
+      const type = (req.file.mimetype || '').toLowerCase();
+      const isPdf = type.includes('pdf') || req.file.originalname.toLowerCase().endsWith('.pdf');
+      if (!isPdf) return res.status(400).json({ error: 'O arquivo deve ser um PDF.' });
+
+      let text = '';
+      try {
+        const pdfParse = require('pdf-parse');
+        const parsed = await pdfParse(req.file.buffer);
+        text = parsed.text || '';
+      } catch (e) {
+        try {
+          const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js');
+          const data = new Uint8Array(req.file.buffer);
+          const task = pdfjsLib.getDocument({ data });
+          const pdf = await task.promise;
+          let combined = '';
+          const maxPages = Math.min(pdf.numPages || 0, 50);
+          for (let p = 1; p <= maxPages; p++) {
+            const page = await pdf.getPage(p);
+            const content = await page.getTextContent();
+            const line = (content.items || []).map((it) => (it.str || '')).join(' ');
+            combined += line + '\n';
+          }
+          text = combined || '';
+        } catch (fallbackErr) {
+          if (process.env.IA_STUB === 'true') {
+            return res.json({ text: '', warning: 'Stub ativo: não foi possível extrair texto; retornando vazio.' });
+          }
+          return res.status(422).json({ error: 'Não foi possível extrair texto do PDF (envie PDF pesquisável).' });
+        }
+      }
+
+      if (!text || text.trim().length < 5) {
+        if (process.env.IA_STUB === 'true') return res.json({ text: '' });
+        return res.status(422).json({ error: 'PDF sem texto extraível (provavelmente escaneado ou protegido).' });
+      }
+      return res.json({ text });
+    } catch (err) {
+      return res.status(500).json({ error: 'Erro ao extrair texto.' });
+    }
+  });
+
+  // 2) Identificar tipo do mandado a partir do texto
+  app.post('/api/ia/identificar-tipo', ensureAuth, async (req, res) => {
+    try {
+      const { text } = req.body || {};
+      if (!text || typeof text !== 'string' || text.trim().length < 5) {
+        return res.status(400).json({ error: 'Campo text é obrigatório.' });
+      }
+
+      // Stub simples com heurística
+      if (process.env.IA_STUB === 'true') {
+        const t = text.toLowerCase();
+        let tipo = 'mandado_generico';
+        if (t.includes('penhora')) tipo = 'mandado_penhora';
+        else if (t.includes('alimentos') || t.includes('pensão')) tipo = 'mandado_alimentos';
+        else if (t.includes('prisão civil')) tipo = 'mandado_prisao_civil';
+        return res.json({ tipo, confidence: 0.8 });
+      }
+
+      // Gemini identifica o tipo e devolve JSON { tipo, confidence }
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) return res.status(501).json({ error: 'GEMINI_API_KEY não configurado.' });
+      try {
+        const { GoogleGenerativeAI } = await import('@google/generative-ai');
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: process.env.IA_MODEL || 'gemini-1.5-flash' });
+        const prompt = `Classifique o tipo do mandado judicial a partir do texto abaixo. Responda APENAS um JSON com as chaves tipo (string curta, ex.: mandado_penhora) e confidence (0..1). Texto:\n${text.slice(0, 8000)}`;
+        const resp = await model.generateContent(prompt);
+        const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
+        let tipo = 'mandado_generico', confidence = 0.5;
+        try { const parsed = JSON.parse(out); tipo = parsed.tipo || tipo; confidence = Number(parsed.confidence) || confidence; } catch (_) {}
+        return res.json({ tipo, confidence });
+      } catch (e) {
+        return res.status(502).json({ error: 'Falha ao chamar provedor de IA.' });
+      }
+    } catch (err) {
+      return res.status(500).json({ error: 'Erro ao identificar tipo.' });
+    }
+  });
+
+  // 3) Analisar exigência legal aplicável com base no texto e legislação correlata
+  app.post('/api/ia/analisar-exigencia', ensureAuth, async (req, res) => {
+    try {
+      const { text, legislacao = [], tipo } = req.body || {};
+      if (!text || !Array.isArray(legislacao)) {
+        return res.status(400).json({ error: 'Campos text e legislacao[] são obrigatórios.' });
+      }
+
+      // Monta contexto legal
+      const contextoLegal = (legislacao || []).map((t) => `• ${t.base_legal || ''}${t.artigo ? ' - ' + t.artigo : ''}: ${t.texto || ''}`).join('\n');
+
+      if (process.env.IA_STUB === 'true') {
+        const checklist = [
+          { requisito: 'Coerência do tipo de mandado', ok: !!tipo },
+          { requisito: 'Legislação correlata fornecida', ok: (legislacao || []).length > 0 }
+        ];
+        return res.json({
+          aprovado: checklist.every(c => c.ok),
+          motivos: checklist.filter(c => !c.ok).map(c => `Requisito não atendido: ${c.requisito}`),
+          checklist,
+          orientacao: 'Verifique a legislação correlata e preencha o texto de averbação conforme exigências.'
+        });
+      }
+
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) return res.status(501).json({ error: 'GEMINI_API_KEY não configurado.' });
+      try {
+        const { GoogleGenerativeAI } = await import('@google/generative-ai');
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: process.env.IA_MODEL || 'gemini-1.5-flash' });
+        const prompt = `Com base no texto do mandado e nos trechos legais, liste as exigências legais aplicáveis (checklist) e indique se está aprovado. Responda JSON: { aprovado: boolean, motivos: string[], checklist: [{ requisito, ok }], orientacao: string }.\nTipo (se houver): ${tipo || 'n/d'}\nTexto do mandado:\n${text.slice(0, 8000)}\n\nLegislação correlata:\n${contextoLegal}`;
+        const resp = await model.generateContent(prompt);
+        const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
+        try {
+          const data = JSON.parse(out);
+          return res.json({
+            aprovado: !!data.aprovado,
+            motivos: Array.isArray(data.motivos) ? data.motivos : [],
+            checklist: Array.isArray(data.checklist) ? data.checklist : [],
+            orientacao: typeof data.orientacao === 'string' ? data.orientacao : ''
+          });
+        } catch (_) {
+          return res.status(502).json({ error: 'Resposta do provedor fora do formato esperado.' });
+        }
+      } catch (e) {
+        return res.status(502).json({ error: 'Falha ao chamar provedor de IA.' });
+      }
+    } catch (err) {
+      return res.status(500).json({ error: 'Erro ao analisar exigência.' });
+    }
+  });
+
+  // 4) Gerar texto da averbação com base no mandado e na legislação aplicável
+  app.post('/api/ia/gerar-texto-averbacao', ensureAuth, async (req, res) => {
+    try {
+      const { text, legislacao = [], tipo } = req.body || {};
+      if (!text || typeof text !== 'string' || text.trim().length < 5) {
+        return res.status(400).json({ error: 'Campo text é obrigatório.' });
+      }
+
+      const contextoLegal = (legislacao || []).map((t) => `• ${t.base_legal || ''}${t.artigo ? ' - ' + t.artigo : ''}: ${t.texto || ''}`).join('\n');
+
+      if (process.env.IA_STUB === 'true') {
+        const base = `Averba-se, por mandado judicial${tipo ? ` (${tipo.replace(/_/g, ' ')})` : ''}, o que consta do texto do mandado, observadas as disposições legais aplicáveis.`;
+        const refs = (legislacao || []).slice(0, 3).map((l) => `${l.base_legal}${l.artigo ? ' - ' + l.artigo : ''}`).filter(Boolean);
+        const complemento = refs.length ? ` Referências: ${refs.join('; ')}.` : '';
+        return res.json({ textoAverbacao: base + complemento });
+      }
+
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) return res.status(501).json({ error: 'GEMINI_API_KEY não configurado.' });
+      try {
+        const { GoogleGenerativeAI } = await import('@google/generative-ai');
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: process.env.IA_MODEL || 'gemini-1.5-flash' });
+        const prompt = `Elabore o texto objetivo da averbação a partir do mandado judicial abaixo, observando as exigências legais pertinentes. O texto deve ser curto, impessoal e adequado para lançamento no livro. Retorne apenas o texto, sem comentários.
+Tipo (se houver): ${tipo || 'n/d'}
+Mandado (texto):\n${text.slice(0, 8000)}\n\nLegislação aplicável (trechos):\n${contextoLegal}`;
+        const resp = await model.generateContent(prompt);
+        const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
+        // Sanitiza saída (remove possíveis marcas)
+        const texto = String(out).trim().replace(/^"|"$/g, '');
+        return res.json({ textoAverbacao: texto || 'Averba-se, por mandado judicial...' });
+      } catch (e) {
+        return res.status(502).json({ error: 'Falha ao chamar provedor de IA.' });
+      }
+    } catch (err) {
+      return res.status(500).json({ error: 'Erro ao gerar texto da averbação.' });
+    }
+  });
+
   // Async flow: create job and process in background
   function newJob(initial = {}) {
     const id = Math.random().toString(36).slice(2) + Date.now().toString(36);
