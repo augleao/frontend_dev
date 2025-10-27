@@ -103,14 +103,14 @@ export default function AverbacaoManutencao() {
         return;
       }
       const token = localStorage.getItem('token');
+      // Envia apenas os campos mínimos solicitados para evitar incompatibilidades no backend
       const payload = {
-        ...form,
+        data: form.data,
         tipo: form.tipo === 'Outras' ? (form.tipoOutro || 'Outras') : form.tipo,
-        pdf: pdfInfo && (pdfInfo.id || pdfInfo.storedName) ? {
-          id: pdfInfo.id,
-          storedName: pdfInfo.storedName,
-          originalName: pdfInfo.originalName
-        } : undefined
+        ressarcivel: !!form.ressarcivel,
+        livro: form.livro,
+        folha: form.folha,
+        termo: form.termo,
       };
       const url = isEdicao
         ? `${config.apiURL}/averbacoes-gratuitas/${encodeURIComponent(id)}`
