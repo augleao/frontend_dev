@@ -15,7 +15,14 @@ export async function listarLegislacao({ search = '', indexador = '', ativo } = 
   const resp = await fetch(`${apiURL}/legislacao?${params.toString()}`, {
     headers: { 'Content-Type': 'application/json', ...authHeaders() }
   });
-  if (!resp.ok) throw new Error('Falha ao listar legislação');
+  if (!resp.ok) {
+    try {
+      const err = await resp.json();
+      throw new Error(err?.error || err?.message || 'Falha ao listar legislação');
+    } catch (_) {
+      throw new Error('Falha ao listar legislação');
+    }
+  }
   return resp.json();
 }
 
@@ -25,7 +32,14 @@ export async function criarLegislacao(payload) {
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(payload)
   });
-  if (!resp.ok) throw new Error('Falha ao criar legislação');
+  if (!resp.ok) {
+    try {
+      const err = await resp.json();
+      throw new Error(err?.error || err?.message || 'Falha ao criar legislação');
+    } catch (_) {
+      throw new Error('Falha ao criar legislação');
+    }
+  }
   return resp.json();
 }
 
@@ -35,7 +49,14 @@ export async function atualizarLegislacao(id, payload) {
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(payload)
   });
-  if (!resp.ok) throw new Error('Falha ao atualizar legislação');
+  if (!resp.ok) {
+    try {
+      const err = await resp.json();
+      throw new Error(err?.error || err?.message || 'Falha ao atualizar legislação');
+    } catch (_) {
+      throw new Error('Falha ao atualizar legislação');
+    }
+  }
   return resp.json();
 }
 
@@ -44,6 +65,13 @@ export async function excluirLegislacao(id) {
     method: 'DELETE',
     headers: { ...authHeaders() }
   });
-  if (!resp.ok) throw new Error('Falha ao excluir legislação');
+  if (!resp.ok) {
+    try {
+      const err = await resp.json();
+      throw new Error(err?.error || err?.message || 'Falha ao excluir legislação');
+    } catch (_) {
+      throw new Error('Falha ao excluir legislação');
+    }
+  }
   return resp.json();
 }
