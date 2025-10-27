@@ -66,6 +66,7 @@
 
 ### IA - Análise de Mandado (Google Gemini 1.5 Flash)
 
+- GET  /api/ia/health → Healthcheck simples (ok, modelo e stub)
 - POST /api/ia/analise-mandado
 	- Autenticação: Bearer token (mesmo esquema do app)
 	- Consumo: multipart/form-data
@@ -89,6 +90,18 @@
 			"textoAverbacao": "Averba-se, por mandado judicial..."
 		}
 	- Erros: 400 (PDF inválido), 404 (legislação não encontrada), 422 (requisitos não atendidos), 502 (falha no provedor)
+
+- POST /api/ia/analise-mandado-async → Inicia processamento assíncrono e retorna 202 { jobId }
+	- Autenticação: Bearer token
+	- Body: multipart/form-data (file, metadata)
+	- Uso: iniciar no frontend e depois consultar status com a rota abaixo
+
+- GET  /api/ia/status/:jobId → Consulta status do job assíncrono
+	- Resposta 200: { id, state, step, message, progress, textPreview?, result? }
+	- state: queued | processing | done | error
+	- step exemplos: upload_received, extracting_text, text_extracted, retrieving_legislation, calling_llm, completed
+	- textPreview: quando disponível, mostra parte do texto extraído do PDF
+	- result: presente quando state=done (mesma estrutura da resposta síncrona)
 
 Configuração necessária (backend):
 - Variáveis de ambiente:
@@ -114,6 +127,10 @@ Tratamento de PDFs problemáticos
 - Se o PDF for protegido por senha ou apenas imagens (escaneado), a extração de texto pode falhar.
 - O handler tenta um fallback com pdfjs-dist; se ainda assim não houver texto, retorna 422 com mensagem orientando a enviar PDF pesquisável.
 - Com IA_STUB=true, mesmo nesses casos a rota devolve uma resposta simulada 200 para destravar o frontend.
+
+Verificação rápida pós-deploy
+- Acesse GET /api/ia/health e confirme { ok: true }
+- Se POST /api/ia/analise-mandado-async retornar 404, o módulo de IA ainda não está registrado/deployado; o frontend cairá no fallback síncrono automaticamente.
 
 ### Upload de PDF (Averbações)
 

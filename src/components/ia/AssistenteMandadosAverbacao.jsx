@@ -68,9 +68,16 @@ function AssistenteMandadosAverbacao() {
     }
     try {
       setLoading(true);
-      const { jobId } = await iniciarAnalise(file, { tipoAto: 'averbacao' });
-      setJobId(jobId);
-      await pollStatus(jobId);
+      const start = await iniciarAnalise(file, { tipoAto: 'averbacao' });
+      if (start && start.result) {
+        // Fallback síncrono: backend não possui rota assíncrona
+        setResultado(start.result);
+        setStatus({ state: 'done', step: 'completed', message: 'Análise concluída', progress: 100 });
+        setLoading(false);
+        return;
+      }
+      setJobId(start.jobId);
+      await pollStatus(start.jobId);
     } catch (e) {
       setError(e?.message || 'Falha ao analisar o mandado.');
       setLoading(false);
