@@ -162,3 +162,42 @@ Notas de implementação:
 - Popular searchable com to_tsvector('portuguese', …) (já suportado pela migration)
 - Filtros: se `q` informado, usar to_tsquery/plainto_tsquery; se `ativo` omitido, retornar ativos por padrão
 - Ordenação sugerida: updated_at DESC, id DESC
+
+### Integração no seu server.js (evitar ReferenceError)
+
+Recomendado (modular):
+
+const initLegislacaoRoutes = require('./routes/legislacao');
+// ensureAuth é opcional; passe o seu middleware se houver
+initLegislacaoRoutes(app, pool, { ensureAuth });
+
+Se preferir copiar o código das rotas para dentro do server.js, lembre-se de incluir os helpers usados pelas rotas:
+
+function normalizeTags(tags) {
+	if (!tags) return [];
+	if (Array.isArray(tags)) return tags.map(String).map((s) => s.trim()).filter(Boolean);
+	return String(tags).split(',').map((s) => s.trim()).filter(Boolean);
+}
+
+function parseBooleanMaybe(v) {
+	if (v === undefined || v === null || v === '') return undefined;
+	if (typeof v === 'boolean') return v;
+	const s = String(v).toLowerCase();
+	if (s === 'true' || s === '1') return true;
+	if (s === 'false' || s === '0') return false;
+	return undefined;
+}
+
+function buildTsQuery(q) {
+	if (!q) return null;
+	const raw = String(q).trim();
+	if (!raw) return null;
+	const hasOps = /[&|!:]/.test(raw);
+	return {
+		text: hasOps
+			? `searchable @@ to_tsquery('portuguese', $PARAM$${raw}$PARAM$)`
+			: `searchable @@ plainto_tsquery('portuguese', $PARAM$${raw}$PARAM$)`
+	};
+}
+
+Sem esses helpers, erros como "normalizeTags is not defined" ou similares ocorrerão ao criar/atualizar itens.
