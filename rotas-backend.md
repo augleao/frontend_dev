@@ -95,8 +95,20 @@ Configuração necessária (backend):
 	- GEMINI_API_KEY: chave do Google AI Studio
 	- IA_MAX_TRECHOS=8 (opcional)
 	- IA_MODEL=gemini-1.5-flash (default)
+	- IA_STUB=true (opcional; retorna resposta simulada para destravar o frontend)
 - Observações de privacidade:
 	- Enviar apenas trechos relevantes da legislação (RAG) e, se necessário, reduzir/anonimizar dados sensíveis do PDF.
+
+Registro rápido no server.js (recomendado):
+
+const initIARoutes = require('./routes/ia');
+// ensureAuth é opcional
+initIARoutes(app, pool, { ensureAuth });
+
+Dependências no backend (quando não usar IA_STUB):
+- multer (upload de PDF)
+- pdf-parse (extração de texto do PDF)
+- @google/generative-ai (cliente da API Gemini)
 
 ### Upload de PDF (Averbações)
 
