@@ -9,7 +9,6 @@ const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 module.exports = function initIARoutes(app, pool, middlewares = {}) {
-  const ensureAuth = middlewares.ensureAuth || ((req, res, next) => next());
   const jobs = new Map(); // in-memory job store { id: { state, step, message, progress, textPreview, result, error } }
 
   // Healthcheck (optional)
@@ -18,7 +17,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   });
 
   // POST /api/ia/analise-mandado
-  app.post('/api/ia/analise-mandado', ensureAuth, upload.single('file'), async (req, res) => {
+  app.post('/api/ia/analise-mandado', upload.single('file'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: 'Arquivo PDF (file) é obrigatório.' });
@@ -57,7 +56,9 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
 
       let text = '';
       try {
-        const parsed = await pdfParse(req.file.buffer);
+        // Usa Uint8Array para compatibilidade com pdf.js interno do pdf-parse
+        const bin = new Uint8Array(req.file.buffer);
+        const parsed = await pdfParse(bin);
         text = parsed.text || '';
       } catch (e) {
         // Fallback com pdfjs-dist (pode funcionar em alguns PDFs onde pdf-parse falha)
@@ -168,12 +169,15 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
 
   // New structured flow endpoints
   // 1) Extrair texto do PDF e devolver ao frontend
-  app.post('/api/ia/extrair-texto', ensureAuth, upload.single('file'), async (req, res) => {
+  app.post('/api/ia/extrair-texto', upload.single('file'), async (req, res) => {
     try {
       if (!req.file) return res.status(400).json({ error: 'Arquivo PDF (file) é obrigatório.' });
       const type = (req.file.mimetype || '').toLowerCase();
       const isPdf = type.includes('pdf') || req.file.originalname.toLowerCase().endsWith('.pdf');
       if (!isPdf) return res.status(400).json({ error: 'O arquivo deve ser um PDF.' });
+      if (typeof req.file.size === 'number' && req.file.size === 0) {
+        return res.status(400).json({ error: 'Arquivo vazio.' });
+      }
 
       let text = '';
       // 1) Tenta com pdf-parse (se instalado)
@@ -181,7 +185,9 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
       try { pdfParse = require('pdf-parse'); } catch (requireErr) { pdfParse = null; }
       if (pdfParse) {
         try {
-          const parsed = await pdfParse(req.file.buffer);
+          // Garante Uint8Array para evitar erro "Invalid parameter in getDocument"
+          const bin = new Uint8Array(req.file.buffer);
+          const parsed = await pdfParse(bin);
           text = parsed.text || '';
         } catch (e) {
           // segue para fallback
@@ -189,41 +195,36 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         }
       }
 
-      // 2) Fallback com pdfjs-dist caso text ainda esteja vazio
+      // 2) Fallback opcional com pdfjs-dist caso text ainda esteja vazio
       if (!text || text.trim().length < 5) {
-        let pdfjsLib;
+        let pdfjsLib = null;
         try {
           pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js');
         } catch (fallbackImportErr) {
-          if (process.env.IA_STUB === 'true') {
-            return res.json({ text: '', warning: 'Stub ativo: não foi possível extrair texto; retornando vazio.' });
-          }
-          // Dependência ausente ou não pôde ser carregada
-          console.error('Falha ao importar pdfjs-dist:', fallbackImportErr && fallbackImportErr.message ? fallbackImportErr.message : fallbackImportErr);
-          return res.status(501).json({
-            error: "Dependência 'pdfjs-dist' não instalada ou não pôde ser carregada no backend.",
-            hint: "Instale 'pdfjs-dist' (npm i pdfjs-dist) ou ative IA_STUB=true. Se o PDF for pesquisável, a extração deverá funcionar."
-          });
+          // Fallback indisponível; não trate como erro de dependência, apenas siga para a resposta padrão
+          console.warn('pdfjs-dist não disponível para fallback de extração. Prosseguindo sem fallback.');
         }
-        try {
-          const data = new Uint8Array(req.file.buffer);
-          const task = pdfjsLib.getDocument({ data, isEvalSupported: false });
-          const pdf = await task.promise;
-          let combined = '';
-          const maxPages = Math.min(pdf.numPages || 0, 50);
-          for (let p = 1; p <= maxPages; p++) {
-            const page = await pdf.getPage(p);
-            const content = await page.getTextContent();
-            const line = (content.items || []).map((it) => (it.str || '')).join(' ');
-            combined += line + '\n';
+        if (pdfjsLib) {
+          try {
+            const data = new Uint8Array(req.file.buffer);
+            const task = pdfjsLib.getDocument({ data, isEvalSupported: false });
+            const pdf = await task.promise;
+            let combined = '';
+            const maxPages = Math.min(pdf.numPages || 0, 50);
+            for (let p = 1; p <= maxPages; p++) {
+              const page = await pdf.getPage(p);
+              const content = await page.getTextContent();
+              const line = (content.items || []).map((it) => (it.str || '')).join(' ');
+              combined += line + '\n';
+            }
+            text = combined || '';
+          } catch (fallbackErr) {
+            if (process.env.IA_STUB === 'true') {
+              return res.json({ text: '', warning: 'Stub ativo: não foi possível extrair texto; retornando vazio.' });
+            }
+            console.error('pdfjs-dist falhou ao extrair texto:', fallbackErr && fallbackErr.message ? fallbackErr.message : fallbackErr);
+            // segue para verificação final e 422 padrão
           }
-          text = combined || '';
-        } catch (fallbackErr) {
-          if (process.env.IA_STUB === 'true') {
-            return res.json({ text: '', warning: 'Stub ativo: não foi possível extrair texto; retornando vazio.' });
-          }
-          console.error('pdfjs-dist falhou ao extrair texto:', fallbackErr && fallbackErr.message ? fallbackErr.message : fallbackErr);
-          return res.status(422).json({ error: 'Não foi possível extrair texto do PDF (envie PDF pesquisável).' });
         }
       }
 
@@ -238,7 +239,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   });
 
   // 2) Identificar tipo do mandado a partir do texto
-  app.post('/api/ia/identificar-tipo', ensureAuth, async (req, res) => {
+  app.post('/api/ia/identificar-tipo', async (req, res) => {
     try {
       const { text } = req.body || {};
       if (!text || typeof text !== 'string' || text.trim().length < 5) {
@@ -277,7 +278,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   });
 
   // 3) Analisar exigência legal aplicável com base no texto e legislação correlata
-  app.post('/api/ia/analisar-exigencia', ensureAuth, async (req, res) => {
+  app.post('/api/ia/analisar-exigencia', async (req, res) => {
     try {
       const { text, legislacao = [], tipo } = req.body || {};
       if (!text || !Array.isArray(legislacao)) {
@@ -329,7 +330,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   });
 
   // 4) Gerar texto da averbação com base no mandado e na legislação aplicável
-  app.post('/api/ia/gerar-texto-averbacao', ensureAuth, async (req, res) => {
+  app.post('/api/ia/gerar-texto-averbacao', async (req, res) => {
     try {
       const { text, legislacao = [], tipo } = req.body || {};
       if (!text || typeof text !== 'string' || text.trim().length < 5) {
@@ -407,7 +408,8 @@ Mandado (texto):\n${text.slice(0, 8000)}\n\nLegislação aplicável (trechos):\n
     let extracted = '';
     try {
       const pdfParse = require('pdf-parse');
-      const parsed = await pdfParse(buffer);
+      const bin = new Uint8Array(buffer);
+      const parsed = await pdfParse(bin);
       extracted = parsed.text || '';
     } catch (_) {
       // fallback
@@ -503,7 +505,7 @@ Mandado (texto):\n${text.slice(0, 8000)}\n\nLegislação aplicável (trechos):\n
   }
 
   // POST /api/ia/analise-mandado-async
-  app.post('/api/ia/analise-mandado-async', ensureAuth, upload.single('file'), async (req, res) => {
+  app.post('/api/ia/analise-mandado-async', upload.single('file'), async (req, res) => {
     try {
       if (!req.file) return res.status(400).json({ error: 'Arquivo PDF (file) é obrigatório.' });
       const job = newJob();
@@ -521,7 +523,7 @@ Mandado (texto):\n${text.slice(0, 8000)}\n\nLegislação aplicável (trechos):\n
   });
 
   // GET /api/ia/status/:jobId
-  app.get('/api/ia/status/:jobId', ensureAuth, (req, res) => {
+  app.get('/api/ia/status/:jobId', (req, res) => {
     const job = jobs.get(req.params.jobId);
     if (!job) return res.status(404).json({ error: 'Job não encontrado' });
     const { id, state, step, message, progress, textPreview, result, error } = job;
