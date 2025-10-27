@@ -110,6 +110,11 @@ Dependências no backend (quando não usar IA_STUB):
 - pdf-parse (extração de texto do PDF)
 - @google/generative-ai (cliente da API Gemini)
 
+Tratamento de PDFs problemáticos
+- Se o PDF for protegido por senha ou apenas imagens (escaneado), a extração de texto pode falhar.
+- O handler tenta um fallback com pdfjs-dist; se ainda assim não houver texto, retorna 422 com mensagem orientando a enviar PDF pesquisável.
+- Com IA_STUB=true, mesmo nesses casos a rota devolve uma resposta simulada 200 para destravar o frontend.
+
 ### Upload de PDF (Averbações)
 
 - `POST   /api/averbacoes-gratuitas/upload-pdf` → Upload multipart/form-data (campo "file"). O backend renomeia para o padrão `AVERBACAO-XXX-MMMM.PDF` e retorna `{ filename, url }`.

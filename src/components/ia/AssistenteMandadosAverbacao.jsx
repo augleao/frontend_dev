@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { analisarMandado } from '../servicos/IAService';
+import { iniciarAnalise, obterStatus } from '../servicos/IAAsyncService';
 
 function AssistenteMandadosAverbacao() {
   const navigate = useNavigate();
@@ -8,6 +8,9 @@ function AssistenteMandadosAverbacao() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [resultado, setResultado] = useState(null); // { aprovado, motivos[], checklist[], textoAverbacao }
+  const [jobId, setJobId] = useState(null);
+  const [status, setStatus] = useState(null); // { state, step, message, progress, textPreview }
+  const [pollTimer, setPollTimer] = useState(null);
 
   const onFileChange = (e) => {
     setFile(e.target.files?.[0] || null);
@@ -15,21 +18,64 @@ function AssistenteMandadosAverbacao() {
     setError('');
   };
 
+  const stopPolling = () => {
+    if (pollTimer) {
+      clearTimeout(pollTimer);
+      setPollTimer(null);
+    }
+  };
+
+  const pollStatus = async (id) => {
+    try {
+      const s = await obterStatus(id);
+      setStatus(s);
+      if (s.state === 'done') {
+        setResultado(s.result || null);
+        setLoading(false);
+        setPollTimer(null);
+        return;
+      }
+      if (s.state === 'error') {
+        setError(s.message || 'Falha no processamento');
+        setLoading(false);
+        setPollTimer(null);
+        return;
+      }
+      const t = setTimeout(() => pollStatus(id), 1200);
+      setPollTimer(t);
+    } catch (e) {
+      setError(e?.message || 'Falha ao consultar status');
+      setLoading(false);
+      setPollTimer(null);
+    }
+  };
+
+  // Cleanup polling timer on unmount
+  useEffect(() => {
+    return () => {
+      if (pollTimer) clearTimeout(pollTimer);
+    };
+  }, [pollTimer]);
+
   const handleAnalyze = async () => {
     setError('');
     setResultado(null);
+    setStatus(null);
+    stopPolling();
     if (!file) {
       setError('Selecione um PDF do mandado judicial.');
       return;
     }
     try {
       setLoading(true);
-      const res = await analisarMandado(file, { tipoAto: 'averbacao' });
-      setResultado(res);
+      const { jobId } = await iniciarAnalise(file, { tipoAto: 'averbacao' });
+      setJobId(jobId);
+      await pollStatus(jobId);
     } catch (e) {
       setError(e?.message || 'Falha ao analisar o mandado.');
-    } finally {
       setLoading(false);
+    } finally {
+      // loading será finalizado no término do polling
     }
   };
 
@@ -133,16 +179,36 @@ function AssistenteMandadosAverbacao() {
             </div>
           )}
 
-          {resultado && (
+          {(status || resultado) && (
             <div style={{ marginTop: '24px' }}>
-              <div style={{
-                padding: '12px 16px',
-                borderRadius: '8px',
-                background: resultado.aprovado ? '#d4edda' : '#fdecea',
-                color: resultado.aprovado ? '#155724' : '#611a15'
-              }}>
-                {resultado.aprovado ? 'Aprovado para averbação' : 'Reprovado / Inconclusivo'}
-              </div>
+              {status && (
+                <div style={{ padding: '12px 16px', borderRadius: '8px', background: '#eef5ff', color: '#1f4ba0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <strong>{status.step ? status.step.replace(/_/g, ' ') : 'Processando…'}</strong>
+                    <span>{typeof status.progress === 'number' ? `${status.progress}%` : ''}</span>
+                  </div>
+                  <div style={{ marginTop: 6 }}>{status.message}</div>
+                </div>
+              )}
+
+              {status?.textPreview && (
+                <div style={{ marginTop: 12 }}>
+                  <h3 style={{ margin: '0 0 8px 0' }}>Prévia do texto extraído</h3>
+                  <textarea readOnly value={status.textPreview} style={{ width: '100%', minHeight: 120, padding: 12, borderRadius: 8, border: '1px solid #ecf0f1' }} />
+                </div>
+              )}
+
+              {resultado && (
+                <div>
+                  <div style={{
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    background: resultado.aprovado ? '#d4edda' : '#fdecea',
+                    color: resultado.aprovado ? '#155724' : '#611a15',
+                    marginTop: 12
+                  }}>
+                    {resultado.aprovado ? 'Aprovado para averbação' : 'Reprovado / Inconclusivo'}
+                  </div>
 
               {resultado.motivos?.length > 0 && (
                 <div style={{ marginTop: '16px' }}>
@@ -206,6 +272,8 @@ function AssistenteMandadosAverbacao() {
                     </button>
                   </div>
                 </div>
+              )}
+              </div>
               )}
             </div>
           )}

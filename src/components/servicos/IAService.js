@@ -23,7 +23,8 @@ export async function analisarMandado(file, metadata = {}) {
     let errorText = 'Falha na análise do mandado';
     try {
       const err = await resp.json();
-      errorText = err?.message || JSON.stringify(err);
+      // Prioriza campo "error" vindo do backend; fallback para message
+      errorText = err?.error || err?.message || JSON.stringify(err);
     } catch (_) {
       // ignore JSON parse error
     }
