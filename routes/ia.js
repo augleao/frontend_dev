@@ -176,15 +176,38 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
       if (!isPdf) return res.status(400).json({ error: 'O arquivo deve ser um PDF.' });
 
       let text = '';
-      try {
-        const pdfParse = require('pdf-parse');
-        const parsed = await pdfParse(req.file.buffer);
-        text = parsed.text || '';
-      } catch (e) {
+      // 1) Tenta com pdf-parse (se instalado)
+      let pdfParse;
+      try { pdfParse = require('pdf-parse'); } catch (requireErr) { pdfParse = null; }
+      if (pdfParse) {
         try {
-          const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js');
+          const parsed = await pdfParse(req.file.buffer);
+          text = parsed.text || '';
+        } catch (e) {
+          // segue para fallback
+          console.error('pdf-parse falhou ao extrair texto:', e && e.message ? e.message : e);
+        }
+      }
+
+      // 2) Fallback com pdfjs-dist caso text ainda esteja vazio
+      if (!text || text.trim().length < 5) {
+        let pdfjsLib;
+        try {
+          pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js');
+        } catch (fallbackImportErr) {
+          if (process.env.IA_STUB === 'true') {
+            return res.json({ text: '', warning: 'Stub ativo: não foi possível extrair texto; retornando vazio.' });
+          }
+          // Dependência ausente ou não pôde ser carregada
+          console.error('Falha ao importar pdfjs-dist:', fallbackImportErr && fallbackImportErr.message ? fallbackImportErr.message : fallbackImportErr);
+          return res.status(501).json({
+            error: "Dependência 'pdfjs-dist' não instalada ou não pôde ser carregada no backend.",
+            hint: "Instale 'pdfjs-dist' (npm i pdfjs-dist) ou ative IA_STUB=true. Se o PDF for pesquisável, a extração deverá funcionar."
+          });
+        }
+        try {
           const data = new Uint8Array(req.file.buffer);
-          const task = pdfjsLib.getDocument({ data });
+          const task = pdfjsLib.getDocument({ data, isEvalSupported: false });
           const pdf = await task.promise;
           let combined = '';
           const maxPages = Math.min(pdf.numPages || 0, 50);
@@ -199,6 +222,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
           if (process.env.IA_STUB === 'true') {
             return res.json({ text: '', warning: 'Stub ativo: não foi possível extrair texto; retornando vazio.' });
           }
+          console.error('pdfjs-dist falhou ao extrair texto:', fallbackErr && fallbackErr.message ? fallbackErr.message : fallbackErr);
           return res.status(422).json({ error: 'Não foi possível extrair texto do PDF (envie PDF pesquisável).' });
         }
       }
