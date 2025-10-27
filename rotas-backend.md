@@ -63,11 +63,40 @@
 
 ## Averbações Gratuitas
 
-- `GET    /api/averbacoes-gratuitas?dataInicial=YYYY-MM-DD&dataFinal=YYYY-MM-DD&ressarcivel=true|false|todos&tipo=...`  → Lista com filtros
-- `POST   /api/averbacoes-gratuitas`        → Cria uma nova averbação gratuita
-- `GET    /api/averbacoes-gratuitas/:id`    → Detalhe da averbação
-- `PUT    /api/averbacoes-gratuitas/:id`    → Atualiza averbação
-- `DELETE /api/averbacoes-gratuitas/:id`    → Exclui averbação
+
+### IA - Análise de Mandado (Google Gemini 1.5 Flash)
+
+- POST /api/ia/analise-mandado
+	- Autenticação: Bearer token (mesmo esquema do app)
+	- Consumo: multipart/form-data
+		- file: PDF do mandado judicial (required)
+		- metadata (opcional): JSON serializado em campo texto, ex.: { "tipoAto": "averbacao", "data": "2025-10-27" }
+	- Processo no backend:
+		1. Extrair texto do PDF (ex.: pdf-parse)
+		2. Recuperar legislação relevante do Postgres via Full-Text Search (tsvector/tsquery) com base no texto
+			 - Tabela de legislação e/ou regras definidas no DB
+			 - Selecionar top N trechos (5–10) e montar contexto
+		3. Chamar Google Gemini 1.5 Flash com prompt e contexto montado
+		4. Validar e normalizar a saída (JSON)
+	- Resposta 200 (exemplo):
+		{
+			"aprovado": true,
+			"motivos": ["Todos os requisitos formais atendidos"],
+			"checklist": [
+				{ "requisito": "Assinatura do juiz", "ok": true },
+				{ "requisito": "Identificação das partes", "ok": true }
+			],
+			"textoAverbacao": "Averba-se, por mandado judicial..."
+		}
+	- Erros: 400 (PDF inválido), 404 (legislação não encontrada), 422 (requisitos não atendidos), 502 (falha no provedor)
+
+Configuração necessária (backend):
+- Variáveis de ambiente:
+	- GEMINI_API_KEY: chave do Google AI Studio
+	- IA_MAX_TRECHOS=8 (opcional)
+	- IA_MODEL=gemini-1.5-flash (default)
+- Observações de privacidade:
+	- Enviar apenas trechos relevantes da legislação (RAG) e, se necessário, reduzir/anonimizar dados sensíveis do PDF.
 
 ### Upload de PDF (Averbações)
 

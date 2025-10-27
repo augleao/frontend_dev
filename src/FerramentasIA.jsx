@@ -14,11 +14,11 @@ function FerramentasIA() {
   const featureCards = [
     {
       id: 'assistente-preenchimento',
-      title: 'ASSISTENTE DE PREENCHIMENTO',
+      title: 'ASSISTENTE DE MANDADOS DE AVERBAÇÃO',
       description: 'Sugestões inteligentes para formulários',
       icon: '🧠',
       color: '#f1c40f',
-      route: '/ferramentas-ia'
+      route: '/ferramentas-ia/assistente-mandados'
     },
     {
       id: 'analise-documentos',

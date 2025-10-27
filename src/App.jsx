@@ -28,6 +28,7 @@ import AtosGratuitos from './AtosGratuitos';
 import AverbacoesLista from './components/averbacoes/AverbacoesLista';
 import AverbacaoManutencao from './components/averbacoes/AverbacaoManutencao';
 import FerramentasIA from './FerramentasIA';
+import AssistenteMandadosAverbacao from './components/ia/AssistenteMandadosAverbacao';
 
 
 
@@ -213,6 +214,14 @@ function App() {
           element={
             <PrivateRoute>
               <FerramentasIA />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/ferramentas-ia/assistente-mandados"
+          element={
+            <PrivateRoute>
+              <AssistenteMandadosAverbacao />
             </PrivateRoute>
           }
         />
