@@ -148,3 +148,16 @@ Notas de implementação:
 - A coluna `execucao_servico_id` em `public.selos_execucao_servico` agora aceita NULL, permitindo selos apenas de averbação (com `averbacao_id`).
 - Recomenda-se definir `origem = 'averbacao'` automaticamente quando `averbacao_id` for informado.
 - Opcional (recomendado): adicionar um CHECK garantindo exclusividade entre `execucao_servico_id` e `averbacao_id`.
+
+## Legislação (CRUD)
+
+- `GET    /api/legislacao?q=termos&indexador=...&ativo=true|false` → Lista com filtros (busca textual no servidor ou delegada ao DB)
+- `POST   /api/legislacao` → Cria item
+	- body: { indexador, base_legal, texto, titulo?, artigo?, jurisdicao?, tags?: string[] | string, ativo?: boolean }
+- `PUT    /api/legislacao/:id` → Atualiza item
+- `DELETE /api/legislacao/:id` → Exclui item
+
+Notas de implementação:
+- Popular searchable com to_tsvector('portuguese', …) (já suportado pela migration)
+- Filtros: se `q` informado, usar to_tsquery/plainto_tsquery; se `ativo` omitido, retornar ativos por padrão
+- Ordenação sugerida: updated_at DESC, id DESC

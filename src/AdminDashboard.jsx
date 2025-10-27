@@ -122,6 +122,21 @@ export default function AdminDashboard() {
           >
             Configurar Serventia
           </button>
+          <button
+            style={{
+              padding: '10px 20px',
+              background: '#2c3e50',
+              color: '#fff',
+              borderRadius: 8,
+              border: 'none',
+              fontWeight: 'bold',
+              fontSize: 16,
+              cursor: 'pointer',
+            }}
+            onClick={() => navigate('/admin/legislacao')}
+          >
+            Legislação
+          </button>
         </div>
         <h2 style={{ margin: 0 }}>Painel de Administração</h2>
       </div>

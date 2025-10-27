@@ -23,6 +23,7 @@ import ServicoManutencao from './components/servicos/ServicoManutencao'; // ajus
 import ListaServicos from './components/servicos/ServicoLista'; // adicione esta linha
 import ReciboPedido from './ReciboPedido';
 import EditarCombos from './components/admin/EditarCombos';
+import LegislacaoAdmin from './components/admin/LegislacaoAdmin';
 import ProtocoloAcesso from './ProtocoloAcesso';
 import AtosGratuitos from './AtosGratuitos';
 import AverbacoesLista from './components/averbacoes/AverbacoesLista';
@@ -128,6 +129,14 @@ function App() {
           element={
             <AdminRoute>
               <UsuariosAdmin />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/legislacao"
+          element={
+            <AdminRoute>
+              <LegislacaoAdmin />
             </AdminRoute>
           }
         />
