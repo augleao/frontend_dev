@@ -14,6 +14,7 @@ function AssistenteMandadosAverbacao() {
   const [legislacao, setLegislacao] = useState([]);
   const [resultado, setResultado] = useState(null);
   const [textoAverbacao, setTextoAverbacao] = useState('');
+  const [manual, setManual] = useState(false);
 
   const onFileChange = (e) => {
     setFile(e.target.files?.[0] || null);
@@ -24,6 +25,7 @@ function AssistenteMandadosAverbacao() {
     setLegislacao([]);
     setResultado(null);
     setTextoAverbacao('');
+    setManual(false);
   };
 
   const handleExtrairTexto = async () => {
@@ -39,9 +41,11 @@ function AssistenteMandadosAverbacao() {
     }
     try {
       setLoading(true);
-      const { text } = await extrairTexto(file);
+      const { text, warning } = await extrairTexto(file);
       setExtracted(text || '');
-      if (!text) setError('Não foi possível extrair texto. Envie um PDF pesquisável (não escaneado/sem senha).');
+      if (!text) {
+        setError((warning || 'Não foi possível extrair texto do PDF.') + ' Dica: envie um PDF pesquisável (não escaneado/sem senha) ou use a edição manual.');
+      }
     } catch (e) {
       setError(e?.message || 'Falha ao extrair texto do PDF.');
     } finally {
@@ -172,12 +176,32 @@ function AssistenteMandadosAverbacao() {
 
           {error && <div style={{ marginTop: 16, color: '#c0392b' }}>{error}</div>}
 
+          {(error || extracted === '') && (
+            <div style={{ marginTop: 8 }}>
+              <button type="button" onClick={() => setManual(true)} style={{ background: 'transparent', border: 'none', color: '#1f4ba0', textDecoration: 'underline', cursor: 'pointer' }}>
+                Colar/editar texto manualmente
+              </button>
+              {manual && <span style={{ marginLeft: 8, color: '#555' }}>(modo manual ativo)</span>}
+            </div>
+          )}
+
           {(extracted || tipo || (legislacao && legislacao.length) || resultado) && (
             <div style={{ marginTop: 24 }}>
-              {extracted !== '' && (
+              {(extracted !== '' || manual) && (
                 <div style={{ marginTop: 12 }}>
                   <h3 style={{ margin: '0 0 8px 0' }}>Texto extraído do PDF</h3>
-                  <textarea readOnly value={extracted} style={{ width: '100%', minHeight: 200, padding: 12, borderRadius: 8, border: '1px solid #ecf0f1' }} />
+                  <textarea
+                    readOnly={!manual}
+                    value={extracted}
+                    onChange={(e) => manual && setExtracted(e.target.value)}
+                    placeholder={manual ? 'Cole aqui o texto do mandado…' : ''}
+                    style={{ width: '100%', minHeight: 200, padding: 12, borderRadius: 8, border: '1px solid #ecf0f1' }}
+                  />
+                  {manual && (
+                    <div style={{ marginTop: 8, color: '#7f8c8d' }}>
+                      Dica: cole o texto do mandado acima e prossiga para os próximos passos.
+                    </div>
+                  )}
                 </div>
               )}
 
