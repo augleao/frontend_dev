@@ -6,13 +6,7 @@
 const multer = require('multer');
 
 // Resolve IA model name to a supported variant. Auto-upgrade known names to "-latest".
-function resolveIaModel(name) {
-  if (!name) return 'gemini-1.5-flash-latest';
-  if (/\-latest$/.test(name)) return name;
-  if (name === 'gemini-1.5-flash') return 'gemini-1.5-flash-latest';
-  if (name === 'gemini-1.5-pro') return 'gemini-1.5-pro-latest';
-  return name; // leave others as-is
-}
+
 
 // memory storage is enough, we forward the PDF buffer to the parser/provider
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -22,11 +16,19 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
 
   // Local safeguard: ensure resolveIaModel is in-scope even if top-level definition is altered/removed during bundling
   function resolveIaModel(name) {
-    if (!name) return 'gemini-1.5-flash-latest';
-    if (/\-latest$/.test(name)) return name;
-    if (name === 'gemini-1.5-flash') return 'gemini-1.5-flash-latest';
-    if (name === 'gemini-1.5-pro') return 'gemini-1.5-pro-latest';
-    return name; // leave others as-is
+    // Use gemini-2.0-flash which is stable and available with the current API key.
+    // The availableModels list shows models with 'models/' prefix, but SDK expects just the name.
+    const n = (name || '').trim();
+    // Default to gemini-2.0-flash (stable, in available list)
+    if (!n) return 'gemini-2.0-flash';
+    // Map all common variants to gemini-2.0-flash for compatibility
+    if (/gemini-1\.5-flash/.test(n)) return 'gemini-2.0-flash';
+    if (/gemini-1\.5-pro/.test(n)) return 'gemini-2.0-flash';
+    if (/gemini-pro/.test(n)) return 'gemini-2.0-flash';
+    // Generic: remove -latest or -NNN version suffix
+    if (/\-latest$/.test(n)) return n.replace(/-latest$/, '');
+    if (/\-\d{3}$/.test(n)) return n.replace(/-\d{3}$/, '');
+    return n;
   }
 
   // Healthcheck (optional)
@@ -88,6 +90,24 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
     try {
       const { GoogleGenerativeAI } = await import('@google/generative-ai');
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      
+      // Try listing models via REST if SDK method unavailable
+      let availableModels = [];
+      try {
+        const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`;
+        const fetch = (await import('node-fetch')).default;
+        const listResp = await fetch(listUrl);
+        if (listResp.ok) {
+          const data = await listResp.json();
+          availableModels = (data.models || []).map(m => m.name || '').filter(Boolean);
+          report.availableModels = availableModels.slice(0, 20);
+        } else {
+          report.listModelsError = { status: listResp.status, statusText: listResp.statusText };
+        }
+      } catch (listErr) {
+        report.listModelsError = describeError(listErr);
+      }
+
       const m = genAI.getGenerativeModel({ model });
       // Tiny test prompt; short and safe
       const testPrompt = 'ping';
@@ -388,7 +408,11 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         console.log(`[IA][identificar-tipo][${rid}] provider ok out.len=${out.length} ms=${Date.now() - t0}`);
         let tipo = 'mandado_generico', confidence = 0.5;
         try {
-          const parsed = JSON.parse(out);
+          // Sanitize: remove markdown code fences if present
+          let clean = out.trim();
+          if (clean.startsWith('```json')) clean = clean.replace(/^```json\s*/i, '').replace(/\s*```$/,'');
+          else if (clean.startsWith('```')) clean = clean.replace(/^```\s*/, '').replace(/\s*```$/, '');
+          const parsed = JSON.parse(clean);
           tipo = parsed.tipo || tipo;
           confidence = Number(parsed.confidence) || confidence;
           console.log(`[IA][identificar-tipo][${rid}] parsed tipo=${tipo} confidence=${confidence} ms=${Date.now() - startedAt}`);
@@ -453,7 +477,11 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         const resp = await model.generateContent(prompt);
         const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
         try {
-          const data = JSON.parse(out);
+          // Sanitize: remove markdown code fences if present
+          let clean = out.trim();
+          if (clean.startsWith('```json')) clean = clean.replace(/^```json\s*/i, '').replace(/\s*```$/,'');
+          else if (clean.startsWith('```')) clean = clean.replace(/^```\s*/, '').replace(/\s*```$/, '');
+          const data = JSON.parse(clean);
           return res.json({
             aprovado: !!data.aprovado,
             motivos: Array.isArray(data.motivos) ? data.motivos : [],
