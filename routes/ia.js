@@ -20,6 +20,15 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 
 module.exports = function initIARoutes(app, pool, middlewares = {}) {
   const jobs = new Map(); // in-memory job store { id: { state, step, message, progress, textPreview, result, error } }
 
+  // Local safeguard: ensure resolveIaModel is in-scope even if top-level definition is altered/removed during bundling
+  function resolveIaModel(name) {
+    if (!name) return 'gemini-1.5-flash-latest';
+    if (/\-latest$/.test(name)) return name;
+    if (name === 'gemini-1.5-flash') return 'gemini-1.5-flash-latest';
+    if (name === 'gemini-1.5-pro') return 'gemini-1.5-pro-latest';
+    return name; // leave others as-is
+  }
+
   // Healthcheck (optional)
   app.get('/api/ia/health', (req, res) => {
     const raw = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
