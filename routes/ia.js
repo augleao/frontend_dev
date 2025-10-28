@@ -524,7 +524,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: modelName });
   const defaultTpl = `Classifique o tipo específico do mandado judicial a partir do texto abaixo.\n\nSe for um mandado de averbação, identifique o SUBTIPO da averbação (exemplo: averbacao_divorcio, averbacao_interdicao, averbacao_reconhecimento_paternidade, averbacao_obito, averbacao_casamento, averbacao_alteracao_nome, averbacao_sentenca_adocao, etc.).\n\nSe não for averbação, classifique como: mandado_penhora, mandado_alimentos, mandado_prisao_civil, ou mandado_generico.\n\nResponda APENAS um JSON com as chaves:\n- tipo: string em snake_case (ex: "averbacao_divorcio")\n- confidence: número entre 0 e 1\n\nTexto do mandado:\n{{texto}}`;
-  const rowTpl = await getPromptByIndexador('identificar_mandado');
+  const rowTpl = await getPromptByIndexador('identificar_tipo_mandado');
   const prompt = renderTemplate((rowTpl && rowTpl.prompt) || defaultTpl, { texto: text.slice(0, 8000) });
         console.log(`[IA][identificar-tipo][${rid}] calling provider prompt.len=${prompt.length}`);
         const t0 = Date.now();
