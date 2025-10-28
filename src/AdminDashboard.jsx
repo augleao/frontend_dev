@@ -137,6 +137,21 @@ export default function AdminDashboard() {
           >
             Legislação
           </button>
+          <button
+            style={{
+              padding: '10px 20px',
+              background: '#34495e',
+              color: '#fff',
+              borderRadius: 8,
+              border: 'none',
+              fontWeight: 'bold',
+              fontSize: 16,
+              cursor: 'pointer',
+            }}
+            onClick={() => navigate('/admin/prompts-ia')}
+          >
+            Prompts IA
+          </button>
         </div>
         <h2 style={{ margin: 0 }}>Painel de Administração</h2>
       </div>

@@ -14,6 +14,81 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 
 module.exports = function initIARoutes(app, pool, middlewares = {}) {
   const jobs = new Map(); // in-memory job store { id: { state, step, message, progress, textPreview, result, error } }
 
+  // --- IA Prompts: table helpers -------------------------------------------------
+  async function ensurePromptsTable() {
+    if (!pool) return;
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS public.ia_prompts (
+          id SERIAL PRIMARY KEY,
+          indexador TEXT UNIQUE NOT NULL,
+          prompt TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+        CREATE OR REPLACE FUNCTION public.trigger_set_timestamp()
+        RETURNS TRIGGER AS $$
+        BEGIN
+          NEW.updated_at = NOW();
+          RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+        DO $$ BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_trigger WHERE tgname = 'set_timestamp_ia_prompts'
+          ) THEN
+            CREATE TRIGGER set_timestamp_ia_prompts
+            BEFORE UPDATE ON public.ia_prompts
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_timestamp();
+          END IF;
+        END $$;
+      `);
+    } catch (_) {
+      // ignore; DB might be unavailable in some envs
+    }
+  }
+
+  async function getPromptByIndexador(indexador) {
+    if (!pool) return null;
+    try {
+      await ensurePromptsTable();
+      const { rows } = await pool.query(
+        'SELECT indexador, prompt, updated_at FROM public.ia_prompts WHERE indexador = $1 LIMIT 1',
+        [String(indexador || '').toLowerCase()]
+      );
+      return rows && rows[0] ? rows[0] : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function upsertPrompt(indexador, prompt) {
+    if (!pool) return null;
+    try {
+      await ensurePromptsTable();
+      const { rows } = await pool.query(
+        `INSERT INTO public.ia_prompts (indexador, prompt)
+         VALUES ($1, $2)
+         ON CONFLICT (indexador)
+         DO UPDATE SET prompt = EXCLUDED.prompt
+         RETURNING indexador, prompt, updated_at`,
+        [String(indexador || '').toLowerCase(), String(prompt || '')]
+      );
+      return rows && rows[0] ? rows[0] : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function renderTemplate(tpl, ctx = {}) {
+    const map = ctx || {};
+    return String(tpl || '').replace(/\{\{\s*(\w+)\s*\}\}/g, (_, k) => {
+      const v = map[k];
+      return v == null ? '' : String(v);
+    });
+  }
+
   // Local safeguard: ensure resolveIaModel is in-scope even if top-level definition is altered/removed during bundling
   function resolveIaModel(name) {
     // Use gemini-2.0-flash which is stable and available with the current API key.
@@ -122,6 +197,54 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
       const details = describeError(e);
       report.error = details;
       return res.status(502).json(report);
+    }
+  });
+
+  // --- IA Prompts CRUD API -------------------------------------------------------
+  // List all prompts
+  app.get('/api/ia/prompts', async (req, res) => {
+    if (!pool) return res.status(501).json({ error: 'Pool/DB indisponível.' });
+    try {
+      await ensurePromptsTable();
+      const { rows } = await pool.query('SELECT indexador, prompt, updated_at FROM public.ia_prompts ORDER BY indexador ASC');
+      return res.json(rows || []);
+    } catch (e) {
+      return res.status(500).json({ error: 'Falha ao listar prompts.' });
+    }
+  });
+
+  // Get prompt by indexador
+  app.get('/api/ia/prompts/:indexador', async (req, res) => {
+    const idx = String(req.params.indexador || '').toLowerCase();
+    const row = await getPromptByIndexador(idx);
+    if (!row) return res.status(404).json({ error: 'Prompt não encontrado' });
+    return res.json(row);
+  });
+
+  // Upsert prompt (create or update)
+  app.put('/api/ia/prompts/:indexador', middlewares.ensureAuth ? middlewares.ensureAuth : (req, _res, next) => next(), async (req, res) => {
+    if (!pool) return res.status(501).json({ error: 'Pool/DB indisponível.' });
+    const idx = String(req.params.indexador || '').toLowerCase();
+    const { prompt } = req.body || {};
+    if (!idx || typeof prompt !== 'string' || prompt.trim().length < 5) {
+      return res.status(400).json({ error: 'Informe um indexador e um prompt válido (>=5 chars).' });
+    }
+    const row = await upsertPrompt(idx, prompt);
+    if (!row) return res.status(500).json({ error: 'Falha ao salvar prompt.' });
+    return res.json(row);
+  });
+
+  // Delete prompt
+  app.delete('/api/ia/prompts/:indexador', middlewares.ensureAuth ? middlewares.ensureAuth : (req, _res, next) => next(), async (req, res) => {
+    if (!pool) return res.status(501).json({ error: 'Pool/DB indisponível.' });
+    try {
+      await ensurePromptsTable();
+      const idx = String(req.params.indexador || '').toLowerCase();
+      const { rowCount } = await pool.query('DELETE FROM public.ia_prompts WHERE indexador = $1', [idx]);
+      if (rowCount === 0) return res.status(404).json({ error: 'Prompt não encontrado' });
+      return res.json({ ok: true });
+    } catch (e) {
+      return res.status(500).json({ error: 'Falha ao apagar prompt.' });
     }
   });
 
@@ -398,9 +521,11 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         return res.status(501).json({ error: "Pacote '@google/generative-ai' não instalado ou indisponível.", hint: "Instale com 'npm i @google/generative-ai' ou ative IA_STUB=true para heurística." });
       }
       try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const prompt = `Classifique o tipo do mandado judicial a partir do texto abaixo. Responda APENAS um JSON com as chaves tipo (string curta, ex.: mandado_penhora) e confidence (0..1). Texto:\n${text.slice(0, 8000)}`;
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: modelName });
+  const defaultTpl = `Classifique o tipo específico do mandado judicial a partir do texto abaixo.\n\nSe for um mandado de averbação, identifique o SUBTIPO da averbação (exemplo: averbacao_divorcio, averbacao_interdicao, averbacao_reconhecimento_paternidade, averbacao_obito, averbacao_casamento, averbacao_alteracao_nome, averbacao_sentenca_adocao, etc.).\n\nSe não for averbação, classifique como: mandado_penhora, mandado_alimentos, mandado_prisao_civil, ou mandado_generico.\n\nResponda APENAS um JSON com as chaves:\n- tipo: string em snake_case (ex: "averbacao_divorcio")\n- confidence: número entre 0 e 1\n\nTexto do mandado:\n{{texto}}`;
+  const rowTpl = await getPromptByIndexador('identificar_mandado');
+  const prompt = renderTemplate((rowTpl && rowTpl.prompt) || defaultTpl, { texto: text.slice(0, 8000) });
         console.log(`[IA][identificar-tipo][${rid}] calling provider prompt.len=${prompt.length}`);
         const t0 = Date.now();
         const resp = await model.generateContent(prompt);
@@ -473,7 +598,13 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
           console.log(`[IA][analisar-exigencia] model resolved from '${rawName}' to '${modelName}'`);
         }
         const model = genAI.getGenerativeModel({ model: modelName });
-        const prompt = `Com base no texto do mandado e nos trechos legais, liste as exigências legais aplicáveis (checklist) e indique se está aprovado. Responda JSON: { aprovado: boolean, motivos: string[], checklist: [{ requisito, ok }], orientacao: string }.\nTipo (se houver): ${tipo || 'n/d'}\nTexto do mandado:\n${text.slice(0, 8000)}\n\nLegislação correlata:\n${contextoLegal}`;
+        const defaultTpl = `Com base no texto do mandado e nos trechos legais, liste as exigências legais aplicáveis (checklist) e indique se está aprovado.\nResponda APENAS JSON no formato: { aprovado: boolean, motivos: string[], checklist: [{ requisito, ok }], orientacao: string }.\nTipo (se houver): {{tipo}}\nTexto do mandado:\n{{texto}}\n\nLegislação correlata:\n{{legislacao_bullets}}`;
+        const rowTpl = await getPromptByIndexador('analisar_exigencia_legal');
+        const prompt = renderTemplate((rowTpl && rowTpl.prompt) || defaultTpl, {
+          tipo: tipo || 'n/d',
+          texto: text.slice(0, 8000),
+          legislacao_bullets: contextoLegal
+        });
         const resp = await model.generateContent(prompt);
         const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
         try {
@@ -527,9 +658,13 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
     console.log(`[IA][gerar-texto-averbacao] model resolved from '${rawName}' to '${modelName}'`);
   }
   const model = genAI.getGenerativeModel({ model: modelName });
-        const prompt = `Elabore o texto objetivo da averbação a partir do mandado judicial abaixo, observando as exigências legais pertinentes. O texto deve ser curto, impessoal e adequado para lançamento no livro. Retorne apenas o texto, sem comentários.
-Tipo (se houver): ${tipo || 'n/d'}
-Mandado (texto):\n${text.slice(0, 8000)}\n\nLegislação aplicável (trechos):\n${contextoLegal}`;
+        const defaultTpl = `Elabore o texto objetivo da averbação a partir do mandado judicial abaixo, observando as exigências legais pertinentes. O texto deve ser curto, impessoal e adequado para lançamento no livro. Retorne apenas o texto, sem comentários.\nTipo (se houver): {{tipo}}\nMandado (texto):\n{{texto}}\n\nLegislação aplicável (trechos):\n{{legislacao_bullets}}`;
+        const rowTpl = await getPromptByIndexador('gerar_texto_averbacao');
+        const prompt = renderTemplate((rowTpl && rowTpl.prompt) || defaultTpl, {
+          tipo: tipo || 'n/d',
+          texto: text.slice(0, 8000),
+          legislacao_bullets: contextoLegal
+        });
         const resp = await model.generateContent(prompt);
         const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
         // Sanitiza saída (remove possíveis marcas)

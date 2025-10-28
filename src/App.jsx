@@ -24,6 +24,7 @@ import ListaServicos from './components/servicos/ServicoLista'; // adicione esta
 import ReciboPedido from './ReciboPedido';
 import EditarCombos from './components/admin/EditarCombos';
 import LegislacaoAdmin from './components/admin/LegislacaoAdmin';
+import PromptsIAAdmin from './components/admin/PromptsIAAdmin';
 import ProtocoloAcesso from './ProtocoloAcesso';
 import AtosGratuitos from './AtosGratuitos';
 import AverbacoesLista from './components/averbacoes/AverbacoesLista';
@@ -137,6 +138,14 @@ function App() {
           element={
             <AdminRoute>
               <LegislacaoAdmin />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/prompts-ia"
+          element={
+            <AdminRoute>
+              <PromptsIAAdmin />
             </AdminRoute>
           }
         />
