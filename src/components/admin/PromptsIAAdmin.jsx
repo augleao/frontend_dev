@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import config from '../../config';
 
 export default function PromptsIAAdmin() {
   const [items, setItems] = useState([]);
@@ -11,7 +12,7 @@ export default function PromptsIAAdmin() {
     setLoading(true);
     setError('');
     try {
-      const r = await fetch('/api/ia/prompts');
+      const r = await fetch(`${config.apiURL}/ia/prompts`);
       if (!r.ok) throw new Error(`Falha ao carregar (${r.status})`);
       const data = await r.json();
       setItems(Array.isArray(data) ? data : []);
@@ -27,7 +28,7 @@ export default function PromptsIAAdmin() {
   async function save(indexador, prompt) {
     setError('');
     try {
-      const r = await fetch(`/api/ia/prompts/${encodeURIComponent(indexador)}`, {
+      const r = await fetch(`${config.apiURL}/ia/prompts/${encodeURIComponent(indexador)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
@@ -43,7 +44,7 @@ export default function PromptsIAAdmin() {
     if (!window.confirm(`Apagar prompt "${indexador}"?`)) return;
     setError('');
     try {
-      const r = await fetch(`/api/ia/prompts/${encodeURIComponent(indexador)}`, { method: 'DELETE' });
+      const r = await fetch(`${config.apiURL}/ia/prompts/${encodeURIComponent(indexador)}`, { method: 'DELETE' });
       if (!r.ok) throw new Error(`Falha ao apagar (${r.status})`);
       await load();
     } catch (e) {
