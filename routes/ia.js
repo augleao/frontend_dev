@@ -20,20 +20,80 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 
 module.exports = function initIARoutes(app, pool, middlewares = {}) {
   const jobs = new Map(); // in-memory job store { id: { state, step, message, progress, textPreview, result, error } }
 
-  // Resolve IA model name to a supported variant. Auto-upgrade known names to "-latest".
-  function resolveIaModel(name) {
-    if (!name) return 'gemini-1.5-flash-latest';
-    if (/\-latest$/.test(name)) return name;
-    if (name === 'gemini-1.5-flash') return 'gemini-1.5-flash-latest';
-    if (name === 'gemini-1.5-pro') return 'gemini-1.5-pro-latest';
-    return name; // leave others as-is
-  }
-
   // Healthcheck (optional)
   app.get('/api/ia/health', (req, res) => {
     const raw = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
     const resolved = resolveIaModel(raw);
     res.json({ ok: true, provider: resolved, stub: process.env.IA_STUB === 'true' });
+  });
+
+  // Utility: describe provider error in a structured way for logs/diagnostics
+  function describeError(err) {
+    const d = {
+      name: err && err.name,
+      message: err && err.message,
+    };
+    if (err && typeof err === 'object') {
+      if ('status' in err) d.status = err.status;
+      if ('code' in err) d.code = err.code;
+      if (err.cause) {
+        d.cause = {
+          name: err.cause.name,
+          message: err.cause.message,
+          status: err.cause.status,
+          code: err.cause.code,
+        };
+      }
+      if (err.response) {
+        d.response = {
+          status: err.response.status,
+          statusText: err.response.statusText,
+        };
+      }
+    }
+    return d;
+  }
+
+  // Diagnostics endpoint to validate IA configuration and connectivity
+  app.get('/api/ia/diagnostics', async (req, res) => {
+    const raw = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
+    const model = resolveIaModel(raw);
+    const stub = process.env.IA_STUB === 'true';
+    const apiKeySet = !!process.env.GEMINI_API_KEY;
+    const report = {
+      ok: false,
+      stub,
+      resolvedModel: model,
+      apiKey: apiKeySet ? `set(len=${String(process.env.GEMINI_API_KEY).length})` : 'missing',
+      sdk: 'google/generative-ai',
+    };
+    if (stub) {
+      report.ok = true;
+      report.note = 'IA_STUB=true: provider calls are bypassed';
+      return res.json(report);
+    }
+    if (!apiKeySet) {
+      report.error = 'GEMINI_API_KEY missing';
+      return res.status(501).json(report);
+    }
+    try {
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const m = genAI.getGenerativeModel({ model });
+      // Tiny test prompt; short and safe
+      const testPrompt = 'ping';
+      const t0 = Date.now();
+      const resp = await m.generateContent(testPrompt);
+      const txt = (resp && resp.response && resp.response.text && resp.response.text()) || '';
+      report.ok = true;
+      report.latencyMs = Date.now() - t0;
+      report.replyLen = txt.length;
+      return res.json(report);
+    } catch (e) {
+      const details = describeError(e);
+      report.error = details;
+      return res.status(502).json(report);
+    }
   });
 
   // POST /api/ia/analise-mandado
@@ -313,9 +373,10 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         const model = genAI.getGenerativeModel({ model: modelName });
         const prompt = `Classifique o tipo do mandado judicial a partir do texto abaixo. Responda APENAS um JSON com as chaves tipo (string curta, ex.: mandado_penhora) e confidence (0..1). Texto:\n${text.slice(0, 8000)}`;
         console.log(`[IA][identificar-tipo][${rid}] calling provider prompt.len=${prompt.length}`);
+        const t0 = Date.now();
         const resp = await model.generateContent(prompt);
         const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
-        console.log(`[IA][identificar-tipo][${rid}] provider ok out.len=${out.length}`);
+        console.log(`[IA][identificar-tipo][${rid}] provider ok out.len=${out.length} ms=${Date.now() - t0}`);
         let tipo = 'mandado_generico', confidence = 0.5;
         try {
           const parsed = JSON.parse(out);
@@ -328,7 +389,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         }
         return res.json({ tipo, confidence });
       } catch (provErr) {
-        console.error('[IA][identificar-tipo] Falha ao chamar provedor de IA:', provErr && provErr.message ? provErr.message : provErr);
+        console.error('[IA][identificar-tipo] Falha ao chamar provedor de IA:', JSON.stringify(describeError(provErr)));
         // Fallback heurístico para não bloquear o fluxo
         const t = text.toLowerCase();
         let tipo = 'mandado_generico';
