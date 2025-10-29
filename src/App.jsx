@@ -31,6 +31,7 @@ import AverbacoesLista from './components/averbacoes/AverbacoesLista';
 import AverbacaoManutencao from './components/averbacoes/AverbacaoManutencao';
 import FerramentasIA from './FerramentasIA';
 import AssistenteMandadosAverbacao from './components/ia/AssistenteMandadosAverbacao';
+import ScrollToTop from './ScrollToTop';
 
 
 
@@ -55,6 +56,8 @@ function App() {
   return (
     <AuthProvider>
       <HashRedirector />
+      {/* Always scroll to top on route change to avoid new pages loading scrolled down */}
+      <ScrollToTop />
       <NavBar />
       <Routes>
         <Route path="/" element={<Home />} />
