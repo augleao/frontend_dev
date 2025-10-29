@@ -95,7 +95,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
       const { rows } = await pool.query(
         `SELECT id, indexador, base_legal, titulo, artigo, jurisdicao, texto
          FROM public.legislacao_normas
-         WHERE indexador = $1 AND ativo = true
+         WHERE LOWER(indexador) = $1 AND ativo = true
          ORDER BY id ASC`,
         [String(indexador || '').toLowerCase()]
       );
@@ -586,11 +586,24 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
       if (!text || !Array.isArray(legislacao)) {
         return res.status(400).json({ error: 'Campos text e legislacao[] são obrigatórios.' });
       }
+      // Telemetria mínima para depuração (não loga conteúdo do mandado)
+      try {
+        console.log('[IA][analisar-exigencia] input:', {
+          tipo: tipo || 'n/d',
+          textLen: typeof text === 'string' ? text.length : 0,
+          legislacaoLen: Array.isArray(legislacao) ? legislacao.length : -1,
+        });
+      } catch (_) {}
 
       // Busca legislação específica do tipo de mandado no DB (ex: averbacao_divorcio)
       let legislacaoEspecifica = [];
       if (tipo && tipo !== 'n/d') {
-        legislacaoEspecifica = await getLegislacaoByIndexador(tipo);
+        try {
+          legislacaoEspecifica = await getLegislacaoByIndexador(tipo);
+        } catch (e) {
+          console.warn('[IA][analisar-exigencia] falha ao buscar legislação específica para tipo=', tipo, e && e.message ? e.message : e);
+          legislacaoEspecifica = [];
+        }
       }
 
       // Monta contexto legal combinando legislação correlata (FTS) e específica (indexador)
@@ -659,6 +672,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         return res.status(502).json({ error: 'Falha ao chamar provedor de IA.' });
       }
     } catch (err) {
+      try { console.error('[IA][analisar-exigencia] erro inesperado:', describeError(err)); } catch (_) {}
       return res.status(500).json({ error: 'Erro ao analisar exigência.' });
     }
   });
@@ -691,8 +705,8 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
     console.log(`[IA][gerar-texto-averbacao] model resolved from '${rawName}' to '${modelName}'`);
   }
   const model = genAI.getGenerativeModel({ model: modelName });
-        const defaultTpl = `Elabore o texto objetivo da averbação a partir do mandado judicial abaixo, observando as exigências legais pertinentes. O texto deve ser curto, impessoal e adequado para lançamento no livro. Retorne apenas o texto, sem comentários.\nTipo (se houver): {{tipo}}\nMandado (texto):\n{{texto}}\n\nLegislação aplicável (trechos):\n{{legislacao_bullets}}`;
-        const rowTpl = await getPromptByIndexador('gerar_texto_averbacao');
+  const defaultTpl = `Elabore o texto objetivo da averbação a partir do mandado judicial abaixo, observando as exigências legais pertinentes. O texto deve ser curto, impessoal e adequado para lançamento no livro. Retorne apenas o texto, sem comentários.\nTipo (se houver): {{tipo}}\nMandado (texto):\n{{texto}}\n\nLegislação aplicável (trechos):\n{{legislacao_bullets}}`;
+  const rowTpl = await getPromptByIndexador('criar_averbacao');
         const prompt = renderTemplate((rowTpl && rowTpl.prompt) || defaultTpl, {
           tipo: tipo || 'n/d',
           texto: text.slice(0, 8000),
