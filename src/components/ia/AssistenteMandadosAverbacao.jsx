@@ -38,8 +38,9 @@ function AssistenteMandadosAverbacao() {
     setConsoleLog([]);
   };
 
-  const onFileChange = (e) => {
-    setFile(e.target.files?.[0] || null);
+  const onFileChange = async (e) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
     setError('');
     setExtracted('');
     setTipo('');
@@ -49,6 +50,101 @@ function AssistenteMandadosAverbacao() {
     setTextoAverbacao('');
     setManual(false);
     clearConsole();
+    
+    // Inicia o fluxo completo automaticamente
+    if (selectedFile) {
+      await executarFluxoCompleto(selectedFile);
+    }
+  };
+
+  // Fluxo completo automatizado
+  const executarFluxoCompleto = async (pdfFile) => {
+    try {
+      setLoading(true);
+      
+      // Passo 1: Extrair texto
+      await addConsoleMessage('Extraindo o texto do PDF:', '', true);
+      const { text, warning } = await extrairTexto(pdfFile);
+      
+      if (!text) {
+        const errMsg = (warning || 'Não foi possível extrair texto do PDF.') + ' Dica: envie um PDF pesquisável (não escaneado/sem senha) ou use a edição manual.';
+        setError(errMsg);
+        await addConsoleMessage('', `❌ ${errMsg}`, false);
+        setLoading(false);
+        return;
+      }
+      
+      setExtracted(text);
+      const preview = text.length > 500 ? text.slice(0, 500) + '...' : text;
+      await addConsoleMessage('', `✓ Texto extraído com sucesso (${text.length} caracteres)\n\n${preview}`, false);
+      
+      // Passo 2: Identificar tipo
+      await addConsoleMessage('Identificando o tipo de mandado:', '', true);
+      const { tipo: tipoIdentificado, confidence } = await identificarTipo(text);
+      setTipo(tipoIdentificado || '');
+      setTipoConfidence(confidence ?? null);
+      
+      const confidencePercent = confidence !== null ? Math.round(confidence * 100) : 0;
+      await addConsoleMessage('', `✓ Tipo identificado: ${tipoIdentificado || 'n/d'} (confiança: ${confidencePercent}%)`, false);
+      
+      // Buscar legislação correlata
+      try {
+        await addConsoleMessage('', '\nBuscando legislação correlata...', false);
+        const lista = await listarLegislacao({ indexador: tipoIdentificado, ativo: true });
+        setLegislacao(Array.isArray(lista) ? lista : []);
+        
+        if (Array.isArray(lista) && lista.length > 0) {
+          await addConsoleMessage('', `✓ ${lista.length} dispositivo(s) legal(is) encontrado(s)`, false);
+        } else {
+          await addConsoleMessage('', '⚠ Nenhuma legislação específica encontrada para este tipo', false);
+        }
+        
+        // Passo 3: Analisar exigência
+        await addConsoleMessage('Analisando o mandado com base na legislação:', '', true);
+        const resp = await analisarExigencia({ text, legislacao: Array.isArray(lista) ? lista : [], tipo: tipoIdentificado });
+        setResultado(resp);
+        
+        if (resp.aprovado) {
+          await addConsoleMessage('', '✓ Mandado APROVADO - todos os requisitos atendidos', false);
+        } else {
+          await addConsoleMessage('', '❌ Mandado NÃO APROVADO - pendências encontradas', false);
+        }
+        
+        if (resp.checklist && resp.checklist.length > 0) {
+          await addConsoleMessage('', '\nChecklist de requisitos:', false);
+          for (const item of resp.checklist) {
+            await addConsoleMessage('', `  ${item.ok ? '✓' : '✗'} ${item.requisito}`, false);
+          }
+        }
+        
+        if (resp.orientacao) {
+          await addConsoleMessage('', `\nOrientação:\n${resp.orientacao}`, false);
+        }
+        
+        // Passo 4: Gerar texto da averbação
+        await addConsoleMessage('Gerando o texto da averbação:', '', true);
+        const { textoAverbacao: textoGerado } = await gerarTextoAverbacao({ text, legislacao: Array.isArray(lista) ? lista : [], tipo: tipoIdentificado });
+        setTextoAverbacao(textoGerado || '');
+        
+        if (textoGerado) {
+          await addConsoleMessage('', `✓ Texto gerado com sucesso:\n\n${textoGerado}`, false);
+          await addConsoleMessage('', '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', false);
+          await addConsoleMessage('', '✓ Fluxo completo finalizado com sucesso!', false);
+        } else {
+          await addConsoleMessage('', '⚠ Não foi possível gerar o texto da averbação', false);
+        }
+        
+      } catch (legislacaoError) {
+        await addConsoleMessage('', `⚠ Erro ao buscar legislação: ${legislacaoError.message}`, false);
+      }
+      
+    } catch (e) {
+      const errMsg = e?.message || 'Erro no fluxo automatizado.';
+      setError(errMsg);
+      await addConsoleMessage('', `❌ ${errMsg}`, false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleExtrairTexto = async () => {
@@ -233,33 +329,30 @@ function AssistenteMandadosAverbacao() {
       <main style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 24px' }}>
         <section style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
           <h2 style={{ marginTop: 0, color: '#2c3e50' }}>Envie o mandado judicial (PDF)</h2>
-          <p style={{ color: '#7f8c8d', marginTop: 0 }}>Fluxo em 3 passos: extrair texto, identificar tipo e analisar exigência legal.</p>
+          <p style={{ color: '#7f8c8d', marginTop: 0 }}>
+            O fluxo completo será executado automaticamente: extração de texto → identificação do tipo → análise legal → geração do texto da averbação.
+          </p>
 
-          <input type="file" accept="application/pdf" onChange={onFileChange} />
-
-          <div style={{ marginTop: 16 }}>
-            <button onClick={handleExtrairTexto} disabled={loading} style={{
-              background: '#f1c40f', color: '#2c3e50', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 700
-            }}
-              onMouseEnter={(e) => { if (!loading) e.currentTarget.style.filter = 'brightness(0.95)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.filter = 'none'; }}>
-              {loading ? 'Processando…' : 'Extrair texto'}
-            </button>
-            <button onClick={handleIdentificarTipo} disabled={loading || !extracted} style={{
-              background: '#74b9ff', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: (!extracted || loading) ? 'not-allowed' : 'pointer', fontWeight: 700, marginLeft: 12
-            }}>
-              Identificar tipo do mandado
-            </button>
-            <button onClick={handleAnalisarExigencia} disabled={loading || !extracted} style={{
-              background: '#00b894', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: (!extracted || loading) ? 'not-allowed' : 'pointer', fontWeight: 700, marginLeft: 12
-            }}>
-              Analisar exigência legal
-            </button>
-            <button onClick={handleGerarTextoAverbacao} disabled={loading || !extracted} style={{
-              background: '#27ae60', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: (!extracted || loading) ? 'not-allowed' : 'pointer', fontWeight: 700, marginLeft: 12
-            }}>
-              Gerar texto da averbação
-            </button>
+          <div style={{ 
+            border: '2px dashed #3498db', 
+            borderRadius: '12px', 
+            padding: '24px', 
+            textAlign: 'center',
+            background: loading ? '#f0f8ff' : '#fff',
+            transition: 'all 0.3s ease'
+          }}>
+            <input 
+              type="file" 
+              accept="application/pdf" 
+              onChange={onFileChange} 
+              disabled={loading}
+              style={{ marginBottom: '12px' }}
+            />
+            {loading && (
+              <div style={{ marginTop: '12px', color: '#3498db', fontWeight: 'bold' }}>
+                ⏳ Processando automaticamente...
+              </div>
+            )}
           </div>
 
           {/* Console do Agente IA */}
