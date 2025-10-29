@@ -9,7 +9,9 @@ const multer = require('multer');
 
 
 // memory storage is enough, we forward the PDF buffer to the parser/provider
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+// Allow configuring upload size limit via IA_MAX_UPLOAD_MB (default 20MB)
+const maxUploadMb = Math.max(1, Number(process.env.IA_MAX_UPLOAD_MB || 20));
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: maxUploadMb * 1024 * 1024 } });
 
 module.exports = function initIARoutes(app, pool, middlewares = {}) {
   const jobs = new Map(); // in-memory job store { id: { state, step, message, progress, textPreview, result, error } }
@@ -120,6 +122,26 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
     if (/\-latest$/.test(n)) return n.replace(/-latest$/, '');
     if (/\-\d{3}$/.test(n)) return n.replace(/-\d{3}$/, '');
     return n;
+  }
+
+  // Helper: normalize extracted text to reduce odd spacing and control size safely
+  function normalizeText(s) {
+    if (!s) return '';
+    let t = String(s);
+    // unify line breaks and remove null bytes
+    t = t.replace(/\r/g, '\n').replace(/\u0000/g, '');
+    // collapse excessive spaces (but keep newlines semantics)
+    t = t.replace(/[\t\f\v ]+/g, ' ');
+    // collapse many consecutive newlines
+    t = t.replace(/\n{3,}/g, '\n\n');
+    return t.trim();
+  }
+
+  // Helper: clamp large text for LLM prompts by env control (default generously high)
+  function clampForPrompt(s) {
+    const max = Math.max(1000, Number(process.env.IA_MAX_INPUT_CHARS || 120000));
+    const str = String(s || '');
+    return str.length > max ? str.slice(0, max) : str;
   }
 
   // Healthcheck (optional)
@@ -264,164 +286,12 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
     }
   });
 
-  // POST /api/ia/analise-mandado
-  app.post('/api/ia/analise-mandado', upload.single('file'), async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: 'Arquivo PDF (file) é obrigatório.' });
-      }
+  // Pick upload middleware (allow external provided instance with PDF filter)
+  const pickUpload = (middlewares.uploadAverbacao || middlewares.upload || upload);
 
-      // Validações rápidas do arquivo
-      const sizeOk = typeof req.file.size === 'number' ? req.file.size > 0 : true;
-      const type = (req.file.mimetype || '').toLowerCase();
-      const isPdf = type.includes('pdf') || req.file.originalname.toLowerCase().endsWith('.pdf');
-      if (!sizeOk) return res.status(400).json({ error: 'Arquivo vazio.' });
-      if (!isPdf) return res.status(400).json({ error: 'O arquivo deve ser um PDF.' });
-
-      let metadata = {};
-      if (req.body && req.body.metadata) {
-        try { metadata = JSON.parse(req.body.metadata); } catch (_) {}
-      }
-
-      // Stub mode to unblock frontend while integrating the real provider
-      if (process.env.IA_STUB === 'true') {
-        return res.json({
-          aprovado: true,
-          motivos: ['Stub ativo: resposta simulada para integração de frontend'],
-          checklist: [
-            { requisito: 'Arquivo recebido', ok: !!req.file },
-            { requisito: 'Metadados parseados', ok: true }
-          ],
-          textoAverbacao: 'Averba-se, por mandado judicial, o que consta dos autos, conforme fundamentação legal pertinente.'
-        });
-      }
-
-      // Try to load pdf-parse dynamically so this file can exist without breaking build on environments without it
-      let pdfParse;
-      try { pdfParse = require('pdf-parse'); } catch (e) {
-        return res.status(501).json({ error: 'pdf-parse não instalado no backend. Habilite IA_STUB=true ou instale as dependências.' });
-      }
-
-      let text = '';
-      try {
-        // Usa Uint8Array para compatibilidade com pdf.js interno do pdf-parse
-        const bin = new Uint8Array(req.file.buffer);
-        const parsed = await pdfParse(bin);
-        text = parsed.text || '';
-      } catch (e) {
-        // Fallback com pdfjs-dist (pode funcionar em alguns PDFs onde pdf-parse falha)
-        try {
-          const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js');
-          const data = new Uint8Array(req.file.buffer);
-          const task = pdfjsLib.getDocument({ data });
-          const pdf = await task.promise;
-          let combined = '';
-          const maxPages = Math.min(pdf.numPages || 0, 50);
-          for (let p = 1; p <= maxPages; p++) {
-            const page = await pdf.getPage(p);
-            const content = await page.getTextContent();
-            const line = (content.items || []).map((it) => (it.str || '')).join(' ');
-            combined += line + '\n';
-          }
-          text = combined || '';
-        } catch (fallbackErr) {
-          if (process.env.IA_STUB === 'true') {
-            return res.json({
-              aprovado: false,
-              motivos: ['Stub ativo: não foi possível extrair texto do PDF; resposta simulada.'],
-              checklist: [ { requisito: 'Texto extraível', ok: false } ],
-              textoAverbacao: 'Averba-se, por mandado judicial... (resposta simulada sem análise do texto)'
-            });
-          }
-          return res.status(422).json({ error: 'Não foi possível extrair texto do PDF (tente enviar um PDF pesquisável, não escaneado/sem senha).' });
-        }
-      }
-
-      if (!text || text.trim().length < 15) {
-        if (process.env.IA_STUB === 'true') {
-          return res.json({
-            aprovado: false,
-            motivos: ['PDF sem texto extraível (provavelmente escaneado). Stub ativo.'],
-            checklist: [ { requisito: 'Texto extraível', ok: false } ],
-            textoAverbacao: 'Averba-se, por mandado judicial... (resposta simulada)'
-          });
-        }
-        return res.status(422).json({ error: 'PDF sem texto extraível (provavelmente escaneado ou protegido). Envie um PDF pesquisável.' });
-      }
-
-      // Retrieve top-N legislação trechos via FTS
-      // Simple query using plainto_tsquery; adjust scoring/limit as needed
-      const maxTrechos = Number(process.env.IA_MAX_TRECHOS || 8);
-      let trechos = [];
-      if (pool) {
-        try {
-          const q = text.trim().split(/\s+/).slice(0, 12).join(' '); // naive short query from PDF text
-          const sql = `
-            SELECT id, indexador, base_legal, titulo, artigo, jurisdicao, texto
-            FROM public.legislacao_normas
-            WHERE searchable @@ plainto_tsquery('portuguese', $1)
-            AND ativo = true
-            ORDER BY updated_at DESC, id DESC
-            LIMIT $2
-          `;
-          const { rows } = await pool.query(sql, [q, maxTrechos]);
-          trechos = rows || [];
-        } catch (_) {
-          // ignore DB errors for now, IA can still run with minimal context
-        }
-      }
-
-      // Build prompt/context
-      const contextoLegal = trechos.map(t => `• ${t.base_legal}${t.artigo ? ' - ' + t.artigo : ''}: ${t.texto}`).join('\n');
-      const prompt = `Analise o mandado judicial abaixo e gere o texto objetivo da averbação.\n\nMandado (texto extraído):\n${text.slice(0, 8000)}\n\nContexto legal (trechos selecionados):\n${contextoLegal}`;
-
-      // Call Google Gemini dynamically
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        return res.status(501).json({ error: 'GEMINI_API_KEY não configurado. Defina a variável de ambiente ou ative IA_STUB=true.' });
-      }
-
-      let GoogleGenerativeAI;
-      try {
-        ({ GoogleGenerativeAI } = await import('@google/generative-ai'));
-      } catch (e) {
-        return res.status(501).json({ error: "Pacote '@google/generative-ai' não instalado ou não suportado via require. Instale e redeploy ou use IA_STUB=true." });
-      }
-
-      try {
-  const genAI = new GoogleGenerativeAI(apiKey);
-        const rawName = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
-        const modelName = resolveIaModel(rawName);
-        if (rawName !== modelName) {
-          console.log(`[IA][analise-mandado] model resolved from '${rawName}' to '${modelName}'`);
-        }
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        const output = (result && result.response && result.response.text && result.response.text()) || '';
-
-        // naive structure; in production, instruct model to return JSON and parse it
-        const resposta = {
-          aprovado: true,
-          motivos: ['Análise automática concluída'],
-          checklist: [
-            { requisito: 'PDF processado', ok: true },
-            { requisito: 'Legislação consultada', ok: trechos.length > 0 }
-          ],
-          textoAverbacao: output || 'Averba-se, por mandado judicial, o que consta dos autos...'
-        };
-        return res.json(resposta);
-      } catch (e) {
-        return res.status(502).json({ error: 'Falha ao chamar provedor de IA.' });
-      }
-    } catch (err) {
-      console.error('Erro na análise de mandado:', err);
-      return res.status(500).json({ error: 'Erro interno na análise.' });
-    }
-  });
-
-  // New structured flow endpoints
+  // Structured flow endpoints
   // 1) Extrair texto do PDF e devolver ao frontend
-  app.post('/api/ia/extrair-texto', upload.single('file'), async (req, res) => {
+  app.post('/api/ia/extrair-texto', pickUpload.single('file'), async (req, res) => {
     try {
       if (!req.file) return res.status(400).json({ error: 'Arquivo PDF (file) é obrigatório.' });
       const type = (req.file.mimetype || '').toLowerCase();
@@ -432,6 +302,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
       }
 
       let text = '';
+      let pages = undefined;
       // 1) Tenta com pdf-parse (se instalado)
       let pdfParse;
       try { pdfParse = require('pdf-parse'); } catch (requireErr) { pdfParse = null; }
@@ -441,6 +312,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
           const bin = new Uint8Array(req.file.buffer);
           const parsed = await pdfParse(bin);
           text = parsed.text || '';
+          if (parsed && typeof parsed.numpages === 'number') pages = parsed.numpages;
         } catch (e) {
           // segue para fallback
           console.error('pdf-parse falhou ao extrair texto:', e && e.message ? e.message : e);
@@ -462,7 +334,8 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
             const task = pdfjsLib.getDocument({ data, isEvalSupported: false });
             const pdf = await task.promise;
             let combined = '';
-            const maxPages = Math.min(pdf.numPages || 0, 50);
+            const maxPagesEnv = Math.max(1, Number(process.env.IA_MAX_PAGES || 100));
+            const maxPages = Math.min(pdf.numPages || 0, maxPagesEnv);
             for (let p = 1; p <= maxPages; p++) {
               const page = await pdf.getPage(p);
               const content = await page.getTextContent();
@@ -470,6 +343,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
               combined += line + '\n';
             }
             text = combined || '';
+            pages = pdf.numPages || maxPages;
           } catch (fallbackErr) {
             if (process.env.IA_STUB === 'true') {
               return res.json({ text: '', warning: 'Stub ativo: não foi possível extrair texto; retornando vazio.' });
@@ -480,11 +354,16 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         }
       }
 
+      text = normalizeText(text);
+      try {
+        console.log(`[IA][extrair-texto] len=${text.length} pages=${pages ?? 'n/a'} preview(0..400)=`, JSON.stringify(text.slice(0, 400)));
+      } catch (_) {}
+
       if (!text || text.trim().length < 5) {
         if (process.env.IA_STUB === 'true') return res.json({ text: '' });
         return res.status(422).json({ error: 'PDF sem texto extraível (provavelmente escaneado ou protegido).' });
       }
-      return res.json({ text });
+      return res.json({ text, length: text.length, pages });
     } catch (err) {
       return res.status(500).json({ error: 'Erro ao extrair texto.' });
     }
@@ -541,7 +420,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   const model = genAI.getGenerativeModel({ model: modelName });
   const defaultTpl = `Classifique o tipo específico do mandado judicial a partir do texto abaixo.\n\nSe for um mandado de averbação, identifique o SUBTIPO da averbação (exemplo: averbacao_divorcio, averbacao_interdicao, averbacao_reconhecimento_paternidade, averbacao_obito, averbacao_casamento, averbacao_alteracao_nome, averbacao_sentenca_adocao, etc.).\n\nSe não for averbação, classifique como: mandado_penhora, mandado_alimentos, mandado_prisao_civil, ou mandado_generico.\n\nResponda APENAS um JSON com as chaves:\n- tipo: string em snake_case (ex: "averbacao_divorcio")\n- confidence: número entre 0 e 1\n\nTexto do mandado:\n{{texto}}`;
   const rowTpl = await getPromptByIndexador('identificar_tipo_mandado');
-  const prompt = renderTemplate((rowTpl && rowTpl.prompt) || defaultTpl, { texto: text.slice(0, 8000) });
+  const prompt = renderTemplate((rowTpl && rowTpl.prompt) || defaultTpl, { texto: clampForPrompt(text) });
         console.log(`[IA][identificar-tipo][${rid}] calling provider prompt.len=${prompt.length}`);
         const t0 = Date.now();
         const resp = await model.generateContent(prompt);
@@ -648,7 +527,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         const rowTpl = await getPromptByIndexador('analisar_mandado');
         const prompt = renderTemplate((rowTpl && rowTpl.prompt) || defaultTpl, {
           tipo: tipo || 'n/d',
-          texto: text.slice(0, 8000),
+          texto: clampForPrompt(text),
           legislacao_bullets: contextoLegal
         });
         const resp = await model.generateContent(prompt);
@@ -709,7 +588,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   const rowTpl = await getPromptByIndexador('criar_averbacao');
         const prompt = renderTemplate((rowTpl && rowTpl.prompt) || defaultTpl, {
           tipo: tipo || 'n/d',
-          texto: text.slice(0, 8000),
+          texto: clampForPrompt(text),
           legislacao_bullets: contextoLegal
         });
         const resp = await model.generateContent(prompt);
@@ -775,7 +654,8 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         const data = new Uint8Array(buffer);
         const task = pdfjsLib.getDocument({ data });
         const pdf = await task.promise;
-        const maxPages = Math.min(pdf.numPages || 0, 50);
+        const maxPagesEnv = Math.max(1, Number(process.env.IA_MAX_PAGES || 100));
+        const maxPages = Math.min(pdf.numPages || 0, maxPagesEnv);
         for (let p = 1; p <= maxPages; p++) {
           const page = await pdf.getPage(p);
           const content = await page.getTextContent();
@@ -793,7 +673,9 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
     }
 
     if (extracted && extracted.trim().length > 0) {
-      updateJob(jobId, { step: 'text_extracted', message: 'Texto extraído com sucesso', progress: 45, textPreview: extracted.slice(0, 1500) });
+      const norm = normalizeText(extracted);
+      updateJob(jobId, { step: 'text_extracted', message: 'Texto extraído com sucesso', progress: 45, textPreview: norm.slice(0, 1500) });
+      extracted = norm;
     }
 
     // Retrieve legislação
@@ -845,7 +727,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         }
         const model = genAI.getGenerativeModel({ model: modelName });
         const contextoLegal = (trechos || []).map(t => `• ${t.base_legal}${t.artigo ? ' - ' + t.artigo : ''}: ${t.texto}`).join('\n');
-        const prompt = `Analise o mandado judicial abaixo e gere o texto objetivo da averbação.\n\nMandado (texto extraído):\n${(extracted || '').slice(0, 8000)}\n\nContexto legal (trechos selecionados):\n${contextoLegal}`;
+  const prompt = `Analise o mandado judicial abaixo e gere o texto objetivo da averbação.\n\nMandado (texto extraído):\n${clampForPrompt(extracted || '')}\n\nContexto legal (trechos selecionados):\n${contextoLegal}`;
         const resp = await model.generateContent(prompt);
         const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
         result = {
@@ -867,7 +749,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   }
 
   // POST /api/ia/analise-mandado-async
-  app.post('/api/ia/analise-mandado-async', upload.single('file'), async (req, res) => {
+  app.post('/api/ia/analise-mandado-async', pickUpload.single('file'), async (req, res) => {
     try {
       if (!req.file) return res.status(400).json({ error: 'Arquivo PDF (file) é obrigatório.' });
       const job = newJob();
