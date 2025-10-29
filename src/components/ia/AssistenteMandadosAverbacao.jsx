@@ -491,67 +491,12 @@ function AssistenteMandadosAverbacao() {
 
           {error && <div style={{ marginTop: 16, color: '#c0392b' }}>{error}</div>}
 
-          {(extracted || tipo || (legislacao && legislacao.length) || resultado) && (
+            {(tipo || resultado) && (
             <div style={{ marginTop: 24 }}>
-              {(extracted !== '' || manual) && (
-                <div style={{ marginTop: 12 }}>
-                  <h3 style={{ margin: '0 0 8px 0' }}>Texto extraído do PDF</h3>
-                  <textarea
-                    readOnly={!manual}
-                    value={extracted}
-                    onChange={(e) => manual && setExtracted(e.target.value)}
-                    placeholder={manual ? 'Cole aqui o texto do mandado…' : ''}
-                    style={{ width: '100%', minHeight: 200, padding: 12, borderRadius: 8, border: '1px solid #ecf0f1' }}
-                  />
-                  {manual && (
-                    <div style={{ marginTop: 8, color: '#7f8c8d' }}>
-                      Dica: cole o texto do mandado acima e prossiga para os próximos passos.
-                    </div>
-                  )}
-                </div>
-              )}
-
               {(tipo || tipoConfidence !== null) && (
                 <div>
                   <div style={{ padding: '12px 16px', borderRadius: '8px', background: '#eef5ff', color: '#1f4ba0', marginTop: 12 }}>
                     <strong>Tipo de mandado:</strong> {tipo || 'n/d'} {tipoConfidence !== null ? `(confiança: ${Math.round(tipoConfidence * 100)}%)` : ''}
-                  </div>
-                </div>
-              )}
-
-              {Array.isArray(legislacao) && legislacao.length > 0 && (
-                <div style={{ marginTop: 16 }}>
-                  <h3 style={{ margin: '0 0 8px 0' }}>Legislação correlata (indexador = {tipo || 'n/d'})</h3>
-                  <ul style={{ margin: 0, paddingLeft: 18 }}>
-                    {legislacao.map((l) => (
-                      <li key={l.id} style={{ color: '#2c3e50' }}>
-                        <strong>{l.base_legal}</strong>{l.artigo ? ` - ${l.artigo}` : ''}: {l.texto}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {resultado?.checklist?.length > 0 && (
-                <div style={{ marginTop: 16 }}>
-                  <h3 style={{ margin: '0 0 8px 0' }}>Checklist</h3>
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                      <thead>
-                        <tr>
-                          <th style={{ textAlign: 'left', borderBottom: '1px solid #ecf0f1', padding: 8 }}>Requisito</th>
-                          <th style={{ textAlign: 'left', borderBottom: '1px solid #ecf0f1', padding: 8 }}>OK</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {resultado.checklist.map((item, idx) => (
-                          <tr key={idx}>
-                            <td style={{ borderBottom: '1px solid #ecf0f1', padding: 8 }}>{item.requisito}</td>
-                            <td style={{ borderBottom: '1px solid #ecf0f1', padding: 8 }}>{item.ok ? '✔️' : '❌'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
                   </div>
                 </div>
               )}
