@@ -15,6 +15,28 @@ function AssistenteMandadosAverbacao() {
   const [resultado, setResultado] = useState(null);
   const [textoAverbacao, setTextoAverbacao] = useState('');
   const [manual, setManual] = useState(false);
+  
+  // Estado do console de IA
+  const [consoleLog, setConsoleLog] = useState([]);
+  const consoleRef = React.useRef(null);
+
+  // Função para adicionar mensagem ao console com animação
+  const addConsoleMessage = async (label, content, isLabel = false) => {
+    const newEntry = { label, content, isLabel };
+    setConsoleLog(prev => [...prev, newEntry]);
+    
+    // Auto-scroll para o final
+    setTimeout(() => {
+      if (consoleRef.current) {
+        consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
+      }
+    }, 50);
+  };
+
+  // Limpar console
+  const clearConsole = () => {
+    setConsoleLog([]);
+  };
 
   const onFileChange = (e) => {
     setFile(e.target.files?.[0] || null);
@@ -26,6 +48,7 @@ function AssistenteMandadosAverbacao() {
     setResultado(null);
     setTextoAverbacao('');
     setManual(false);
+    clearConsole();
   };
 
   const handleExtrairTexto = async () => {
@@ -34,20 +57,33 @@ function AssistenteMandadosAverbacao() {
     setTipo('');
     setTipoConfidence(null);
     setLegislacao([]);
-  setTextoAverbacao('');
+    setTextoAverbacao('');
+    clearConsole();
+    
     if (!file) {
       setError('Selecione um PDF do mandado judicial.');
       return;
     }
+    
     try {
       setLoading(true);
+      await addConsoleMessage('Extraindo o texto do PDF:', '', true);
+      
       const { text, warning } = await extrairTexto(file);
       setExtracted(text || '');
+      
       if (!text) {
-        setError((warning || 'Não foi possível extrair texto do PDF.') + ' Dica: envie um PDF pesquisável (não escaneado/sem senha) ou use a edição manual.');
+        const errMsg = (warning || 'Não foi possível extrair texto do PDF.') + ' Dica: envie um PDF pesquisável (não escaneado/sem senha) ou use a edição manual.';
+        setError(errMsg);
+        await addConsoleMessage('', `❌ ${errMsg}`, false);
+      } else {
+        const preview = text.length > 500 ? text.slice(0, 500) + '...' : text;
+        await addConsoleMessage('', `✓ Texto extraído com sucesso (${text.length} caracteres)\n\n${preview}`, false);
       }
     } catch (e) {
-      setError(e?.message || 'Falha ao extrair texto do PDF.');
+      const errMsg = e?.message || 'Falha ao extrair texto do PDF.';
+      setError(errMsg);
+      await addConsoleMessage('', `❌ ${errMsg}`, false);
     } finally {
       setLoading(false);
     }
@@ -56,24 +92,41 @@ function AssistenteMandadosAverbacao() {
   const handleIdentificarTipo = async () => {
     setError('');
     setResultado(null);
-  setTextoAverbacao('');
+    setTextoAverbacao('');
+    
     if (!extracted || extracted.trim().length < 5) {
       setError('Extraia o texto primeiro.');
       return;
     }
+    
     try {
       setLoading(true);
+      await addConsoleMessage('Identificando o tipo de mandado:', '', true);
+      
       const { tipo, confidence } = await identificarTipo(extracted);
       setTipo(tipo || '');
       setTipoConfidence(confidence ?? null);
+      
+      const confidencePercent = confidence !== null ? Math.round(confidence * 100) : 0;
+      await addConsoleMessage('', `✓ Tipo identificado: ${tipo || 'n/d'} (confiança: ${confidencePercent}%)`, false);
+      
       try {
+        await addConsoleMessage('', '\nBuscando legislação correlata...', false);
         const lista = await listarLegislacao({ indexador: tipo, ativo: true });
         setLegislacao(Array.isArray(lista) ? lista : []);
+        
+        if (Array.isArray(lista) && lista.length > 0) {
+          await addConsoleMessage('', `✓ ${lista.length} dispositivo(s) legal(is) encontrado(s)`, false);
+        } else {
+          await addConsoleMessage('', '⚠ Nenhuma legislação específica encontrada para este tipo', false);
+        }
       } catch (_) {
-        // Optional: silently ignore; user can still run analysis without legislação
+        await addConsoleMessage('', '⚠ Não foi possível buscar legislação correlata', false);
       }
     } catch (e) {
-      setError(e?.message || 'Falha ao identificar tipo do mandado.');
+      const errMsg = e?.message || 'Falha ao identificar tipo do mandado.';
+      setError(errMsg);
+      await addConsoleMessage('', `❌ ${errMsg}`, false);
     } finally {
       setLoading(false);
     }
@@ -81,16 +134,39 @@ function AssistenteMandadosAverbacao() {
 
   const handleAnalisarExigencia = async () => {
     setError('');
+    
     if (!extracted || extracted.trim().length < 5) {
       setError('Extraia o texto primeiro.');
       return;
     }
+    
     try {
       setLoading(true);
+      await addConsoleMessage('Analisando o mandado com base na legislação:', '', true);
+      
       const resp = await analisarExigencia({ text: extracted, legislacao, tipo });
       setResultado(resp);
+      
+      if (resp.aprovado) {
+        await addConsoleMessage('', '✓ Mandado APROVADO - todos os requisitos atendidos', false);
+      } else {
+        await addConsoleMessage('', '❌ Mandado NÃO APROVADO - pendências encontradas', false);
+      }
+      
+      if (resp.checklist && resp.checklist.length > 0) {
+        await addConsoleMessage('', '\nChecklist de requisitos:', false);
+        for (const item of resp.checklist) {
+          await addConsoleMessage('', `  ${item.ok ? '✓' : '✗'} ${item.requisito}`, false);
+        }
+      }
+      
+      if (resp.orientacao) {
+        await addConsoleMessage('', `\nOrientação:\n${resp.orientacao}`, false);
+      }
     } catch (e) {
-      setError(e?.message || 'Falha ao analisar exigência.');
+      const errMsg = e?.message || 'Falha ao analisar exigência.';
+      setError(errMsg);
+      await addConsoleMessage('', `❌ ${errMsg}`, false);
     } finally {
       setLoading(false);
     }
@@ -98,16 +174,28 @@ function AssistenteMandadosAverbacao() {
 
   const handleGerarTextoAverbacao = async () => {
     setError('');
+    
     if (!extracted || extracted.trim().length < 5) {
       setError('Extraia o texto primeiro.');
       return;
     }
+    
     try {
       setLoading(true);
+      await addConsoleMessage('Gerando o texto da averbação:', '', true);
+      
       const { textoAverbacao } = await gerarTextoAverbacao({ text: extracted, legislacao, tipo });
       setTextoAverbacao(textoAverbacao || '');
+      
+      if (textoAverbacao) {
+        await addConsoleMessage('', `✓ Texto gerado com sucesso:\n\n${textoAverbacao}`, false);
+      } else {
+        await addConsoleMessage('', '⚠ Não foi possível gerar o texto da averbação', false);
+      }
     } catch (e) {
-      setError(e?.message || 'Falha ao gerar texto da averbação.');
+      const errMsg = e?.message || 'Falha ao gerar texto da averbação.';
+      setError(errMsg);
+      await addConsoleMessage('', `❌ ${errMsg}`, false);
     } finally {
       setLoading(false);
     }
@@ -173,6 +261,35 @@ function AssistenteMandadosAverbacao() {
               Gerar texto da averbação
             </button>
           </div>
+
+          {/* Console do Agente IA */}
+          {consoleLog.length > 0 && (
+            <div ref={consoleRef} style={{
+              marginTop: 24,
+              background: '#000',
+              color: '#aaa',
+              padding: '16px',
+              borderRadius: '8px',
+              minHeight: '300px',
+              maxHeight: '500px',
+              overflowY: 'auto',
+              fontFamily: 'Courier New, monospace',
+              fontSize: '14px',
+              lineHeight: '1.6',
+              whiteSpace: 'pre-wrap',
+              wordWrap: 'break-word'
+            }}>
+              {consoleLog.map((entry, idx) => (
+                <div key={idx} style={{ marginBottom: '8px' }}>
+                  {entry.isLabel ? (
+                    <div style={{ color: '#ff4444', fontWeight: 'bold' }}>{entry.label}</div>
+                  ) : (
+                    <div style={{ color: '#aaa', paddingLeft: '8px' }}>{entry.content}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
           {error && <div style={{ marginTop: 16, color: '#c0392b' }}>{error}</div>}
 
