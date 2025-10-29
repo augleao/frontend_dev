@@ -387,13 +387,6 @@ function AssistenteMandadosAverbacao() {
         background: 'rgba(44, 62, 80, 0.95)', backdropFilter: 'blur(10px)', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button onClick={() => navigate('/ferramentas-ia')} style={{
-            background: 'rgba(255, 255, 255, 0.1)', border: '2px solid rgba(255, 255, 255, 0.3)', color: 'white', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600, transition: 'all 0.3s ease'
-          }}
-            onMouseEnter={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.2)'; }}
-            onMouseLeave={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; }}>
-            ← Voltar
-          </button>
           <h1 style={{ color: 'white', margin: 0, fontSize: '24px', fontWeight: 600, letterSpacing: '0.5px' }}>
             Assistente de Mandados de Averbação
           </h1>
@@ -402,10 +395,6 @@ function AssistenteMandadosAverbacao() {
 
       <main style={{ padding: '16px 24px' }}>
         <section style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
-          <h2 style={{ marginTop: 0, color: '#2c3e50' }}>Envie o mandado judicial (PDF)</h2>
-          <p style={{ color: '#7f8c8d', marginTop: 0 }}>
-            O fluxo completo será executado automaticamente: extração de texto → identificação do tipo → análise legal → geração do texto da averbação.
-          </p>
 
           <div style={{ 
             border: '2px dashed #3498db', 
@@ -438,7 +427,7 @@ function AssistenteMandadosAverbacao() {
               e.currentTarget.style.transform = 'translateY(0)';
               e.currentTarget.style.boxShadow = '0 4px 12px rgba(52, 152, 219, 0.3)';
             }}>
-              📄 Escolher arquivo PDF
+              📄 Selecione os arquivos PDF do mandado
             </label>
             <input 
               id="fileInput"
