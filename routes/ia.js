@@ -89,6 +89,22 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
     });
   }
 
+  async function getLegislacaoByIndexador(indexador) {
+    if (!pool) return [];
+    try {
+      const { rows } = await pool.query(
+        `SELECT id, indexador, base_legal, titulo, artigo, jurisdicao, texto
+         FROM public.legislacao_normas
+         WHERE indexador = $1 AND ativo = true
+         ORDER BY id ASC`,
+        [String(indexador || '').toLowerCase()]
+      );
+      return rows || [];
+    } catch (_) {
+      return [];
+    }
+  }
+
   // Local safeguard: ensure resolveIaModel is in-scope even if top-level definition is altered/removed during bundling
   function resolveIaModel(name) {
     // Use gemini-2.0-flash which is stable and available with the current API key.
@@ -571,8 +587,25 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         return res.status(400).json({ error: 'Campos text e legislacao[] são obrigatórios.' });
       }
 
-      // Monta contexto legal
-      const contextoLegal = (legislacao || []).map((t) => `• ${t.base_legal || ''}${t.artigo ? ' - ' + t.artigo : ''}: ${t.texto || ''}`).join('\n');
+      // Busca legislação específica do tipo de mandado no DB (ex: averbacao_divorcio)
+      let legislacaoEspecifica = [];
+      if (tipo && tipo !== 'n/d') {
+        legislacaoEspecifica = await getLegislacaoByIndexador(tipo);
+      }
+
+      // Monta contexto legal combinando legislação correlata (FTS) e específica (indexador)
+      const contextoLegalFTS = (legislacao || []).map((t) => `• ${t.base_legal || ''}${t.artigo ? ' - ' + t.artigo : ''}: ${t.texto || ''}`).join('\n');
+      const contextoLegalEspecifico = legislacaoEspecifica.map((t) => `• ${t.base_legal || ''}${t.artigo ? ' - ' + t.artigo : ''}: ${t.texto || ''}`).join('\n');
+      
+      let contextoLegal = '';
+      if (contextoLegalEspecifico) {
+        contextoLegal = `LEGISLAÇÃO ESPECÍFICA DO TIPO (${tipo}):\n${contextoLegalEspecifico}`;
+        if (contextoLegalFTS) {
+          contextoLegal += `\n\nLEGISLAÇÃO CORRELATA (pesquisa):\n${contextoLegalFTS}`;
+        }
+      } else {
+        contextoLegal = contextoLegalFTS;
+      }
 
       if (process.env.IA_STUB === 'true') {
         const checklist = [
@@ -599,7 +632,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
         }
         const model = genAI.getGenerativeModel({ model: modelName });
         const defaultTpl = `Com base no texto do mandado e nos trechos legais, liste as exigências legais aplicáveis (checklist) e indique se está aprovado.\nResponda APENAS JSON no formato: { aprovado: boolean, motivos: string[], checklist: [{ requisito, ok }], orientacao: string }.\nTipo (se houver): {{tipo}}\nTexto do mandado:\n{{texto}}\n\nLegislação correlata:\n{{legislacao_bullets}}`;
-        const rowTpl = await getPromptByIndexador('analisar_exigencia_legal');
+        const rowTpl = await getPromptByIndexador('analisar_mandado');
         const prompt = renderTemplate((rowTpl && rowTpl.prompt) || defaultTpl, {
           tipo: tipo || 'n/d',
           texto: text.slice(0, 8000),
