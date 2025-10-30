@@ -42,6 +42,8 @@ function CaixaDiario() {
   const [entradaObs, setEntradaObs] = useState('');
   const [saidaValor, setSaidaValor] = useState('');
   const [saidaObs, setSaidaObs] = useState('');
+  const [saidaClienteNome, setSaidaClienteNome] = useState('');
+  const [saidaTicket, setSaidaTicket] = useState('');
 
 // Função para formatar valor de input para número (ex: "R$ 1.234,56" -> 1234.56)
   const parseValorMoeda = (valorStr) => {
@@ -117,11 +119,24 @@ function CaixaDiario() {
     //const nomeUsuario = usuario?.nome || 'Usuário não identificado';
     const agora = new Date();
 
+    // Monta descrição com máscara de devolução se houver nome do cliente
+    const isDevolucao = !!(saidaClienteNome && saidaClienteNome.trim());
+    let descricaoDetalhada = '';
+    if (isDevolucao) {
+      const partes = [];
+      partes.push(`Devolução p/Cliente: ${saidaClienteNome.trim()}`);
+      if (saidaTicket && saidaTicket.trim()) partes.push(`ticket: ${saidaTicket.trim()}`);
+      if (saidaObs && saidaObs.trim()) partes.push(`Obs.: ${saidaObs.trim()}`);
+      descricaoDetalhada = partes.join('; ');
+    } else {
+      descricaoDetalhada = (saidaObs || '').trim();
+    }
+
     const novaSaida = {
       data: dataSelecionada, // Usar a data selecionada
       hora: agora.toLocaleTimeString('pt-BR', { hour12: false }),
       codigo: '0002',
-      descricao: `SAÍDA: ${saidaObs || ''}`.trim(),
+      descricao: `SAÍDA: ${descricaoDetalhada}`.trim(),
       quantidade: 1,
       valor_unitario: valor,
       pagamentos: {}, // vazio conforme solicitado
@@ -146,6 +161,8 @@ function CaixaDiario() {
         setAtos((prev) => [...prev, novaSaida]);
         setSaidaValor('');
         setSaidaObs('');
+        setSaidaClienteNome('');
+        setSaidaTicket('');
         console.log('Saída manual salva com sucesso:', novaSaida);
       } else {
         const errorData = await res.json();
@@ -774,6 +791,53 @@ useEffect(() => {
                     fontSize: '14px'
                   }}
                 />
+              </div>
+              {/* Campos de Devolução: Nome do Cliente e Ticket */}
+              <div style={{ marginBottom: '10px', display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '8px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label style={{ 
+                    fontWeight: '600',
+                    color: '#2c3e50',
+                    minWidth: '200px'
+                  }}>
+                    Nome do Cliente (Devolução):
+                  </label>
+                  <input
+                    type="text"
+                    value={saidaClienteNome}
+                    onChange={(e) => setSaidaClienteNome(e.target.value)}
+                    placeholder="Ex.: João da Silva"
+                    style={{
+                      flex: 1,
+                      padding: '8px',
+                      borderRadius: '6px',
+                      border: '2px solid #e3f2fd',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label style={{ 
+                    fontWeight: '600',
+                    color: '#2c3e50',
+                    minWidth: '60px'
+                  }}>
+                    Ticket:
+                  </label>
+                  <input
+                    type="text"
+                    value={saidaTicket}
+                    onChange={(e) => setSaidaTicket(e.target.value)}
+                    placeholder="Ex.: 12345"
+                    style={{
+                      flex: 1,
+                      padding: '8px',
+                      borderRadius: '6px',
+                      border: '2px solid #e3f2fd',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
               </div>
               <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <label style={{ 
