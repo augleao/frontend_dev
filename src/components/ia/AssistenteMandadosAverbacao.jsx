@@ -5,7 +5,7 @@ import { listarLegislacao } from '../servicos/LegislacaoService';
 
 function AssistenteMandadosAverbacao() {
   const navigate = useNavigate();
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [extracted, setExtracted] = useState('');
@@ -111,9 +111,51 @@ function AssistenteMandadosAverbacao() {
     }
   }, [consoleLog.length]);
 
+  // Extrai texto de um ou mais arquivos PDF e retorna texto combinado e metadados
+  const extrairTextoDeArquivos = async (arquivos) => {
+    const partes = [];
+    let totalChars = 0;
+    let warnings = [];
+
+    for (let i = 0; i < arquivos.length; i++) {
+      const f = arquivos[i];
+      await addConsoleMessage('', `[info]Processando arquivo ${i + 1}/${arquivos.length}:[/info] [highlight]${f.name}[/highlight]`, false);
+      const { text, warning, pages, length } = await extrairTexto(f);
+      if (warning) warnings.push(`(${f.name}) ${warning}`);
+      const textoParte = text || '';
+      totalChars += (length ?? textoParte.length);
+      partes.push({
+        name: f.name,
+        text: textoParte,
+        pages: pages ?? null,
+        length: length ?? textoParte.length,
+      });
+    }
+
+    // Combina com separadores claros por arquivo
+    const combinado = partes
+      .map((p, idx) => `===== INÍCIO DO ARQUIVO ${idx + 1}: ${p.name} =====\n${p.text}\n===== FIM DO ARQUIVO ${idx + 1}: ${p.name} =====`)
+      .join('\n\n');
+
+    return { combinado, partes, totalChars, warnings };
+  };
+
   const onFileChange = async (e) => {
-    const selectedFile = e.target.files?.[0] || null;
-    setFile(selectedFile);
+    const selectedFiles = Array.from(e.target.files || []);
+
+    // Validações básicas: apenas PDF, limite de quantidade
+    const MAX_FILES = 5;
+    if (selectedFiles.length > MAX_FILES) {
+      setError(`Selecione no máximo ${MAX_FILES} arquivos PDF.`);
+      return;
+    }
+    const invalid = selectedFiles.find(f => f.type !== 'application/pdf');
+    if (invalid) {
+      setError(`O arquivo "${invalid.name}" não é um PDF válido.`);
+      return;
+    }
+
+    setFiles(selectedFiles);
     setError('');
     setExtracted('');
     setTipo('');
@@ -125,35 +167,41 @@ function AssistenteMandadosAverbacao() {
     clearConsole();
     
     // Inicia o fluxo completo automaticamente
-    if (selectedFile) {
-      await executarFluxoCompleto(selectedFile);
+    if (selectedFiles.length > 0) {
+      await executarFluxoCompleto(selectedFiles);
     }
   };
 
   // Fluxo completo automatizado
-  const executarFluxoCompleto = async (pdfFile) => {
+  const executarFluxoCompleto = async (pdfFiles) => {
     try {
       setLoading(true);
       
-      // Passo 1: Extrair texto
-      await addConsoleMessage('[title]Extraindo o texto do PDF:[/title]', '', true);
-      const { text, warning } = await extrairTexto(pdfFile);
-      
-      if (!text) {
-        const errMsg = (warning || 'Não foi possível extrair texto do PDF.') + ' Dica: envie um PDF pesquisável (não escaneado/sem senha) ou use a edição manual.';
+      // Passo 1: Extrair texto (suporta múltiplos PDFs)
+      await addConsoleMessage('[title]Extraindo o texto do(s) PDF(s):[/title]', '', true);
+      const { combinado, partes, totalChars, warnings } = await extrairTextoDeArquivos(Array.isArray(pdfFiles) ? pdfFiles : [pdfFiles]);
+
+      if (!combinado || combinado.trim().length === 0) {
+        const warnJoin = warnings?.length ? `\n${warnings.join('\n')}` : '';
+        const errMsg = ('Não foi possível extrair texto do(s) PDF(s).') + ' Dica: envie PDF pesquisável (não escaneado/sem senha) ou use a edição manual.' + warnJoin;
         setError(errMsg);
         await addConsoleMessage('', `[error]❌ ${errMsg}[/error]`, false);
         setLoading(false);
         return;
       }
-      
-      setExtracted(text);
-      const preview = text.length > 500 ? text.slice(0, 500) + '...' : text;
-      await addConsoleMessage('', `[success]✓ Texto extraído com sucesso[/success] ([info]${text.length} caracteres[/info])\n\n${preview}`, false);
+      // Feedback por arquivo
+      for (const p of partes) {
+        const previewParte = p.text.length > 300 ? p.text.slice(0, 300) + '...' : p.text;
+        await addConsoleMessage('', `[success]✓ Texto extraído:[/success] [info]${p.length} caracteres[/info] ${p.pages ? `[info]| ${p.pages} pág(s)[/info]` : ''} — ${p.name}\n${previewParte}\n`, false);
+      }
+
+      setExtracted(combinado);
+      const preview = combinado.length > 500 ? combinado.slice(0, 500) + '...' : combinado;
+      await addConsoleMessage('', `[success]✓ Texto combinado pronto[/success] ([info]${totalChars} caracteres[/info])\n\n${preview}`, false);
       
       // Passo 2: Identificar tipo
       await addConsoleMessage('[title]Identificando o tipo de mandado:[/title]', '', true);
-      const { tipo: tipoIdentificado, confidence } = await identificarTipo(text);
+      const { tipo: tipoIdentificado, confidence } = await identificarTipo(combinado);
       setTipo(tipoIdentificado || '');
       setTipoConfidence(confidence ?? null);
       
@@ -174,7 +222,7 @@ function AssistenteMandadosAverbacao() {
         
         // Passo 3: Analisar exigência
         await addConsoleMessage('[title]Analisando o mandado com base na legislação:[/title]', '', true);
-        const resp = await analisarExigencia({ text, legislacao: Array.isArray(lista) ? lista : [], tipo: tipoIdentificado });
+  const resp = await analisarExigencia({ text: combinado, legislacao: Array.isArray(lista) ? lista : [], tipo: tipoIdentificado });
         setResultado(resp);
         
         if (resp.aprovado) {
@@ -197,7 +245,7 @@ function AssistenteMandadosAverbacao() {
         
         // Passo 4: Gerar texto da averbação
         await addConsoleMessage('[title]Gerando o texto da averbação:[/title]', '', true);
-        const { textoAverbacao: textoGerado } = await gerarTextoAverbacao({ text, legislacao: Array.isArray(lista) ? lista : [], tipo: tipoIdentificado });
+  const { textoAverbacao: textoGerado } = await gerarTextoAverbacao({ text: combinado, legislacao: Array.isArray(lista) ? lista : [], tipo: tipoIdentificado });
         setTextoAverbacao(textoGerado || '');
         
         if (textoGerado) {
@@ -230,25 +278,25 @@ function AssistenteMandadosAverbacao() {
     setTextoAverbacao('');
     clearConsole();
     
-    if (!file) {
-      setError('Selecione um PDF do mandado judicial.');
+    if (!files || files.length === 0) {
+      setError('Selecione um ou mais PDFs do mandado judicial.');
       return;
     }
     
     try {
       setLoading(true);
-      await addConsoleMessage('Extraindo o texto do PDF:', '', true);
-      
-      const { text, warning } = await extrairTexto(file);
-      setExtracted(text || '');
-      
-      if (!text) {
-        const errMsg = (warning || 'Não foi possível extrair texto do PDF.') + ' Dica: envie um PDF pesquisável (não escaneado/sem senha) ou use a edição manual.';
+      await addConsoleMessage('Extraindo o texto do(s) PDF(s):', '', true);
+
+      const { combinado, warnings } = await extrairTextoDeArquivos(files);
+      setExtracted(combinado || '');
+
+      if (!combinado) {
+        const errMsg = ((warnings && warnings[0]) || 'Não foi possível extrair texto do(s) PDF(s).') + ' Dica: envie PDF pesquisável (não escaneado/sem senha) ou use a edição manual.';
         setError(errMsg);
         await addConsoleMessage('', `❌ ${errMsg}`, false);
       } else {
-        const preview = text.length > 500 ? text.slice(0, 500) + '...' : text;
-        await addConsoleMessage('', `✓ Texto extraído com sucesso (${text.length} caracteres)\n\n${preview}`, false);
+        const preview = combinado.length > 500 ? combinado.slice(0, 500) + '...' : combinado;
+        await addConsoleMessage('', `✓ Texto extraído com sucesso\n\n${preview}`, false);
       }
     } catch (e) {
       const errMsg = e?.message || 'Falha ao extrair texto do PDF.';
@@ -433,13 +481,19 @@ function AssistenteMandadosAverbacao() {
               id="fileInput"
               type="file" 
               accept="application/pdf" 
+              multiple
               onChange={onFileChange} 
               disabled={loading}
               style={{ display: 'none' }}
             />
-            {file && !loading && (
-              <div style={{ marginTop: '16px', color: '#2c3e50', fontSize: '14px' }}>
-                <strong>Arquivo selecionado:</strong> {file.name}
+            {files && files.length > 0 && !loading && (
+              <div style={{ marginTop: '16px', color: '#2c3e50', fontSize: '14px', textAlign: 'left' }}>
+                <strong>{files.length > 1 ? 'Arquivos selecionados:' : 'Arquivo selecionado:'}</strong>
+                <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+                  {files.map((f, idx) => (
+                    <li key={idx}>{f.name}</li>
+                  ))}
+                </ul>
               </div>
             )}
             {loading && (
