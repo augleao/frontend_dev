@@ -830,8 +830,8 @@ useEffect(() => {
                     onChange={(e) => setSaidaTicket(e.target.value)}
                     placeholder="Ex.: 12345"
                     style={{
-                      flex: 1,
-                      padding: '8px',
+                      width: '120px',
+                      padding: '8px 6px',
                       borderRadius: '6px',
                       border: '2px solid #e3f2fd',
                       fontSize: '14px'
