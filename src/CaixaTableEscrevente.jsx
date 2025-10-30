@@ -1,6 +1,7 @@
 // AtosTable.jsx
 import React from 'react';
 import { formasPagamento, formatarDataBR, formatarValor, formatarMoeda } from './utils';
+import { apiURL } from './config';
 
 export default function CaixaTableEscrevente({ atos, onRemover }) {
   console.log("Atos recebidos na tabela caixa-table:", atos);
@@ -34,15 +35,39 @@ export default function CaixaTableEscrevente({ atos, onRemover }) {
     return idx !== -1 ? serventia.substring(idx + 4).trim() : serventia.trim();
   };
 
-  const gerarReciboDevolucao = (ato) => {
+  const gerarReciboDevolucao = async (ato) => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    const serventia = usuario?.serventia || 'Serventia não informada';
+    const token = localStorage.getItem('token');
+    const serventiaUsuario = usuario?.serventia || '';
     const responsavel = usuario?.nome || '';
     const { cliente, ticket } = parseDevolucaoInfo(ato?.descricao || '');
-    const cidade = extrairCidadeDaServentia(serventia) || '';
     const hoje = new Date();
     const dataHoje = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
     const valorSaida = formatarMoeda(parseFloat(ato?.valor_unitario || 0));
+
+    // Busca informações da serventia no backend (fallback para localStorage)
+    let configServentia = null;
+    try {
+      if (serventiaUsuario) {
+        const url = `${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(serventiaUsuario)}`;
+        const res = await fetch(url, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (res.ok) {
+          configServentia = await res.json();
+        }
+      }
+    } catch (_) {
+      // Silencia erro e usa fallback abaixo
+    }
+
+    const nomeServentia = (configServentia?.nome || configServentia?.serventia || serventiaUsuario || 'Serventia não informada');
+    const linha2Serventia = [
+      configServentia?.endereco,
+      configServentia?.cidade,
+      configServentia?.uf,
+    ].filter(Boolean).join(' - ');
+    const cidade = (configServentia?.cidade || extrairCidadeDaServentia(nomeServentia) || '');
 
     const html = `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -70,14 +95,15 @@ export default function CaixaTableEscrevente({ atos, onRemover }) {
       <div class="header">
         <img src="/brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png" alt="Brasão da República" />
         <div class="info">
-          <div><strong>${serventia}</strong></div>
+          <div><strong>${nomeServentia}</strong></div>
+          ${linha2Serventia ? `<div class="small">${linha2Serventia}</div>` : ''}
           ${responsavel ? `<div class="small">Responsável: ${responsavel}</div>` : ''}
         </div>
       </div>
       <div class="title">RECIBO DE DEVOLUÇÃO</div>
       <div class="content">
         <div class="linha">
-          Recebi da serventia acima especificada a devolução de valores pagos na importância de <strong>${valorSaida}</strong>
+          Recebi da serventia acima especificada, a devolução de valores pagos na importância de <strong>${valorSaida}</strong>
           referente ao serviço de (  ) Nascimento, (  ) Casamento, (  ) Óbito, (  ) Outros: ____________________, referente ao Ticket: <strong>${ticket || '__________'}</strong>.
         </div>
         <div class="linha">${cidade ? cidade + ',' : ''} ${dataHoje}.</div>
