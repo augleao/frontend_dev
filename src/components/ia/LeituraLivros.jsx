@@ -42,6 +42,11 @@ export default function LeituraLivros() {
   const lastStatusRef = useRef('');
   const jobStartTimeRef = useRef(null);
   const lastMsgIndexRef = useRef(0);
+  const ocrLoggedRef = useRef(false);
+  const clfPromptLoggedRef = useRef(false);
+  const clfResponseLoggedRef = useRef(false);
+  const readPromptLoggedRef = useRef(false);
+  const readResponseLoggedRef = useRef(false);
   // Parâmetros CRC Nacional
   const [versao, setVersao] = useState('2.6');
   const [acao, setAcao] = useState('CARGA'); // por ora apenas CARGA
@@ -84,6 +89,31 @@ export default function LeituraLivros() {
   const logSuccess = (msg) => pushConsole(`[success] ${nowHHMMSS()} - ${msg}`);
   const logWarning = (msg) => pushConsole(`[warning] ${nowHHMMSS()} - ${msg}`);
   const logError = (msg) => pushConsole(`[error] ${nowHHMMSS()} - ${msg}`);
+
+  // OCR preview logging (com limite para não poluir o console)
+  const logOcrPreview = (label, text) => {
+    if (!text || typeof text !== 'string') return;
+    const maxChars = 2000;
+    const preview = text.length > maxChars ? `${text.slice(0, maxChars)}\n[warning] ... (prévia truncada; ${text.length - maxChars} caracteres ocultos) [/warning]` : text;
+    logTitle(label);
+    pushConsole(preview);
+  };
+
+  // Exibir prompts e respostas do agente de IA com truncamento
+  const logPrompt = (label, text) => {
+    if (!text || typeof text !== 'string') return;
+    const maxChars = 4000;
+    const preview = text.length > maxChars ? `${text.slice(0, maxChars)}\n[warning] ... (prompt truncado; ${text.length - maxChars} caracteres ocultos) [/warning]` : text;
+    logTitle(label);
+    pushConsole(preview);
+  };
+  const logIaResponse = (label, text) => {
+    if (!text || typeof text !== 'string') return;
+    const maxChars = 4000;
+    const preview = text.length > maxChars ? `${text.slice(0, maxChars)}\n[warning] ... (resposta truncada; ${text.length - maxChars} caracteres ocultos) [/warning]` : text;
+    logTitle(label);
+    pushConsole(preview);
+  };
 
   // Pré-teste simples do agente de IA na montagem da tela (não bloqueante)
   useEffect(() => {
@@ -154,13 +184,18 @@ export default function LeituraLivros() {
         logInfo(`Solicitando processamento da pasta: ${folderPath}`);
         // Busca prompts (mesma lógica do Assistente, via /ia/prompts)
         logInfo('Carregando prompts de IA: tipo_escrita, leitura_manuscrito, leitura_digitado...');
-        const pMap = await PromptsService.getManyByIndexadores(['tipo_escrita', 'leitura_manuscrito', 'leitura_digitado']);
+  const pMap = await PromptsService.getManyByIndexadores(['tipo_escrita', 'leitura_manuscrito', 'leitura_digitado']);
         const pTipo = pMap['tipo_escrita'];
         const pManu = pMap['leitura_manuscrito'];
         const pDigi = pMap['leitura_digitado'];
         if (!pTipo) logWarning('Prompt tipo_escrita não encontrado.'); else logSuccess('Prompt tipo_escrita OK');
         if (!pManu) logWarning('Prompt leitura_manuscrito não encontrado.'); else logSuccess('Prompt leitura_manuscrito OK');
         if (!pDigi) logWarning('Prompt leitura_digitado não encontrado.'); else logSuccess('Prompt leitura_digitado OK');
+
+  // Exibir os prompts enviados
+  if (pTipo?.prompt) logPrompt('IA • Prompt (tipo_escrita)', pTipo.prompt);
+  if (pManu?.prompt) logPrompt('IA • Prompt (leitura_manuscrito)', pManu.prompt);
+  if (pDigi?.prompt) logPrompt('IA • Prompt (leitura_digitado)', pDigi.prompt);
 
         resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
@@ -186,7 +221,7 @@ export default function LeituraLivros() {
         }
         // Busca prompts (mesma lógica do Assistente, via /ia/prompts)
         logInfo('Carregando prompts de IA: tipo_escrita, leitura_manuscrito, leitura_digitado...');
-        const pMap = await PromptsService.getManyByIndexadores(['tipo_escrita', 'leitura_manuscrito', 'leitura_digitado']);
+  const pMap = await PromptsService.getManyByIndexadores(['tipo_escrita', 'leitura_manuscrito', 'leitura_digitado']);
         const pTipo = pMap['tipo_escrita'];
         const pManu = pMap['leitura_manuscrito'];
         const pDigi = pMap['leitura_digitado'];
@@ -194,8 +229,13 @@ export default function LeituraLivros() {
         if (!pManu) logWarning('Prompt leitura_manuscrito não encontrado.'); else logSuccess('Prompt leitura_manuscrito OK');
         if (!pDigi) logWarning('Prompt leitura_digitado não encontrado.'); else logSuccess('Prompt leitura_digitado OK');
 
-        // Deixa a classificação manuscrito/digitado a cargo do backend usando o prompt tipo_escrita.
+  // Deixa a classificação manuscrito/digitado a cargo do backend usando o prompt tipo_escrita.
         logInfo('Classificação manuscrito/digitado será executada no backend com base no prompt tipo_escrita.');
+
+  // Exibir os prompts enviados
+  if (pTipo?.prompt) logPrompt('IA • Prompt (tipo_escrita)', pTipo.prompt);
+  if (pManu?.prompt) logPrompt('IA • Prompt (leitura_manuscrito)', pManu.prompt);
+  if (pDigi?.prompt) logPrompt('IA • Prompt (leitura_digitado)', pDigi.prompt);
 
         resp = await LeituraLivrosService.uploadFiles(files, {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
@@ -219,6 +259,15 @@ export default function LeituraLivros() {
         try {
           const status = await LeituraLivrosService.getStatus(resp.jobId);
           if (status) {
+            // Prévia de OCR enviada pelo backend durante o andamento
+            if (!ocrLoggedRef.current) {
+              const candidates = [status.ocrPreview, status.ocr_text, status.extractedText, status.ocr];
+              const firstText = candidates.find(t => typeof t === 'string' && t.trim().length > 0);
+              if (firstText) {
+                logOcrPreview('Prévia do texto extraído (parcial)', firstText);
+                ocrLoggedRef.current = true;
+              }
+            }
             // Mensagens incrementais do backend (evita duplicar em cada poll)
             if (Array.isArray(status.messages) && status.messages.length) {
               const startIdx = Math.max(0, lastMsgIndexRef.current);
@@ -235,6 +284,36 @@ export default function LeituraLivros() {
             if (status.status && status.status !== lastStatusRef.current) {
               logInfo(`Status: ${status.status}` + (status.phase ? ` | Fase: ${status.phase}` : '') + (status.currentFile ? ` | Arquivo: ${status.currentFile}` : ''));
               lastStatusRef.current = status.status;
+            }
+
+            // Exibir prompts e respostas utilizados pelo backend (se fornecidos no status)
+            if (!clfPromptLoggedRef.current) {
+              const clfPrompt = status.clfPrompt || status.lastPromptTipoEscrita || status.classificationPrompt;
+              if (typeof clfPrompt === 'string' && clfPrompt.trim()) {
+                logPrompt('IA • Prompt usado (classificação tipo_escrita)', clfPrompt);
+                clfPromptLoggedRef.current = true;
+              }
+            }
+            if (!clfResponseLoggedRef.current) {
+              const clfResp = status.clfResponse || status.lastRespostaTipoEscrita || status.classificationResponse;
+              if (typeof clfResp === 'string' && clfResp.trim()) {
+                logIaResponse('IA • Resposta (classificação tipo_escrita)', clfResp);
+                clfResponseLoggedRef.current = true;
+              }
+            }
+            if (!readPromptLoggedRef.current) {
+              const readPrompt = status.readPrompt || status.lastPromptLeitura || status.readingPrompt;
+              if (typeof readPrompt === 'string' && readPrompt.trim()) {
+                logPrompt('IA • Prompt usado (leitura de registros)', readPrompt);
+                readPromptLoggedRef.current = true;
+              }
+            }
+            if (!readResponseLoggedRef.current) {
+              const readResp = status.readResponse || status.lastRespostaLeitura || status.readingResponse;
+              if (typeof readResp === 'string' && readResp.trim()) {
+                logIaResponse('IA • Resposta (leitura de registros)', readResp);
+                readResponseLoggedRef.current = true;
+              }
             }
 
             // Log quando progresso avança
@@ -262,6 +341,63 @@ export default function LeituraLivros() {
               setResults(res.records || res || []);
               const count = (res?.records && Array.isArray(res.records)) ? res.records.length : (Array.isArray(res) ? res.length : 0);
               logTitle(`Resultados carregados (${count}).`);
+
+              // Tentativa de registrar uma prévia do OCR no resultado final
+              if (!ocrLoggedRef.current) {
+                let ocrText = null;
+                if (typeof res === 'string') {
+                  ocrText = res; // caso extremo
+                } else if (res) {
+                  const candidates = [res.ocrPreview, res.ocr_text, res.extractedText, res.ocr];
+                  ocrText = candidates.find(t => typeof t === 'string' && t.trim().length > 0) || null;
+                  if (!ocrText && Array.isArray(res.pages)) {
+                    // Concatena primeiras páginas
+                    const pageTexts = res.pages.filter(p => typeof p?.text === 'string').slice(0, 3).map(p => p.text);
+                    if (pageTexts.length) ocrText = pageTexts.join('\n---\n');
+                  }
+                  if (!ocrText && Array.isArray(res.records)) {
+                    // Procura campos rawText/sourceText em registros
+                    for (const r of res.records) {
+                      if (typeof r?.rawText === 'string' && r.rawText.trim()) { ocrText = r.rawText; break; }
+                      if (typeof r?.sourceText === 'string' && r.sourceText.trim()) { ocrText = r.sourceText; break; }
+                    }
+                  }
+                }
+                if (ocrText) {
+                  logOcrPreview('Prévia do texto extraído (final)', ocrText);
+                  ocrLoggedRef.current = true;
+                }
+              }
+
+              // Exibir prompts e respostas vindos no resultado (se fornecidos pelo backend)
+              if (!clfPromptLoggedRef.current) {
+                const clfPrompt = res?.clfPrompt || res?.lastPromptTipoEscrita || res?.debug?.classification?.prompt;
+                if (typeof clfPrompt === 'string' && clfPrompt.trim()) {
+                  logPrompt('IA • Prompt usado (classificação tipo_escrita)', clfPrompt);
+                  clfPromptLoggedRef.current = true;
+                }
+              }
+              if (!clfResponseLoggedRef.current) {
+                const clfResp = res?.clfResponse || res?.lastRespostaTipoEscrita || res?.debug?.classification?.response;
+                if (typeof clfResp === 'string' && clfResp.trim()) {
+                  logIaResponse('IA • Resposta (classificação tipo_escrita)', clfResp);
+                  clfResponseLoggedRef.current = true;
+                }
+              }
+              if (!readPromptLoggedRef.current) {
+                const readPrompt = res?.readPrompt || res?.lastPromptLeitura || res?.debug?.reading?.prompt;
+                if (typeof readPrompt === 'string' && readPrompt.trim()) {
+                  logPrompt('IA • Prompt usado (leitura de registros)', readPrompt);
+                  readPromptLoggedRef.current = true;
+                }
+              }
+              if (!readResponseLoggedRef.current) {
+                const readResp = res?.readResponse || res?.lastRespostaLeitura || res?.debug?.reading?.response;
+                if (typeof readResp === 'string' && readResp.trim()) {
+                  logIaResponse('IA • Resposta (leitura de registros)', readResp);
+                  readResponseLoggedRef.current = true;
+                }
+              }
             } else if (status.status === 'failed') {
               clearInterval(pollRef.current);
               setRunning(false);
