@@ -160,7 +160,7 @@ export default function LeituraLivros() {
           </button>
           <h2 style={{ margin: 0, fontSize: 20, color: '#2c3e50' }}>Leitura de Livros de Registro</h2>
         </div>
-        <div style={{ color: '#6c757d', fontWeight: 600, fontSize: 13 }}>Console + Resumo com visual moderno</div>
+  {/* Subtítulo removido a pedido do usuário */}
       </div>
 
       <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
