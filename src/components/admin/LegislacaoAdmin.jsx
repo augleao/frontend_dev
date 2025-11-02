@@ -200,19 +200,74 @@ export default function LegislacaoAdmin() {
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
         <h3 style={{ marginTop: 0 }}>{editItem ? 'Editar Legislação' : 'Nova Legislação'}</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <input placeholder="Indexador*" value={form.indexador} onChange={(e) => setForm({ ...form, indexador: e.target.value })} />
-          <input placeholder="Base Legal*" value={form.base_legal} onChange={(e) => setForm({ ...form, base_legal: e.target.value })} />
-          <input placeholder="Título" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} />
-          <input placeholder="Artigo" value={form.artigo} onChange={(e) => setForm({ ...form, artigo: e.target.value })} />
-          <input placeholder="Jurisdição" value={form.jurisdicao} onChange={(e) => setForm({ ...form, jurisdicao: e.target.value })} />
-          <input placeholder="Tags (separadas por vírgula)" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Indexador*</label>
+            <input
+              placeholder="Ex.: averbacao_divorcio"
+              value={form.indexador}
+              onChange={(e) => setForm({ ...form, indexador: e.target.value })}
+              style={{ border: '1px solid #ddd', borderRadius: 6, padding: '8px 10px' }}
+            />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Base Legal*</label>
+            <input
+              placeholder="Ex.: Lei X, Art. Y..."
+              value={form.base_legal}
+              onChange={(e) => setForm({ ...form, base_legal: e.target.value })}
+              style={{ border: '1px solid #ddd', borderRadius: 6, padding: '8px 10px' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Título</label>
+            <input
+              value={form.titulo}
+              onChange={(e) => setForm({ ...form, titulo: e.target.value })}
+              style={{ border: '1px solid #ddd', borderRadius: 6, padding: '8px 10px' }}
+            />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Artigo</label>
+            <input
+              value={form.artigo}
+              onChange={(e) => setForm({ ...form, artigo: e.target.value })}
+              style={{ border: '1px solid #ddd', borderRadius: 6, padding: '8px 10px' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Jurisdição</label>
+            <input
+              value={form.jurisdicao}
+              onChange={(e) => setForm({ ...form, jurisdicao: e.target.value })}
+              style={{ border: '1px solid #ddd', borderRadius: 6, padding: '8px 10px' }}
+            />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Tags (separadas por vírgula)</label>
+            <input
+              placeholder="ex.: registros, civil, casamento"
+              value={form.tags}
+              onChange={(e) => setForm({ ...form, tags: e.target.value })}
+              style={{ border: '1px solid #ddd', borderRadius: 6, padding: '8px 10px' }}
+            />
+          </div>
+
           <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <input type="checkbox" checked={!!form.ativo} onChange={(e) => setForm({ ...form, ativo: e.target.checked })} />
             Ativo
           </label>
           <div></div>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <textarea placeholder="Texto do dispositivo*" value={form.texto} onChange={(e) => setForm({ ...form, texto: e.target.value })} style={{ width: '100%', minHeight: 180 }} />
+
+          <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Texto do dispositivo*</label>
+            <textarea
+              placeholder="Cole aqui o dispositivo legal (texto completo)"
+              value={form.texto}
+              onChange={(e) => setForm({ ...form, texto: e.target.value })}
+              style={{ width: '100%', minHeight: 180, border: '1px solid #ddd', borderRadius: 6, padding: '8px 10px' }}
+            />
           </div>
         </div>
         <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
