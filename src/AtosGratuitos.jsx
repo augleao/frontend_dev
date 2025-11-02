@@ -14,7 +14,7 @@ function AtosGratuitos() {
     {
       id: 'certidoes-gratuitas',
       title: 'CERTIDÕES GRATUITAS',
-      description: 'Registre e gerencie certidões gratuitas',
+      description: 'Gerencie certidões gratuitas emitidas pela serventia.',
       icon: '✍️',
       color: '#27ae60',
       route: '/certidoes-gratuitas'
