@@ -173,10 +173,8 @@ export default function LeituraLivros() {
         if (!pManu) logWarning('Prompt leitura_manuscrito não encontrado.'); else logSuccess('Prompt leitura_manuscrito OK');
         if (!pDigi) logWarning('Prompt leitura_digitado não encontrado.'); else logSuccess('Prompt leitura_digitado OK');
 
-        // Exibe os prompts no exato momento em que serão enviados
-        if (pTipo?.prompt) logPromptSend('IA • Prompt (tipo_escrita) — enviado', pTipo.prompt);
-        if (pManu?.prompt) logPromptSend('IA • Prompt (leitura_manuscrito) — enviado', pManu.prompt);
-        if (pDigi?.prompt) logPromptSend('IA • Prompt (leitura_digitado) — enviado', pDigi.prompt);
+  // Exibe somente o prompt de classificação no momento do envio (não logar leitura aqui)
+  if (pTipo?.prompt) logPromptSend('IA • Prompt (tipo_escrita) — enviado', pTipo.prompt);
 
         resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
@@ -209,10 +207,8 @@ export default function LeituraLivros() {
         // Deixa a classificação manuscrito/digitado a cargo do backend usando o prompt tipo_escrita.
         logInfo('Classificação manuscrito/digitado será executada no backend com base no prompt tipo_escrita.');
 
-        // Exibe os prompts no exato momento em que serão enviados
-        if (pTipo?.prompt) logPromptSend('IA • Prompt (tipo_escrita) — enviado', pTipo.prompt);
-        if (pManu?.prompt) logPromptSend('IA • Prompt (leitura_manuscrito) — enviado', pManu.prompt);
-        if (pDigi?.prompt) logPromptSend('IA • Prompt (leitura_digitado) — enviado', pDigi.prompt);
+  // Exibe somente o prompt de classificação no momento do envio (não logar leitura aqui)
+  if (pTipo?.prompt) logPromptSend('IA • Prompt (tipo_escrita) — enviado', pTipo.prompt);
 
         resp = await LeituraLivrosService.uploadFiles(files, {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
