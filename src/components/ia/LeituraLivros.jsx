@@ -52,6 +52,10 @@ export default function LeituraLivros() {
     setConsoleLines(prev => [...prev, typeof line === 'string' ? line : JSON.stringify(line)]);
   }
 
+  function clearConsole() {
+    setConsoleLines([]);
+  }
+
   async function startProcessing() {
     setResults([]);
     setConsoleLines([]);
@@ -136,105 +140,192 @@ export default function LeituraLivros() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', padding: 20, fontFamily: 'Arial, sans-serif' }}>
-      <div style={{ display: 'flex', gap: 16, marginBottom: 16, alignItems: 'center' }}>
-        <button onClick={() => navigate('/ferramentas-ia')} style={{ padding: '8px 12px', borderRadius: 8 }}>← Voltar</button>
-        <h2 style={{ margin: 0 }}>Leitura de Livros de Registro</h2>
+    <div style={{ minHeight: '100vh', padding: 24, fontFamily: 'Inter, Arial, sans-serif', background: 'linear-gradient(180deg,#f5f7fb 0%, #eef1f6 100%)' }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        background: '#fff', borderRadius: 16, padding: '14px 18px',
+        boxShadow: '0 8px 24px rgba(32,50,73,0.08)', marginBottom: 18
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={() => navigate('/ferramentas-ia')}
+            style={{
+              background: 'linear-gradient(135deg,#e9ecef,#dee2e6)',
+              color: '#2c3e50', border: '1px solid #d0d7de',
+              padding: '8px 14px', borderRadius: 10, fontWeight: 700, cursor: 'pointer'
+            }}
+          >
+            ← Voltar
+          </button>
+          <h2 style={{ margin: 0, fontSize: 20, color: '#2c3e50' }}>Leitura de Livros de Registro</h2>
+        </div>
+        <div style={{ color: '#6c757d', fontWeight: 600, fontSize: 13 }}>Console + Resumo com visual moderno</div>
       </div>
 
       <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
-        {/* Left: console */}
-        <div style={{ flex: '1 1 60%', minHeight: 300 }}>
+        {/* Left column */}
+        <div style={{ flex: '1 1 60%', minHeight: 300, display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* Parâmetros da Carga CRC */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(6, minmax(110px, 1fr))',
-            gap: 8,
-            background: '#fff',
-            padding: 12,
-            borderRadius: 8,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            marginBottom: 12
+            display: 'grid', gridTemplateColumns: 'repeat(6, minmax(120px, 1fr))', gap: 12,
+            background: '#ffffff', padding: 16, borderRadius: 16,
+            boxShadow: '0 10px 26px rgba(32,50,73,0.08)'
           }}>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <label style={{ fontSize: 12, fontWeight: 700 }}>VERSAO</label>
-              <input value={versao} onChange={e => setVersao(e.target.value)} style={{ padding: '6px 8px' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>VERSAO</label>
+              <input value={versao} onChange={e => setVersao(e.target.value)}
+                style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }} />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <label style={{ fontSize: 12, fontWeight: 700 }}>ACAO</label>
-              <select value={acao} onChange={e => setAcao(e.target.value)} style={{ padding: '6px 8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>ACAO</label>
+              <select value={acao} onChange={e => setAcao(e.target.value)}
+                style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }}>
                 <option value="CARGA">CARGA</option>
               </select>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <label style={{ fontSize: 12, fontWeight: 700 }}>CNS</label>
-              <input value={cns} onChange={e => setCns(e.target.value)} placeholder="CNS do cartório" style={{ padding: '6px 8px' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>CNS</label>
+              <input value={cns} onChange={e => setCns(e.target.value)} placeholder="CNS do cartório"
+                style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }} />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <label style={{ fontSize: 12, fontWeight: 700 }}>TIPO</label>
-              <select value={tipoRegistro} onChange={e => setTipoRegistro(e.target.value)} style={{ padding: '6px 8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>TIPO</label>
+              <select value={tipoRegistro} onChange={e => setTipoRegistro(e.target.value)}
+                style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }}>
                 <option value="NASCIMENTO">NASCIMENTO</option>
                 <option value="CASAMENTO">CASAMENTO</option>
                 <option value="OBITO">ÓBITO</option>
               </select>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <label style={{ fontSize: 12, fontWeight: 700 }}>MAX/ARQUIVO</label>
-              <input type="number" min={1} value={maxPorArquivo} onChange={e => setMaxPorArquivo(Number(e.target.value || 2500))} style={{ padding: '6px 8px' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>MAX/ARQUIVO</label>
+              <input type="number" min={1} value={maxPorArquivo}
+                onChange={e => setMaxPorArquivo(Number(e.target.value || 2500))}
+                style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }} />
             </div>
           </div>
 
-          <div style={{ marginBottom: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
-            <label style={{ fontWeight: 700 }}>Modo:</label>
-            <button onClick={() => setMode('folder')} disabled={mode === 'folder'} style={{ padding: '6px 12px' }}>Pasta no servidor</button>
-            <button onClick={() => setMode('upload')} disabled={mode === 'upload'} style={{ padding: '6px 12px' }}>Upload de arquivos</button>
-          </div>
+          {/* Mode selector & actions */}
+          <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontWeight: 800, color: '#1f2937', fontSize: 13 }}>Modo</span>
+                <div style={{ display: 'inline-flex', background: '#f1f5f9', borderRadius: 12, padding: 4 }}>
+                  <button onClick={() => setMode('folder')} disabled={mode === 'folder'}
+                    style={{
+                      padding: '8px 14px', borderRadius: 10, border: 'none', cursor: mode === 'folder' ? 'default' : 'pointer',
+                      background: mode === 'folder' ? '#ffffff' : 'transparent', color: mode === 'folder' ? '#111827' : '#64748b', fontWeight: 700
+                    }}>Pasta no servidor</button>
+                  <button onClick={() => setMode('upload')} disabled={mode === 'upload'}
+                    style={{
+                      padding: '8px 14px', borderRadius: 10, border: 'none', cursor: mode === 'upload' ? 'default' : 'pointer',
+                      background: mode === 'upload' ? '#ffffff' : 'transparent', color: mode === 'upload' ? '#111827' : '#64748b', fontWeight: 700
+                    }}>Upload de arquivos</button>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={clearConsole}
+                  style={{ background: '#fff', border: '1px solid #e5e7eb', color: '#374151', padding: '8px 12px', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>Limpar console</button>
+                <button onClick={startProcessing} disabled={running || (mode === 'upload' && files.length === 0)}
+                  style={{ background: running ? '#94a3b8' : 'linear-gradient(135deg,#2563eb,#1d4ed8)', color: '#fff',
+                    border: 'none', padding: '10px 16px', borderRadius: 10, fontWeight: 800, cursor: running ? 'not-allowed' : 'pointer' }}>
+                  {running ? 'Processando…' : (mode === 'folder' ? 'Iniciar' : 'Enviar e Processar')}
+                </button>
+              </div>
+            </div>
 
-          <div style={{ marginBottom: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
             {mode === 'folder' ? (
-              <>
-                <input type="text" placeholder="Caminho da pasta no servidor (ex: /data/livros)" value={folderPath} onChange={e => setFolderPath(e.target.value)} style={{ flex: 1, padding: '8px 10px' }} />
-                <button onClick={startProcessing} disabled={running} style={{ padding: '8px 14px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8 }}>{running ? 'Processando...' : 'Iniciar'}</button>
-              </>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input type="text" placeholder="Caminho da pasta no servidor (ex: /data/livros)" value={folderPath}
+                  onChange={e => setFolderPath(e.target.value)}
+                  style={{ flex: 1, border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }} />
+              </div>
             ) : (
-              <>
-                <input type="file" multiple accept="image/*" onChange={e => setFiles(Array.from(e.target.files || []))} />
-                <button onClick={startProcessing} disabled={running || files.length === 0} style={{ padding: '8px 14px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8 }}>{running ? 'Processando...' : 'Enviar e Processar'}</button>
-              </>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <div style={{
+                  flex: 1, border: '2px dashed #cbd5e1', borderRadius: 12, padding: 16, textAlign: 'center', color: '#475569',
+                  background: '#f8fafc'
+                }}>
+                  <div style={{ fontWeight: 700, marginBottom: 6 }}>Selecione arquivos</div>
+                  <div style={{ fontSize: 12, marginBottom: 12 }}>Imagens (jpg, png, tif), PDFs e .p7s assinados</div>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,.p7s,application/pdf"
+                    title="Aceita imagens (jpg, png, tif...), PDFs e arquivos .p7s"
+                    onChange={e => setFiles(Array.from(e.target.files || []))}
+                  />
+                </div>
+              </div>
             )}
           </div>
 
-          <div style={{ background: '#000', color: '#ccc', borderRadius: 8, padding: 12, minHeight: 260, maxHeight: '60vh', overflow: 'auto' }} ref={consoleRef}>
-            {consoleLines.map((line, idx) => (
-              <div key={idx} style={{ fontFamily: 'monospace', marginBottom: 6 }}>{renderFormattedText(line)}</div>
-            ))}
+          {/* Console */}
+          <div style={{ background: '#0b1220', borderRadius: 16, boxShadow: '0 16px 36px rgba(2,6,23,0.5)', overflow: 'hidden' }}>
+            <div style={{ padding: '10px 14px', color: '#cbd5e1', borderBottom: '1px solid #111827', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontWeight: 800, letterSpacing: 0.5 }}>Console</div>
+              <div style={{ fontSize: 12, color: '#94a3b8' }}>{consoleLines.length} linhas</div>
+            </div>
+            <div style={{ color: '#94a3b8', padding: 14, minHeight: 260, maxHeight: '60vh', overflow: 'auto' }} ref={consoleRef}>
+              {consoleLines.map((line, idx) => (
+                <div key={idx} style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace', marginBottom: 6 }}>{renderFormattedText(line)}</div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Right: resumo */}
-        <div style={{ width: 420, flexShrink: 0 }}>
-          <div style={{ background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-            <h3 style={{ marginTop: 0 }}>Resumo</h3>
-            <div style={{ marginBottom: 8 }}><strong>Job:</strong> {jobId || '-'}</div>
-            <div style={{ marginBottom: 8 }}><strong>Progresso:</strong> {progress}%</div>
-            <div style={{ marginBottom: 8 }}><strong>Status:</strong> {running ? 'Em andamento' : (jobId ? 'Concluído / Pronto' : 'Inativo')}</div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-              <button onClick={handleDownloadXml} disabled={!jobId} style={{ padding: '8px 12px', borderRadius: 8, background: jobId ? '#2ecc71' : '#bdc3c7', color: '#fff', border: 'none' }}>Baixar XML</button>
+        {/* Right column (Resumo + Resultados) */}
+        <div style={{ width: 420, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)' }}>
+            <h3 style={{ marginTop: 0, marginBottom: 10, color: '#1f2937' }}>Resumo</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, fontSize: 14, color: '#334155' }}>
+              <div><strong>Job:</strong> {jobId || '-'}</div>
+              <div><strong>Status:</strong>{' '}
+                <span style={{
+                  padding: '4px 10px', borderRadius: 999,
+                  background: running ? '#dbeafe' : (jobId ? '#dcfce7' : '#e2e8f0'),
+                  color: running ? '#1d4ed8' : (jobId ? '#166534' : '#334155'), fontWeight: 800,
+                }}>
+                  {running ? 'Em andamento' : (jobId ? 'Concluído / Pronto' : 'Inativo')}
+                </span>
+              </div>
+              <div>
+                <strong>Progresso:</strong> {progress}%
+                <div style={{ marginTop: 6, height: 10, borderRadius: 999, background: '#e2e8f0', overflow: 'hidden' }}>
+                  <div style={{ width: `${Math.max(0, Math.min(100, progress))}%`, height: '100%', background: 'linear-gradient(90deg,#22c55e,#16a34a)' }} />
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+              <button onClick={handleDownloadXml} disabled={!jobId} style={{
+                padding: '10px 14px', borderRadius: 10, border: 'none', fontWeight: 800, cursor: jobId ? 'pointer' : 'not-allowed',
+                background: jobId ? 'linear-gradient(135deg,#10b981,#059669)' : '#cbd5e1', color: '#fff'
+              }}>Baixar XML</button>
             </div>
           </div>
 
-          <div style={{ marginTop: 12, background: '#fff', borderRadius: 12, padding: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.06)', maxHeight: '60vh', overflow: 'auto' }}>
-            <h4 style={{ marginTop: 0 }}>Registros extraídos</h4>
+          <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)', maxHeight: '60vh', overflow: 'auto' }}>
+            <h4 style={{ marginTop: 0, color: '#1f2937' }}>Registros extraídos</h4>
             {results.length === 0 ? (
-              <div style={{ color: '#888' }}>Nenhum registro extraído ainda.</div>
+              <div style={{ color: '#64748b' }}>Nenhum registro extraído ainda.</div>
             ) : (
-              results.map((r, i) => (
-                <div key={i} style={{ padding: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  <div style={{ fontWeight: 700 }}>{r.nome || r.titulo || `Registro ${i + 1}`}</div>
-                  <div style={{ color: '#666' }}>{r.data || r.pagina || ''}</div>
-                  <pre style={{ margin: '6px 0 0 0', whiteSpace: 'pre-wrap', fontSize: 12 }}>{r.summary || JSON.stringify(r, null, 2)}</pre>
-                </div>
-              ))
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {results.map((r, i) => (
+                  <div key={i} style={{ padding: 12, border: '1px solid #eef2f7', borderRadius: 12, background: '#fff', boxShadow: '0 2px 8px rgba(32,50,73,0.05)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <div style={{ fontWeight: 800, color: '#0f172a' }}>{r.nome || r.titulo || `Registro ${i + 1}`}</div>
+                      {r.tipo && (
+                        <span style={{ padding: '2px 10px', borderRadius: 999, background: r.tipo === 'INCLUSAO' ? '#dbeafe' : '#fde68a', color: r.tipo === 'INCLUSAO' ? '#1d4ed8' : '#92400e', fontWeight: 800 }}>
+                          {r.tipo}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ color: '#475569', fontSize: 13 }}>{r.data || r.pagina || ''}</div>
+                    <pre style={{ margin: '8px 0 0 0', whiteSpace: 'pre-wrap', fontSize: 12, color: '#334155' }}>{r.summary || JSON.stringify(r, null, 2)}</pre>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
