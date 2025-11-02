@@ -9,18 +9,32 @@ async function withAuthFetch(url, options = {}) {
 }
 
 export default {
-  async startFolderProcessing(folderPath) {
+  async startFolderProcessing(folderPath, opts = {}) {
     const res = await withAuthFetch(`${config.apiURL}/leitura-livros/process-folder`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ folderPath })
+      body: JSON.stringify({
+        folderPath,
+        versao: opts.versao,
+        acao: opts.acao,
+        cns: opts.cns,
+        tipoRegistro: opts.tipoRegistro,
+        maxPorArquivo: opts.maxPorArquivo,
+        inclusaoPrimeiro: opts.inclusaoPrimeiro
+      })
     });
     if (!res.ok) throw new Error('Falha ao iniciar processamento');
     return res.json();
   },
-  async uploadFiles(files) {
+  async uploadFiles(files, opts = {}) {
     const fd = new FormData();
     files.forEach((f, i) => fd.append('files', f, f.name || `file${i}`));
+    if (opts.versao) fd.append('versao', opts.versao);
+    if (opts.acao) fd.append('acao', opts.acao);
+    if (opts.cns) fd.append('cns', opts.cns);
+    if (opts.tipoRegistro) fd.append('tipoRegistro', opts.tipoRegistro);
+    if (opts.maxPorArquivo != null) fd.append('maxPorArquivo', String(opts.maxPorArquivo));
+    if (opts.inclusaoPrimeiro != null) fd.append('inclusaoPrimeiro', String(!!opts.inclusaoPrimeiro));
     const res = await withAuthFetch(`${config.apiURL}/leitura-livros/upload`, {
       method: 'POST',
       body: fd

@@ -35,6 +35,12 @@ export default function LeituraLivros() {
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState([]);
   const pollRef = useRef(null);
+  // Parâmetros CRC Nacional
+  const [versao, setVersao] = useState('2.6');
+  const [acao, setAcao] = useState('CARGA'); // por ora apenas CARGA
+  const [cns, setCns] = useState('');
+  const [tipoRegistro, setTipoRegistro] = useState('NASCIMENTO'); // NASCIMENTO | CASAMENTO | OBITO
+  const [maxPorArquivo, setMaxPorArquivo] = useState(2500);
 
   useEffect(() => {
     if (consoleRef.current) {
@@ -52,15 +58,25 @@ export default function LeituraLivros() {
     setRunning(true);
     setProgress(0);
     try {
+      if (!cns.trim()) { pushConsole('[error] Informe o CNS do cartório.'); setRunning(false); return; }
+      if (!versao.trim()) { pushConsole('[error] Informe a VERSAO do XML.'); setRunning(false); return; }
+      if (!acao.trim()) { pushConsole('[error] Informe a ACAO (ex.: CARGA).'); setRunning(false); return; }
+      pushConsole('[title] Preparando processamento para CRC Nacional');
+      pushConsole(`[info] Parâmetros: VERSAO=${versao}, ACAO=${acao}, CNS=${cns}, TIPO=${tipoRegistro}, MAX_POR_ARQUIVO=${maxPorArquivo}`);
+      pushConsole('[info] O XML será gerado com tags em MAIÚSCULAS, Inclusões antes de Alterações, e grupos FILIACAONASCIMENTO e DOCUMENTOS agrupados.');
       let resp;
       if (mode === 'folder') {
         if (!folderPath.trim()) { pushConsole('[error] Informe o caminho da pasta no servidor.'); setRunning(false); return; }
         pushConsole(`[info] Solicitando processamento da pasta: ${folderPath}`);
-        resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim());
+        resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), {
+          versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true
+        });
       } else {
         if (!files || files.length === 0) { pushConsole('[error] Selecione arquivos para upload.'); setRunning(false); return; }
         pushConsole(`[info] Enviando ${files.length} arquivos para processamento...`);
-        resp = await LeituraLivrosService.uploadFiles(files);
+        resp = await LeituraLivrosService.uploadFiles(files, {
+          versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true
+        });
       }
       if (!resp || !resp.jobId) {
         pushConsole('[error] Falha ao iniciar o processamento (resposta inválida).');
@@ -108,7 +124,8 @@ export default function LeituraLivros() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `leitura_${jobId}.xml`;
+      const tipo = (tipoRegistro || 'REGISTRO').toLowerCase();
+      a.download = `crc_${tipo}_${acao.toLowerCase()}_${jobId}.xml`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -128,6 +145,45 @@ export default function LeituraLivros() {
       <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
         {/* Left: console */}
         <div style={{ flex: '1 1 60%', minHeight: 300 }}>
+          {/* Parâmetros da Carga CRC */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(6, minmax(110px, 1fr))',
+            gap: 8,
+            background: '#fff',
+            padding: 12,
+            borderRadius: 8,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            marginBottom: 12
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <label style={{ fontSize: 12, fontWeight: 700 }}>VERSAO</label>
+              <input value={versao} onChange={e => setVersao(e.target.value)} style={{ padding: '6px 8px' }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <label style={{ fontSize: 12, fontWeight: 700 }}>ACAO</label>
+              <select value={acao} onChange={e => setAcao(e.target.value)} style={{ padding: '6px 8px' }}>
+                <option value="CARGA">CARGA</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <label style={{ fontSize: 12, fontWeight: 700 }}>CNS</label>
+              <input value={cns} onChange={e => setCns(e.target.value)} placeholder="CNS do cartório" style={{ padding: '6px 8px' }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <label style={{ fontSize: 12, fontWeight: 700 }}>TIPO</label>
+              <select value={tipoRegistro} onChange={e => setTipoRegistro(e.target.value)} style={{ padding: '6px 8px' }}>
+                <option value="NASCIMENTO">NASCIMENTO</option>
+                <option value="CASAMENTO">CASAMENTO</option>
+                <option value="OBITO">ÓBITO</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <label style={{ fontSize: 12, fontWeight: 700 }}>MAX/ARQUIVO</label>
+              <input type="number" min={1} value={maxPorArquivo} onChange={e => setMaxPorArquivo(Number(e.target.value || 2500))} style={{ padding: '6px 8px' }} />
+            </div>
+          </div>
+
           <div style={{ marginBottom: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
             <label style={{ fontWeight: 700 }}>Modo:</label>
             <button onClick={() => setMode('folder')} disabled={mode === 'folder'} style={{ padding: '6px 12px' }}>Pasta no servidor</button>
