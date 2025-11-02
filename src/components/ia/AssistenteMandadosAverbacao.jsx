@@ -523,15 +523,15 @@ function AssistenteMandadosAverbacao() {
 
               <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', marginTop: 16, flexWrap: 'nowrap', width: '100%' }}>
                 {/* Coluna esquerda: Console */}
-                <div style={{ flex: '0 0 50%', maxWidth: '50%' }}>
+                <div style={{ flex: '0 0 calc(50% - 8px)', maxWidth: 'calc(50% - 8px)', boxSizing: 'border-box' }}>
                   {consoleLog.length > 0 && (
                     <div ref={consoleRef} style={{
                       background: '#000',
                       color: '#aaa',
                       padding: '16px',
                       borderRadius: '8px',
-                      minHeight: '300px',
-                      maxHeight: '500px',
+                      minHeight: '220px',
+                      maxHeight: '45vh',
                       overflowY: 'auto',
                       fontFamily: 'Courier New, monospace',
                       fontSize: '14px',
@@ -553,7 +553,7 @@ function AssistenteMandadosAverbacao() {
                 </div>
 
                 {/* Coluna direita: Orientação e Texto da Averbação */}
-                <div style={{ flex: '0 0 50%', maxWidth: '50%' }}>
+                <div style={{ flex: '0 0 calc(50% - 8px)', maxWidth: 'calc(50% - 8px)', boxSizing: 'border-box' }}>
                   {resultado?.orientacao && (
                     <div style={{ marginBottom: 16 }}>
                       <h3 style={{ margin: '0 0 8px 0' }}>Orientação</h3>
