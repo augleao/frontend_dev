@@ -19,6 +19,7 @@ function AssistenteMandadosAverbacao() {
   // Estado do console de IA
   const [consoleLog, setConsoleLog] = useState([]);
   const consoleRef = React.useRef(null);
+  const didMountTestRef = React.useRef(false);
 
   // Função para adicionar mensagem ao console com animação
   const addConsoleMessage = async (label, content, isLabel = false) => {
@@ -111,6 +112,58 @@ function AssistenteMandadosAverbacao() {
     }
   }, [consoleLog.length]);
 
+  // Pré-teste simples do agente na montagem da tela (não bloqueia o fluxo)
+  React.useEffect(() => {
+    if (didMountTestRef.current) return;
+    didMountTestRef.current = true;
+
+    (async () => {
+      try {
+        await addConsoleMessage('[title]Checando disponibilidade do agente de IA:[/title]', '', true);
+        const maxTentativas = 2;
+        let ok = false;
+        let ultimoErro = null;
+        for (let i = 1; i <= maxTentativas; i++) {
+          try {
+            await addConsoleMessage('', `[info]Tentativa ${i}/${maxTentativas}...[/info]`, false);
+            const respTeste = await withTimeout(
+              identificarTipo('Ping do assistente na abertura da tela.'),
+              8000,
+              'teste on-mount'
+            );
+            if (respTeste && typeof respTeste === 'object') {
+              ok = true;
+              break;
+            }
+            throw new Error('Resposta inválida no teste on-mount.');
+          } catch (err) {
+            ultimoErro = err;
+            await addConsoleMessage('', `[warning]⚠ Falha no teste on-mount: ${err.message}[/warning]`, false);
+            if (i < maxTentativas) await sleep(800);
+          }
+        }
+        if (ok) {
+          await addConsoleMessage('', '[success]✓ Agente online[/success]', false);
+        } else {
+          await addConsoleMessage('', '[warning]⚠ Agente possivelmente indisponível. Tente reenviar ou verificar conexão.[/warning]', false);
+        }
+      } catch (e) {
+        // Falha não bloqueante: só loga no console visual
+        await addConsoleMessage('', `[warning]⚠ Erro ao executar pré-teste on-mount: ${e.message}[/warning]`, false);
+      }
+    })();
+  }, []);
+
+  // Utilitários: espera e timeout para promessas
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const withTimeout = (promise, ms, label = '') => {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`Timeout após ${ms}ms${label ? ` em ${label}` : ''}`)), ms);
+    });
+    return Promise.race([promise.finally(() => clearTimeout(timer)), timeout]);
+  };
+
   // Extrai texto de um ou mais arquivos PDF e retorna texto combinado e metadados
   const extrairTextoDeArquivos = async (arquivos) => {
     const partes = [];
@@ -176,6 +229,41 @@ function AssistenteMandadosAverbacao() {
   const executarFluxoCompleto = async (pdfFiles) => {
     try {
       setLoading(true);
+      
+      // Pré-teste: verificar se o agente de IA está respondendo
+      await addConsoleMessage('[title]Testando o agente de IA:[/title]', '', true);
+      const maxTentativas = 2;
+      let ok = false;
+      let ultimoErro = null;
+      for (let i = 1; i <= maxTentativas; i++) {
+        try {
+          await addConsoleMessage('', `[info]Tentativa ${i}/${maxTentativas}...[/info]`, false);
+          const respTeste = await withTimeout(
+            identificarTipo('Teste rápido do agente IA.'),
+            8000,
+            'teste do agente'
+          );
+          if (respTeste && (typeof respTeste === 'object')) {
+            ok = true;
+            break;
+          }
+          throw new Error('Resposta inválida no teste do agente.');
+        } catch (err) {
+          ultimoErro = err;
+          await addConsoleMessage('', `[warning]⚠ Falha no teste: ${err.message}[/warning]`, false);
+          if (i < maxTentativas) {
+            await sleep(1000);
+          }
+        }
+      }
+      if (!ok) {
+        const msg = `Agente de IA indisponível no momento. ${ultimoErro ? '(' + ultimoErro.message + ')' : ''}`;
+        setError(msg);
+        await addConsoleMessage('', `[error]❌ ${msg}[/error]`, false);
+        setLoading(false);
+        return;
+      }
+      await addConsoleMessage('', `[success]✓ Agente online e respondendo[/success]`, false);
       
       // Passo 1: Extrair texto (suporta múltiplos PDFs)
       await addConsoleMessage('[title]Extraindo o texto do(s) PDF(s):[/title]', '', true);
