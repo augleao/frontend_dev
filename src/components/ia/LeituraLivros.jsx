@@ -28,7 +28,7 @@ function renderFormattedText(text) {
 
 export default function LeituraLivros() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState('folder'); // 'folder' or 'upload'
+  const [mode, setMode] = useState('upload'); // 'folder' or 'upload', padrão: upload
   const [folderPath, setFolderPath] = useState('');
   const [files, setFiles] = useState([]);
   const [consoleLines, setConsoleLines] = useState([]);
@@ -437,7 +437,7 @@ export default function LeituraLivros() {
           background: '#f9fafb',
           color: '#111827',
           fontWeight: 700,
-          minHeight: 38,
+          // Removido minHeight para igualar altura aos selects/inputs
           display: 'flex',
           alignItems: 'center'
         }}
