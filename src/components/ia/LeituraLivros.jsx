@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { apiURL } from '../../config';
+import ServentiaService from '../../services/ServentiaService';
 import LeituraLivrosService from '../../services/LeituraLivrosService';
 import PromptsService from '../../services/PromptsService';
 import { useNavigate } from 'react-router-dom';
@@ -137,67 +137,32 @@ export default function LeituraLivros() {
     })();
   }, []);
 
-  // Busca automática do CNS da serventia do usuário logado (best-effort; não bloqueante)
+  // Prefill CNS: tenta rota backend /minha-serventia-cns, cai para localStorage se não houver
   useEffect(() => {
     (async () => {
+      // 1) Tenta backend se disponível
       try {
-        const token = localStorage.getItem('token');
+        const data = await ServentiaService.getMinhaServentiaCns();
+        if (data && data.cns) {
+          setCns(String(data.cns));
+          logSuccess(`CNS detectado automaticamente: ${data.cns}`);
+          return;
+        }
+      } catch (e) {
+        // Silencioso se rota ainda não existir (404) ou sem auth
+      }
+      // 2) Fallback: localStorage
+      try {
         const usuarioLocal = JSON.parse(localStorage.getItem('usuario') || '{}');
-        if (!token && !usuarioLocal) return;
-
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-        // Tenta algumas rotas conhecidas para obter a serventia do usuário e o CNS
-        const tryFetchCns = async (url) => {
-          try {
-            const resp = await fetch(url, { headers });
-            if (!resp.ok) return null;
-            const text = await resp.text();
-            if (!text) return null;
-            let data;
-            try { data = JSON.parse(text); } catch (_) { return null; }
-            const maybeCns = data?.serventia?.cns || data?.cns || data?.cartorio?.cns;
-            return maybeCns || null;
-          } catch (_) {
-            return null;
-          }
-        };
-
-        let detectedCns = null;
-
-        // 1) Endpoints típicos de "quem sou eu" / "minha serventia"
-        const candidates = [
-          `${apiURL}/minha-serventia`,
-          `${apiURL}/serventia/minha`,
-          `${apiURL}/me`,
-          `${apiURL}/usuario/me`,
-        ];
-        for (const url of candidates) {
-          detectedCns = await tryFetchCns(url);
-          if (detectedCns) break;
-        }
-
-        // 2) Fallback: se houver nome abreviado da serventia no usuário local, tenta via query
-        if (!detectedCns && usuarioLocal && usuarioLocal.serventia) {
-          const url = `${apiURL}/serventia?nome_abreviado=${encodeURIComponent(usuarioLocal.serventia)}`;
-          try {
-            const resp = await fetch(url, { headers });
-            if (resp.ok) {
-              const data = await resp.json();
-              // Suporta tanto { cns } quanto { itens: [{ cns }] }
-              detectedCns = data?.cns || data?.serventia?.cns || (Array.isArray(data?.itens) && data.itens[0]?.cns) || null;
-            }
-          } catch (_) {}
-        }
-
-        if (detectedCns) {
-          setCns(String(detectedCns));
-          logSuccess(`CNS detectado automaticamente: ${detectedCns}`);
+        const localCns = usuarioLocal?.cns || usuarioLocal?.serventiaCns || usuarioLocal?.serventia_cns;
+        if (localCns) {
+          setCns(String(localCns));
+          logSuccess(`CNS detectado do perfil local: ${localCns}`);
         } else {
-          logInfo('Não foi possível detectar automaticamente o CNS. Você pode informar manualmente.');
+          logInfo('CNS não presente; informe manualmente.');
         }
       } catch (_) {
-        // Silencioso; o usuário pode preencher manualmente
+        // silencioso
       }
     })();
   }, []);
