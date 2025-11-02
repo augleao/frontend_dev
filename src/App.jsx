@@ -31,6 +31,7 @@ import AverbacoesLista from './components/averbacoes/AverbacoesLista';
 import AverbacaoManutencao from './components/averbacoes/AverbacaoManutencao';
 import FerramentasIA from './FerramentasIA';
 import AssistenteMandadosAverbacao from './components/ia/AssistenteMandadosAverbacao';
+import LeituraLivros from './components/ia/LeituraLivros';
 import ScrollToTop from './ScrollToTop';
 import CertidoesGratuitasLista from './components/certidoes/CertidoesGratuitasLista';
 import CertidaoGratuitaForm from './components/certidoes/CertidaoGratuitaForm';
@@ -245,6 +246,14 @@ function App() {
           element={
             <PrivateRoute>
               <AssistenteMandadosAverbacao />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/ferramentas-ia/leitura-livros"
+          element={
+            <PrivateRoute>
+              <LeituraLivros />
             </PrivateRoute>
           }
         />

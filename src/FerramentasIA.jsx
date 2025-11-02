@@ -22,11 +22,11 @@ function FerramentasIA() {
     },
     {
       id: 'analise-documentos',
-      title: 'ANÁLISE DE DOCUMENTOS',
-      description: 'Extração e validação automática de dados (em breve)',
+      title: 'LEITURA DE LIVROS DE REGISTRO',
+      description: 'Extração automática de dados manuscritos a partir de imagens',
       icon: '📄',
       color: '#f39c12',
-      route: '/ferramentas-ia'
+      route: '/ferramentas-ia/leitura-livros'
     },
     {
       id: 'classificador-atos',
