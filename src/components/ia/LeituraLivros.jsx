@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import LeituraLivrosService from '../../services/LeituraLivrosService';
 import { useNavigate } from 'react-router-dom';
+import { identificarTipo } from '../servicos/IAWorkflowService';
 
 function renderFormattedText(text) {
   if (!text) return null;
@@ -35,6 +36,7 @@ export default function LeituraLivros() {
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState([]);
   const pollRef = useRef(null);
+  const didMountTestRef = useRef(false);
   // Parâmetros CRC Nacional
   const [versao, setVersao] = useState('2.6');
   const [acao, setAcao] = useState('CARGA'); // por ora apenas CARGA
@@ -55,6 +57,56 @@ export default function LeituraLivros() {
   function clearConsole() {
     setConsoleLines([]);
   }
+
+  // Utils para controle de tempo
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const withTimeout = (promise, ms, label = '') => {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`Timeout após ${ms}ms${label ? ` em ${label}` : ''}`)), ms);
+    });
+    return Promise.race([promise.finally(() => clearTimeout(timer)), timeout]);
+  };
+
+  // Pré-teste simples do agente de IA na montagem da tela (não bloqueante)
+  useEffect(() => {
+    if (didMountTestRef.current) return;
+    didMountTestRef.current = true;
+
+    (async () => {
+      try {
+        pushConsole('[title] Checando disponibilidade do agente de IA');
+        const maxTentativas = 2;
+        let ok = false;
+        for (let i = 1; i <= maxTentativas; i++) {
+          try {
+            pushConsole(`[info] Tentativa ${i}/${maxTentativas}...`);
+            const resp = await withTimeout(
+              identificarTipo('Ping do leitor de livros na abertura da tela.'),
+              8000,
+              'teste on-mount'
+            );
+            if (resp && typeof resp === 'object') {
+              ok = true;
+              break;
+            }
+            throw new Error('Resposta inválida no teste on-mount.');
+          } catch (err) {
+            pushConsole(`[warning] ⚠ Falha no teste on-mount: ${err.message}`);
+            if (i < maxTentativas) await sleep(800);
+          }
+        }
+        if (ok) {
+          pushConsole('[success] ✓ Agente online');
+        } else {
+          pushConsole('[warning] ⚠ Agente possivelmente indisponível. Tente reenviar ou verificar conexão.');
+        }
+      } catch (e) {
+        // Falha silenciosa: apenas informa no console visual
+        pushConsole(`[warning] ⚠ Erro ao executar pré-teste on-mount: ${e.message}`);
+      }
+    })();
+  }, []);
 
   async function startProcessing() {
     setResults([]);
