@@ -115,6 +115,44 @@ export default function LeituraLivros() {
     pushConsole(preview);
   };
 
+  // Tenta detectar prompts/respostas de IA em mensagens soltas do backend
+  const tryDetectIaFromMessage = (rawMsg) => {
+    if (typeof rawMsg !== 'string') return;
+    const msg = rawMsg.trim();
+    // Marcadores explícitos (se o backend estiver configurado para ecoar)
+    if (!clfPromptLoggedRef.current && msg.includes('[IA-PROMPT]') && msg.toLowerCase().includes('tipo_escrita')) {
+      const content = msg.split('[IA-PROMPT]').pop().trim();
+      if (content) { logPrompt('IA • Prompt usado (classificação tipo_escrita)', content); clfPromptLoggedRef.current = true; }
+    }
+    if (!readPromptLoggedRef.current && msg.includes('[IA-PROMPT]') && msg.toLowerCase().includes('leitura')) {
+      const content = msg.split('[IA-PROMPT]').pop().trim();
+      if (content) { logPrompt('IA • Prompt usado (leitura de registros)', content); readPromptLoggedRef.current = true; }
+    }
+    if (!clfResponseLoggedRef.current && msg.includes('[IA-RESPONSE]') && msg.toLowerCase().includes('tipo_escrita')) {
+      const content = msg.split('[IA-RESPONSE]').pop().trim();
+      if (content) { logIaResponse('IA • Resposta (classificação tipo_escrita)', content); clfResponseLoggedRef.current = true; }
+    }
+    if (!readResponseLoggedRef.current && msg.includes('[IA-RESPONSE]') && msg.toLowerCase().includes('leitura')) {
+      const content = msg.split('[IA-RESPONSE]').pop().trim();
+      if (content) { logIaResponse('IA • Resposta (leitura de registros)', content); readResponseLoggedRef.current = true; }
+    }
+    // Tentativa conservadora: se a mensagem for JSON puro, tentar identificar pelo conteúdo
+    if (msg.startsWith('{') && msg.endsWith('}')) {
+      try {
+        const obj = JSON.parse(msg);
+        if (!clfResponseLoggedRef.current && (Object.prototype.hasOwnProperty.call(obj, 'tipo') || Object.prototype.hasOwnProperty.call(obj, 'classificacao'))) {
+          logIaResponse('IA • Resposta (classificação tipo_escrita)', msg);
+          clfResponseLoggedRef.current = true;
+        } else if (!readResponseLoggedRef.current && (Array.isArray(obj.registros) || Array.isArray(obj.records))) {
+          logIaResponse('IA • Resposta (leitura de registros)', msg);
+          readResponseLoggedRef.current = true;
+        }
+      } catch (_) {
+        // ignora JSON inválido
+      }
+    }
+  };
+
   // Pré-teste simples do agente de IA na montagem da tela (não bloqueante)
   useEffect(() => {
     if (didMountTestRef.current) return;
@@ -199,6 +237,8 @@ export default function LeituraLivros() {
 
         resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
+          // Solicita ao backend eco de prompts e respostas (se suportado)
+          debugIA: true, echoPrompts: true, echoRespostas: true, promptMarker: '[IA-PROMPT]', responseMarker: '[IA-RESPONSE]',
           promptTipoEscritaIndexador: 'tipo_escrita',
           promptTipoEscrita: pTipo?.prompt || '',
           promptLeituraManuscritoIndexador: 'leitura_manuscrito',
@@ -239,6 +279,8 @@ export default function LeituraLivros() {
 
         resp = await LeituraLivrosService.uploadFiles(files, {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
+          // Solicita ao backend eco de prompts e respostas (se suportado)
+          debugIA: true, echoPrompts: true, echoRespostas: true, promptMarker: '[IA-PROMPT]', responseMarker: '[IA-RESPONSE]',
           promptTipoEscritaIndexador: 'tipo_escrita',
           promptTipoEscrita: pTipo?.prompt || '',
           promptLeituraManuscritoIndexador: 'leitura_manuscrito',
@@ -272,7 +314,9 @@ export default function LeituraLivros() {
             if (Array.isArray(status.messages) && status.messages.length) {
               const startIdx = Math.max(0, lastMsgIndexRef.current);
               for (let i = startIdx; i < status.messages.length; i++) {
-                pushConsole(status.messages[i]);
+                const m = status.messages[i];
+                tryDetectIaFromMessage(m);
+                pushConsole(m);
               }
               lastMsgIndexRef.current = status.messages.length;
             }
