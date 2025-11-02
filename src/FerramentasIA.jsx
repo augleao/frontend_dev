@@ -15,7 +15,7 @@ function FerramentasIA() {
     {
       id: 'assistente-preenchimento',
       title: 'ASSISTENTE DE MANDADOS DE AVERBAÇÃO',
-      description: 'Sugestões inteligentes para formulários',
+      description: 'Analise e gere averbações decorrentes de mandados',
       icon: '🧠',
       color: '#f1c40f',
       route: '/ferramentas-ia/assistente-mandados'

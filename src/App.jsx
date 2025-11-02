@@ -32,6 +32,8 @@ import AverbacaoManutencao from './components/averbacoes/AverbacaoManutencao';
 import FerramentasIA from './FerramentasIA';
 import AssistenteMandadosAverbacao from './components/ia/AssistenteMandadosAverbacao';
 import ScrollToTop from './ScrollToTop';
+import CertidoesGratuitasLista from './components/certidoes/CertidoesGratuitasLista';
+import CertidaoGratuitaForm from './components/certidoes/CertidaoGratuitaForm';
 
 
 
@@ -243,6 +245,30 @@ function App() {
           element={
             <PrivateRoute>
               <AssistenteMandadosAverbacao />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/certidoes-gratuitas"
+          element={
+            <PrivateRoute>
+              <CertidoesGratuitasLista />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/certidoes-gratuitas/nova"
+          element={
+            <PrivateRoute>
+              <CertidaoGratuitaForm />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/certidoes-gratuitas/:id/editar"
+          element={
+            <PrivateRoute>
+              <CertidaoGratuitaForm />
             </PrivateRoute>
           }
         />
