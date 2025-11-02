@@ -37,6 +37,10 @@ export default function LeituraLivros() {
   const [results, setResults] = useState([]);
   const pollRef = useRef(null);
   const didMountTestRef = useRef(false);
+  const lastProgressRef = useRef(0);
+  const lastStatusRef = useRef('');
+  const jobStartTimeRef = useRef(null);
+  const lastMsgIndexRef = useRef(0);
   // Parâmetros CRC Nacional
   const [versao, setVersao] = useState('2.6');
   const [acao, setAcao] = useState('CARGA'); // por ora apenas CARGA
@@ -68,6 +72,18 @@ export default function LeituraLivros() {
     return Promise.race([promise.finally(() => clearTimeout(timer)), timeout]);
   };
 
+  // Helpers de log com horário e níveis
+  const nowHHMMSS = () => {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+  const logInfo = (msg) => pushConsole(`[info] ${nowHHMMSS()} - ${msg}`);
+  const logTitle = (msg) => pushConsole(`[title] ${msg}`);
+  const logSuccess = (msg) => pushConsole(`[success] ${nowHHMMSS()} - ${msg}`);
+  const logWarning = (msg) => pushConsole(`[warning] ${nowHHMMSS()} - ${msg}`);
+  const logError = (msg) => pushConsole(`[error] ${nowHHMMSS()} - ${msg}`);
+
   // Pré-teste simples do agente de IA na montagem da tela (não bloqueante)
   useEffect(() => {
     if (didMountTestRef.current) return;
@@ -75,12 +91,12 @@ export default function LeituraLivros() {
 
     (async () => {
       try {
-        pushConsole('[title] Checando disponibilidade do agente de IA');
+        logTitle('Checando disponibilidade do agente de IA');
         const maxTentativas = 2;
         let ok = false;
         for (let i = 1; i <= maxTentativas; i++) {
           try {
-            pushConsole(`[info] Tentativa ${i}/${maxTentativas}...`);
+            logInfo(`Tentativa ${i}/${maxTentativas}...`);
             const resp = await withTimeout(
               identificarTipo('Ping do leitor de livros na abertura da tela.'),
               8000,
@@ -92,20 +108,27 @@ export default function LeituraLivros() {
             }
             throw new Error('Resposta inválida no teste on-mount.');
           } catch (err) {
-            pushConsole(`[warning] ⚠ Falha no teste on-mount: ${err.message}`);
+            logWarning(`⚠ Falha no teste on-mount: ${err.message}`);
             if (i < maxTentativas) await sleep(800);
           }
         }
         if (ok) {
-          pushConsole('[success] ✓ Agente online');
+          logSuccess('✓ Agente online');
         } else {
-          pushConsole('[warning] ⚠ Agente possivelmente indisponível. Tente reenviar ou verificar conexão.');
+          logWarning('⚠ Agente possivelmente indisponível. Tente reenviar ou verificar conexão.');
         }
       } catch (e) {
         // Falha silenciosa: apenas informa no console visual
-        pushConsole(`[warning] ⚠ Erro ao executar pré-teste on-mount: ${e.message}`);
+        logWarning(`⚠ Erro ao executar pré-teste on-mount: ${e.message}`);
       }
     })();
+  }, []);
+
+  // Limpa polling ao desmontar
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
   }, []);
 
   async function startProcessing() {
@@ -113,62 +136,109 @@ export default function LeituraLivros() {
     setConsoleLines([]);
     setRunning(true);
     setProgress(0);
+    lastProgressRef.current = 0;
+    lastStatusRef.current = '';
+    lastMsgIndexRef.current = 0;
+    jobStartTimeRef.current = new Date();
     try {
-      if (!cns.trim()) { pushConsole('[error] Informe o CNS do cartório.'); setRunning(false); return; }
-      if (!versao.trim()) { pushConsole('[error] Informe a VERSAO do XML.'); setRunning(false); return; }
-      if (!acao.trim()) { pushConsole('[error] Informe a ACAO (ex.: CARGA).'); setRunning(false); return; }
-      pushConsole('[title] Preparando processamento para CRC Nacional');
-      pushConsole(`[info] Parâmetros: VERSAO=${versao}, ACAO=${acao}, CNS=${cns}, TIPO=${tipoRegistro}, MAX_POR_ARQUIVO=${maxPorArquivo}`);
-      pushConsole('[info] O XML será gerado com tags em MAIÚSCULAS, Inclusões antes de Alterações, e grupos FILIACAONASCIMENTO e DOCUMENTOS agrupados.');
+      if (!cns.trim()) { logError('Informe o CNS do cartório.'); setRunning(false); return; }
+      if (!versao.trim()) { logError('Informe a VERSAO do XML.'); setRunning(false); return; }
+      if (!acao.trim()) { logError('Informe a ACAO (ex.: CARGA).'); setRunning(false); return; }
+      logTitle('Preparando processamento para CRC Nacional');
+      logInfo(`Parâmetros: VERSAO=${versao}, ACAO=${acao}, CNS=${cns}, TIPO=${tipoRegistro}, MAX_POR_ARQUIVO=${maxPorArquivo}`);
+      logInfo('O XML será gerado com tags em MAIÚSCULAS, Inclusões antes de Alterações, e grupos FILIACAONASCIMENTO e DOCUMENTOS agrupados.');
       let resp;
       if (mode === 'folder') {
-        if (!folderPath.trim()) { pushConsole('[error] Informe o caminho da pasta no servidor.'); setRunning(false); return; }
-        pushConsole(`[info] Solicitando processamento da pasta: ${folderPath}`);
+        if (!folderPath.trim()) { logError('Informe o caminho da pasta no servidor.'); setRunning(false); return; }
+        logInfo(`Solicitando processamento da pasta: ${folderPath}`);
         resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true
         });
       } else {
-        if (!files || files.length === 0) { pushConsole('[error] Selecione arquivos para upload.'); setRunning(false); return; }
-        pushConsole(`[info] Enviando ${files.length} arquivos para processamento...`);
+        if (!files || files.length === 0) { logError('Selecione arquivos para upload.'); setRunning(false); return; }
+        logInfo(`Enviando ${files.length} arquivo(s) para processamento...`);
+        let totalSize = 0;
+        files.forEach((f, idx) => {
+          totalSize += f.size || 0;
+          const kb = f.size != null ? `${Math.round(f.size / 1024)}KB` : 'tamanho n/d';
+          logInfo(`Arquivo ${idx + 1}: ${f.name} (${kb}, ${f.type || 'tipo n/d'})`);
+        });
+        if (totalSize > 0) {
+          const mb = (totalSize / (1024 * 1024)).toFixed(2);
+          logInfo(`Tamanho total do upload: ${mb}MB`);
+        }
         resp = await LeituraLivrosService.uploadFiles(files, {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true
         });
       }
       if (!resp || !resp.jobId) {
-        pushConsole('[error] Falha ao iniciar o processamento (resposta inválida).');
+        logError('Falha ao iniciar o processamento (resposta inválida).');
         setRunning(false);
         return;
       }
       setJobId(resp.jobId);
-      pushConsole(`[title] Job iniciado: ${resp.jobId}`);
+      logTitle(`Job iniciado: ${resp.jobId}`);
       // comece a pollar
       pollRef.current = setInterval(async () => {
         try {
           const status = await LeituraLivrosService.getStatus(resp.jobId);
           if (status) {
-            if (status.messages && status.messages.length) {
-              status.messages.forEach(m => pushConsole(m));
+            // Mensagens incrementais do backend (evita duplicar em cada poll)
+            if (Array.isArray(status.messages) && status.messages.length) {
+              const startIdx = Math.max(0, lastMsgIndexRef.current);
+              for (let i = startIdx; i < status.messages.length; i++) {
+                pushConsole(status.messages[i]);
+              }
+              lastMsgIndexRef.current = status.messages.length;
             }
-            setProgress(status.progress || 0);
+
+            const newProgress = status.progress || 0;
+            setProgress(newProgress);
+
+            // Log de mudança de status
+            if (status.status && status.status !== lastStatusRef.current) {
+              logInfo(`Status: ${status.status}` + (status.phase ? ` | Fase: ${status.phase}` : '') + (status.currentFile ? ` | Arquivo: ${status.currentFile}` : ''));
+              lastStatusRef.current = status.status;
+            }
+
+            // Log quando progresso avança
+            if (newProgress > lastProgressRef.current) {
+              const elapsedMs = jobStartTimeRef.current ? (Date.now() - jobStartTimeRef.current.getTime()) : 0;
+              const eta = (newProgress > 0) ? Math.max(0, (elapsedMs * (100 - newProgress)) / newProgress) : 0;
+              const fmt = (ms) => {
+                const s = Math.round(ms / 1000);
+                const m = Math.floor(s / 60); const ss = s % 60;
+                return `${m}m${String(ss).padStart(2, '0')}s`;
+              };
+              let extra = ` (decorrido: ${fmt(elapsedMs)}`;
+              if (newProgress > 0) extra += `, ETA: ${fmt(eta)}`;
+              extra += ')';
+              const counts = (status.processed != null && status.total != null) ? ` | Itens: ${status.processed}/${status.total}` : '';
+              logInfo(`Progresso: ${newProgress}%${counts}${extra}`);
+              lastProgressRef.current = newProgress;
+            }
+
             if (status.status === 'done') {
               clearInterval(pollRef.current);
               setRunning(false);
-              pushConsole('[success] Processamento concluído. Buscando resultados...');
+              logSuccess('Processamento concluído. Buscando resultados...');
               const res = await LeituraLivrosService.getResult(resp.jobId);
               setResults(res.records || res || []);
-              pushConsole('[title] Resultados carregados.');
+              const count = (res?.records && Array.isArray(res.records)) ? res.records.length : (Array.isArray(res) ? res.length : 0);
+              logTitle(`Resultados carregados (${count}).`);
             } else if (status.status === 'failed') {
               clearInterval(pollRef.current);
               setRunning(false);
-              pushConsole('[error] Processamento falhou.');
+              const msg = status.error || 'Processamento falhou.';
+              logError(msg);
             }
           }
         } catch (e) {
-          pushConsole('[warning] Erro ao consultar status do job.');
+          logWarning('Erro ao consultar status do job.');
         }
       }, 2000);
     } catch (e) {
-      pushConsole('[error] Erro ao iniciar processamento: ' + (e.message || e));
+      logError('Erro ao iniciar processamento: ' + (e.message || e));
       setRunning(false);
     }
   }
@@ -176,6 +246,7 @@ export default function LeituraLivros() {
   async function handleDownloadXml() {
     if (!jobId) return;
     try {
+      logInfo('Solicitando download do XML...');
       const blob = await LeituraLivrosService.getResultXml(jobId);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -186,8 +257,9 @@ export default function LeituraLivros() {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+      logSuccess('XML baixado com sucesso.');
     } catch (e) {
-      pushConsole('[error] Falha ao baixar XML: ' + (e.message || e));
+      logError('Falha ao baixar XML: ' + (e.message || e));
     }
   }
 
