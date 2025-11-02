@@ -20,7 +20,14 @@ export default {
         cns: opts.cns,
         tipoRegistro: opts.tipoRegistro,
         maxPorArquivo: opts.maxPorArquivo,
-        inclusaoPrimeiro: opts.inclusaoPrimeiro
+        inclusaoPrimeiro: opts.inclusaoPrimeiro,
+        // Prompts de IA (indexadores e conteúdos)
+        promptTipoEscritaIndexador: opts.promptTipoEscritaIndexador,
+        promptTipoEscrita: opts.promptTipoEscrita,
+        promptLeituraManuscritoIndexador: opts.promptLeituraManuscritoIndexador,
+        promptLeituraManuscrito: opts.promptLeituraManuscrito,
+        promptLeituraDigitadoIndexador: opts.promptLeituraDigitadoIndexador,
+        promptLeituraDigitado: opts.promptLeituraDigitado
       })
     });
     if (!res.ok) throw new Error('Falha ao iniciar processamento');
@@ -35,6 +42,13 @@ export default {
     if (opts.tipoRegistro) fd.append('tipoRegistro', opts.tipoRegistro);
     if (opts.maxPorArquivo != null) fd.append('maxPorArquivo', String(opts.maxPorArquivo));
     if (opts.inclusaoPrimeiro != null) fd.append('inclusaoPrimeiro', String(!!opts.inclusaoPrimeiro));
+    // Prompts de IA (indexadores e conteúdos)
+    if (opts.promptTipoEscritaIndexador) fd.append('promptTipoEscritaIndexador', opts.promptTipoEscritaIndexador);
+    if (opts.promptTipoEscrita) fd.append('promptTipoEscrita', opts.promptTipoEscrita);
+    if (opts.promptLeituraManuscritoIndexador) fd.append('promptLeituraManuscritoIndexador', opts.promptLeituraManuscritoIndexador);
+    if (opts.promptLeituraManuscrito) fd.append('promptLeituraManuscrito', opts.promptLeituraManuscrito);
+    if (opts.promptLeituraDigitadoIndexador) fd.append('promptLeituraDigitadoIndexador', opts.promptLeituraDigitadoIndexador);
+    if (opts.promptLeituraDigitado) fd.append('promptLeituraDigitado', opts.promptLeituraDigitado);
     const res = await withAuthFetch(`${config.apiURL}/leitura-livros/upload`, {
       method: 'POST',
       body: fd

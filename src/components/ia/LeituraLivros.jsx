@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import LeituraLivrosService from '../../services/LeituraLivrosService';
+import PromptsService from '../../services/PromptsService';
 import { useNavigate } from 'react-router-dom';
 import { identificarTipo } from '../servicos/IAWorkflowService';
 
@@ -151,8 +152,24 @@ export default function LeituraLivros() {
       if (mode === 'folder') {
         if (!folderPath.trim()) { logError('Informe o caminho da pasta no servidor.'); setRunning(false); return; }
         logInfo(`Solicitando processamento da pasta: ${folderPath}`);
+        // Busca prompts (mesma lógica do Assistente, via /ia/prompts)
+        logInfo('Carregando prompts de IA: tipo_escrita, leitura_manuscrito, leitura_digitado...');
+        const pMap = await PromptsService.getManyByIndexadores(['tipo_escrita', 'leitura_manuscrito', 'leitura_digitado']);
+        const pTipo = pMap['tipo_escrita'];
+        const pManu = pMap['leitura_manuscrito'];
+        const pDigi = pMap['leitura_digitado'];
+        if (!pTipo) logWarning('Prompt tipo_escrita não encontrado.'); else logSuccess('Prompt tipo_escrita OK');
+        if (!pManu) logWarning('Prompt leitura_manuscrito não encontrado.'); else logSuccess('Prompt leitura_manuscrito OK');
+        if (!pDigi) logWarning('Prompt leitura_digitado não encontrado.'); else logSuccess('Prompt leitura_digitado OK');
+
         resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), {
-          versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true
+          versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
+          promptTipoEscritaIndexador: 'tipo_escrita',
+          promptTipoEscrita: pTipo?.prompt || '',
+          promptLeituraManuscritoIndexador: 'leitura_manuscrito',
+          promptLeituraManuscrito: pManu?.prompt || '',
+          promptLeituraDigitadoIndexador: 'leitura_digitado',
+          promptLeituraDigitado: pDigi?.prompt || ''
         });
       } else {
         if (!files || files.length === 0) { logError('Selecione arquivos para upload.'); setRunning(false); return; }
@@ -167,8 +184,27 @@ export default function LeituraLivros() {
           const mb = (totalSize / (1024 * 1024)).toFixed(2);
           logInfo(`Tamanho total do upload: ${mb}MB`);
         }
+        // Busca prompts (mesma lógica do Assistente, via /ia/prompts)
+        logInfo('Carregando prompts de IA: tipo_escrita, leitura_manuscrito, leitura_digitado...');
+        const pMap = await PromptsService.getManyByIndexadores(['tipo_escrita', 'leitura_manuscrito', 'leitura_digitado']);
+        const pTipo = pMap['tipo_escrita'];
+        const pManu = pMap['leitura_manuscrito'];
+        const pDigi = pMap['leitura_digitado'];
+        if (!pTipo) logWarning('Prompt tipo_escrita não encontrado.'); else logSuccess('Prompt tipo_escrita OK');
+        if (!pManu) logWarning('Prompt leitura_manuscrito não encontrado.'); else logSuccess('Prompt leitura_manuscrito OK');
+        if (!pDigi) logWarning('Prompt leitura_digitado não encontrado.'); else logSuccess('Prompt leitura_digitado OK');
+
+        // Deixa a classificação manuscrito/digitado a cargo do backend usando o prompt tipo_escrita.
+        logInfo('Classificação manuscrito/digitado será executada no backend com base no prompt tipo_escrita.');
+
         resp = await LeituraLivrosService.uploadFiles(files, {
-          versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true
+          versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
+          promptTipoEscritaIndexador: 'tipo_escrita',
+          promptTipoEscrita: pTipo?.prompt || '',
+          promptLeituraManuscritoIndexador: 'leitura_manuscrito',
+          promptLeituraManuscrito: pManu?.prompt || '',
+          promptLeituraDigitadoIndexador: 'leitura_digitado',
+          promptLeituraDigitado: pDigi?.prompt || ''
         });
       }
       if (!resp || !resp.jobId) {
