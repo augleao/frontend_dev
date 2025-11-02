@@ -6,7 +6,6 @@ import ServicoPagamento from './ServicoPagamento';
 import ServicoConferencia from './ServicoConferencia';
 import ServicoExecucao from './ServicoExecucao';
 import ServicoEntrega from './ServicoEntrega';
-import ServicoAlertas from './ServicoAlertas';
 import ServicoLista from './ServicoLista';
 import config from '../../config';
 import { fetchComAuth } from '../../utils';
@@ -52,7 +51,6 @@ export default function ServicoManutencao() {
     }
   }, []);
   const [clientes, setClientes] = useState(clientesMock);
-  const [alertas, setAlertas] = useState([]);
   const [combosDisponiveis, setCombosDisponiveis] = useState([]);
   const [pedidos, setPedidos] = useState([]);
   const [atosPedido, setAtosPedido] = useState([]);
@@ -439,11 +437,7 @@ export default function ServicoManutencao() {
     });
   }
 
-  useEffect(() => {
-    const hoje = new Date();
-    const atrasados = servicos.filter(s => s.prazo && new Date(s.prazo) < hoje && s.execucao.status !== 'concluido');
-    setAlertas(atrasados.map(s => `Serviço ${s.protocolo} está atrasado!`));
-  }, [servicos]);
+  // Removido: alertas de atraso de serviço a pedido do usuário
 
   // Efeito para atualizar histórico quando o status mudar
   useEffect(() => {
@@ -501,7 +495,7 @@ export default function ServicoManutencao() {
             </span>
           )}
         </div>
-        <ServicoAlertas alertas={alertas} />
+  {/* Alertas de atraso removidos */}
         <form
           onSubmit={registrarServico}
           style={{
