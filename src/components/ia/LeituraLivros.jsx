@@ -46,6 +46,8 @@ export default function LeituraLivros() {
   const lastMsgIndexRef = useRef(0);
   const rowRef = useRef(null);
   const [rightColOffset, setRightColOffset] = useState(0);
+  // Gap entre os dois cards superiores (Parâmetros e Modo)
+  const headerRowGap = 14; // ajuste único: widths calculadas usam este valor para somar 100%
   // Parâmetros CRC Nacional
   const [versao, setVersao] = useState('2.6');
   const [acao, setAcao] = useState('CARGA'); // por ora apenas CARGA
@@ -410,19 +412,15 @@ export default function LeituraLivros() {
         {/* Left column */}
         <div style={{ flex: '1 1 60%', minHeight: 300, display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* Parâmetros + Modo lado a lado */}
-          <div style={{ display: 'flex', gap: 14, alignItems: 'stretch', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: headerRowGap, alignItems: 'stretch', flexWrap: 'wrap' }}>
             {/* Parâmetros da Carga CRC */}
             <div style={{
               display: 'grid', gridTemplateColumns: 'repeat(6, minmax(110px, 1fr))', gap: 10,
               background: '#ffffff', padding: 16, borderRadius: 16,
               boxShadow: '0 10px 26px rgba(32,50,73,0.08)',
-              flex: '1 1 55%', minWidth: 320, maxWidth: '100%'
+              flex: '1 1 0', width: `calc((100% - ${headerRowGap}px)/2)`, minWidth: 320, maxWidth: '100%'
             }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>VERSAO</label>
-              <input value={versao} onChange={e => setVersao(e.target.value)}
-                style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }} />
-            </div>
+            {/* Campo VERSAO removido conforme solicitado */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>ACAO</label>
               <select value={acao} onChange={e => setAcao(e.target.value)}
@@ -432,8 +430,23 @@ export default function LeituraLivros() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>CNS</label>
-              <input value={cns} onChange={e => setCns(e.target.value)} placeholder="CNS do cartório"
-                style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }} />
+              <div
+                title="Valor preenchido automaticamente a partir do cadastro da serventia"
+                style={{
+                  border: '1.5px solid #d0d7de',
+                  borderRadius: 10,
+                  padding: '10px 12px',
+                  fontSize: 14,
+                  background: '#f9fafb',
+                  color: '#111827',
+                  fontWeight: 700,
+                  minHeight: 38,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                {cns ? String(cns) : '—'}
+              </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>TIPO</label>
@@ -453,7 +466,7 @@ export default function LeituraLivros() {
             </div>
 
             {/* Mode selector & actions */}
-            <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)', flex: '1 1 45%', minWidth: 260, maxWidth: '100%' }}>
+            <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)', flex: '1 1 0', width: `calc((100% - ${headerRowGap}px)/2)`, minWidth: 260, maxWidth: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontWeight: 800, color: '#1f2937', fontSize: 13 }}>Modo</span>
@@ -509,7 +522,7 @@ export default function LeituraLivros() {
           </div>
 
           {/* Console (ocupa metade da tela) */}
-          <div style={{ background: '#0b1220', borderRadius: 16, boxShadow: '0 16px 36px rgba(2,6,23,0.5)', overflow: 'hidden', width: 'min(50vw, 100%)', alignSelf: 'flex-start' }} ref={consoleBlockRef}>
+          <div style={{ background: '#0b1220', borderRadius: 16, boxShadow: '0 16px 36px rgba(2,6,23,0.5)', overflow: 'hidden', width: 'calc(50vw - 12px)', maxWidth: '100%', alignSelf: 'flex-start' }} ref={consoleBlockRef}>
             <div style={{ padding: '10px 14px', color: '#cbd5e1', borderBottom: '1px solid #111827', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontWeight: 800, letterSpacing: 0.5 }}>Console</div>
               <div style={{ fontSize: 12, color: '#94a3b8' }}>{consoleLines.length} linhas</div>
@@ -523,7 +536,7 @@ export default function LeituraLivros() {
         </div>
 
         {/* Right column (Resumo + Resultados) */}
-  <div style={{ width: 420, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14, marginTop: rightColOffset }}>
+  <div style={{ width: 'calc(50vw - 12px)', maxWidth: '100%', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14, marginTop: rightColOffset }}>
           <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)' }}>
             <h3 style={{ marginTop: 0, marginBottom: 10, color: '#1f2937' }}>Resumo</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, fontSize: 14, color: '#334155' }}>
