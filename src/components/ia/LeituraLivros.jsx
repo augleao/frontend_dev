@@ -33,6 +33,7 @@ export default function LeituraLivros() {
   const [files, setFiles] = useState([]);
   const [consoleLines, setConsoleLines] = useState([]);
   const consoleRef = useRef(null);
+  const consoleBlockRef = useRef(null);
   const [jobId, setJobId] = useState(null);
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -43,6 +44,8 @@ export default function LeituraLivros() {
   const lastStatusRef = useRef('');
   const jobStartTimeRef = useRef(null);
   const lastMsgIndexRef = useRef(0);
+  const rowRef = useRef(null);
+  const [rightColOffset, setRightColOffset] = useState(0);
   // Parâmetros CRC Nacional
   const [versao, setVersao] = useState('2.6');
   const [acao, setAcao] = useState('CARGA'); // por ora apenas CARGA
@@ -55,6 +58,27 @@ export default function LeituraLivros() {
       consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
     }
   }, [consoleLines]);
+
+  // Mantém a coluna direita (Resumo/Registros) alinhada pelo topo do Console
+  useEffect(() => {
+    const recompute = () => {
+      try {
+        const row = rowRef.current;
+        const block = consoleBlockRef.current;
+        if (!row || !block) return;
+        const rowTop = row.getBoundingClientRect().top + window.pageYOffset;
+        const consoleTop = block.getBoundingClientRect().top + window.pageYOffset;
+        const delta = Math.max(0, Math.round(consoleTop - rowTop));
+        setRightColOffset(delta);
+      } catch (_) {}
+    };
+    const raf = requestAnimationFrame(recompute);
+    window.addEventListener('resize', recompute);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', recompute);
+    };
+  }, [mode, versao, acao, tipoRegistro, maxPorArquivo, folderPath, files.length]);
 
   function pushConsole(line) {
     setConsoleLines(prev => [...prev, typeof line === 'string' ? line : JSON.stringify(line)]);
@@ -382,7 +406,7 @@ export default function LeituraLivros() {
   {/* Subtítulo removido a pedido do usuário */}
       </div>
 
-      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+  <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }} ref={rowRef}>
         {/* Left column */}
         <div style={{ flex: '1 1 60%', minHeight: 300, display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* Parâmetros da Carga CRC */}
@@ -481,7 +505,7 @@ export default function LeituraLivros() {
           </div>
 
           {/* Console */}
-          <div style={{ background: '#0b1220', borderRadius: 16, boxShadow: '0 16px 36px rgba(2,6,23,0.5)', overflow: 'hidden' }}>
+          <div style={{ background: '#0b1220', borderRadius: 16, boxShadow: '0 16px 36px rgba(2,6,23,0.5)', overflow: 'hidden' }} ref={consoleBlockRef}>
             <div style={{ padding: '10px 14px', color: '#cbd5e1', borderBottom: '1px solid #111827', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontWeight: 800, letterSpacing: 0.5 }}>Console</div>
               <div style={{ fontSize: 12, color: '#94a3b8' }}>{consoleLines.length} linhas</div>
@@ -495,7 +519,7 @@ export default function LeituraLivros() {
         </div>
 
         {/* Right column (Resumo + Resultados) */}
-        <div style={{ width: 420, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+  <div style={{ width: 420, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14, marginTop: rightColOffset }}>
           <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)' }}>
             <h3 style={{ marginTop: 0, marginBottom: 10, color: '#1f2937' }}>Resumo</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, fontSize: 14, color: '#334155' }}>
