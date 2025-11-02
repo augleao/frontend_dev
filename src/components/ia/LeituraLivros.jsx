@@ -175,13 +175,23 @@ export default function LeituraLivros() {
   }, []);
 
   async function startProcessing() {
-    // Ao iniciar, rola a tela para centralizar o console/terminal na viewport
+    // Ao iniciar, rola a tela para centralizar o console/terminal na viewport (método robusto)
     try {
-      if (consoleRef.current && typeof consoleRef.current.scrollIntoView === 'function') {
-        consoleRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+      const el = consoleRef.current;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const elHeight = rect.height || el.offsetHeight || 0;
+        const absoluteTop = rect.top + window.pageYOffset;
+        const targetTop = Math.max(0, absoluteTop - (window.innerHeight / 2) + (elHeight / 2));
+        window.scrollTo({ top: targetTop, behavior: 'smooth' });
       }
     } catch (e) {
-      // Falha silenciosa: não interrompe o fluxo de processamento
+      // Fallback discreto caso window.scrollTo não esteja disponível
+      try {
+        if (consoleRef.current && typeof consoleRef.current.scrollIntoView === 'function') {
+          consoleRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        }
+      } catch (_) {}
     }
 
     setResults([]);
