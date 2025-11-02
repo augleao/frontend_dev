@@ -409,12 +409,15 @@ export default function LeituraLivros() {
   <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }} ref={rowRef}>
         {/* Left column */}
         <div style={{ flex: '1 1 60%', minHeight: 300, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Parâmetros da Carga CRC */}
-          <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(6, minmax(120px, 1fr))', gap: 12,
-            background: '#ffffff', padding: 16, borderRadius: 16,
-            boxShadow: '0 10px 26px rgba(32,50,73,0.08)'
-          }}>
+          {/* Parâmetros + Modo lado a lado */}
+          <div style={{ display: 'flex', gap: 14, alignItems: 'stretch' }}>
+            {/* Parâmetros da Carga CRC */}
+            <div style={{
+              display: 'grid', gridTemplateColumns: 'repeat(6, minmax(120px, 1fr))', gap: 12,
+              background: '#ffffff', padding: 16, borderRadius: 16,
+              boxShadow: '0 10px 26px rgba(32,50,73,0.08)',
+              flex: '1 1 60%', minWidth: 380
+            }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>VERSAO</label>
               <input value={versao} onChange={e => setVersao(e.target.value)}
@@ -447,10 +450,10 @@ export default function LeituraLivros() {
                 onChange={e => setMaxPorArquivo(Number(e.target.value || 2500))}
                 style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }} />
             </div>
-          </div>
+            </div>
 
-          {/* Mode selector & actions */}
-          <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)' }}>
+            {/* Mode selector & actions */}
+            <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)', flex: '1 1 40%', minWidth: 300 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontWeight: 800, color: '#1f2937', fontSize: 13 }}>Modo</span>
@@ -502,6 +505,7 @@ export default function LeituraLivros() {
                 </div>
               </div>
             )}
+            </div>
           </div>
 
           {/* Console */}
