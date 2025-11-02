@@ -410,13 +410,13 @@ export default function LeituraLivros() {
         {/* Left column */}
         <div style={{ flex: '1 1 60%', minHeight: 300, display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* Parâmetros + Modo lado a lado */}
-          <div style={{ display: 'flex', gap: 14, alignItems: 'stretch' }}>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'stretch', flexWrap: 'wrap' }}>
             {/* Parâmetros da Carga CRC */}
             <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(6, minmax(120px, 1fr))', gap: 12,
+              display: 'grid', gridTemplateColumns: 'repeat(6, minmax(110px, 1fr))', gap: 10,
               background: '#ffffff', padding: 16, borderRadius: 16,
               boxShadow: '0 10px 26px rgba(32,50,73,0.08)',
-              flex: '1 1 60%', minWidth: 380
+              flex: '1 1 55%', minWidth: 320, maxWidth: '100%'
             }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>VERSAO</label>
@@ -453,7 +453,7 @@ export default function LeituraLivros() {
             </div>
 
             {/* Mode selector & actions */}
-            <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)', flex: '1 1 40%', minWidth: 300 }}>
+            <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)', flex: '1 1 45%', minWidth: 260, maxWidth: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontWeight: 800, color: '#1f2937', fontSize: 13 }}>Modo</span>
@@ -508,8 +508,8 @@ export default function LeituraLivros() {
             </div>
           </div>
 
-          {/* Console */}
-          <div style={{ background: '#0b1220', borderRadius: 16, boxShadow: '0 16px 36px rgba(2,6,23,0.5)', overflow: 'hidden' }} ref={consoleBlockRef}>
+          {/* Console (ocupa metade da tela) */}
+          <div style={{ background: '#0b1220', borderRadius: 16, boxShadow: '0 16px 36px rgba(2,6,23,0.5)', overflow: 'hidden', width: 'min(50vw, 100%)', alignSelf: 'flex-start' }} ref={consoleBlockRef}>
             <div style={{ padding: '10px 14px', color: '#cbd5e1', borderBottom: '1px solid #111827', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontWeight: 800, letterSpacing: 0.5 }}>Console</div>
               <div style={{ fontSize: 12, color: '#94a3b8' }}>{consoleLines.length} linhas</div>
