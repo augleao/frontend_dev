@@ -181,11 +181,7 @@ export default function LeituraLivros() {
         resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
           promptTipoEscritaIndexador: 'tipo_escrita',
-          promptTipoEscrita: pTipo?.prompt || '',
-          promptLeituraManuscritoIndexador: 'leitura_manuscrito',
-          promptLeituraManuscrito: pManu?.prompt || '',
-          promptLeituraDigitadoIndexador: 'leitura_digitado',
-          promptLeituraDigitado: pDigi?.prompt || ''
+          promptTipoEscrita: pTipo?.prompt || ''
         });
       } else {
         if (!files || files.length === 0) { logError('Selecione arquivos para upload.'); setRunning(false); return; }
@@ -221,11 +217,7 @@ export default function LeituraLivros() {
         resp = await LeituraLivrosService.uploadFiles(files, {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
           promptTipoEscritaIndexador: 'tipo_escrita',
-          promptTipoEscrita: pTipo?.prompt || '',
-          promptLeituraManuscritoIndexador: 'leitura_manuscrito',
-          promptLeituraManuscrito: pManu?.prompt || '',
-          promptLeituraDigitadoIndexador: 'leitura_digitado',
-          promptLeituraDigitado: pDigi?.prompt || ''
+          promptTipoEscrita: pTipo?.prompt || ''
         });
       }
       if (!resp || !resp.jobId) {
