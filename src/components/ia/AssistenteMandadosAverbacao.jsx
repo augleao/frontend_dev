@@ -447,94 +447,65 @@ function AssistenteMandadosAverbacao() {
           <div style={{ 
             border: '2px dashed #3498db', 
             borderRadius: '12px', 
-            padding: '32px', 
-            textAlign: 'center',
+            padding: '16px', 
+            textAlign: 'left',
             background: loading ? '#f0f8ff' : '#fff',
             transition: 'all 0.3s ease'
           }}>
-            <label htmlFor="fileInput" style={{
-              display: 'inline-block',
-              background: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
-              color: 'white',
-              padding: '12px 24px',
-              borderRadius: '8px',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontWeight: 700,
-              fontSize: '16px',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)',
-              opacity: loading ? 0.6 : 1
-            }}
-            onMouseEnter={(e) => {
-              if (!loading) {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(52, 152, 219, 0.4)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(52, 152, 219, 0.3)';
-            }}>
-              📄 Selecione os arquivos PDF do mandado
-            </label>
-            <input 
-              id="fileInput"
-              type="file" 
-              accept="application/pdf" 
-              multiple
-              onChange={onFileChange} 
-              disabled={loading}
-              style={{ display: 'none' }}
-            />
-            {files && files.length > 0 && !loading && (
-              <div style={{ marginTop: '16px', color: '#2c3e50', fontSize: '14px', textAlign: 'left' }}>
-                <strong>{files.length > 1 ? 'Arquivos selecionados:' : 'Arquivo selecionado:'}</strong>
-                <ul style={{ marginTop: 8, paddingLeft: 20 }}>
-                  {files.map((f, idx) => (
-                    <li key={idx}>{f.name}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {loading && (
-              <div style={{ marginTop: '16px', color: '#3498db', fontWeight: 'bold', fontSize: '16px' }}>
-                ⏳ Processando automaticamente...
-              </div>
-            )}
-          </div>
-
-          {/* Console do Agente IA */}
-          {consoleLog.length > 0 && (
-            <div ref={consoleRef} style={{
-              marginTop: 24,
-              background: '#000',
-              color: '#aaa',
-              padding: '16px',
-              borderRadius: '8px',
-              minHeight: '300px',
-              maxHeight: '500px',
-              overflowY: 'auto',
-              fontFamily: 'Courier New, monospace',
-              fontSize: '14px',
-              lineHeight: '1.6',
-              whiteSpace: 'pre-wrap',
-              wordWrap: 'break-word'
-            }}>
-              {consoleLog.map((entry, idx) => (
-                <div key={idx} style={{ marginBottom: '8px' }}>
-                  {entry.isLabel ? (
-                    <div style={{ color: '#ff4444', fontWeight: 'bold' }}>{renderFormattedText(entry.label)}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+              <label htmlFor="fileInput" style={{
+                display: 'inline-block',
+                background: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
+                color: 'white',
+                padding: '10px 16px',
+                borderRadius: '8px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                fontWeight: 700,
+                fontSize: '15px',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)',
+                opacity: loading ? 0.6 : 1
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(52, 152, 219, 0.4)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(52, 152, 219, 0.3)';
+              }}>
+                📄 Selecione os arquivos PDF do mandado
+              </label>
+              <input 
+                id="fileInput"
+                type="file" 
+                accept="application/pdf" 
+                multiple
+                onChange={onFileChange} 
+                disabled={loading}
+                style={{ display: 'none' }}
+              />
+              <div style={{ color: loading ? '#3498db' : '#2c3e50', fontSize: '14px', fontWeight: loading ? 700 : 400 }}>
+                {loading ? (
+                  '⏳ Processando automaticamente...'
+                ) : (
+                  files && files.length > 0 ? (
+                    <>
+                      <strong>{files.length > 1 ? 'Arquivos selecionados:' : 'Arquivo selecionado:'}</strong> {files.map(f => f.name).join(', ')}
+                    </>
                   ) : (
-                    <div style={{ color: '#aaa', paddingLeft: '8px' }}>{renderFormattedText(entry.content)}</div>
-                  )}
-                </div>
-              ))}
+                    <span style={{ color: '#95a5a6' }}>Nenhum arquivo selecionado</span>
+                  )
+                )}
+              </div>
             </div>
-          )}
+          </div>
 
           {error && <div style={{ marginTop: 16, color: '#c0392b' }}>{error}</div>}
 
-            {(tipo || resultado) && (
+          {(consoleLog.length > 0 || tipo || resultado || textoAverbacao) && (
             <div style={{ marginTop: 24 }}>
               {(tipo || tipoConfidence !== null) && (
                 <div>
@@ -544,30 +515,65 @@ function AssistenteMandadosAverbacao() {
                 </div>
               )}
 
-              {resultado?.orientacao && (
-                <div style={{ marginTop: 16 }}>
-                  <h3 style={{ margin: '0 0 8px 0' }}>Orientação</h3>
-                  <textarea readOnly value={resultado.orientacao} style={{ width: '100%', minHeight: 140, padding: 12, borderRadius: 8, border: '1px solid #ecf0f1' }} />
-                </div>
-              )}
-
               {typeof resultado?.aprovado === 'boolean' && (
                 <div style={{ padding: '12px 16px', borderRadius: '8px', background: resultado.aprovado ? '#d4edda' : '#fdecea', color: resultado.aprovado ? '#155724' : '#611a15', marginTop: 12 }}>
                   {resultado.aprovado ? 'Aprovado' : 'Não aprovado'}
                 </div>
               )}
 
-              {textoAverbacao && (
-                <div style={{ marginTop: 16 }}>
-                  <h3 style={{ margin: '0 0 8px 0' }}>Texto da Averbação</h3>
-                  <textarea readOnly value={textoAverbacao} style={{ width: '100%', minHeight: 160, padding: 12, borderRadius: 8, border: '1px solid #ecf0f1' }} />
-                  <div style={{ marginTop: 8 }}>
-                    <button onClick={copyAverbacao} style={{ background: '#2ecc71', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700 }}>
-                      Copiar texto
-                    </button>
-                  </div>
+              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', marginTop: 16, flexWrap: 'wrap' }}>
+                {/* Coluna esquerda: Console */}
+                <div style={{ flex: '1 1 50%', minWidth: 320 }}>
+                  {consoleLog.length > 0 && (
+                    <div ref={consoleRef} style={{
+                      background: '#000',
+                      color: '#aaa',
+                      padding: '16px',
+                      borderRadius: '8px',
+                      minHeight: '300px',
+                      maxHeight: '500px',
+                      overflowY: 'auto',
+                      fontFamily: 'Courier New, monospace',
+                      fontSize: '14px',
+                      lineHeight: '1.6',
+                      whiteSpace: 'pre-wrap',
+                      wordWrap: 'break-word'
+                    }}>
+                      {consoleLog.map((entry, idx) => (
+                        <div key={idx} style={{ marginBottom: '8px' }}>
+                          {entry.isLabel ? (
+                            <div style={{ color: '#ff4444', fontWeight: 'bold' }}>{renderFormattedText(entry.label)}</div>
+                          ) : (
+                            <div style={{ color: '#aaa', paddingLeft: '8px' }}>{renderFormattedText(entry.content)}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+
+                {/* Coluna direita: Orientação e Texto da Averbação */}
+                <div style={{ flex: '1 1 50%', minWidth: 320 }}>
+                  {resultado?.orientacao && (
+                    <div style={{ marginBottom: 16 }}>
+                      <h3 style={{ margin: '0 0 8px 0' }}>Orientação</h3>
+                      <textarea readOnly value={resultado.orientacao} style={{ width: '100%', minHeight: 140, padding: 12, borderRadius: 8, border: '1px solid #ecf0f1' }} />
+                    </div>
+                  )}
+
+                  {textoAverbacao && (
+                    <div>
+                      <h3 style={{ margin: '0 0 8px 0' }}>Texto da Averbação</h3>
+                      <textarea readOnly value={textoAverbacao} style={{ width: '100%', minHeight: 160, padding: 12, borderRadius: 8, border: '1px solid #ecf0f1' }} />
+                      <div style={{ marginTop: 8 }}>
+                        <button onClick={copyAverbacao} style={{ background: '#2ecc71', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700 }}>
+                          Copiar texto
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </section>
