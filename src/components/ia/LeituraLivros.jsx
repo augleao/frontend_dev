@@ -144,6 +144,15 @@ export default function LeituraLivros() {
   }, []);
 
   async function startProcessing() {
+    // Ao iniciar, rola a tela para centralizar o console/terminal na viewport
+    try {
+      if (consoleRef.current && typeof consoleRef.current.scrollIntoView === 'function') {
+        consoleRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+      }
+    } catch (e) {
+      // Falha silenciosa: não interrompe o fluxo de processamento
+    }
+
     setResults([]);
     setConsoleLines([]);
     setRunning(true);
