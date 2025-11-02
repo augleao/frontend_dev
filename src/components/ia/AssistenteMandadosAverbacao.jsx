@@ -507,19 +507,7 @@ function AssistenteMandadosAverbacao() {
 
           {(consoleLog.length > 0 || tipo || resultado || textoAverbacao) && (
             <div style={{ marginTop: 24 }}>
-              {(tipo || tipoConfidence !== null) && (
-                <div>
-                  <div style={{ padding: '12px 16px', borderRadius: '8px', background: '#eef5ff', color: '#1f4ba0', marginTop: 12 }}>
-                    <strong>Tipo de mandado:</strong> {tipo || 'n/d'} {tipoConfidence !== null ? `(confiança: ${Math.round(tipoConfidence * 100)}%)` : ''}
-                  </div>
-                </div>
-              )}
-
-              {typeof resultado?.aprovado === 'boolean' && (
-                <div style={{ padding: '12px 16px', borderRadius: '8px', background: resultado.aprovado ? '#d4edda' : '#fdecea', color: resultado.aprovado ? '#155724' : '#611a15', marginTop: 12 }}>
-                  {resultado.aprovado ? 'Aprovado' : 'Não aprovado'}
-                </div>
-              )}
+              
 
               <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', marginTop: 16, flexWrap: 'nowrap', width: '100%' }}>
                 {/* Coluna esquerda: Console */}
