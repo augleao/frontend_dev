@@ -21,12 +21,6 @@ export default {
         tipoRegistro: opts.tipoRegistro,
         maxPorArquivo: opts.maxPorArquivo,
         inclusaoPrimeiro: opts.inclusaoPrimeiro,
-        // Flags de debug/eco (backend pode ignorar se não suportar)
-        debugIA: opts.debugIA === true,
-        echoPrompts: opts.echoPrompts === true,
-        echoRespostas: opts.echoRespostas === true,
-        promptMarker: opts.promptMarker || '[IA-PROMPT]',
-        responseMarker: opts.responseMarker || '[IA-RESPONSE]',
         // Prompts de IA (indexadores e conteúdos)
         promptTipoEscritaIndexador: opts.promptTipoEscritaIndexador,
         promptTipoEscrita: opts.promptTipoEscrita,
@@ -48,12 +42,6 @@ export default {
     if (opts.tipoRegistro) fd.append('tipoRegistro', opts.tipoRegistro);
     if (opts.maxPorArquivo != null) fd.append('maxPorArquivo', String(opts.maxPorArquivo));
     if (opts.inclusaoPrimeiro != null) fd.append('inclusaoPrimeiro', String(!!opts.inclusaoPrimeiro));
-    // Flags de debug/eco (backend pode ignorar se não suportar)
-    fd.append('debugIA', String(opts.debugIA === true));
-    fd.append('echoPrompts', String(opts.echoPrompts === true));
-    fd.append('echoRespostas', String(opts.echoRespostas === true));
-    if (opts.promptMarker) fd.append('promptMarker', opts.promptMarker); else fd.append('promptMarker', '[IA-PROMPT]');
-    if (opts.responseMarker) fd.append('responseMarker', opts.responseMarker); else fd.append('responseMarker', '[IA-RESPONSE]');
     // Prompts de IA (indexadores e conteúdos)
     if (opts.promptTipoEscritaIndexador) fd.append('promptTipoEscritaIndexador', opts.promptTipoEscritaIndexador);
     if (opts.promptTipoEscrita) fd.append('promptTipoEscrita', opts.promptTipoEscrita);
