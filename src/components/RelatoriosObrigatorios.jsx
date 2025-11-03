@@ -370,8 +370,8 @@ function RelatoriosObrigatorios() {
 
           const statusEnviado = !!registro.enviado;
           const background = statusEnviado
-            ? 'repeating-linear-gradient(135deg, #d1f0dc, #d1f0dc 12px, #b6e5c5 12px, #b6e5c5 24px)'
-            : 'repeating-linear-gradient(135deg, #fdd4d0, #fdd4d0 12px, #f6bbb5 12px, #f6bbb5 24px)';
+            ? 'repeating-linear-gradient(135deg, rgba(209, 240, 220, 0.85) 0px, rgba(209, 240, 220, 0.85) 12px, rgba(209, 240, 220, 0.35) 12px, rgba(209, 240, 220, 0.35) 24px)'
+            : 'repeating-linear-gradient(135deg, rgba(253, 212, 208, 0.85) 0px, rgba(253, 212, 208, 0.85) 12px, rgba(253, 212, 208, 0.35) 12px, rgba(253, 212, 208, 0.35) 24px)';
 
           return (
             <div
@@ -506,7 +506,7 @@ function RelatoriosObrigatorios() {
                   placeholder="Anote observações relevantes, como quem recebeu o documento ou referência do sistema."
                   rows={3}
                   style={{
-                    width: '100%',
+                    width: '96%',
                     padding: '10px 12px',
                     borderRadius: '6px',
                     border: '1px solid #b6c2e1',
