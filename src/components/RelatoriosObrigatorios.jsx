@@ -111,6 +111,15 @@ function competenciaAnteriorAtual() {
   return formatCompetencia(hoje);
 }
 
+function competenciaPosteriorLabel(date) {
+  const next = new Date(date);
+  next.setMonth(next.getMonth() + 1);
+  return new Intl.DateTimeFormat('pt-BR', {
+    month: 'long',
+    year: 'numeric'
+  }).format(next);
+}
+
 function RelatoriosObrigatorios() {
   const [competencia, setCompetencia] = useState(() => competenciaAnteriorAtual());
   const [registros, setRegistros] = useState({});
@@ -269,6 +278,7 @@ function RelatoriosObrigatorios() {
     month: 'long',
     year: 'numeric'
   }).format(competenciaDate);
+  const competenciaEnvio = competenciaPosteriorLabel(competenciaDate);
 
   return (
     <div style={{ padding: '24px', maxWidth: '1100px', margin: '0 auto' }}>
@@ -302,6 +312,9 @@ function RelatoriosObrigatorios() {
             }}
           />
           <span style={{ color: '#334', fontSize: '14px' }}>{competenciaLegivel}</span>
+          <span style={{ color: '#1b2a4b', fontSize: '14px', fontWeight: 600 }}>
+            Relatórios a serem enviados em {competenciaEnvio}
+          </span>
           <button
             onClick={carregarRegistros}
             disabled={loading}
