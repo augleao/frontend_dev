@@ -1,5 +1,31 @@
 import config from '../config';
 
+const normalizeConfigPayload = (payload) => {
+  if (!payload) return null;
+  if (Array.isArray(payload)) {
+    return payload[0] || null;
+  }
+  if (payload.data) {
+    if (Array.isArray(payload.data)) {
+      return payload.data[0] || null;
+    }
+    return payload.data;
+  }
+  if (payload.result) {
+    if (Array.isArray(payload.result)) {
+      return payload.result[0] || null;
+    }
+    return payload.result;
+  }
+  if (payload.config) {
+    if (Array.isArray(payload.config)) {
+      return payload.config[0] || null;
+    }
+    return payload.config;
+  }
+  return payload;
+};
+
 const OnedriveConfigService = {
   async getConfig() {
     const token = localStorage.getItem('token');
@@ -19,7 +45,26 @@ const OnedriveConfigService = {
       const msg = data?.message || data?.error || 'Falha ao carregar configuração do OneDrive.';
       throw new Error(msg);
     }
-    return data;
+    const normalized = normalizeConfigPayload(data);
+    if (!normalized) {
+      return null;
+    }
+    if (!normalized?.clientId && normalized?.client_id) {
+      normalized.clientId = normalized.client_id;
+    }
+    if (!normalized?.clientSecret && normalized?.client_secret) {
+      normalized.clientSecret = normalized.client_secret;
+    }
+    if (!normalized?.redirectUri && normalized?.redirect_uri) {
+      normalized.redirectUri = normalized.redirect_uri;
+    }
+    if (!normalized?.folderPath && normalized?.folder_path) {
+      normalized.folderPath = normalized.folder_path;
+    }
+    if (!normalized?.refreshToken && normalized?.refresh_token) {
+      normalized.refreshToken = normalized.refresh_token;
+    }
+    return normalized;
   },
 
   async saveConfig(payload, id) {
@@ -44,7 +89,26 @@ const OnedriveConfigService = {
       const msg = data?.message || data?.error || 'Falha ao salvar configuração do OneDrive.';
       throw new Error(msg);
     }
-    return data;
+    const normalized = normalizeConfigPayload(data) || {};
+    if (!normalized?.clientId && normalized?.client_id) {
+      normalized.clientId = normalized.client_id;
+    }
+    if (!normalized?.clientSecret && normalized?.client_secret) {
+      normalized.clientSecret = normalized.client_secret;
+    }
+    if (!normalized?.redirectUri && normalized?.redirect_uri) {
+      normalized.redirectUri = normalized.redirect_uri;
+    }
+    if (!normalized?.folderPath && normalized?.folder_path) {
+      normalized.folderPath = normalized.folder_path;
+    }
+    if (!normalized?.refreshToken && normalized?.refresh_token) {
+      normalized.refreshToken = normalized.refresh_token;
+    }
+    if (normalized?.id || normalized?._id) {
+      return normalized;
+    }
+    return { ...payload, id: id ?? normalized.id ?? normalized._id ?? null };
   },
 
   async deleteConfig(id) {
