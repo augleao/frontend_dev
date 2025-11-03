@@ -46,7 +46,7 @@ const RELATORIOS = [
     nome: 'Óbitos à Administração Fazendária/MG',
     periodicidade: 'Mensal',
     prazoDescricao: 'Até o dia 10 do mês subsequente, por mídia eletrônica aceita.',
-    meiosSugestao: ['midia']
+    meiosSugestao: ['midia', 'email']
   },
   {
     id: 'detran_mg',
@@ -134,6 +134,11 @@ function RelatoriosObrigatorios() {
     const [year, month] = competencia.split('-').map(Number);
     return new Date(year, (month || 1) - 1, 1);
   }, [competencia]);
+  const competenciaEnvioDate = useMemo(() => {
+    const d = new Date(competenciaDate);
+    d.setMonth(d.getMonth() + 1);
+    return d;
+  }, [competenciaDate]);
 
   useEffect(() => {
     carregarRegistros();
@@ -274,11 +279,8 @@ function RelatoriosObrigatorios() {
     setRegistros((prev) => ({ ...prev, [relatorioId]: { ...DEFAULT_ENVIO } }));
   };
 
-  const competenciaLegivel = new Intl.DateTimeFormat('pt-BR', {
-    month: 'long',
-    year: 'numeric'
-  }).format(competenciaDate);
   const competenciaEnvio = competenciaPosteriorLabel(competenciaDate);
+  const mesEnvioIndex = competenciaEnvioDate.getMonth();
 
   return (
     <div style={{ padding: '24px', maxWidth: '1100px', margin: '0 auto' }}>
@@ -311,7 +313,6 @@ function RelatoriosObrigatorios() {
               fontSize: '15px'
             }}
           />
-          <span style={{ color: '#334', fontSize: '14px' }}>{competenciaLegivel}</span>
           <span style={{ color: '#1b2a4b', fontSize: '14px', fontWeight: 600 }}>
             Relatórios a serem enviados em {competenciaEnvio}
           </span>
@@ -352,6 +353,9 @@ function RelatoriosObrigatorios() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {RELATORIOS.map((relatorio) => {
+          if (Array.isArray(relatorio.mesesEntrega) && !relatorio.mesesEntrega.includes(mesEnvioIndex)) {
+            return null;
+          }
           const registro = {
             ...DEFAULT_ENVIO,
             ...registros[relatorio.id]
