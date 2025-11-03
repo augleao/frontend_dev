@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import config from '../../config';
 import Toast from '../Toast';
+import AnexarPdfModal from './AnexarPdfModal';
+import AverbacoesService from '../../services/AverbacoesService';
 import { DEFAULT_TOAST_DURATION } from '../toastConfig';
 
 function formatDate(dateStr) {
@@ -26,6 +28,9 @@ export default function AverbacoesLista() {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
   const toastTimerRef = useRef(null);
+  const [modalAberto, setModalAberto] = useState(false);
+  const [idSelecionado, setIdSelecionado] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const showToast = (type, message) => {
     setToastType(type);
@@ -52,11 +57,22 @@ export default function AverbacoesLista() {
         const res = await fetch(`${config.apiURL}/averbacoes-gratuitas${query}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        const data = await res.json();
-        setItens(Array.isArray(data?.averbacoes) ? data.averbacoes : (Array.isArray(data) ? data : []));
+        let parsed = null;
+        try {
+          parsed = await res.json();
+        } catch (_) {
+          parsed = null;
+        }
+        if (!res.ok) {
+          // Tenta mensagem amigável da API; senão texto cru
+          const msg = (parsed && (parsed.message || parsed.error || parsed.detail)) || 'Erro ao carregar lista.';
+          throw new Error(msg);
+        }
+        const lista = Array.isArray(parsed?.averbacoes) ? parsed.averbacoes : (Array.isArray(parsed) ? parsed : []);
+        setItens(lista);
       } catch (e) {
         setItens([]);
-        showToast('error', 'Erro ao carregar lista.');
+        showToast('error', e?.message || 'Erro ao carregar lista.');
       }
       setLoading(false);
     };
@@ -79,6 +95,20 @@ export default function AverbacoesLista() {
     return Array.from(setTipos).sort();
   }, [itens]);
 
+  const contagem = useMemo(() => {
+    const total = (itens || []).length;
+    const sim = (itens || []).filter(i => !!i.ressarcivel).length;
+    const nao = Math.max(0, total - sim);
+    return { total, sim, nao };
+  }, [itens]);
+
+  const limparFiltros = () => {
+    setDataInicial('');
+    setDataFinal('');
+    setRessarcivel('todos');
+    setTipoFiltro('');
+  };
+
   const handleExcluir = async (id) => {
     if (!id) return;
     if (!window.confirm('Deseja realmente excluir esta averbação gratuita?')) return;
@@ -99,6 +129,34 @@ export default function AverbacoesLista() {
     }
   };
 
+  const abrirModalAnexo = (id) => {
+    setIdSelecionado(id);
+    setModalAberto(true);
+  };
+
+  const fecharModalAnexo = () => {
+    if (uploading) return;
+    setModalAberto(false);
+    setIdSelecionado(null);
+  };
+
+  const enviarAnexo = async (file) => {
+    if (!idSelecionado || !file) return;
+    try {
+      setUploading(true);
+      const { url } = await AverbacoesService.uploadAnexoPdf(idSelecionado, file);
+      // Atualiza o item na lista com o link do anexo (assumindo campo anexoUrl)
+      setItens(prev => prev.map(i => i.id === idSelecionado ? { ...i, anexoUrl: url, anexo_url: url } : i));
+      showToast('success', 'Anexo enviado com sucesso!');
+      setModalAberto(false);
+      setIdSelecionado(null);
+    } catch (e) {
+      showToast('error', e?.message || 'Falha ao enviar anexo.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div style={{ padding: 16 }}>
       <div style={{
@@ -111,22 +169,63 @@ export default function AverbacoesLista() {
         borderRadius: 12,
         boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
       }}>
-        <button
-          onClick={() => navigate('/averbacoes-gratuitas/nova')}
-          style={{
-            background: '#27ae60',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            padding: '10px 20px',
-            fontSize: 15,
-            fontWeight: 600,
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
-          }}
-        >
-          + NOVA AVERBAÇÃO GRATUITA
-        </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button
+            onClick={() => navigate('/averbacoes-gratuitas/nova')}
+            style={{
+              background: '#27ae60',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              padding: '10px 20px',
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
+            }}
+          >
+            + NOVA AVERBAÇÃO GRATUITA
+          </button>
+          <button
+            onClick={() => {
+              try {
+                const header = ['Data', 'Tipo', 'Descrição', 'Ressarcível'];
+                const linhas = (itens || []).map(i => {
+                  const data = formatDate(i.data || i.criado_em);
+                  const tipo = i.tipo || '';
+                  const descricao = (i.descricao || '').replace(/\r?\n/g, ' ').replace(/"/g, '""');
+                  const ress = i.ressarcivel ? 'Sim' : 'Não';
+                  return [data, tipo, `"${descricao}"`, ress].join(',');
+                });
+                const csv = [header.join(','), ...linhas].join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'averbacoes_gratuitas.csv';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+              } catch (_) {
+                showToast('error', 'Falha ao exportar CSV.');
+              }
+            }}
+            style={{
+              background: '#6366f1',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              padding: '10px 14px',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
+            }}
+          >
+            Exportar CSV
+          </button>
+        </div>
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -159,10 +258,33 @@ export default function AverbacoesLista() {
               ))}
             </datalist>
           </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 2 }}>
+            <button
+              onClick={limparFiltros}
+              title="Limpar filtros"
+              style={{
+                background: '#f1f5f9',
+                color: '#334155',
+                border: '1px solid #cbd5e1',
+                borderRadius: 6,
+                padding: '6px 10px',
+                fontSize: 13,
+                cursor: 'pointer'
+              }}
+            >
+              Limpar filtros
+            </button>
+          </div>
         </div>
       </div>
 
       <div style={{ marginTop: 12, borderRadius: 12, background: '#f4f6f8', padding: 16 }}>
+        <div style={{ marginBottom: 10, color: '#2c3e50', fontSize: 13 }}>
+          <strong>{contagem.total}</strong> item(s)
+          {contagem.total > 0 && (
+            <span> — Ressarcíveis: <strong>{contagem.sim}</strong>; Não: <strong>{contagem.nao}</strong></span>
+          )}
+        </div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: '#e9ecef' }}>
@@ -170,6 +292,7 @@ export default function AverbacoesLista() {
               <th style={{ padding: 8 }}>Tipo</th>
               <th style={{ padding: 8 }}>Descrição</th>
               <th style={{ padding: 8 }}>Ressarcível</th>
+              <th style={{ padding: 8 }}>Anexo</th>
               <th style={{ padding: 8 }}>Ações</th>
             </tr>
           </thead>
@@ -185,7 +308,22 @@ export default function AverbacoesLista() {
                   <td style={{ padding: 8 }}>{item.tipo || '-'}</td>
                   <td style={{ padding: 8 }}>{item.descricao || '-'}</td>
                   <td style={{ padding: 8 }}>{item.ressarcivel ? 'Sim' : 'Não'}</td>
+                  <td style={{ padding: 8 }}>
+                    {item.anexoUrl || item.anexo_url ? (
+                      <a href={(item.anexoUrl || item.anexo_url)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>
+                        Abrir PDF
+                      </a>
+                    ) : (
+                      <span style={{ color: '#94a3b8' }}>—</span>
+                    )}
+                  </td>
                   <td style={{ padding: 8, display: 'flex', gap: 8 }}>
+                    <button
+                      style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}
+                      onClick={() => abrirModalAnexo(item.id)}
+                    >
+                      ANEXAR PDF
+                    </button>
                     <button
                       style={{ background: '#3498db', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}
                       onClick={() => navigate(`/averbacoes-gratuitas/${encodeURIComponent(item.id)}/editar`)}
@@ -205,6 +343,12 @@ export default function AverbacoesLista() {
           </tbody>
         </table>
       </div>
+        <AnexarPdfModal
+          open={modalAberto}
+          onClose={fecharModalAnexo}
+          onSubmit={enviarAnexo}
+          loading={uploading}
+        />
         {/* Toast de feedback */}
         <Toast
           message={toastMessage}
