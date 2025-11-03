@@ -12,6 +12,8 @@ const inputStyle = {
   width: '100%',
   background: '#fff'
 };
+const AUTH_BASE_URL = 'https://login.microsoftonline.com';
+const AUTH_SCOPES = 'offline_access Files.ReadWrite.All User.Read';
 
 function OnedriveConfig() {
   const [form, setForm] = useState({
@@ -78,6 +80,36 @@ function OnedriveConfig() {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleOpenAuthUrl = async () => {
+    const clientId = form.clientId.trim();
+    const redirectUri = form.redirectUri.trim();
+    const tenant = (form.tenant || 'consumers').trim();
+
+    if (!clientId || !redirectUri) {
+      triggerToast('warning', 'Informe Client ID e Redirect URI antes de gerar a URL.');
+      return;
+    }
+
+    const params = new URLSearchParams({
+      client_id: clientId,
+      response_type: 'code',
+      redirect_uri: redirectUri,
+      scope: AUTH_SCOPES,
+      response_mode: 'query'
+    });
+
+    const authUrl = `${AUTH_BASE_URL}/${tenant || 'common'}/oauth2/v2.0/authorize?${params.toString()}`;
+
+    try {
+      await navigator.clipboard.writeText(authUrl);
+      triggerToast('success', 'URL de autorização copiada. Abrindo em nova aba…');
+    } catch (err) {
+      triggerToast('info', 'Abrindo URL de autorização em nova aba. Copie manualmente se precisar.');
+    }
+
+    window.open(authUrl, '_blank', 'noopener');
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -133,6 +165,27 @@ function OnedriveConfig() {
         <p style={{ color: '#64748b', marginTop: -6, marginBottom: 20 }}>
           Ajuste as credenciais delegadas usadas para armazenar PDFs no OneDrive. Dados são guardados no banco e aplicados sem deploy do backend.
         </p>
+
+        <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={handleOpenAuthUrl}
+            style={{
+              background: 'linear-gradient(135deg,#16a34a,#15803d)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 10,
+              padding: '10px 18px',
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+          >
+            Gerar URL de autorização
+          </button>
+          <small style={{ color: '#64748b', alignSelf: 'center' }}>
+            Use esta URL para obter o código OAuth e, na sequência, gerar um novo refresh token.
+          </small>
+        </div>
 
         {loading ? (
           <div style={{ color: '#64748b' }}>Carregando…</div>
