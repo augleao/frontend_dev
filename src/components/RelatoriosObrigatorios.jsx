@@ -369,7 +369,9 @@ function RelatoriosObrigatorios() {
             : Object.keys(MEIO_LABEL);
 
           const statusEnviado = !!registro.enviado;
-          const background = statusEnviado ? 'repeating-linear-gradient(135deg, #e6f4ea, #e6f4ea 12px, #d2ecd9 12px, #d2ecd9 24px)' : 'repeating-linear-gradient(135deg, #fdeceb, #fdeceb 12px, #f9d6d3 12px, #f9d6d3 24px)';
+          const background = statusEnviado
+            ? 'repeating-linear-gradient(135deg, #d1f0dc, #d1f0dc 12px, #b6e5c5 12px, #b6e5c5 24px)'
+            : 'repeating-linear-gradient(135deg, #fdd4d0, #fdd4d0 12px, #f6bbb5 12px, #f6bbb5 24px)';
 
           return (
             <div
