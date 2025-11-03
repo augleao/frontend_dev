@@ -369,7 +369,7 @@ function RelatoriosObrigatorios() {
             : Object.keys(MEIO_LABEL);
 
           const statusEnviado = !!registro.enviado;
-          const background = statusEnviado ? '#c6efd4' : '#f8c5bf';
+          const background = statusEnviado ? '#9de5b8' : '#f49c91';
 
           return (
             <div
