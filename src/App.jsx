@@ -25,6 +25,7 @@ import ReciboPedido from './ReciboPedido';
 import EditarCombos from './components/admin/EditarCombos';
 import LegislacaoAdmin from './components/admin/LegislacaoAdmin';
 import PromptsIAAdmin from './components/admin/PromptsIAAdmin';
+import OnedriveConfig from './components/admin/OnedriveConfig';
 import ProtocoloAcesso from './ProtocoloAcesso';
 import AtosGratuitos from './AtosGratuitos';
 import AverbacoesLista from './components/averbacoes/AverbacoesLista';
@@ -153,6 +154,14 @@ function App() {
           element={
             <AdminRoute>
               <PromptsIAAdmin />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/onedrive"
+          element={
+            <AdminRoute>
+              <OnedriveConfig />
             </AdminRoute>
           }
         />

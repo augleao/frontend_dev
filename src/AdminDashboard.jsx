@@ -152,6 +152,21 @@ export default function AdminDashboard() {
           >
             Prompts IA
           </button>
+          <button
+            style={{
+              padding: '10px 20px',
+              background: '#1e40af',
+              color: '#fff',
+              borderRadius: 8,
+              border: 'none',
+              fontWeight: 'bold',
+              fontSize: 16,
+              cursor: 'pointer',
+            }}
+            onClick={() => navigate('/admin/onedrive')}
+          >
+            OneDrive
+          </button>
         </div>
         <h2 style={{ margin: 0 }}>Painel de Administração</h2>
       </div>
