@@ -145,6 +145,7 @@ function OnedriveConfig() {
                 style={inputStyle}
                 value={form.clientId}
                 onChange={e => handleChange('clientId', e.target.value)}
+                autoComplete="off"
                 placeholder="GUID gerado no portal do Azure"
               />
             </div>
@@ -156,6 +157,7 @@ function OnedriveConfig() {
                   style={{ ...inputStyle, flex: 1 }}
                   value={form.clientSecret}
                   onChange={e => handleChange('clientSecret', e.target.value)}
+                  autoComplete="new-password"
                   placeholder="Segredo do aplicativo"
                 />
                 <button
@@ -180,6 +182,7 @@ function OnedriveConfig() {
                 style={inputStyle}
                 value={form.redirectUri}
                 onChange={e => handleChange('redirectUri', e.target.value)}
+                autoComplete="off"
                 placeholder="http://localhost:3000/auth/onedrive/callback"
               />
             </div>
@@ -190,6 +193,7 @@ function OnedriveConfig() {
                 style={inputStyle}
                 value={form.tenant}
                 onChange={e => handleChange('tenant', e.target.value)}
+                autoComplete="off"
                 placeholder="consumers"
               />
             </div>
@@ -200,6 +204,7 @@ function OnedriveConfig() {
                 style={inputStyle}
                 value={form.folderPath}
                 onChange={e => handleChange('folderPath', e.target.value)}
+                autoComplete="off"
                 placeholder="Averbacoes"
               />
               <small style={{ color: '#64748b' }}>
@@ -213,6 +218,7 @@ function OnedriveConfig() {
                   style={{ ...inputStyle, flex: 1, minHeight: 120, fontFamily: 'monospace' }}
                   value={form.refreshToken}
                   onChange={e => handleChange('refreshToken', e.target.value)}
+                  autoComplete="off"
                   placeholder="Cole aqui o refresh token obtido no fluxo OAuth"
                   rows={4}
                 />
