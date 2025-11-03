@@ -119,6 +119,7 @@ function RelatoriosObrigatorios() {
   const [erro, setErro] = useState('');
   const usuario = useMemo(() => getUsuarioLogado(), []);
   const serventia = usuario?.serventia;
+  const nomeUsuario = usuario?.nome?.trim() || '';
 
   const competenciaDate = useMemo(() => {
     const [year, month] = competencia.split('-').map(Number);
@@ -161,7 +162,7 @@ function RelatoriosObrigatorios() {
           data_envio: item.data_envio || '',
           meios: Array.isArray(item.meios) ? item.meios : (item.meios ? item.meios.split(',') : []),
           protocolo: item.protocolo || '',
-          responsavel: item.responsavel || '',
+          responsavel: item.responsavel || nomeUsuario || '',
           observacoes: item.observacoes || '',
           atualizado_em: item.atualizado_em
         };
@@ -214,6 +215,17 @@ function RelatoriosObrigatorios() {
       ...DEFAULT_ENVIO,
       ...registros[relatorioId]
     };
+    if ((!payload.responsavel || !payload.responsavel.trim()) && nomeUsuario) {
+      payload.responsavel = nomeUsuario;
+      setRegistros((prev) => ({
+        ...prev,
+        [relatorioId]: {
+          ...DEFAULT_ENVIO,
+          ...prev[relatorioId],
+          responsavel: nomeUsuario
+        }
+      }));
+    }
     if (!payload.enviado && !payload.data_envio) {
       if (!window.confirm('Nenhuma data de envio foi informada. Deseja salvar como "não enviado"?')) {
         return;
@@ -331,6 +343,9 @@ function RelatoriosObrigatorios() {
             ...DEFAULT_ENVIO,
             ...registros[relatorio.id]
           };
+          if ((!registro.responsavel || !registro.responsavel.trim()) && nomeUsuario) {
+            registro.responsavel = nomeUsuario;
+          }
 
           const meiosDisponiveis = relatorio.meiosSugestao?.length
             ? relatorio.meiosSugestao
