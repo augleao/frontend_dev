@@ -368,6 +368,9 @@ function RelatoriosObrigatorios() {
             ? relatorio.meiosSugestao
             : Object.keys(MEIO_LABEL);
 
+          const statusEnviado = !!registro.enviado;
+          const background = statusEnviado ? 'repeating-linear-gradient(135deg, #e6f4ea, #e6f4ea 12px, #d2ecd9 12px, #d2ecd9 24px)' : 'repeating-linear-gradient(135deg, #fdeceb, #fdeceb 12px, #f9d6d3 12px, #f9d6d3 24px)';
+
           return (
             <div
               key={relatorio.id}
@@ -375,7 +378,7 @@ function RelatoriosObrigatorios() {
                 border: '1px solid #dbe1f1',
                 borderRadius: '12px',
                 padding: '20px',
-                background: '#ffffff'
+                background
               }}
             >
               <header style={{ marginBottom: '16px' }}>
