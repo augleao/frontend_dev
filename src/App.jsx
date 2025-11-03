@@ -35,6 +35,7 @@ import LeituraLivros from './components/ia/LeituraLivros';
 import ScrollToTop from './ScrollToTop';
 import CertidoesGratuitasLista from './components/certidoes/CertidoesGratuitasLista';
 import CertidaoGratuitaForm from './components/certidoes/CertidaoGratuitaForm';
+import RelatoriosObrigatorios from './components/RelatoriosObrigatorios';
 
 
 
@@ -278,6 +279,14 @@ function App() {
           element={
             <PrivateRoute>
               <CertidaoGratuitaForm />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/relatorios-obrigatorios"
+          element={
+            <PrivateRoute>
+              <RelatoriosObrigatorios />
             </PrivateRoute>
           }
         />

@@ -3,6 +3,35 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 import config from './config';
 
+async function checarAlertasRelatorios(token) {
+  try {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const params = new URLSearchParams();
+    if (usuario?.serventia) {
+      params.append('serventia', usuario.serventia);
+    }
+    const queryString = params.toString();
+    const url = queryString
+      ? `${config.apiURL}/relatorios-obrigatorios/alertas?${queryString}`
+      : `${config.apiURL}/relatorios-obrigatorios/alertas`;
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    if (Array.isArray(data.alertas) && data.alertas.length > 0) {
+      const mensagem = data.alertas
+        .map((alerta) => `⚠️ ${alerta.titulo}\nPrazo: ${alerta.prazoFormatado}\nCompetência: ${alerta.competencia}`)
+        .join('\n\n');
+      window.alert(mensagem);
+    }
+  } catch (error) {
+    console.error('Erro ao verificar alertas de relatórios obrigatórios:', error);
+  }
+}
+
 function Login() {
   const [nome, setNome] = useState('');
   const [password, setPassword] = useState('');
@@ -32,6 +61,8 @@ function Login() {
         localStorage.setItem('token', data.token);
 
         login(data.user, data.token);
+
+        await checarAlertasRelatorios(data.token);
 
         navigate('/home2');
       } else {
