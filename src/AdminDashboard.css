@@ -102,6 +102,7 @@
 }
 .dashboard-card {
   background: #fff;
+  border: none;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(155,89,182,0.08);
   padding: 24px 18px;
@@ -109,6 +110,14 @@
   align-items: center;
   gap: 18px;
   min-width: 0;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(108,52,131,0.18);
 }
 .card-icon {
   font-size: 2.2rem;
@@ -128,6 +137,15 @@
   font-size: 1.08rem;
   color: #6c3483;
   font-weight: 600;
+}
+.card-description {
+  font-size: 0.95rem;
+  color: #4a235a;
+  line-height: 1.35;
+}
+.card-chevron {
+  margin-left: auto;
+  color: #b980d4;
 }
 .card-value {
   font-size: 1.35rem;
@@ -159,6 +177,11 @@
 .action-btn:hover {
   background: #6c3483;
 }
+.action-description {
+  font-weight: normal;
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
 
 .dashboard-extra {
   margin: 32px 32px 0 32px;
@@ -174,6 +197,48 @@
   color: #aaa;
   font-size: 1.1rem;
   padding: 32px;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar-action-btn {
+  background: #9b59b6;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+.topbar-action-btn:hover {
+  background: #6c3483;
+}
+
+.dashboard-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dashboard-modal {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(44,62,80,0.2);
+  max-height: 90vh;
+  overflow: auto;
 }
 
 @media (max-width: 900px) {
