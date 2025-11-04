@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import config from '../../config';
 import Toast from '../Toast';
@@ -32,7 +32,7 @@ export default function AverbacoesLista() {
   const [idSelecionado, setIdSelecionado] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  const showToast = (type, message) => {
+  const showToast = useCallback((type, message) => {
     setToastType(type);
     setToastMessage(message);
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -40,45 +40,47 @@ export default function AverbacoesLista() {
       setToastMessage('');
       toastTimerRef.current = null;
     }, DEFAULT_TOAST_DURATION);
-  };
+  }, []);
+
+  const fetchLista = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const qs = [];
+      if (dataInicial) qs.push(`dataInicial=${encodeURIComponent(dataInicial)}`);
+      if (dataFinal) qs.push(`dataFinal=${encodeURIComponent(dataFinal)}`);
+      if (ressarcivel === 'sim') qs.push('ressarcivel=true');
+      if (ressarcivel === 'nao') qs.push('ressarcivel=false');
+      if (tipoFiltro) qs.push(`tipo=${encodeURIComponent(tipoFiltro)}`);
+      const query = qs.length ? `?${qs.join('&')}` : '';
+      const res = await fetch(`${config.apiURL}/averbacoes-gratuitas${query}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      let parsed = null;
+      try {
+        parsed = await res.json();
+      } catch (_) {
+        parsed = null;
+      }
+      if (!res.ok) {
+        const msg = (parsed && (parsed.message || parsed.error || parsed.detail)) || 'Erro ao carregar lista.';
+        throw new Error(msg);
+      }
+      const lista = Array.isArray(parsed?.averbacoes) ? parsed.averbacoes : (Array.isArray(parsed) ? parsed : []);
+      setItens(lista);
+      return lista;
+    } catch (e) {
+      setItens([]);
+      showToast('error', e?.message || 'Erro ao carregar lista.');
+      throw e;
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  }, [dataFinal, dataInicial, ressarcivel, tipoFiltro, showToast]);
 
   useEffect(() => {
-    const fetchLista = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem('token');
-        const qs = [];
-        if (dataInicial) qs.push(`dataInicial=${encodeURIComponent(dataInicial)}`);
-        if (dataFinal) qs.push(`dataFinal=${encodeURIComponent(dataFinal)}`);
-        if (ressarcivel === 'sim') qs.push('ressarcivel=true');
-        if (ressarcivel === 'nao') qs.push('ressarcivel=false');
-        if (tipoFiltro) qs.push(`tipo=${encodeURIComponent(tipoFiltro)}`);
-        const query = qs.length ? `?${qs.join('&')}` : '';
-        const res = await fetch(`${config.apiURL}/averbacoes-gratuitas${query}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        let parsed = null;
-        try {
-          parsed = await res.json();
-        } catch (_) {
-          parsed = null;
-        }
-        if (!res.ok) {
-          // Tenta mensagem amigável da API; senão texto cru
-          const msg = (parsed && (parsed.message || parsed.error || parsed.detail)) || 'Erro ao carregar lista.';
-          throw new Error(msg);
-        }
-        const lista = Array.isArray(parsed?.averbacoes) ? parsed.averbacoes : (Array.isArray(parsed) ? parsed : []);
-        setItens(lista);
-      } catch (e) {
-        setItens([]);
-        showToast('error', e?.message || 'Erro ao carregar lista.');
-      }
-      setLoading(false);
-    };
-    fetchLista();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataInicial, dataFinal, ressarcivel, tipoFiltro]);
+    fetchLista().catch(() => {});
+  }, [fetchLista]);
 
   // Mostrar toast vindo de navegacao (ex: salvou na tela de manutencao)
   useEffect(() => {
@@ -144,10 +146,11 @@ export default function AverbacoesLista() {
     if (!idSelecionado || !file) return;
     try {
       setUploading(true);
-      const { url } = await AverbacoesService.uploadAnexoPdf(idSelecionado, file);
-      // Atualiza o item na lista com o link do anexo (assumindo campo anexoUrl)
-      setItens(prev => prev.map(i => i.id === idSelecionado ? { ...i, anexoUrl: url, anexo_url: url } : i));
-      showToast('success', 'Anexo enviado com sucesso!');
+  const uploadResult = await AverbacoesService.uploadAnexoPdf(idSelecionado, file);
+  const { url, shareLink, webUrl } = uploadResult || {};
+      await fetchLista({ silent: true });
+      const linkInfo = shareLink || webUrl || url;
+      showToast('success', linkInfo ? 'Anexo enviado e link gerado com sucesso!' : 'Anexo enviado com sucesso!');
       setModalAberto(false);
       setIdSelecionado(null);
     } catch (e) {
@@ -298,9 +301,9 @@ export default function AverbacoesLista() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} style={{ textAlign: 'center', padding: 16, color: '#888' }}>Carregando...</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 16, color: '#888' }}>Carregando...</td></tr>
             ) : itens.length === 0 ? (
-              <tr><td colSpan={5} style={{ textAlign: 'center', padding: 16, color: '#888' }}>Nenhuma averbação encontrada.</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 16, color: '#888' }}>Nenhuma averbação encontrada.</td></tr>
             ) : (
               itens.map(item => (
                 <tr key={item.id} style={{ background: '#fff' }}>
