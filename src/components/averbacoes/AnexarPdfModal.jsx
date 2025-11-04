@@ -9,12 +9,20 @@ export default function AnexarPdfModal({ open, onClose, onSubmit, loading }) {
   const handleFileChange = (e) => {
     setError('');
     const f = e.target.files?.[0];
-    if (!f) { setFile(null); return; }
+    if (!f) {
+      console.log('[AnexarPdfModal] Nenhum arquivo selecionado');
+      setFile(null);
+      return;
+    }
     if (f.type !== 'application/pdf') {
       setError('Selecione um arquivo PDF.');
       setFile(null);
       return;
     }
+    console.log('[AnexarPdfModal] Arquivo selecionado', {
+      nomeArquivo: f.name,
+      tamanhoKB: Math.round(f.size / 1024)
+    });
     setFile(f);
   };
 
@@ -24,6 +32,7 @@ export default function AnexarPdfModal({ open, onClose, onSubmit, loading }) {
       setError('Selecione um PDF para enviar.');
       return;
     }
+    console.log('[AnexarPdfModal] Enviando arquivo selecionado');
     onSubmit?.(file);
   };
 
