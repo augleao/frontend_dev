@@ -26,6 +26,7 @@ import EditarCombos from './components/admin/EditarCombos';
 import LegislacaoAdmin from './components/admin/LegislacaoAdmin';
 import PromptsIAAdmin from './components/admin/PromptsIAAdmin';
 import OnedriveConfig from './components/admin/OnedriveConfig';
+import OnedriveOAuthCallback from './components/admin/OnedriveOAuthCallback';
 import ProtocoloAcesso from './ProtocoloAcesso';
 import AtosGratuitos from './AtosGratuitos';
 import AverbacoesLista from './components/averbacoes/AverbacoesLista';
@@ -68,6 +69,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+  <Route path="/auth/onedrive/callback" element={<OnedriveOAuthCallback />} />
         {/* <Route path="/recibo" element={<ReciboBusca />} /> */}
         <Route
           path="/conciliacao"
