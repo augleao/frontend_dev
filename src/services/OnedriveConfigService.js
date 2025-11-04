@@ -61,6 +61,9 @@ const OnedriveConfigService = {
     if (!normalized?.folderPath && normalized?.folder_path) {
       normalized.folderPath = normalized.folder_path;
     }
+    if (!normalized?.driveId && (normalized?.drive_id || normalized?.sharepointDriveId || normalized?.sharepoint_drive_id)) {
+      normalized.driveId = normalized.drive_id || normalized.sharepointDriveId || normalized.sharepoint_drive_id;
+    }
     if (!normalized?.refreshToken && normalized?.refresh_token) {
       normalized.refreshToken = normalized.refresh_token;
     }
@@ -71,13 +74,17 @@ const OnedriveConfigService = {
     const token = localStorage.getItem('token');
     const method = id ? 'PUT' : 'POST';
     const url = id ? `${config.apiURL}/onedrive-config/${encodeURIComponent(id)}` : `${config.apiURL}/onedrive-config`;
+    const bodyPayload = {
+      ...payload,
+      sharepointDriveId: payload.driveId || payload.sharepointDriveId
+    };
     const resp = await fetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(bodyPayload)
     });
     let data = null;
     try {
@@ -101,6 +108,9 @@ const OnedriveConfigService = {
     }
     if (!normalized?.folderPath && normalized?.folder_path) {
       normalized.folderPath = normalized.folder_path;
+    }
+    if (!normalized?.driveId && (normalized?.drive_id || normalized?.sharepointDriveId || normalized?.sharepoint_drive_id)) {
+      normalized.driveId = normalized.drive_id || normalized.sharepointDriveId || normalized.sharepoint_drive_id;
     }
     if (!normalized?.refreshToken && normalized?.refresh_token) {
       normalized.refreshToken = normalized.refresh_token;

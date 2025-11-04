@@ -22,6 +22,7 @@ function OnedriveConfig() {
     redirectUri: '',
     tenant: 'consumers',
     folderPath: 'Averbacoes',
+    driveId: '',
     refreshToken: ''
   });
   const [recordId, setRecordId] = useState(null);
@@ -58,6 +59,7 @@ function OnedriveConfig() {
             redirectUri: data.redirectUri || data.redirect_uri || '',
             tenant: data.tenant || data.tenantId || 'consumers',
             folderPath: data.folderPath || data.folder_path || 'Averbacoes',
+            driveId: data.driveId || data.drive_id || data.sharepointDriveId || data.sharepoint_drive_id || '',
             refreshToken: data.refreshToken || data.refresh_token || ''
           });
         }
@@ -119,10 +121,11 @@ function OnedriveConfig() {
         redirectUri: form.redirectUri.trim(),
         tenant: form.tenant.trim() || 'consumers',
         folderPath: form.folderPath.trim() || 'Averbacoes',
+        driveId: form.driveId.trim(),
         refreshToken: form.refreshToken.trim()
       };
-      if (!payload.clientId || !payload.clientSecret || !payload.redirectUri || !payload.folderPath || !payload.refreshToken) {
-        throw new Error('Preencha Client ID, Client Secret, Redirect URI, Folder Path e Refresh Token.');
+      if (!payload.clientId || !payload.clientSecret || !payload.redirectUri || !payload.folderPath || !payload.driveId || !payload.refreshToken) {
+        throw new Error('Preencha Client ID, Client Secret, Redirect URI, Folder Path, Drive ID e Refresh Token.');
       }
       const saved = await OnedriveConfigService.saveConfig(payload, recordId);
       setRecordId(saved.id || saved._id || recordId);
@@ -143,9 +146,17 @@ function OnedriveConfig() {
     setDeleting(true);
     try {
       await OnedriveConfigService.deleteConfig(recordId);
-  setRecordId(null);
-  setForm({ clientId: '', clientSecret: '', redirectUri: '', tenant: 'consumers', folderPath: 'Averbacoes', refreshToken: '' });
-  triggerToast('success', 'Configuração removida.');
+      setRecordId(null);
+      setForm({
+        clientId: '',
+        clientSecret: '',
+        redirectUri: '',
+        tenant: 'consumers',
+        folderPath: 'Averbacoes',
+        driveId: '',
+        refreshToken: ''
+      });
+      triggerToast('success', 'Configuração removida.');
     } catch (err) {
       triggerToast('error', err.message || 'Falha ao remover configuração.');
     } finally {
@@ -262,6 +273,20 @@ function OnedriveConfig() {
               />
               <small style={{ color: '#64748b' }}>
                 Ex: Averbacoes (gera uploads em /Averbacoes/&lt;ano&gt;...). Use caminhos relativos ao raiz do OneDrive.
+              </small>
+            </div>
+            <div>
+              <label style={fieldLabelStyle}>ONEDRIVE_DRIVE_ID</label>
+              <input
+                type="text"
+                style={inputStyle}
+                value={form.driveId}
+                onChange={e => handleChange('driveId', e.target.value)}
+                autoComplete="off"
+                placeholder="drive-id (contas pessoais use /me/drive => ID está em /me/drive)"
+              />
+              <small style={{ color: '#64748b' }}>
+                Informe o identificador do drive (ex.: valor retornado por GET https://graph.microsoft.com/v1.0/me/drive ou sites/.../drives).
               </small>
             </div>
             <div>

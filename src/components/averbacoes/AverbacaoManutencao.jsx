@@ -6,6 +6,7 @@ import { DEFAULT_TOAST_DURATION } from '../toastConfig';
 import { listarSelosAverbacao, criarSeloAverbacao, atualizarSeloAverbacao } from './SeloAverbacaoService';
 import ClipboardImageUploadAverbacao from './ClipboardImageUploadAverbacao';
 import SeloFileUploadAverbacao from './SeloFileUploadAverbacao';
+import AnexarPdfModal from './AnexarPdfModal';
 import '../servicos/servicos.css';
 
 export default function AverbacaoManutencao() {
@@ -36,6 +37,7 @@ export default function AverbacaoManutencao() {
   const [codigoLoading, setCodigoLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
+  const [modalAberto, setModalAberto] = useState(false);
   const toastTimerRef = useRef(null);
 
   const showToast = (type, message) => {
@@ -46,6 +48,17 @@ export default function AverbacaoManutencao() {
       setToastMessage('');
       toastTimerRef.current = null;
     }, DEFAULT_TOAST_DURATION);
+  };
+
+  const abrirModalAnexo = () => {
+    console.log('[AverbacaoManutencao] Solicitando abertura do modal de anexo');
+    setModalAberto(true);
+  };
+
+  const fecharModalAnexo = () => {
+    if (uploading) return;
+    console.log('[AverbacaoManutencao] Fechando modal de anexo');
+    setModalAberto(false);
   };
 
   useEffect(() => {
@@ -90,6 +103,13 @@ export default function AverbacaoManutencao() {
     };
     fetchItem();
   }, [id, isEdicao]);
+
+  useEffect(() => {
+    console.log('[AverbacaoManutencao] Estado do modal atualizado', {
+      modalAberto,
+      uploading
+    });
+  }, [modalAberto, uploading]);
 
   const salvar = async () => {
     try {
@@ -151,12 +171,13 @@ export default function AverbacaoManutencao() {
   };
 
   const handleUploadPDF = async (file) => {
-    if (!file) return;
+    if (!file) return false;
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
       showToast('error', 'Selecione um arquivo PDF válido.');
-      return;
+      return false;
     }
     setUploading(true);
+    let sucesso = false;
     try {
       const token = localStorage.getItem('token');
       const formData = new FormData();
@@ -185,11 +206,21 @@ export default function AverbacaoManutencao() {
           id: info.id || null
         });
         showToast('success', 'PDF enviado e renomeado com sucesso.');
+        sucesso = true;
       }
     } catch (e) {
       showToast('error', 'Falha no upload do PDF.');
     }
     setUploading(false);
+    return sucesso;
+  };
+
+  const enviarAnexoModal = async (file) => {
+    console.log('[AverbacaoManutencao] Enviando PDF via modal');
+    const sucesso = await handleUploadPDF(file);
+    if (sucesso) {
+      setModalAberto(false);
+    }
   };
 
   const buscarCodigosTributarios = async (term) => {
@@ -230,7 +261,15 @@ export default function AverbacaoManutencao() {
             <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px dashed #e1e5ea' }}>
               <h4 className="servico-title" style={{ fontSize: 16, margin: '0 0 8px 0' }}>1) Anexar PDF da Averbação</h4>
               <div className="servico-row" style={{ alignItems: 'center' }}>
-                <input className="servico-input" type="file" accept="application/pdf,.pdf" onChange={e => handleUploadPDF(e.target.files?.[0])} disabled={uploading} />
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={abrirModalAnexo}
+                  disabled={uploading}
+                  style={{ minWidth: 140 }}
+                >
+                  {uploading ? 'Enviando…' : 'Selecionar PDF'}
+                </button>
                 {uploading && <span style={{ color: '#888' }}>Enviando...</span>}
                 {pdfInfo?.storedName && (
                   <span style={{ fontSize: 13, color: '#2c3e50' }}>
@@ -394,6 +433,13 @@ export default function AverbacaoManutencao() {
           </form>
         )}
       </div>
+
+      <AnexarPdfModal
+        open={modalAberto}
+        onClose={fecharModalAnexo}
+        onSubmit={enviarAnexoModal}
+        loading={uploading}
+      />
 
       <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage('')} />
     </div>
