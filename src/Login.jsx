@@ -110,6 +110,7 @@ function Login() {
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             placeholder="Digite seu nome"
+            autoComplete="username"
             style={{
               width: '100%',
               padding: '10px',
@@ -130,6 +131,7 @@ function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Digite sua senha"
+            autoComplete="current-password"
             style={{
               width: '100%',
               padding: '10px',
