@@ -16,7 +16,7 @@ const AverbacoesService = {
     if (!res.ok) {
       console.error('[AverbacoesService.uploadAnexoPdf] Falha no upload', { status: res.status, data });
     } else {
-      console.debug('[AverbacoesService.uploadAnexoPdf] Upload concluído', { status: res.status, data });
+      console.log('[AverbacoesService.uploadAnexoPdf] Upload concluído', { status: res.status, data });
     }
     if (!res.ok) {
       const msg = (data && (data.message || data.error || data.detail)) || 'Falha no upload do anexo.';

@@ -65,7 +65,12 @@ export default function AverbacoesLista() {
       if (!res.ok) {
         console.error('[AverbacoesLista] Falha ao carregar lista', { status: res.status, payload: parsed });
       } else {
-        console.debug('[AverbacoesLista] Lista carregada', { total: Array.isArray(parsed?.averbacoes) ? parsed.averbacoes.length : Array.isArray(parsed) ? parsed.length : 0 });
+        const totalItens = Array.isArray(parsed?.averbacoes)
+          ? parsed.averbacoes.length
+          : Array.isArray(parsed)
+            ? parsed.length
+            : 0;
+        console.log('[AverbacoesLista] Lista carregada', { total: totalItens });
       }
       if (!res.ok) {
         const msg = (parsed && (parsed.message || parsed.error || parsed.detail)) || 'Erro ao carregar lista.';
@@ -151,14 +156,14 @@ export default function AverbacoesLista() {
     if (!idSelecionado || !file) return;
     try {
       setUploading(true);
-      console.info('[AverbacoesLista] Iniciando upload PDF', {
+      console.log('[AverbacoesLista] Iniciando upload PDF', {
         idSelecionado,
         nomeArquivo: file.name,
         tamanhoKB: Math.round(file.size / 1024)
       });
   const uploadResult = await AverbacoesService.uploadAnexoPdf(idSelecionado, file);
   const { url, shareLink, webUrl } = uploadResult || {};
-      console.info('[AverbacoesLista] Upload finalizado', uploadResult);
+  console.log('[AverbacoesLista] Upload finalizado', uploadResult);
       await fetchLista({ silent: true });
       const linkInfo = shareLink || webUrl || url;
       showToast('success', linkInfo ? 'Anexo enviado e link gerado com sucesso!' : 'Anexo enviado com sucesso!');
