@@ -142,12 +142,14 @@ export default function AverbacoesLista() {
   };
 
   const abrirModalAnexo = (id) => {
+    console.log('[AverbacoesLista] Solicitando abertura do modal de anexo', { id });
     setIdSelecionado(id);
     setModalAberto(true);
   };
 
   const fecharModalAnexo = () => {
     if (uploading) return;
+    console.log('[AverbacoesLista] Fechando modal de anexo');
     setModalAberto(false);
     setIdSelecionado(null);
   };

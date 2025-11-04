@@ -6,6 +6,8 @@ export default function AnexarPdfModal({ open, onClose, onSubmit, loading }) {
 
   if (!open) return null;
 
+  console.log('[AnexarPdfModal] Modal renderizado');
+
   const handleFileChange = (e) => {
     setError('');
     const f = e.target.files?.[0];
