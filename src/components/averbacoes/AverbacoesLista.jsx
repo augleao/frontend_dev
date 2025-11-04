@@ -17,6 +17,7 @@ function formatDate(dateStr) {
 }
 
 export default function AverbacoesLista() {
+  console.log('[AverbacoesLista] Render iniciado');
   const navigate = useNavigate();
   const location = useLocation();
   const [itens, setItens] = useState([]);
@@ -89,7 +90,11 @@ export default function AverbacoesLista() {
   }, [dataFinal, dataInicial, ressarcivel, tipoFiltro, showToast]);
 
   useEffect(() => {
+    console.log('[AverbacoesLista] Montagem / efeito inicial iniciado');
     fetchLista().catch(() => {});
+    return () => {
+      console.log('[AverbacoesLista] Componente desmontado');
+    };
   }, [fetchLista]);
 
   // Mostrar toast vindo de navegacao (ex: salvou na tela de manutencao)
@@ -154,6 +159,14 @@ export default function AverbacoesLista() {
     setIdSelecionado(null);
   };
 
+  useEffect(() => {
+    console.log('[AverbacoesLista] Estado do modal atualizado', {
+      modalAberto,
+      idSelecionado,
+      uploading
+    });
+  }, [modalAberto, idSelecionado, uploading]);
+
   const enviarAnexo = async (file) => {
     if (!idSelecionado || !file) return;
     try {
@@ -178,6 +191,13 @@ export default function AverbacoesLista() {
       setUploading(false);
     }
   };
+
+  console.log('[AverbacoesLista] Render concluído', {
+    totalItens: itens?.length || 0,
+    loading,
+    modalAberto,
+    idSelecionado
+  });
 
   return (
     <div style={{ padding: 16 }}>
