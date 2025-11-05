@@ -81,6 +81,14 @@ function Home() {
       color: '#2563eb',
       route: '/relatorios'
     },
+    {
+      id: 'relatorios-dap',
+      title: 'DAP',
+      description: 'Gerencie declarações de atos praticados e retificadoras',
+      icon: '🧾',
+      color: '#1d4ed8',
+      route: '/relatorios/dap'
+    },
     
     {
       id: 'atos-gratuitos',
