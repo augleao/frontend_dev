@@ -81,14 +81,7 @@ function Home() {
       color: '#2563eb',
       route: '/relatorios'
     },
-    {
-      id: 'relatorio-cnj',
-      title: 'RELATÓRIO SEMESTRAL CNJ',
-      description: 'Processe arquivos PDF do TJMG para gerar relatório semestral',
-      icon: '📊',
-      color: '#e67e22',
-      route: '/relatorio-cnj'
-    },
+    
     {
       id: 'atos-gratuitos',
       title: 'ATOS GRATUITOS',

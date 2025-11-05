@@ -28,6 +28,14 @@ function Relatorios() {
       icon: '📮',
       color: '#2ecc71',
       route: '/relatorios-obrigatorios'
+    },
+    {
+      id: 'relatorio-cnj',
+      title: 'RELATÓRIO SEMESTRAL CNJ',
+      description: 'Processe arquivos PDF do TJMG para gerar relatório semestral',
+      icon: '📊',
+      color: '#e67e22',
+      route: '/relatorio-cnj'
     }
   ];
 
