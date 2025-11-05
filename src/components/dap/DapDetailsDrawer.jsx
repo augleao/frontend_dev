@@ -1,0 +1,250 @@
+import React from 'react';
+
+function DapDetailsDrawer({ dap, onClose, loading }) {
+  if (!dap && !loading) {
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <div style={drawerOverlayStyle}>
+        <div style={drawerStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ color: '#0f172a' }}>Carregando detalhes...</h2>
+            <button type="button" onClick={onClose} style={closeButtonStyle}>
+              ×
+            </button>
+          </div>
+          <p style={{ color: '#475569' }}>Buscando informações completas da DAP selecionada.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const periodos = dap.periodos ?? dap.dap_periodos ?? [];
+
+  return (
+    <div style={drawerOverlayStyle}>
+      <div style={drawerStyle}>
+        <div style={drawerHeaderStyle}>
+          <div>
+            <h2 style={{ margin: 0, color: '#0f172a' }}>Detalhes da DAP</h2>
+            <p style={{ margin: 0, color: '#475569', fontSize: '13px' }}>
+              {dap.ano}/{String(dap.mes).padStart(2, '0')} · {dap.tipo ?? 'ORIGINAL'} · {dap.status ?? 'ATIVA'}
+            </p>
+          </div>
+          <button type="button" onClick={onClose} style={closeButtonStyle}>
+            ×
+          </button>
+        </div>
+
+        <section style={{ marginBottom: 24 }}>
+          <h3 style={sectionTitleStyle}>Resumo</h3>
+          <div style={infoGridStyle}>
+            <InfoItem label="Número" value={dap.numero ?? '—'} />
+            <InfoItem
+              label="Data de emissão"
+              value={dap.data_emissao ? new Date(dap.data_emissao).toLocaleDateString('pt-BR') : '—'}
+            />
+            <InfoItem label="Situação" value={dap.status ?? 'ATIVA'} />
+            <InfoItem label="Retifica" value={dap.retificadora_de_id ? `#${dap.retificadora_de_id}` : 'Não'} />
+            <InfoItem label="Retificada por" value={dap.retificada_por_id ? `#${dap.retificada_por_id}` : '—'} />
+            <InfoItem label="Serventia" value={dap.serventia_nome ?? dap.serventia_id ?? '—'} />
+          </div>
+          {dap.observacoes && (
+            <div style={noteBoxStyle}>
+              <strong>Anotações:</strong>
+              <p style={{ margin: '6px 0 0 0', color: '#0f172a', fontSize: '13px' }}>{dap.observacoes}</p>
+            </div>
+          )}
+        </section>
+
+        <section>
+          <h3 style={sectionTitleStyle}>Períodos</h3>
+          {periodos.length === 0 && (
+            <p style={{ color: '#64748b', fontSize: '13px' }}>Nenhum período registrado para esta DAP.</p>
+          )}
+          {periodos.map((periodo) => (
+            <div key={periodo.id ?? periodo.periodo_numero} style={periodCardStyle}>
+              <header style={periodHeaderStyle}>
+                <span style={periodBadgeStyle}>Período {periodo.periodo_numero}</span>
+                <span style={{ color: '#0f172a', fontWeight: 700 }}>
+                  Total de atos: {periodo.total_atos ?? '—'}
+                </span>
+              </header>
+              <div style={periodStatsStyle}>
+                <InfoItem label="Emolumentos" value={formatCurrency(periodo.total_emolumentos)} />
+                <InfoItem label="TED" value={formatCurrency(periodo.total_ted)} />
+                <InfoItem label="ISS" value={formatCurrency(periodo.total_iss)} />
+                <InfoItem label="Total líquido" value={formatCurrency(periodo.total_liquido)} />
+              </div>
+              {renderAtos(periodo)}
+            </div>
+          ))}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function renderAtos(periodo) {
+  const atos = periodo.atos ?? periodo.dap_atos ?? [];
+  if (!Array.isArray(atos) || atos.length === 0) {
+    return null;
+  }
+
+  return (
+    <div style={{ marginTop: 16 }}>
+      <table style={atosTableStyle}>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Descrição</th>
+            <th>Qtd</th>
+            <th>Emolumentos</th>
+            <th>ISS</th>
+            <th>CNS</th>
+            <th>Valor líquido</th>
+          </tr>
+        </thead>
+        <tbody>
+          {atos.map((ato) => (
+            <tr key={ato.id ?? `${ato.codigo_ato}-${ato.descricao}`}
+              style={{ background: 'white' }}
+            >
+              <td>{ato.codigo_ato ?? '—'}</td>
+              <td>{ato.descricao ?? '—'}</td>
+              <td>{ato.quantidade ?? '—'}</td>
+              <td>{formatCurrency(ato.emolumentos)}</td>
+              <td>{formatCurrency(ato.taxa_iss)}</td>
+              <td>{formatCurrency(ato.taxa_cns)}</td>
+              <td>{formatCurrency(ato.valor_liquido)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function InfoItem({ label, value }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <span style={{ fontSize: '11px', textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.4px' }}>
+        {label}
+      </span>
+      <span style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>{value ?? '—'}</span>
+    </div>
+  );
+}
+
+function formatCurrency(value) {
+  if (value === null || value === undefined) return '—';
+  const number = Number(value);
+  if (Number.isNaN(number)) return '—';
+  return number.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+const drawerOverlayStyle = {
+  position: 'fixed',
+  inset: 0,
+  background: 'rgba(15, 23, 42, 0.55)',
+  backdropFilter: 'blur(6px)',
+  display: 'flex',
+  justifyContent: 'flex-end',
+  zIndex: 999,
+};
+
+const drawerStyle = {
+  width: 'min(540px, 100%)',
+  height: '100%',
+  background: '#f8fafc',
+  boxShadow: '-20px 0 60px rgba(15, 23, 42, 0.35)',
+  padding: '32px 28px',
+  overflowY: 'auto',
+};
+
+const drawerHeaderStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+  marginBottom: '24px',
+};
+
+const closeButtonStyle = {
+  background: 'transparent',
+  border: 'none',
+  fontSize: '28px',
+  cursor: 'pointer',
+  color: '#334155',
+};
+
+const sectionTitleStyle = {
+  fontSize: '16px',
+  color: '#1e3a8a',
+  margin: '0 0 12px 0',
+  letterSpacing: '0.4px',
+};
+
+const infoGridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+  gap: '16px',
+  padding: '16px',
+  background: 'white',
+  borderRadius: '16px',
+  boxShadow: '0 12px 24px rgba(15, 23, 42, 0.08)',
+};
+
+const noteBoxStyle = {
+  marginTop: 16,
+  background: '#e0ecff',
+  borderRadius: '12px',
+  padding: '12px 16px',
+  color: '#1d4ed8',
+};
+
+const periodCardStyle = {
+  background: '#eef2ff',
+  borderRadius: '16px',
+  padding: '16px',
+  marginBottom: '16px',
+  boxShadow: '0 12px 32px rgba(79, 70, 229, 0.12)',
+};
+
+const periodHeaderStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: '12px',
+};
+
+const periodBadgeStyle = {
+  background: 'white',
+  color: '#4338ca',
+  padding: '6px 12px',
+  borderRadius: '999px',
+  fontWeight: 700,
+  fontSize: '12px',
+};
+
+const periodStatsStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+  gap: '12px',
+  background: 'white',
+  borderRadius: '12px',
+  padding: '12px',
+};
+
+const atosTableStyle = {
+  width: '100%',
+  borderCollapse: 'separate',
+  borderSpacing: '0',
+  borderRadius: '12px',
+  overflow: 'hidden',
+  fontSize: '12px',
+  boxShadow: '0 6px 16px rgba(15, 23, 42, 0.1)',
+};
+
+export default DapDetailsDrawer;

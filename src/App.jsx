@@ -39,6 +39,7 @@ import CertidoesGratuitasLista from './components/certidoes/CertidoesGratuitasLi
 import CertidaoGratuitaForm from './components/certidoes/CertidaoGratuitaForm';
 import RelatoriosObrigatorios from './components/RelatoriosObrigatorios';
 import Relatorios from './Relatorios';
+import AnaliseDAP from './AnaliseDAP';
 
 
 
@@ -307,6 +308,14 @@ function App() {
           element={
             <PrivateRoute>
               <Relatorios />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/relatorios/dap"
+          element={
+            <PrivateRoute>
+              <AnaliseDAP />
             </PrivateRoute>
           }
         />

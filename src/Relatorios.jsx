@@ -8,10 +8,10 @@ function Relatorios() {
     {
       id: 'analise-dap',
       title: 'ANÁLISE DA DAP',
-      description: 'Painel de análise da DAP (em breve)'.trim(),
+      description: 'Gerencie DAP mensais, versões retificadoras e atos detalhados',
       icon: '🧾',
       color: '#1d4ed8',
-      route: null // em breve
+      route: '/relatorios/dap'
     },
     {
       id: 'analise-atos-praticados',
@@ -143,10 +143,7 @@ function Relatorios() {
             <div
               key={feature.id}
               style={cardStyle(feature.color)}
-              onClick={() => {
-                if (feature.route) navigate(feature.route);
-                else alert('Em breve: Análise da DAP');
-              }}
+              onClick={() => navigate(feature.route)}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-8px)';
                 e.currentTarget.style.boxShadow = '0 16px 48px rgba(0, 0, 0, 0.2)';
