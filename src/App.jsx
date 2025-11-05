@@ -38,6 +38,7 @@ import ScrollToTop from './ScrollToTop';
 import CertidoesGratuitasLista from './components/certidoes/CertidoesGratuitasLista';
 import CertidaoGratuitaForm from './components/certidoes/CertidaoGratuitaForm';
 import RelatoriosObrigatorios from './components/RelatoriosObrigatorios';
+import Relatorios from './Relatorios';
 
 
 
@@ -298,6 +299,14 @@ function App() {
           element={
             <PrivateRoute>
               <RelatoriosObrigatorios />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/relatorios"
+          element={
+            <PrivateRoute>
+              <Relatorios />
             </PrivateRoute>
           }
         />

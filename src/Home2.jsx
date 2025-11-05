@@ -74,6 +74,14 @@ function Home() {
       route: '/meus-relatorios'
     },
     {
+      id: 'relatorios-hub',
+      title: 'RELATÓRIOS',
+      description: 'Acesse o hub de relatórios e análises (DAP e Atos Praticados)',
+      icon: '📈',
+      color: '#2563eb',
+      route: '/relatorios'
+    },
+    {
       id: 'relatorios-obrigatorios',
       title: 'RELATÓRIOS OBRIGATÓRIOS',
       description: 'Registre envios mensais exigidos pelos órgãos públicos',
