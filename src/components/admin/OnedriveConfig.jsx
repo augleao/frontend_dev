@@ -361,6 +361,7 @@ function OnedriveConfig() {
         </div>
       </div>
 
+      {/* Tutorial passo a passo (somente conteúdo informativo) */}
       <div style={{
         marginTop: 32,
         padding: 20,
@@ -368,29 +369,67 @@ function OnedriveConfig() {
         background: '#f8fafc',
         boxShadow: '0 1px 2px rgba(148,163,184,0.16)'
       }}>
-        <h3 style={{ marginTop: 0, color: '#0f172a', fontSize: 18 }}>Guia rápido de configuração</h3>
+        <h3 style={{ marginTop: 0, color: '#0f172a', fontSize: 18 }}>Tutorial: como preencher cada campo</h3>
         <ol style={{ margin: '12px 0 0 20px', padding: 0, color: '#1f2937', fontSize: 14, lineHeight: 1.6 }}>
           <li style={{ marginBottom: 10 }}>
-            <strong>Client ID &amp; Client Secret:</strong> no <a href="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank" rel="noreferrer">Azure Portal &rarr; Azure Active Directory &rarr; App registrations</a>, selecione o aplicativo e copie o <em>Application (client) ID</em>. Em <em>Certificates &amp; secrets</em>, gere (ou copie) o segredo e cole aqui.
+            <strong>Crie (ou selecione) um App no Azure</strong><br />
+            • Acesse o <a href="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank" rel="noreferrer">Azure Portal &rarr; Microsoft Entra ID &rarr; App registrations</a> e crie um novo <em>App registration</em>.<br />
+            • Copie o <em>Application (client) ID</em> &rarr; cole em <code>ONEDRIVE_CLIENT_ID</code>.
           </li>
           <li style={{ marginBottom: 10 }}>
-            <strong>Redirect URI:</strong> precisa constar na aba <em>Authentication</em> do aplicativo. Para uso local, utilize algo como <code>http://localhost:3000/auth/onedrive/callback</code>; em produção, informe o domínio hospedado. Mais detalhes na documentação <a href="https://learn.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow" target="_blank" rel="noreferrer">OAuth 2.0 auth code flow</a>.
+            <strong>Crie o Client Secret</strong><br />
+            • Em <em>Certificates &amp; secrets</em>, gere um <em>Client secret</em> e copie o valor &rarr; cole em <code>ONEDRIVE_CLIENT_SECRET</code>.
           </li>
           <li style={{ marginBottom: 10 }}>
-            <strong>Tenant:</strong> use <code>consumers</code> para contas pessoais (Microsoft/Outlook) ou o domínio/tenant ID se estiver em um diretório corporativo. Pode ser consultado em <em>Azure Active Directory &rarr; Overview &rarr; Tenant ID</em>.
+            <strong>Defina o Redirect URI</strong><br />
+            • Em <em>Authentication</em>, adicione um <em>Redirect URI</em> idêntico ao usado aqui (ex.: <code>http://localhost:3000/auth/onedrive/callback</code>).<br />
+            • Guia oficial: <a href="https://learn.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow" target="_blank" rel="noreferrer">OAuth 2.0 authorization code</a>.<br />
+            • Cole a URL em <code>ONEDRIVE_REDIRECT_URI</code>.
           </li>
           <li style={{ marginBottom: 10 }}>
-            <strong>Refresh Token:</strong> gere-o após completar o fluxo OAuth com o botão “Gerar URL de autorização”. Depois troque o <em>authorization code</em> por tokens conforme o guia <a href="https://learn.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow#request-an-access-token" target="_blank" rel="noreferrer">Request an access token</a>. Cole aqui o valor retornado em <code>refresh_token</code>.
+            <strong>Escolha o Tenant</strong><br />
+            • Para contas pessoais use <code>consumers</code>. Para diretórios corporativos use <code>common</code> ou o <em>Tenant ID</em> do seu diretório (em <em>Overview</em> do Entra ID).<br />
+            • Preencha em <code>ONEDRIVE_TENANT</code>.
           </li>
           <li style={{ marginBottom: 10 }}>
-            <strong>Folder Path:</strong> caminho relativo dentro do OneDrive onde os PDFs serão gravados (ex.: <code>Averbacoes</code>). O backend cria subpastas por ano/mês automaticamente.
+            <strong>Permissões necessárias (Delegated)</strong><br />
+            • Em <em>API permissions</em> &rarr; <em>Add a permission</em> &rarr; <em>Microsoft Graph</em> &rarr; <em>Delegated</em>: adicione <code>User.Read</code>, <code>offline_access</code> e <code>Files.ReadWrite.All</code>.<br />
+            • Clique em <em>Grant admin consent</em> quando aplicável (em contas pessoais, conceda no login).<br />
+            • Sem <code>Files.ReadWrite.All</code> a consulta <code>/me/drive</code> pode falhar.
           </li>
           <li style={{ marginBottom: 10 }}>
-            <strong>Drive ID:</strong> para contas pessoais, clique em “Detectar Drive ID automaticamente” ou rode <code>GET https://graph.microsoft.com/v1.0/me/drive</code> com um token que inclua <code>Files.ReadWrite.All</code>. Em ambientes corporativos, consulte <a href="https://learn.microsoft.com/graph/api/drive-get?view=graph-rest-1.0&amp;tabs=http" target="_blank" rel="noreferrer">Drive &mdash; Get</a> para localizar o ID desejado.
+            <strong>Gerar o Refresh Token</strong><br />
+            • Clique em “Gerar URL de autorização” nesta página e faça login. O Azure redirecionará para sua <em>Redirect URI</em> com um <code>code</code> na URL.<br />
+            • Troque o <code>code</code> por tokens no endpoint v2: <code>https://login.microsoftonline.com/&lt;tenant&gt;/oauth2/v2.0/token</code> (<em>grant_type=authorization_code</em>, <em>scope=offline_access Files.ReadWrite.All User.Read</em>, além de <em>client_id</em>, <em>client_secret</em>, <em>redirect_uri</em>).<br />
+            • Guarde o <code>refresh_token</code> retornado e cole em <code>ONEDRIVE_REFRESH_TOKEN</code>.<br />
+            • Para renovar o <em>access token</em>, use <em>grant_type=refresh_token</em> com os mesmos <em>scopes</em> (não combine <code>.default</code> com escopos delegados — evita o erro <em>AADSTS70011</em>).
+          </li>
+          <li style={{ marginBottom: 10 }}>
+            <strong>Folder Path (pasta de upload)</strong><br />
+            • Caminho relativo no OneDrive onde os PDFs serão salvos (ex.: <code>Averbacoes</code>). O sistema pode criar subpastas por data automaticamente.<br />
+            • Preencha em <code>PASTA DE UPLOAD (folderPath)</code>.
+          </li>
+          <li style={{ marginBottom: 10 }}>
+            <strong>Drive ID (conta pessoal)</strong><br />
+            • Obtenha um <em>access token</em> válido e consulte <code>GET https://graph.microsoft.com/v1.0/me/drive</code>.<br />
+            • Copie a propriedade <code>id</code> da resposta e cole em <code>ONEDRIVE_DRIVE_ID</code>.<br />
+            • Alternativa: use o <a href="https://developer.microsoft.com/graph/graph-explorer" target="_blank" rel="noreferrer">Graph Explorer</a> (faça login, conceda as permissões e rode <code>/me/drive</code>).
+          </li>
+          <li style={{ marginBottom: 10 }}>
+            <strong>Drive ID (SharePoint/organizacional)</strong><br />
+            • Você pode precisar localizar o <em>site</em> e a biblioteca correta: <code>GET /v1.0/sites/{host}:/sites/{siteName}</code> &rarr; <code>/sites/{site-id}/drives</code> &rarr; escolha o <code>drive.id</code> desejado.<br />
+            • Documentação: <a href="https://learn.microsoft.com/graph/api/drive-list" target="_blank" rel="noreferrer">Listar drives</a> e <a href="https://learn.microsoft.com/graph/api/site-get" target="_blank" rel="noreferrer">Obter site</a>.
+          </li>
+          <li style={{ marginBottom: 10 }}>
+            <strong>Salvar e testar</strong><br />
+            • Clique em <em>Salvar</em> acima e depois teste o envio de um PDF na tela de averbações. Se houver erro de variável ausente no backend, verifique os campos e permissões.
           </li>
         </ol>
         <p style={{ color: '#475569', fontSize: 13, marginTop: 16 }}>
-          Após preencher tudo, salve a configuração e teste um upload de PDF em “Averbações gratuitas”. Se o backend apontar falta de variáveis, confirme que todos os campos acima estão preenchidos e que o aplicativo possui as permissões <code>offline_access</code>, <code>Files.ReadWrite.All</code> e <code>User.Read</code>.
+          Links úteis: <a href="https://learn.microsoft.com/graph/api/drive-get" target="_blank" rel="noreferrer">Drive - Get</a> · <a href="https://learn.microsoft.com/graph/api/driveitem-put-content" target="_blank" rel="noreferrer">Upload de arquivo</a> · <a href="https://learn.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow" target="_blank" rel="noreferrer">Fluxo OAuth 2.0</a>
+        </p>
+        <p style={{ color: '#64748b', fontSize: 12, marginTop: 6 }}>
+          Resolvendo erros comuns: <strong>AADSTS70011</strong> (escopos inválidos) &rarr; não misture <code>.default</code> com escopos delegados; <strong>AADSTS9002313</strong> (request inválido) &rarr; confira <code>Content-Type</code> <em>application/x-www-form-urlencoded</em>, parâmetros obrigatórios e o endpoint v2.
         </p>
       </div>
 
