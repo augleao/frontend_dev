@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import OnedriveConfigService from '../../services/OnedriveConfigService';
 import Toast from '../Toast';
 import { DEFAULT_TOAST_DURATION } from '../toastConfig';
-import DriveIdFetcher from './DriveIdFetcher';
 
 const fieldLabelStyle = { fontSize: 12, fontWeight: 700, color: '#1f2937', textTransform: 'uppercase' };
 const inputStyle = {
@@ -81,12 +80,6 @@ function OnedriveConfig() {
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleDriveIdResolved = (driveId) => {
-    if (!driveId) return;
-    handleChange('driveId', driveId);
-    triggerToast('success', 'Drive ID detectado automaticamente.');
   };
 
   const handleOpenAuthUrl = async () => {
@@ -295,11 +288,6 @@ function OnedriveConfig() {
               <small style={{ color: '#64748b' }}>
                 Informe o identificador do drive (ex.: valor retornado por GET https://graph.microsoft.com/v1.0/me/drive ou sites/.../drives).
               </small>
-              <DriveIdFetcher
-                config={form}
-                onResolved={handleDriveIdResolved}
-                disabled={loading || saving}
-              />
             </div>
             <div>
               <label style={fieldLabelStyle}>ONEDRIVE_REFRESH_TOKEN</label>
