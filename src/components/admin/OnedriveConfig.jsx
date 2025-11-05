@@ -373,6 +373,39 @@ function OnedriveConfig() {
         </div>
       </div>
 
+      <div style={{
+        marginTop: 32,
+        padding: 20,
+        borderRadius: 12,
+        background: '#f8fafc',
+        boxShadow: '0 1px 2px rgba(148,163,184,0.16)'
+      }}>
+        <h3 style={{ marginTop: 0, color: '#0f172a', fontSize: 18 }}>Guia rápido de configuração</h3>
+        <ol style={{ margin: '12px 0 0 20px', padding: 0, color: '#1f2937', fontSize: 14, lineHeight: 1.6 }}>
+          <li style={{ marginBottom: 10 }}>
+            <strong>Client ID &amp; Client Secret:</strong> no <a href="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank" rel="noreferrer">Azure Portal &rarr; Azure Active Directory &rarr; App registrations</a>, selecione o aplicativo e copie o <em>Application (client) ID</em>. Em <em>Certificates &amp; secrets</em>, gere (ou copie) o segredo e cole aqui.
+          </li>
+          <li style={{ marginBottom: 10 }}>
+            <strong>Redirect URI:</strong> precisa constar na aba <em>Authentication</em> do aplicativo. Para uso local, utilize algo como <code>http://localhost:3000/auth/onedrive/callback</code>; em produção, informe o domínio hospedado. Mais detalhes na documentação <a href="https://learn.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow" target="_blank" rel="noreferrer">OAuth 2.0 auth code flow</a>.
+          </li>
+          <li style={{ marginBottom: 10 }}>
+            <strong>Tenant:</strong> use <code>consumers</code> para contas pessoais (Microsoft/Outlook) ou o domínio/tenant ID se estiver em um diretório corporativo. Pode ser consultado em <em>Azure Active Directory &rarr; Overview &rarr; Tenant ID</em>.
+          </li>
+          <li style={{ marginBottom: 10 }}>
+            <strong>Refresh Token:</strong> gere-o após completar o fluxo OAuth com o botão “Gerar URL de autorização”. Depois troque o <em>authorization code</em> por tokens conforme o guia <a href="https://learn.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow#request-an-access-token" target="_blank" rel="noreferrer">Request an access token</a>. Cole aqui o valor retornado em <code>refresh_token</code>.
+          </li>
+          <li style={{ marginBottom: 10 }}>
+            <strong>Folder Path:</strong> caminho relativo dentro do OneDrive onde os PDFs serão gravados (ex.: <code>Averbacoes</code>). O backend cria subpastas por ano/mês automaticamente.
+          </li>
+          <li style={{ marginBottom: 10 }}>
+            <strong>Drive ID:</strong> para contas pessoais, clique em “Detectar Drive ID automaticamente” ou rode <code>GET https://graph.microsoft.com/v1.0/me/drive</code> com um token que inclua <code>Files.ReadWrite.All</code>. Em ambientes corporativos, consulte <a href="https://learn.microsoft.com/graph/api/drive-get?view=graph-rest-1.0&amp;tabs=http" target="_blank" rel="noreferrer">Drive &mdash; Get</a> para localizar o ID desejado.
+          </li>
+        </ol>
+        <p style={{ color: '#475569', fontSize: 13, marginTop: 16 }}>
+          Após preencher tudo, salve a configuração e teste um upload de PDF em “Averbações gratuitas”. Se o backend apontar falta de variáveis, confirme que todos os campos acima estão preenchidos e que o aplicativo possui as permissões <code>offline_access</code>, <code>Files.ReadWrite.All</code> e <code>User.Read</code>.
+        </p>
+      </div>
+
       <Toast
         message={toastMessage}
         type={toastType}
