@@ -37,7 +37,7 @@ export default function DriveIdFetcher({ config, onResolved, disabled }) {
         client_secret: clientSecret,
         grant_type: 'refresh_token',
         refresh_token: refreshToken,
-        scope: 'https://graph.microsoft.com/.default offline_access Files.ReadWrite.All'
+        scope: 'offline_access Files.ReadWrite.All User.Read'
       });
 
       const tokenResp = await fetch(`https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`, {
