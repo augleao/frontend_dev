@@ -29,6 +29,7 @@ function OnedriveConfig() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [discovering, setDiscovering] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
@@ -134,6 +135,100 @@ function OnedriveConfig() {
       triggerToast('error', err.message || 'Falha ao salvar configuração.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // 1) Trocar refresh_token -> access_token no endpoint do Azure
+  const exchangeRefreshForAccessToken = async ({ tenant, clientId, clientSecret, refreshToken }) => {
+    const url = `${AUTH_BASE_URL}/${tenant || 'common'}/oauth2/v2.0/token`;
+    const body = new URLSearchParams();
+    body.set('client_id', clientId);
+    body.set('grant_type', 'refresh_token');
+    body.set('refresh_token', refreshToken);
+    // Escopos no refresh são opcionais; evitar erro AADSTS70011 mantendo vazio ou compatível
+    // body.set('scope', 'offline_access Files.ReadWrite.All User.Read');
+    if (clientSecret) body.set('client_secret', clientSecret);
+
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
+    });
+    const text = await resp.text();
+    let json;
+    try { json = text ? JSON.parse(text) : {}; } catch { json = {}; }
+    if (!resp.ok) {
+      const msg = json?.error_description || json?.error || text || 'Falha ao trocar refresh_token por access_token.';
+      throw new Error(msg);
+    }
+    if (!json.access_token) {
+      throw new Error('Resposta sem access_token. Verifique permissões (Files.ReadWrite.All, User.Read) e consentimento.');
+    }
+    return json;
+  };
+
+  // 2) Consultar Microsoft Graph para obter o drive.id do usuário
+  const fetchDriveIdFromGraph = async (accessToken) => {
+    // Tenta /me/drive primeiro; fallback para /me/drives (pegar o primeiro drive)
+    const commonHeaders = { Authorization: `Bearer ${accessToken}` };
+    // /me/drive
+    let driveId = '';
+    try {
+      const resp = await fetch('https://graph.microsoft.com/v1.0/me/drive', { headers: commonHeaders });
+      if (resp.ok) {
+        const data = await resp.json();
+        driveId = data?.id || '';
+        if (driveId) return driveId;
+      }
+    } catch {
+      // ignora e tenta o próximo
+    }
+    // /me/drives
+    try {
+      const resp = await fetch('https://graph.microsoft.com/v1.0/me/drives', { headers: commonHeaders });
+      if (resp.ok) {
+        const data = await resp.json();
+        const first = Array.isArray(data?.value) ? data.value[0] : null;
+        driveId = first?.id || '';
+        if (driveId) return driveId;
+      }
+    } catch {
+      // ignora e deixa cair no erro
+    }
+    throw new Error('Não foi possível obter o Drive ID com /me/drive nem /me/drives.');
+  };
+
+  const handleDiscoverDriveId = async () => {
+    if (discovering) return;
+    const tenant = (form.tenant || 'consumers').trim();
+    const clientId = form.clientId.trim();
+    const clientSecret = form.clientSecret.trim();
+    const refreshToken = form.refreshToken.trim();
+
+    if (!clientId || !clientSecret || !refreshToken) {
+      triggerToast('warning', 'Preencha Client ID, Client Secret e Refresh Token antes de descobrir o Drive ID.');
+      return;
+    }
+
+    setDiscovering(true);
+    try {
+      // 1) Trocar refresh_token por access_token
+      const tokenResp = await exchangeRefreshForAccessToken({ tenant, clientId, clientSecret, refreshToken });
+      const accessToken = tokenResp.access_token;
+      // 2) Consultar Graph
+      const driveId = await fetchDriveIdFromGraph(accessToken);
+      setForm(prev => ({ ...prev, driveId }));
+      triggerToast('success', `Drive ID encontrado: ${driveId}`);
+    } catch (err) {
+      // Mensagens comuns: CORS/Origin bloqueado no token endpoint; escopos insuficientes; refresh expirado
+      const msg = String(err?.message || err);
+      if (msg.includes('CORS') || msg.includes('Access-Control-Allow-Origin')) {
+        triggerToast('error', 'Falha por CORS no token endpoint. Alternativas: usar um proxy no backend para a troca do token ou executar a descoberta via Graph Explorer.');
+      } else {
+        triggerToast('error', msg);
+      }
+    } finally {
+      setDiscovering(false);
     }
   };
 
@@ -277,16 +372,34 @@ function OnedriveConfig() {
             </div>
             <div>
               <label style={fieldLabelStyle}>ONEDRIVE_DRIVE_ID</label>
-              <input
-                type="text"
-                style={inputStyle}
-                value={form.driveId}
-                onChange={e => handleChange('driveId', e.target.value)}
-                autoComplete="off"
-                placeholder="drive-id (contas pessoais use /me/drive => ID está em /me/drive)"
-              />
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input
+                  type="text"
+                  style={{ ...inputStyle, flex: 1 }}
+                  value={form.driveId}
+                  onChange={e => handleChange('driveId', e.target.value)}
+                  autoComplete="off"
+                  placeholder="drive-id (contas pessoais use /me/drive => ID está em /me/drive)"
+                />
+                <button
+                  type="button"
+                  onClick={handleDiscoverDriveId}
+                  disabled={discovering || loading}
+                  style={{
+                    minWidth: 160,
+                    border: '1px solid #d0d7de',
+                    borderRadius: 10,
+                    background: discovering ? '#94a3b8' : '#f8fafc',
+                    cursor: discovering || loading ? 'not-allowed' : 'pointer',
+                    fontWeight: 700,
+                    padding: '10px 12px'
+                  }}
+                >
+                  {discovering ? 'Descobrindo…' : 'Descobrir Drive ID'}
+                </button>
+              </div>
               <small style={{ color: '#64748b' }}>
-                Informe o identificador do drive (ex.: valor retornado por GET https://graph.microsoft.com/v1.0/me/drive ou sites/.../drives).
+                Automático: usa o refresh token para obter um access token e consulta o Graph (/me/drive). Se falhar por CORS, use um proxy no backend ou o Graph Explorer.
               </small>
             </div>
             <div>
