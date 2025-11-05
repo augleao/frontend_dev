@@ -20,6 +20,14 @@ function Relatorios() {
       icon: '📊',
       color: '#2563eb',
       route: '/pesquisa-atos-praticados' // aproveita a tela existente de pesquisa
+    },
+    {
+      id: 'relatorios-obrigatorios',
+      title: 'RELATÓRIOS OBRIGATÓRIOS',
+      description: 'Registre envios mensais exigidos pelos órgãos públicos',
+      icon: '📮',
+      color: '#2ecc71',
+      route: '/relatorios-obrigatorios'
     }
   ];
 

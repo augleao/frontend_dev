@@ -82,14 +82,6 @@ function Home() {
       route: '/relatorios'
     },
     {
-      id: 'relatorios-obrigatorios',
-      title: 'RELATÓRIOS OBRIGATÓRIOS',
-      description: 'Registre envios mensais exigidos pelos órgãos públicos',
-      icon: '📮',
-      color: '#2ecc71',
-      route: '/relatorios-obrigatorios'
-    },
-    {
       id: 'relatorio-cnj',
       title: 'RELATÓRIO SEMESTRAL CNJ',
       description: 'Processe arquivos PDF do TJMG para gerar relatório semestral',
