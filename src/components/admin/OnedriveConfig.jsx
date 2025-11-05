@@ -417,7 +417,7 @@ function OnedriveConfig() {
           </li>
           <li style={{ marginBottom: 10 }}>
             <strong>Drive ID (SharePoint/organizacional)</strong><br />
-            • Você pode precisar localizar o <em>site</em> e a biblioteca correta: <code>GET /v1.0/sites/{host}:/sites/{siteName}</code> &rarr; <code>/sites/{site-id}/drives</code> &rarr; escolha o <code>drive.id</code> desejado.<br />
+            • Você pode precisar localizar o <em>site</em> e a biblioteca correta: <code>GET /v1.0/sites/{'{'}host{'}'}:/sites/{'{'}siteName{'}'}</code> &rarr; <code>/sites/{'{'}site-id{'}'}/drives</code> &rarr; escolha o <code>drive.id</code> desejado.<br />
             • Documentação: <a href="https://learn.microsoft.com/graph/api/drive-list" target="_blank" rel="noreferrer">Listar drives</a> e <a href="https://learn.microsoft.com/graph/api/site-get" target="_blank" rel="noreferrer">Obter site</a>.
           </li>
           <li style={{ marginBottom: 10 }}>
