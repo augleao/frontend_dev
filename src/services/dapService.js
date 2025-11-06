@@ -10,11 +10,26 @@ function normalizeListResponse(raw) {
   if (Array.isArray(raw)) {
     return { items: raw, meta: {} };
   }
+  if (Array.isArray(raw?.daps)) {
+    return { items: raw.daps, meta: raw.meta ?? raw.pagination ?? {} };
+  }
+  if (Array.isArray(raw?.resultado?.daps)) {
+    return { items: raw.resultado.daps, meta: raw.resultado.meta ?? raw.meta ?? {} };
+  }
+  if (Array.isArray(raw?.resultado?.items)) {
+    return { items: raw.resultado.items, meta: raw.resultado.meta ?? raw.meta ?? {} };
+  }
   if (Array.isArray(raw?.items)) {
     return { items: raw.items, meta: raw.meta ?? {} };
   }
   if (Array.isArray(raw?.data)) {
     return { items: raw.data, meta: raw.meta ?? {} };
+  }
+  if (Array.isArray(raw?.rows)) {
+    return { items: raw.rows, meta: raw.meta ?? { total: raw.total } };
+  }
+  if (Array.isArray(raw?.resultado)) {
+    return { items: raw.resultado, meta: raw.meta ?? {} };
   }
   return { items: [], meta: raw?.meta ?? {} };
 }
