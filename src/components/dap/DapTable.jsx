@@ -6,6 +6,10 @@ function formatMonthYear(ano, mes) {
 }
 
 function DapTable({ items = [], onSelect, onDelete, loading }) {
+  if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.debug('DapTable render', { count: items.length, sample: items[0] });
+  }
   return (
     <div style={containerStyle}>
       <div style={tableWrapperStyle}>
