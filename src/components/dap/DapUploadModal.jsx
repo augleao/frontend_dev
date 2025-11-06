@@ -185,6 +185,7 @@ const inputStyle = {
   fontSize: '14px',
   outline: 'none',
   background: '#f9fafb',
+  boxSizing: 'border-box',
 };
 
 const fileInfoStyle = {
