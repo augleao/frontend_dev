@@ -31,9 +31,17 @@ function AnaliseDAP() {
     setLoading(true);
     try {
       const resposta = await listDaps(filtros);
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('DAPs normalizadas', resposta);
+      }
       setDaps(resposta.items);
     } catch (error) {
       const mensagem = error?.response?.data?.mensagem || 'Não foi possível carregar as DAPs.';
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.error('Erro ao carregar DAPs', error);
+      }
       setFeedback({ tipo: 'erro', mensagem });
     } finally {
       setLoading(false);
@@ -52,8 +60,16 @@ function AnaliseDAP() {
     try {
       const detalhe = await getDapById(dap.id);
       setSelectedDap(detalhe);
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('Detalhe DAP', detalhe);
+      }
     } catch (error) {
       const mensagem = error?.response?.data?.mensagem || 'Não foi possível carregar os detalhes da DAP.';
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.error('Erro detalhe DAP', error);
+      }
       setFeedback({ tipo: 'erro', mensagem });
     } finally {
       setLoadingDetalhe(false);

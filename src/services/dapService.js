@@ -47,6 +47,12 @@ export async function listDaps(filters = {}) {
     headers: buildAuthHeaders(),
   });
 
+  if (process.env.NODE_ENV !== 'production') {
+    // Ajuda a diagnosticar formatos diferentes vindos do backend
+    // eslint-disable-next-line no-console
+    console.debug('listDaps response', response.data);
+  }
+
   return normalizeListResponse(response.data);
 }
 
