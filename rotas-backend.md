@@ -34,6 +34,15 @@
 - `GET    /api/atos-praticados/:id`      → Busca ato praticado por id
 - `DELETE /api/atos-praticados/:id`      → Remove ato praticado
 
+## Declaração de Apuração (DAP)
+- `POST   /api/dap/upload`               → Recebe o PDF da DAP, dispara parser e cria registro (retorna { dapId, status })
+- `GET    /api/dap`                      → Lista DAPs (filtros: codigoServentia, ano, mes, retificadora, status)
+- `POST   /api/dap`                      → Cria DAP manualmente (usar apenas em reprocessamentos sem upload)
+- `GET    /api/dap/:id`                  → Retorna cabeçalho, períodos e atos snapshot
+- `POST   /api/dap/:id/retificar`        → Cria DAP retificadora vinculada à original
+- `DELETE /api/dap/:id`                  → Exclui DAP (validar impacto em retificadoras relacionadas)
+- `GET    /api/dap/:id/download`         → (Opcional) devolve PDF armazenado do upload
+
 ## Relatórios
 - `GET    /api/meus-relatorios`           → Lista relatórios do usuário
 - `POST   /api/salvar-relatorio`          → Salva relatório
