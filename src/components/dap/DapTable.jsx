@@ -2,7 +2,7 @@ import React from 'react';
 
 function DapTable({ items = [], onSelect, onDelete, loading }) {
   // eslint-disable-next-line no-console
-  console.debug('DapTable render', { count: items.length, sample: items[0] });
+  console.debug('DapTable render', { count: items.length, sample: items[0], allItems: items });
   return (
     <div style={containerStyle}>
       <div style={tableWrapperStyle}>

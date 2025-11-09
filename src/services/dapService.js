@@ -68,7 +68,11 @@ export async function listDaps(filters = {}) {
   // eslint-disable-next-line no-console
   console.debug('listDaps response', response.data);
 
-  return normalizeListResponse(response.data);
+  const normalized = normalizeListResponse(response.data);
+  // eslint-disable-next-line no-console
+  console.debug('listDaps normalized', normalized);
+
+  return normalized;
 }
 
 export async function getDapById(id) {
