@@ -212,6 +212,17 @@ module.exports = function initDapRoutes(app, pool, options = {}) {
   const parseDapPdf = options.parseDapPdf;
   const uploadMiddleware = upload.single('file');
 
+  // Helper para garantir isolamento por serventia
+  function enforceServentia(req, codigoServentia) {
+    if (!req.user || !req.user.codigo_serventia) {
+      throw new Error('Usuário sem serventia associada.');
+    }
+    if (codigoServentia && codigoServentia !== req.user.codigo_serventia) {
+      throw new Error('Acesso negado: DAP pertence a outra serventia.');
+    }
+    return req.user.codigo_serventia;
+  }
+
   app.post('/api/dap/upload', ensureAuth, uploadMiddleware, async (req, res) => {
     try {
       if (!req.file) {
@@ -220,6 +231,7 @@ module.exports = function initDapRoutes(app, pool, options = {}) {
       if (!parseDapPdf) {
         return res.status(501).json({ error: 'Parser de DAP não configurado.' });
       }
+      const codigoServentia = enforceServentia(req);
       const metadata = req.body && req.body.metadata ? JSON.parse(req.body.metadata) : {};
       const parsed = await parseDapPdf({
         buffer: req.file.buffer,
@@ -228,17 +240,29 @@ module.exports = function initDapRoutes(app, pool, options = {}) {
         size: req.file.size,
         metadata,
       });
+
+      // Forçar codigo_serventia do usuário logado
+      if (!parsed.codigoServentia && !parsed.codigo_serventia) {
+        parsed.codigoServentia = codigoServentia;
+      }
+      enforceServentia(req, parsed.codigoServentia ?? parsed.codigo_serventia);
+
       const result = await withTransaction(pool, (client) => persistDap(client, parsed));
       return res.status(201).json({ id: result.dapId, status: 'processed' });
     } catch (error) {
       console.error('Erro no upload de DAP:', error);
-      return res.status(500).json({ error: 'Erro ao processar DAP.' });
+      return res.status(500).json({ error: error.message || 'Erro ao processar DAP.' });
     }
   });
 
   app.post('/api/dap', ensureAuth, async (req, res) => {
     try {
+      const codigoServentia = enforceServentia(req);
       const payload = req.body || {};
+      if (!payload.codigoServentia && !payload.codigo_serventia) {
+        payload.codigoServentia = codigoServentia;
+      }
+      enforceServentia(req, payload.codigoServentia ?? payload.codigo_serventia);
       const result = await withTransaction(pool, (client) => persistDap(client, payload));
       return res.status(201).json({ id: result.dapId });
     } catch (error) {
@@ -249,7 +273,10 @@ module.exports = function initDapRoutes(app, pool, options = {}) {
 
   app.get('/api/dap', ensureAuth, async (req, res) => {
     try {
+      const codigoServentia = enforceServentia(req);
       const filters = extractFilters(req.query);
+      // Forçar filtro pela serventia do usuário logado
+      filters.codigoServentia = codigoServentia;
       const params = [];
       const where = applyFiltersSQL(filters, params);
       const sql = `
@@ -272,6 +299,7 @@ module.exports = function initDapRoutes(app, pool, options = {}) {
 
   app.get('/api/dap/:id', ensureAuth, async (req, res) => {
     try {
+      const codigoServentia = enforceServentia(req);
       const id = Number(req.params.id);
       if (!Number.isInteger(id)) {
         return res.status(400).json({ error: 'ID inválido.' });
@@ -295,9 +323,9 @@ module.exports = function initDapRoutes(app, pool, options = {}) {
                total_despesas_mes AS "totalDespesasMes",
                estoque_selos_eletronicos_transmissao AS "estoqueSelosEletronicosTransmissao"
         FROM public.dap
-        WHERE id = $1
+        WHERE id = $1 AND codigo_serventia = $2
       `;
-      const headerResult = await pool.query(headerSql, [id]);
+      const headerResult = await pool.query(headerSql, [id, codigoServentia]);
       if (!headerResult.rowCount) {
         return res.status(404).json({ error: 'DAP não encontrada.' });
       }
@@ -340,6 +368,7 @@ module.exports = function initDapRoutes(app, pool, options = {}) {
 
   app.post('/api/dap/:id/retificar', ensureAuth, async (req, res) => {
     try {
+      const codigoServentia = enforceServentia(req);
       const originalId = Number(req.params.id);
       if (!Number.isInteger(originalId)) {
         return res.status(400).json({ error: 'ID inválido.' });
@@ -348,12 +377,19 @@ module.exports = function initDapRoutes(app, pool, options = {}) {
       const payload = req.body || {};
       payload.retificadora = true;
       payload.retificadoraDeId = originalId;
+      if (!payload.codigoServentia && !payload.codigo_serventia) {
+        payload.codigoServentia = codigoServentia;
+      }
 
       const result = await withTransaction(pool, async (client) => {
-        const original = await client.query('SELECT id FROM public.dap WHERE id = $1', [originalId]);
+        const original = await client.query(
+          'SELECT id, codigo_serventia FROM public.dap WHERE id = $1',
+          [originalId]
+        );
         if (!original.rowCount) {
           throw new Error('DAP original não encontrada.');
         }
+        enforceServentia(req, original.rows[0].codigo_serventia);
         return persistDap(client, payload);
       });
 
@@ -366,12 +402,16 @@ module.exports = function initDapRoutes(app, pool, options = {}) {
 
   app.delete('/api/dap/:id', ensureAuth, async (req, res) => {
     try {
+      const codigoServentia = enforceServentia(req);
       const id = Number(req.params.id);
       if (!Number.isInteger(id)) {
         return res.status(400).json({ error: 'ID inválido.' });
       }
 
-      const deleted = await pool.query('DELETE FROM public.dap WHERE id = $1 RETURNING id', [id]);
+      const deleted = await pool.query(
+        'DELETE FROM public.dap WHERE id = $1 AND codigo_serventia = $2 RETURNING id',
+        [id, codigoServentia]
+      );
       if (!deleted.rowCount) {
         return res.status(404).json({ error: 'DAP não encontrada.' });
       }

@@ -1,10 +1,5 @@
 import React from 'react';
 
-function formatMonthYear(ano, mes) {
-  if (!ano || !mes) return '—';
-  return `${String(mes).padStart(2, '0')}/${ano}`;
-}
-
 function DapTable({ items = [], onSelect, onDelete, loading }) {
   // eslint-disable-next-line no-console
   console.debug('DapTable render', { count: items.length, sample: items[0] });
@@ -14,51 +9,43 @@ function DapTable({ items = [], onSelect, onDelete, loading }) {
         <table style={tableStyle}>
           <thead>
             <tr>
-              <th>Competência</th>
-              <th>Tipo</th>
-              <th>Status</th>
-              <th>Nº DAP</th>
-              <th>Data Emissão</th>
-              <th>Retifica</th>
+              <th>Ano</th>
+              <th>Mês</th>
+              <th>Retificadora</th>
+              <th>Data Transmissão</th>
+              <th>Serventia</th>
               <th>Ações</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={7} style={loadingCellStyle}>
+                <td colSpan={6} style={loadingCellStyle}>
                   Carregando declarações...
                 </td>
               </tr>
             )}
             {!loading && items.length === 0 && (
               <tr>
-                <td colSpan={7} style={emptyCellStyle}>
-                  Nenhuma DAP cadastrada ainda. Utilize o botão “Nova DAP” para iniciar o histórico mensal.
+                <td colSpan={6} style={emptyCellStyle}>
+                  Nenhuma DAP cadastrada ainda. Utilize o botão "Nova DAP" para iniciar o histórico mensal.
                 </td>
               </tr>
             )}
             {!loading &&
               items.map((dap) => (
                 <tr key={dap.id}
-                  style={{ background: dap.status === 'RETIFICADA' ? '#fef3c7' : 'transparent' }}
+                  style={{ background: dap.retificadora ? '#fef3c7' : 'transparent' }}
                 >
-                  <td>{formatMonthYear(dap.ano, dap.mes)}</td>
-                  <td>{dap.tipo ?? 'ORIGINAL'}</td>
+                  <td>{dap.ano ?? '—'}</td>
+                  <td>{dap.mes ?? '—'}</td>
                   <td>
-                    <span style={badgeStyle(dap.status)}>{dap.status ?? 'ATIVA'}</span>
+                    <span style={badgeStyle(dap.retificadora)}>
+                      {dap.retificadora ? 'SIM' : 'NÃO'}
+                    </span>
                   </td>
-                  <td>{dap.numero ?? '—'}</td>
-                  <td>{dap.data_emissao ? new Date(dap.data_emissao).toLocaleDateString('pt-BR') : '—'}</td>
-                  <td>
-                    {dap.retificadora_de_id ? (
-                      <span style={tagStyle('#1d4ed8')}>Retifica #{dap.retificadora_de_id}</span>
-                    ) : dap.retificada_por_id ? (
-                      <span style={tagStyle('#f97316')}>Retificada por #{dap.retificada_por_id}</span>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
+                  <td>{dap.data_transmissao ? new Date(dap.data_transmissao).toLocaleDateString('pt-BR') : '—'}</td>
+                  <td>{dap.nome_serventia ?? '—'}</td>
                   <td style={{ whiteSpace: 'nowrap' }}>
                     <button
                       type="button"
@@ -114,21 +101,11 @@ const emptyCellStyle = {
   color: '#475569',
 };
 
-const badgeStyle = (status) => ({
-  background: status === 'RETIFICADA' ? '#fef3c7' : '#dbeafe',
-  color: status === 'RETIFICADA' ? '#b45309' : '#1d4ed8',
+const badgeStyle = (retificadora) => ({
+  background: retificadora ? '#fef3c7' : '#dbeafe',
+  color: retificadora ? '#b45309' : '#1d4ed8',
   padding: '6px 12px',
   borderRadius: '999px',
-  fontWeight: 600,
-  fontSize: '12px',
-});
-
-const tagStyle = (color) => ({
-  display: 'inline-block',
-  padding: '6px 10px',
-  borderRadius: '8px',
-  background: `${color}1a`,
-  color,
   fontWeight: 600,
   fontSize: '12px',
 });
