@@ -1,21 +1,6 @@
 import React from 'react';
 
 function DapTable({ items = [], onSelect, onDelete, loading }) {
-  // eslint-disable-next-line no-console
-  console.debug('DapTable render', { count: items.length, sample: items[0], allItems: items });
-  if (items[0]) {
-    // eslint-disable-next-line no-console
-    console.debug('Primeiro item detalhado:', {
-      ano: items[0].ano,
-      mes: items[0].mes,
-      retificadora: items[0].retificadora,
-      data_transmissao: items[0].data_transmissao,
-      dataTransmissao: items[0].dataTransmissao,
-      nome_serventia: items[0].nome_serventia,
-      nomeServentia: items[0].nomeServentia,
-      todasChaves: Object.keys(items[0])
-    });
-  }
   return (
     <div style={containerStyle}>
       <div style={tableWrapperStyle}>
@@ -50,15 +35,15 @@ function DapTable({ items = [], onSelect, onDelete, loading }) {
                 <tr key={dap.id}
                   style={{ background: dap.retificadora ? '#fef3c7' : 'transparent' }}
                 >
-                  <td>{dap.ano ?? '—'}</td>
-                  <td>{dap.mes ?? '—'}</td>
+                  <td>{dap.anoReferencia ?? dap.ano ?? '—'}</td>
+                  <td>{dap.mesReferencia ?? dap.mes ?? '—'}</td>
                   <td>
                     <span style={badgeStyle(dap.retificadora)}>
                       {dap.retificadora ? 'SIM' : 'NÃO'}
                     </span>
                   </td>
-                  <td>{dap.data_transmissao ? new Date(dap.data_transmissao).toLocaleDateString('pt-BR') : '—'}</td>
-                  <td>{dap.nome_serventia ?? '—'}</td>
+                  <td>{dap.dataTransmissao ? new Date(dap.dataTransmissao).toLocaleDateString('pt-BR') : '—'}</td>
+                  <td>{dap.serventiaNome ?? dap.nomeServentia ?? '—'}</td>
                   <td style={{ whiteSpace: 'nowrap' }}>
                     <button
                       type="button"
