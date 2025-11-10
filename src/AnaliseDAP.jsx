@@ -199,11 +199,7 @@ function AnaliseDAP() {
         </button>
       </section>
 
-      {feedback.mensagem && (
-        <div style={feedbackStyle(feedback.tipo)}>
-          {feedback.mensagem}
-        </div>
-      )}
+      {/* feedback messages removed from UI per request */}
 
       <DapTable
         items={daps}
