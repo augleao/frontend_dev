@@ -3,6 +3,19 @@ import React from 'react';
 function DapTable({ items = [], onSelect, onDelete, loading }) {
   // eslint-disable-next-line no-console
   console.debug('DapTable render', { count: items.length, sample: items[0], allItems: items });
+  if (items[0]) {
+    // eslint-disable-next-line no-console
+    console.debug('Primeiro item detalhado:', {
+      ano: items[0].ano,
+      mes: items[0].mes,
+      retificadora: items[0].retificadora,
+      data_transmissao: items[0].data_transmissao,
+      dataTransmissao: items[0].dataTransmissao,
+      nome_serventia: items[0].nome_serventia,
+      nomeServentia: items[0].nomeServentia,
+      todasChaves: Object.keys(items[0])
+    });
+  }
   return (
     <div style={containerStyle}>
       <div style={tableWrapperStyle}>
