@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { listDaps, getDapById, deleteDap } from './services/dapService';
-import DapUploadModal from './components/dap/DapUploadModal';
+import { listDaps, getDapById, deleteDap, uploadDap } from './services/dapService';
 import DapTable from './components/dap/DapTable';
 import DapDetailsDrawer from './components/dap/DapDetailsDrawer';
 
@@ -17,7 +16,8 @@ function AnaliseDAP() {
   });
   const [daps, setDaps] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const fileInputRef = useRef(null);
   const [selectedDap, setSelectedDap] = useState(null);
   const [loadingDetalhe, setLoadingDetalhe] = useState(false);
   const [feedback, setFeedback] = useState({ tipo: '', mensagem: '' });
@@ -104,9 +104,43 @@ function AnaliseDAP() {
           <h1 style={titleStyle}>Análise da DAP</h1>
           <p style={subtitleStyle}>Gerencie as declarações mensais de atos praticados, incluindo retificadoras.</p>
         </div>
-        <button type="button" style={primaryButtonStyle} onClick={() => setShowUploadModal(true)}>
-          + Nova DAP
+        <button
+          type="button"
+          style={primaryButtonStyle}
+          onClick={() => {
+            // open native file picker
+            if (fileInputRef.current) fileInputRef.current.click();
+          }}
+          disabled={uploadingFile}
+        >
+          {uploadingFile ? 'Enviando...' : '+ Nova DAP'}
         </button>
+        {/* hidden file input triggered by the button above */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/pdf"
+          style={{ display: 'none' }}
+          onChange={async (event) => {
+            const f = event.target.files?.[0] ?? null;
+            // clear the input so same file can be selected again later
+            event.target.value = '';
+            if (!f) return;
+
+            setUploadingFile(true);
+            setFeedback({ tipo: '', mensagem: '' });
+            try {
+              await uploadDap({ file: f, metadata: {} });
+              setFeedback({ tipo: 'sucesso', mensagem: 'DAP enviada com sucesso.' });
+              carregarDaps();
+            } catch (err) {
+              const mensagem = err?.response?.data?.mensagem || err?.message || 'Erro ao enviar a DAP.';
+              setFeedback({ tipo: 'erro', mensagem });
+            } finally {
+              setUploadingFile(false);
+            }
+          }}
+        />
       </header>
 
       <section style={filtersSectionStyle}>
@@ -178,12 +212,8 @@ function AnaliseDAP() {
         onDelete={handleExcluir}
       />
 
-      <DapUploadModal
-        isOpen={showUploadModal}
-        onClose={() => setShowUploadModal(false)}
-        onUploaded={handleUploadConcluido}
-        existingDaps={daps.filter((dap) => dap.tipo !== 'RETIFICADORA')}
-      />
+      {/* Modal removed from the primary flow (direct upload). If you need the modal elsewhere,
+          re-add it and control `isOpen` accordingly. */}
 
       <DapDetailsDrawer
         dap={selectedDap}

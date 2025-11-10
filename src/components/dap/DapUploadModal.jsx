@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { uploadDap } from '../../services/dapService';
 
-function DapUploadModal({ isOpen, onClose, onUploaded, existingDaps = [] }) {
+function DapUploadModal({ isOpen, onClose, onUploaded, existingDaps = [], initialFile = null }) {
   const [file, setFile] = useState(null);
   const [retificaId, setRetificaId] = useState('');
   const [observacoes, setObservacoes] = useState('');
@@ -15,6 +15,11 @@ function DapUploadModal({ isOpen, onClose, onUploaded, existingDaps = [] }) {
       setObservacoes('');
       setUploading(false);
       setError('');
+    } else {
+      // When opening, if an initialFile was provided by the parent, prefill it
+      if (initialFile) {
+        setFile(initialFile);
+      }
     }
   }, [isOpen]);
 
