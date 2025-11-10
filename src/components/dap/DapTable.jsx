@@ -7,12 +7,12 @@ function DapTable({ items = [], onSelect, onDelete, loading }) {
         <table style={tableStyle}>
           <thead>
             <tr>
-              <th>Ano</th>
-              <th>Mês</th>
-              <th>Retificadora</th>
-              <th>Data Transmissão</th>
-              <th>Serventia</th>
-              <th>Ações</th>
+              <th style={thStyle}>Ano</th>
+              <th style={thStyle}>Mês</th>
+              <th style={thStyle}>Retificadora</th>
+              <th style={thStyle}>Data Transmissão</th>
+              <th style={thStyle}>Serventia</th>
+              <th style={thStyle}>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -35,16 +35,16 @@ function DapTable({ items = [], onSelect, onDelete, loading }) {
                 <tr key={dap.id}
                   style={{ background: dap.retificadora ? '#fef3c7' : 'transparent' }}
                 >
-                  <td>{dap.anoReferencia ?? dap.ano ?? '—'}</td>
-                  <td>{dap.mesReferencia ?? dap.mes ?? '—'}</td>
-                  <td>
+                  <td style={tdStyle}>{dap.anoReferencia ?? dap.ano ?? '—'}</td>
+                  <td style={tdStyle}>{dap.mesReferencia ?? dap.mes ?? '—'}</td>
+                  <td style={tdStyle}>
                     <span style={badgeStyle(dap.retificadora)}>
                       {dap.retificadora ? 'SIM' : 'NÃO'}
                     </span>
                   </td>
-                  <td>{dap.dataTransmissao ? new Date(dap.dataTransmissao).toLocaleDateString('pt-BR') : '—'}</td>
-                  <td>{dap.serventiaNome ?? dap.nomeServentia ?? '—'}</td>
-                  <td style={{ whiteSpace: 'nowrap' }}>
+                  <td style={tdStyle}>{dap.dataTransmissao ? new Date(dap.dataTransmissao).toLocaleDateString('pt-BR') : '—'}</td>
+                  <td style={tdStyle}>{dap.serventiaNome ?? dap.nomeServentia ?? '—'}</td>
+                  <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
                     <button
                       type="button"
                       onClick={() => onSelect?.(dap)}
@@ -84,6 +84,20 @@ const tableStyle = {
   width: '100%',
   borderCollapse: 'collapse',
   fontSize: '14px',
+};
+
+const thStyle = {
+  textAlign: 'center',
+  padding: '12px',
+  borderBottom: '2px solid #e2e8f0',
+  fontWeight: 600,
+  color: '#1e293b',
+};
+
+const tdStyle = {
+  textAlign: 'center',
+  padding: '12px',
+  borderBottom: '1px solid #f1f5f9',
 };
 
 const loadingCellStyle = {
