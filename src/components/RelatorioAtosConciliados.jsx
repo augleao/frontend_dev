@@ -79,7 +79,7 @@ function RelatorioAtosConciliados() {
       doc.addImage(imgData, 'PNG', 30, y, 40, 40);
       doc.setFontSize(13);
       doc.setFont('helvetica', 'bold');
-      doc.text(dadosServentia.nome || dadosServentia.razao_social || '', 80, y + 15);
+      doc.text(dadosServentia.nome || dadosServentia.razao_social || '', 80, y + 10);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
       // Monta linhas do cabeçalho com todos os dados possíveis
@@ -92,9 +92,13 @@ function RelatorioAtosConciliados() {
       if (dadosServentia.telefone) headerLines.push(`Telefone: ${dadosServentia.telefone}`);
       if (dadosServentia.cnpj) headerLines.push(`CNPJ: ${dadosServentia.cnpj}`);
       if (dadosServentia.email) headerLines.push(`E-mail: ${dadosServentia.email}`);
-      doc.text(headerLines, 80, y + 32);
+      // Ajusta o y inicial do bloco de informações para não sobrepor filtros
+      let headerY = y + 25;
+      doc.text(headerLines, 80, headerY);
 
-      y += 55;
+      // Calcula altura do bloco do cabeçalho
+      let headerBlockHeight = 25 + (headerLines.length * 13);
+      y += Math.max(55, headerBlockHeight + 5);
       doc.setLineWidth(1);
       doc.line(30, y, pageWidth - 30, y);
       y += 18;
@@ -185,6 +189,15 @@ function RelatorioAtosConciliados() {
         tableWidth: 'auto',
       });
 
+      // Adiciona numeração de páginas no formato 01/02 no canto inferior direito
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        const pageLabel = `${String(i).padStart(2, '0')}/${String(pageCount).padStart(2, '0')}`;
+        doc.text(pageLabel, pageWidth - 50, doc.internal.pageSize.getHeight() - 20, { align: 'right' });
+      }
       window.open(doc.output('bloburl'), '_blank');
     });
   };
