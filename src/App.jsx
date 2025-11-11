@@ -10,14 +10,6 @@ import PrivateRoute from './PrivateRoute';
 import Home2 from './Home2';
 import MeusRelatorios from './components/MeusRelatorios';
 import RelatorioAtosConciliados from './components/RelatorioAtosConciliados';
-        <Route
-          path="/relatorio-atos-conciliados"
-          element={
-            <PrivateRoute>
-              <RelatorioAtosConciliados />
-            </PrivateRoute>
-          }
-        />
 import AdminDashboard from './AdminDashboard';
 import UsuariosAdmin from './UsuariosAdmin';
 import RenderBackupManager from './RenderBackupManager';
@@ -53,6 +45,15 @@ import AnaliseDAP from './AnaliseDAP';
 
 
 function App() {
+  // ...existing code...
+        <Route
+          path="/relatorio-atos-conciliados"
+          element={
+            <PrivateRoute>
+              <RelatorioAtosConciliados />
+            </PrivateRoute>
+          }
+        />
   // Fallback: se a URL vier com hash (ex.: /#/recibo/...), redireciona internamente
   function HashRedirector() {
     const navigate = useNavigate();
