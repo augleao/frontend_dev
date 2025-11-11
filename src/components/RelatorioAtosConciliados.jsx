@@ -87,6 +87,35 @@ function RelatorioAtosConciliados() {
     });
   };
 
+  // Calcular somatório dos valores filtrados
+  let totalDinheiro = 0, totalCartao = 0, totalPix = 0, totalCrc = 0, totalDepositoPrevio = 0;
+  relatorios
+    .filter(relatorio => {
+      if (periodo.inicio && new Date(relatorio.data_geracao) < new Date(periodo.inicio)) return false;
+      if (periodo.fim && new Date(relatorio.data_geracao) > new Date(periodo.fim)) return false;
+      return true;
+    })
+    .forEach(relatorio => {
+      let dados;
+      try {
+        dados = typeof relatorio.dados_relatorio === 'string' ? JSON.parse(relatorio.dados_relatorio) : relatorio.dados_relatorio;
+      } catch {
+        dados = {};
+      }
+      (dados.atos || []).forEach(ato => {
+        // Aplicar filtros de forma e ato
+        const formaOk = filtroFormas.length === 0 || filtroFormas.includes(ato.forma_pagamento);
+        const atoOk = filtroAtos.length === 0 || filtroAtos.includes(ato.descricao);
+        if (formaOk && atoOk) {
+          totalDinheiro += Number(ato.dinheiro_valor || ato.dinheiro || 0);
+          totalCartao += Number(ato.cartao_valor || ato.cartao || 0);
+          totalPix += Number(ato.pix_valor || ato.pix || 0);
+          totalCrc += Number(ato.crc_valor || ato.crc || 0);
+          totalDepositoPrevio += Number(ato.deposito_previo_valor || ato.deposito_previo || 0);
+        }
+      });
+    });
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -123,7 +152,7 @@ function RelatorioAtosConciliados() {
           </h1>
         </div>
 
-        {/* Filtros */}
+        {/* Filtros + Somatório */}
         <div style={{
           background: 'white',
           borderRadius: '12px',
@@ -133,7 +162,8 @@ function RelatorioAtosConciliados() {
           display: 'flex',
           flexWrap: 'wrap',
           gap: '24px',
-          alignItems: 'center'
+          alignItems: 'flex-start',
+          justifyContent: 'space-between'
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -143,7 +173,7 @@ function RelatorioAtosConciliados() {
               <input type="date" value={periodo.fim} onChange={e => { setPeriodo(p => { const novo = { ...p, fim: e.target.value }; setTimeout(carregarRelatorios, 0); return novo; }); }} style={{ padding: '6px', borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }} />
             </div>
             <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-              {[
+              {[ 
                 { label: 'Hoje', fn: () => {
                   const hoje = new Date();
                   const d = hoje.toISOString().slice(0,10);
@@ -256,6 +286,29 @@ function RelatorioAtosConciliados() {
           >
             Limpar Filtros
           </button>
+          {/* Somatório */}
+          <div style={{
+            minWidth: 220,
+            background: '#f8f8ff',
+            border: '1px solid #c7d2fe',
+            borderRadius: 10,
+            padding: '16px 18px',
+            marginLeft: 'auto',
+            boxShadow: '0 2px 8px rgba(76, 81, 255, 0.06)',
+            fontWeight: 600,
+            color: '#2c3e50',
+            fontSize: 15,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8
+          }}>
+            <div style={{ fontWeight: 700, color: '#4f46e5', fontSize: 16, marginBottom: 4 }}>Somatório dos Valores</div>
+            <div>Total em Dinheiro: <span style={{ color: '#2c3e50' }}>R$ {totalDinheiro.toFixed(2)}</span></div>
+            <div>Total em Cartão: <span style={{ color: '#2c3e50' }}>R$ {totalCartao.toFixed(2)}</span></div>
+            <div>Total em PIX: <span style={{ color: '#2c3e50' }}>R$ {totalPix.toFixed(2)}</span></div>
+            <div>Total em CRC: <span style={{ color: '#2c3e50' }}>R$ {totalCrc.toFixed(2)}</span></div>
+            <div>Total em Depósito Prévio: <span style={{ color: '#2c3e50' }}>R$ {totalDepositoPrevio.toFixed(2)}</span></div>
+          </div>
         </div>
 
         {/* Resultados */}
