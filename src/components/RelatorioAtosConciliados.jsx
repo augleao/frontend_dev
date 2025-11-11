@@ -1,8 +1,8 @@
 
 
 import React, { useState, useEffect } from 'react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import config from '../config';
 
 // Função auxiliar para buscar dados da serventia do usuário logado (padrão do sistema)
@@ -146,7 +146,7 @@ function RelatorioAtosConciliados() {
         'Qtde', 'Código', 'Descrição', 'Valor Total', 'Valor Faltante',
         'Dinheiro', 'Cartão', 'Pix', 'CRC', 'Depósito Prévio', 'Observações']];
 
-      doc.autoTable({
+      autoTable(doc, {
         head,
         body: dadosTabela,
         startY: y,
@@ -378,7 +378,7 @@ function RelatorioAtosConciliados() {
           alignItems: 'flex-start',
         }}>
           {/* Coluna 1: Filtro de datas */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <label style={{ fontWeight: 600, color: '#2c3e50', marginRight: 8 }}>Período:</label>
               <input type="date" value={periodo.inicio} onChange={e => { setPeriodo(p => { const novo = { ...p, inicio: e.target.value }; setTimeout(carregarRelatorios, 0); return novo; }); }} style={{ padding: '6px', borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }} />
@@ -462,23 +462,8 @@ function RelatorioAtosConciliados() {
                 </button>
               ))}
             </div>
-          </div>
-          {/* Coluna 2: Filtros de forma de pagamento e atos, um em cima do outro */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-start', justifyContent: 'flex-start' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <label style={{ fontWeight: 600, color: '#2c3e50', marginBottom: 2 }}>Forma de Pagamento:</label>
-              <select multiple value={filtroFormas} onChange={e => setFiltroFormas(Array.from(e.target.selectedOptions, o => o.value))} style={{ minWidth: 160, padding: 6, borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }}>
-                {formasPagamento.map(f => <option key={f} value={f}>{f}</option>)}
-              </select>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <label style={{ fontWeight: 600, color: '#2c3e50', marginBottom: 2 }}>Atos:</label>
-              <select multiple value={filtroAtos} onChange={e => setFiltroAtos(Array.from(e.target.selectedOptions, o => o.value))} style={{ minWidth: 160, padding: 6, borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }}>
-                {tiposAto.map(a => <option key={a} value={a}>{a}</option>)}
-              </select>
-            </div>
-            {/* Espaço para alinhar o botão abaixo dos filtros */}
-            <div style={{ height: 4, display: 'flex', gap: 6, width: '100%' }}>
+            {/* Botões de ação */}
+            <div style={{ display: 'flex', gap: 6, width: '100%', marginTop: 6 }}>
               <button
                 onClick={() => {
                   setPeriodo({ inicio: '', fim: '' });
@@ -487,7 +472,7 @@ function RelatorioAtosConciliados() {
                 }}
                 style={{
                   padding: '10px 22px',
-                  background: '#f87171', // vermelho claro
+                  background: '#f87171',
                   color: '#fff',
                   border: 'none',
                   borderRadius: 8,
@@ -496,7 +481,6 @@ function RelatorioAtosConciliados() {
                   cursor: 'pointer',
                   boxShadow: '0 2px 8px rgba(220, 38, 38, 0.10)',
                   alignSelf: 'stretch',
-                  marginTop: 12,
                   transition: 'background 0.2s',
                   letterSpacing: 0.5,
                   flex: 1
@@ -518,7 +502,6 @@ function RelatorioAtosConciliados() {
                   cursor: 'pointer',
                   boxShadow: '0 2px 8px rgba(76, 81, 255, 0.10)',
                   alignSelf: 'stretch',
-                  marginTop: 12,
                   transition: 'background 0.2s',
                   letterSpacing: 0.5,
                   flex: 1
@@ -528,6 +511,23 @@ function RelatorioAtosConciliados() {
                 Gerar Relatório PDF
               </button>
             </div>
+          </div>
+          {/* Coluna 2: Filtros de forma de pagamento e atos, um em cima do outro */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-start', justifyContent: 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <label style={{ fontWeight: 600, color: '#2c3e50', marginBottom: 2 }}>Forma de Pagamento:</label>
+              <select multiple value={filtroFormas} onChange={e => setFiltroFormas(Array.from(e.target.selectedOptions, o => o.value))} style={{ minWidth: 160, padding: 6, borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }}>
+                {formasPagamento.map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <label style={{ fontWeight: 600, color: '#2c3e50', marginBottom: 2 }}>Atos:</label>
+              <select multiple value={filtroAtos} onChange={e => setFiltroAtos(Array.from(e.target.selectedOptions, o => o.value))} style={{ minWidth: 160, padding: 6, borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }}>
+                {tiposAto.map(a => <option key={a} value={a}>{a}</option>)}
+              </select>
+            </div>
+            {/* Espaço reservado para manter alinhamento visual */}
+            <div style={{ height: 4 }} />
           </div>
           {/* Coluna 3: Somatório */}
           <div style={{
