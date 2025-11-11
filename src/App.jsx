@@ -46,14 +46,6 @@ import AnaliseDAP from './AnaliseDAP';
 
 function App() {
   // ...existing code...
-        <Route
-          path="/relatorio-atos-conciliados"
-          element={
-            <PrivateRoute>
-              <RelatorioAtosConciliados />
-            </PrivateRoute>
-          }
-        />
   // Fallback: se a URL vier com hash (ex.: /#/recibo/...), redireciona internamente
   function HashRedirector() {
     const navigate = useNavigate();
@@ -79,6 +71,14 @@ function App() {
       <NavBar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route
+          path="/relatorio-atos-conciliados"
+          element={
+            <PrivateRoute>
+              <RelatorioAtosConciliados />
+            </PrivateRoute>
+          }
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
   <Route path="/auth/onedrive/callback" element={<OnedriveOAuthCallback />} />
