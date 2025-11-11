@@ -1,5 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import config from '../config';
+
+// Função auxiliar para pegar usuário logado (igual MeusRelatorios.jsx)
+function getUsuarioLogado() {
+  try {
+    return JSON.parse(localStorage.getItem('usuario')) || {};
+  } catch {
+    return {};
+  }
+}
+
 
 
 function RelatorioAtosConciliados() {
@@ -17,6 +28,7 @@ function RelatorioAtosConciliados() {
   const [tiposAto, setTiposAto] = useState([]);
   const [filtroFormas, setFiltroFormas] = useState([]);
   const [filtroAtos, setFiltroAtos] = useState([]);
+  const usuario = getUsuarioLogado();
 
   useEffect(() => {
     carregarRelatorios();
@@ -28,6 +40,10 @@ function RelatorioAtosConciliados() {
     try {
       const token = localStorage.getItem('token');
       let url = `${config.apiURL}/meus-relatorios`;
+      // Filtrar por serventia igual MeusRelatorios.jsx
+      if (usuario?.serventia) {
+        url += `?serventia=${encodeURIComponent(usuario.serventia)}`;
+      }
       const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
