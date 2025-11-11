@@ -124,11 +124,84 @@ function RelatorioAtosConciliados() {
           gap: '24px',
           alignItems: 'center'
         }}>
-          <div>
-            <label style={{ fontWeight: 600, color: '#2c3e50', marginRight: 8 }}>Período:</label>
-            <input type="date" value={periodo.inicio} onChange={e => setPeriodo(p => ({ ...p, inicio: e.target.value }))} style={{ padding: '6px', borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }} />
-            <span style={{ margin: '0 8px', color: '#888' }}>a</span>
-            <input type="date" value={periodo.fim} onChange={e => setPeriodo(p => ({ ...p, fim: e.target.value }))} style={{ padding: '6px', borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <label style={{ fontWeight: 600, color: '#2c3e50', marginRight: 8 }}>Período:</label>
+              <input type="date" value={periodo.inicio} onChange={e => setPeriodo(p => ({ ...p, inicio: e.target.value }))} style={{ padding: '6px', borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }} />
+              <span style={{ margin: '0 8px', color: '#888' }}>a</span>
+              <input type="date" value={periodo.fim} onChange={e => setPeriodo(p => ({ ...p, fim: e.target.value }))} style={{ padding: '6px', borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }} />
+            </div>
+            <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+              {[
+                { label: 'Hoje', fn: () => {
+                  const hoje = new Date();
+                  const d = hoje.toISOString().slice(0,10);
+                  setPeriodo({ inicio: d, fim: d });
+                }},
+                { label: 'Ontem', fn: () => {
+                  const ontem = new Date(); ontem.setDate(ontem.getDate() - 1);
+                  const d = ontem.toISOString().slice(0,10);
+                  setPeriodo({ inicio: d, fim: d });
+                }},
+                { label: 'Esta Semana', fn: () => {
+                  const hoje = new Date();
+                  const diaSemana = hoje.getDay() === 0 ? 7 : hoje.getDay();
+                  const inicio = new Date(hoje); inicio.setDate(hoje.getDate() - (diaSemana - 1));
+                  const fim = new Date(hoje); fim.setDate(inicio.getDate() + 6);
+                  setPeriodo({
+                    inicio: inicio.toISOString().slice(0,10),
+                    fim: fim.toISOString().slice(0,10)
+                  });
+                }},
+                { label: 'Semana Passada', fn: () => {
+                  const hoje = new Date();
+                  const diaSemana = hoje.getDay() === 0 ? 7 : hoje.getDay();
+                  const fim = new Date(hoje); fim.setDate(hoje.getDate() - diaSemana);
+                  const inicio = new Date(fim); inicio.setDate(fim.getDate() - 6);
+                  setPeriodo({
+                    inicio: inicio.toISOString().slice(0,10),
+                    fim: fim.toISOString().slice(0,10)
+                  });
+                }},
+                { label: 'Este Mês', fn: () => {
+                  const hoje = new Date();
+                  const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+                  const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+                  setPeriodo({
+                    inicio: inicio.toISOString().slice(0,10),
+                    fim: fim.toISOString().slice(0,10)
+                  });
+                }},
+                { label: 'Mês Passado', fn: () => {
+                  const hoje = new Date();
+                  const inicio = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+                  const fim = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
+                  setPeriodo({
+                    inicio: inicio.toISOString().slice(0,10),
+                    fim: fim.toISOString().slice(0,10)
+                  });
+                }},
+              ].map(({ label, fn }) => (
+                <button
+                  key={label}
+                  onClick={fn}
+                  style={{
+                    padding: '4px 12px',
+                    background: '#f3f4f6',
+                    color: '#4f46e5',
+                    border: '1px solid #c7d2fe',
+                    borderRadius: 6,
+                    fontWeight: 600,
+                    fontSize: 13,
+                    cursor: 'pointer',
+                    transition: 'background 0.2s',
+                  }}
+                  type="button"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
           <div>
             <label style={{ fontWeight: 600, color: '#2c3e50', marginRight: 8 }}>Forma de Pagamento:</label>
