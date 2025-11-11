@@ -35,26 +35,30 @@ function RelatorioAtosConciliados() {
     const pageWidth = doc.internal.pageSize.getWidth();
     let y = 40;
 
-    // Brasão da República (pequeno, à esquerda)
-    const brasaoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Coat_of_arms_of_Brazil.svg/120px-Coat_of_arms_of_Brazil.svg.png';
-    // Dados da serventia
+    // Brasão da República (pequeno, à esquerda) - arquivo local
+    const brasaoPath = `${window.location.origin}/brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png`;
     const dadosServentia = getDadosServentia(usuario);
 
-    // Adiciona brasão (imagem externa, precisa ser carregada como base64)
-    // Como jsPDF não suporta imagens externas diretamente, faz fetch e converte para base64
-    const carregarImagem = (url) =>
-      fetch(url)
-        .then(r => r.blob())
-        .then(blob => new Promise((resolve) => {
-          const reader = new window.FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(blob);
-        }));
+    // Carrega imagem local como base64
+    const carregarImagem = (src) => {
+      return new Promise((resolve, reject) => {
+        const img = new window.Image();
+        img.crossOrigin = '';
+        img.onload = function () {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = reject;
+        img.src = src;
+      });
+    };
 
-    carregarImagem(brasaoUrl).then(imgData => {
-      // Brasão à esquerda
+    carregarImagem(brasaoPath).then(imgData => {
       doc.addImage(imgData, 'PNG', 30, y, 40, 40);
-      // Dados da serventia ao lado
       doc.setFontSize(13);
       doc.setFont('helvetica', 'bold');
       doc.text(dadosServentia.nome, 80, y + 15);
@@ -68,12 +72,10 @@ function RelatorioAtosConciliados() {
       ].filter(Boolean), 80, y + 32);
 
       y += 55;
-      // Linha horizontal
       doc.setLineWidth(1);
       doc.line(30, y, pageWidth - 30, y);
       y += 18;
 
-      // Filtros utilizados
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.text('Filtros Utilizados:', 30, y);
@@ -86,7 +88,6 @@ function RelatorioAtosConciliados() {
       doc.text(`Forma de Pagamento: ${filtroFormas.length > 0 ? filtroFormas.join(', ') : 'Todas'}`, 30, y);
       y += 18;
 
-      // Totalizadores
       doc.setFont('helvetica', 'bold');
       doc.text('Totalizadores:', 30, y);
       doc.setFont('helvetica', 'normal');
@@ -105,13 +106,10 @@ function RelatorioAtosConciliados() {
       doc.text(`Total Geral: R$ ${totalGeral.toFixed(2)}`, 30, y);
       y += 18;
 
-      // Linha horizontal
       doc.setLineWidth(1);
       doc.line(30, y, pageWidth - 30, y);
       y += 18;
 
-      // Dados da tabela (atos filtrados)
-      // Monta os dados igual à tabela da tela
       let dadosTabela = [];
       relatorios
         .filter(relatorio => {
@@ -144,7 +142,6 @@ function RelatorioAtosConciliados() {
           });
         });
 
-      // Cabeçalho da tabela
       const head = [[
         'Qtde', 'Código', 'Descrição', 'Valor Total', 'Valor Faltante',
         'Dinheiro', 'Cartão', 'Pix', 'CRC', 'Depósito Prévio', 'Observações']];
@@ -160,7 +157,6 @@ function RelatorioAtosConciliados() {
         tableWidth: 'auto',
       });
 
-      // Abrir PDF em nova guia
       window.open(doc.output('bloburl'), '_blank');
     });
   };
@@ -373,23 +369,23 @@ function RelatorioAtosConciliados() {
         <div style={{
           background: '#d1d5e6',
           borderRadius: '12px',
-          padding: '14px 16px',
+          padding: '10px 10px',
           marginBottom: '10px',
           boxShadow: '0 2px 10px rgba(0, 0, 0, 0.06)',
           display: 'grid',
           gridTemplateColumns: '1fr 1.2fr 1fr',
-          gap: '24px',
+          gap: '14px',
           alignItems: 'flex-start',
         }}>
           {/* Coluna 1: Filtro de datas */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <label style={{ fontWeight: 600, color: '#2c3e50', marginRight: 8 }}>Período:</label>
               <input type="date" value={periodo.inicio} onChange={e => { setPeriodo(p => { const novo = { ...p, inicio: e.target.value }; setTimeout(carregarRelatorios, 0); return novo; }); }} style={{ padding: '6px', borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }} />
               <span style={{ margin: '0 8px', color: '#888' }}>a</span>
               <input type="date" value={periodo.fim} onChange={e => { setPeriodo(p => { const novo = { ...p, fim: e.target.value }; setTimeout(carregarRelatorios, 0); return novo; }); }} style={{ padding: '6px', borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }} />
             </div>
-            <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 4, marginTop: 2, flexWrap: 'wrap' }}>
               {[ 
                 { label: 'Hoje', fn: () => {
                   const hoje = new Date();
@@ -468,21 +464,21 @@ function RelatorioAtosConciliados() {
             </div>
           </div>
           {/* Coluna 2: Filtros de forma de pagamento e atos, um em cima do outro */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'flex-start', justifyContent: 'flex-start' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-start', justifyContent: 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <label style={{ fontWeight: 600, color: '#2c3e50', marginBottom: 2 }}>Forma de Pagamento:</label>
               <select multiple value={filtroFormas} onChange={e => setFiltroFormas(Array.from(e.target.selectedOptions, o => o.value))} style={{ minWidth: 160, padding: 6, borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }}>
                 {formasPagamento.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <label style={{ fontWeight: 600, color: '#2c3e50', marginBottom: 2 }}>Atos:</label>
               <select multiple value={filtroAtos} onChange={e => setFiltroAtos(Array.from(e.target.selectedOptions, o => o.value))} style={{ minWidth: 160, padding: 6, borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }}>
                 {tiposAto.map(a => <option key={a} value={a}>{a}</option>)}
               </select>
             </div>
             {/* Espaço para alinhar o botão abaixo dos filtros */}
-            <div style={{ height: 8, display: 'flex', gap: 10, width: '100%' }}>
+            <div style={{ height: 4, display: 'flex', gap: 6, width: '100%' }}>
               <button
                 onClick={() => {
                   setPeriodo({ inicio: '', fim: '' });
