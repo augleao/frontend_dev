@@ -104,9 +104,27 @@ function RelatorioAtosConciliados() {
 
   // Filtros
   // O filtro de período deve ser aplicado ao campo Data de Geração do relatório, não ao campo data dos atos
+  // Filtro de forma de pagamento: corresponde às colunas da tabela
+  const formaPagamentoCampos = {
+    'Dinheiro': ['dinheiro', 'dinheiro_valor'],
+    'Cartão': ['cartao', 'cartao_valor'],
+    'PIX': ['pix', 'pix_valor'],
+    'CRC': ['crc', 'crc_valor'],
+    'Depósito Prévio': ['deposito_previo', 'deposito_previo_valor']
+  };
+
   const filtrarAtos = (atos) => {
     return atos.filter(ato => {
-      const formaOk = filtroFormas.length === 0 || filtroFormas.includes(ato.forma_pagamento);
+      // Se não há filtro de forma, passa tudo
+      let formaOk = true;
+      if (filtroFormas.length > 0) {
+        formaOk = filtroFormas.some(forma => {
+          const campos = formaPagamentoCampos[forma];
+          if (!campos) return false;
+          // Considera valor > 0 em qualquer campo relacionado à forma
+          return campos.some(campo => Number(ato[campo] || 0) > 0);
+        });
+      }
       const atoOk = filtroAtos.length === 0 || filtroAtos.includes(ato.descricao);
       return formaOk && atoOk;
     });
@@ -324,7 +342,7 @@ function RelatorioAtosConciliados() {
             border: '1px solid #c7d2fe',
             borderRadius: 10,
             padding: '16px 18px',
-            marginLeft: 'auto',
+            /* marginLeft removido para alinhar dentro do container de filtros */
             boxShadow: '0 2px 8px rgba(76, 81, 255, 0.06)',
             fontWeight: 600,
             color: '#2c3e50',
