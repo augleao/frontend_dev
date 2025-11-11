@@ -15,6 +15,20 @@ function getDadosServentia(usuario) {
     cnpj: usuario?.cnpj || '',
   };
 }
+
+
+// Função auxiliar para pegar usuário logado (igual MeusRelatorios.jsx)
+function getUsuarioLogado() {
+  try {
+    return JSON.parse(localStorage.getItem('usuario')) || {};
+  } catch {
+    return {};
+  }
+}
+
+
+
+function RelatorioAtosConciliados() {
   // Função para gerar o PDF do relatório (agora dentro do componente, com acesso ao estado)
   const gerarRelatorioPDF = () => {
     const doc = new jsPDF('p', 'pt', 'a4');
@@ -150,19 +164,6 @@ function getDadosServentia(usuario) {
       window.open(doc.output('bloburl'), '_blank');
     });
   };
-
-// Função auxiliar para pegar usuário logado (igual MeusRelatorios.jsx)
-function getUsuarioLogado() {
-  try {
-    return JSON.parse(localStorage.getItem('usuario')) || {};
-  } catch {
-    return {};
-  }
-}
-
-
-
-function RelatorioAtosConciliados() {
   const [relatorios, setRelatorios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [periodo, setPeriodo] = useState({ inicio: '', fim: '' });
