@@ -6,7 +6,14 @@ function RelatorioAtosConciliados() {
   const [relatorios, setRelatorios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [periodo, setPeriodo] = useState({ inicio: '', fim: '' });
-  const [formasPagamento, setFormasPagamento] = useState([]);
+  const formasPagamentoPadrao = [
+    'Dinheiro',
+    'Cartão',
+    'PIX',
+    'CRC',
+    'Depósito Prévio'
+  ];
+  const [formasPagamento, setFormasPagamento] = useState(formasPagamentoPadrao);
   const [tiposAto, setTiposAto] = useState([]);
   const [filtroFormas, setFiltroFormas] = useState([]);
   const [filtroAtos, setFiltroAtos] = useState([]);
@@ -46,7 +53,8 @@ function RelatorioAtosConciliados() {
             }
           });
         });
-        setFormasPagamento(Array.from(formas));
+  // Sempre usar as formas padronizadas
+  setFormasPagamento(formasPagamentoPadrao);
         setTiposAto(Array.from(atos));
       } else {
         alert(data.message || 'Erro ao carregar relatórios.');
@@ -134,6 +142,30 @@ function RelatorioAtosConciliados() {
               {tiposAto.map(a => <option key={a} value={a}>{a}</option>)}
             </select>
           </div>
+          <button
+            onClick={() => {
+              setPeriodo({ inicio: '', fim: '' });
+              setFiltroFormas([]);
+              setFiltroAtos([]);
+            }}
+            style={{
+              padding: '8px 18px',
+              background: '#e0e7ff',
+              color: '#4f46e5',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 700,
+              fontSize: 15,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(76, 81, 255, 0.08)',
+              alignSelf: 'flex-end',
+              marginLeft: 'auto',
+              transition: 'background 0.2s'
+            }}
+            title="Limpar todos os filtros"
+          >
+            Limpar Filtros
+          </button>
         </div>
 
         {/* Resultados */}
@@ -157,6 +189,19 @@ function RelatorioAtosConciliados() {
               }
               const atosFiltrados = filtrarAtos(dados.atos || []);
               if (atosFiltrados.length === 0) return null;
+              // Calcular totais por forma de pagamento
+              let totalDinheiro = 0;
+              let totalCartao = 0;
+              let totalPix = 0;
+              let totalCrc = 0;
+              let totalDepositoPrevio = 0;
+              atosFiltrados.forEach(ato => {
+                totalDinheiro += Number(ato.dinheiro_valor || ato.dinheiro || 0);
+                totalCartao += Number(ato.cartao_valor || ato.cartao || 0);
+                totalPix += Number(ato.pix_valor || ato.pix || 0);
+                totalCrc += Number(ato.crc_valor || ato.crc || 0);
+                totalDepositoPrevio += Number(ato.deposito_previo_valor || ato.deposito_previo || 0);
+              });
               return (
                 <div key={relatorio.id} style={{
                   background: 'white',
@@ -169,8 +214,12 @@ function RelatorioAtosConciliados() {
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginBottom: 12 }}>
                     <div><strong>ID:</strong> {relatorio.id}</div>
                     <div><strong>Data de Geração:</strong> {new Date(relatorio.data_geracao).toLocaleString('pt-BR')}</div>
-                    <div><strong>Serventia:</strong> {dados.serventia || relatorio.serventia}</div>
                     <div><strong>Responsável:</strong> {dados.responsavel}</div>
+                    <div><strong>Total em Dinheiro:</strong> R$ {totalDinheiro.toFixed(2)}</div>
+                    <div><strong>Total em Cartão:</strong> R$ {totalCartao.toFixed(2)}</div>
+                    <div><strong>Total em PIX:</strong> R$ {totalPix.toFixed(2)}</div>
+                    <div><strong>Total em CRC:</strong> R$ {totalCrc.toFixed(2)}</div>
+                    <div><strong>Total em Depósito Prévio:</strong> R$ {totalDepositoPrevio.toFixed(2)}</div>
                   </div>
                   <div style={{ marginTop: 12 }}>
                     <strong style={{ color: '#764ba2' }}>Atos Conciliados:</strong>
