@@ -300,20 +300,32 @@ function RelatorioAtosConciliados() {
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15, background: 'white' }}>
                         <thead>
                           <tr style={{ background: '#f0f0f0' }}>
-                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Data</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Qtde</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Código</th>
                             <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Descrição</th>
-                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Forma de Pagamento</th>
                             <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Valor Total</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Valor Faltante</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Dinheiro</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Cartão</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Pix</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>CRC</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Depósito Prévio</th>
                             <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Observações</th>
                           </tr>
                         </thead>
                         <tbody>
                           {atosFiltrados.map((ato, idx) => (
                             <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
-                              <td style={{ padding: 8 }}>{ato.data ? new Date(ato.data).toLocaleDateString('pt-BR') : '-'}</td>
+                              <td style={{ padding: 8 }}>{ato.quantidade}</td>
+                              <td style={{ padding: 8 }}>{ato.codigo}</td>
                               <td style={{ padding: 8 }}>{ato.descricao}</td>
-                              <td style={{ padding: 8 }}>{ato.forma_pagamento}</td>
                               <td style={{ padding: 8 }}>R$ {Number(ato.valor_total).toFixed(2)}</td>
+                              <td style={{ padding: 8 }}>R$ {Number(ato.valor_faltante).toFixed(2)}</td>
+                              <td style={{ padding: 8 }}>{ato.dinheiro_qtd} / R$ {Number(ato.dinheiro_valor).toFixed(2)}</td>
+                              <td style={{ padding: 8 }}>{ato.cartao_qtd} / R$ {Number(ato.cartao_valor).toFixed(2)}</td>
+                              <td style={{ padding: 8 }}>{ato.pix_qtd} / R$ {Number(ato.pix_valor).toFixed(2)}</td>
+                              <td style={{ padding: 8 }}>{ato.crc_qtd} / R$ {Number(ato.crc_valor).toFixed(2)}</td>
+                              <td style={{ padding: 8 }}>{ato.deposito_previo_qtd} / R$ {Number(ato.deposito_previo_valor).toFixed(2)}</td>
                               <td style={{ padding: 8 }}>{ato.observacoes}</td>
                             </tr>
                           ))}
