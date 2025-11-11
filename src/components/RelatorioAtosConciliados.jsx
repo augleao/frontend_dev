@@ -65,8 +65,17 @@ function RelatorioAtosConciliados() {
               }
             });
           });
-        setFormasPagamento(Array.from(formas));
-        setTiposAto(Array.from(atos));
+        // Se não houver relatórios no período, mostrar todas as opções padrão
+        if (formas.size === 0) {
+          setFormasPagamento(formasPagamentoPadrao);
+        } else {
+          setFormasPagamento(Array.from(formas));
+        }
+        if (atos.size === 0) {
+          setTiposAto([]);
+        } else {
+          setTiposAto(Array.from(atos));
+        }
       } else {
         alert(data.message || 'Erro ao carregar relatórios.');
       }
