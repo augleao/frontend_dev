@@ -216,6 +216,7 @@ function RelatorioAtosConciliados() {
     'Depósito Prévio'
   ];
   const [formasPagamento, setFormasPagamento] = useState(formasPagamentoPadrao);
+  // tiposAto agora será um array de objetos: { codigo, descricao }
   const [tiposAto, setTiposAto] = useState([]);
   const [filtroFormas, setFiltroFormas] = useState([]);
   const [filtroAtos, setFiltroAtos] = useState([]);
@@ -245,7 +246,7 @@ function RelatorioAtosConciliados() {
         setRelatorios(data.relatorios || []);
         // Coletar formas de pagamento e tipos de ato únicos considerando apenas relatórios do período
         const formas = new Set();
-        const atos = new Set();
+        const atosMap = new Map();
         (data.relatorios || [])
           .filter(rel => {
             // Filtro de período pelo campo Data de Geração
@@ -272,7 +273,10 @@ function RelatorioAtosConciliados() {
                 if (Number(ato.pix_valor || ato.pix || 0) > 0) formas.add('PIX');
                 if (Number(ato.crc_valor || ato.crc || 0) > 0) formas.add('CRC');
                 if (Number(ato.deposito_previo_valor || ato.deposito_previo || 0) > 0) formas.add('Depósito Prévio');
-                if (ato.descricao) atos.add(ato.descricao);
+                // Adiciona ato ao map se não existir (chave: descricao, valor: {codigo, descricao})
+                if (ato.descricao && ato.codigo && !atosMap.has(ato.descricao)) {
+                  atosMap.set(ato.descricao, { codigo: ato.codigo, descricao: ato.descricao });
+                }
               }
             });
           });
@@ -283,9 +287,9 @@ function RelatorioAtosConciliados() {
           setFormasPagamento(Array.from(formas));
         }
         // Sempre atualizar os tipos de ato para o período filtrado
-        setTiposAto(Array.from(atos));
+        setTiposAto(Array.from(atosMap.values()));
         // Se o filtro de atos estava com opções que não existem mais, limpa o filtro
-        setFiltroAtos(prev => prev.filter(a => atos.has(a)));
+        setFiltroAtos(prev => prev.filter(a => atosMap.has(a)));
       } else {
         alert(data.message || 'Erro ao carregar relatórios.');
       }
@@ -578,7 +582,11 @@ function RelatorioAtosConciliados() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <label style={{ fontWeight: 600, color: '#2c3e50', marginBottom: 2 }}>Atos:</label>
               <select multiple value={filtroAtos} onChange={e => setFiltroAtos(Array.from(e.target.selectedOptions, o => o.value))} style={{ minWidth: 160, padding: 6, borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }}>
-                {tiposAto.map(a => <option key={a} value={a}>{a}</option>)}
+                {tiposAto.map(a => (
+                  <option key={a.codigo + '-' + a.descricao} value={a.descricao}>
+                    {a.codigo} - {a.descricao}
+                  </option>
+                ))}
               </select>
             </div>
             {/* Espaço reservado para manter alinhamento visual */}
