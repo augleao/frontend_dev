@@ -1,10 +1,12 @@
 
+
 import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import config from '../config';
+
 // Função auxiliar para buscar dados da serventia do usuário logado (padrão do sistema)
 function getDadosServentia(usuario) {
-  // Exemplo: CaixaTableEscrevente.jsx usa usuario.serventia_nome, usuario.endereco, usuario.cidade, usuario.telefone, usuario.cnpj
   return {
     nome: usuario?.serventia_nome || usuario?.serventia || '',
     endereco: usuario?.endereco || '',
@@ -13,7 +15,7 @@ function getDadosServentia(usuario) {
     cnpj: usuario?.cnpj || '',
   };
 }
-  // Função para gerar o PDF do relatório
+  // Função para gerar o PDF do relatório (agora dentro do componente, com acesso ao estado)
   const gerarRelatorioPDF = () => {
     const doc = new jsPDF('p', 'pt', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -148,7 +150,6 @@ function getDadosServentia(usuario) {
       window.open(doc.output('bloburl'), '_blank');
     });
   };
-import config from '../config';
 
 // Função auxiliar para pegar usuário logado (igual MeusRelatorios.jsx)
 function getUsuarioLogado() {
