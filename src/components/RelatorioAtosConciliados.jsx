@@ -185,12 +185,12 @@ function RelatorioAtosConciliados() {
           padding: '16px',
           marginBottom: '18px',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-          display: 'flex',
-          flexWrap: 'wrap',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1.2fr 1fr',
           gap: '24px',
           alignItems: 'flex-start',
-          justifyContent: 'space-between'
         }}>
+          {/* Coluna 1: Filtro de datas */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <label style={{ fontWeight: 600, color: '#2c3e50', marginRight: 8 }}>Período:</label>
@@ -276,43 +276,49 @@ function RelatorioAtosConciliados() {
               ))}
             </div>
           </div>
-          <div>
-            <label style={{ fontWeight: 600, color: '#2c3e50', marginRight: 8 }}>Forma de Pagamento:</label>
-            <select multiple value={filtroFormas} onChange={e => setFiltroFormas(Array.from(e.target.selectedOptions, o => o.value))} style={{ minWidth: 160, padding: 6, borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }}>
-              {formasPagamento.map(f => <option key={f} value={f}>{f}</option>)}
-            </select>
+          {/* Coluna 2: Filtros de forma de pagamento e atos, um em cima do outro */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'flex-start', justifyContent: 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <label style={{ fontWeight: 600, color: '#2c3e50', marginBottom: 2 }}>Forma de Pagamento:</label>
+              <select multiple value={filtroFormas} onChange={e => setFiltroFormas(Array.from(e.target.selectedOptions, o => o.value))} style={{ minWidth: 160, padding: 6, borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }}>
+                {formasPagamento.map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <label style={{ fontWeight: 600, color: '#2c3e50', marginBottom: 2 }}>Atos:</label>
+              <select multiple value={filtroAtos} onChange={e => setFiltroAtos(Array.from(e.target.selectedOptions, o => o.value))} style={{ minWidth: 160, padding: 6, borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }}>
+                {tiposAto.map(a => <option key={a} value={a}>{a}</option>)}
+              </select>
+            </div>
+            {/* Espaço para alinhar o botão abaixo dos filtros */}
+            <div style={{ height: 8 }} />
+            <button
+              onClick={() => {
+                setPeriodo({ inicio: '', fim: '' });
+                setFiltroFormas([]);
+                setFiltroAtos([]);
+              }}
+              style={{
+                padding: '10px 22px',
+                background: '#f87171', // vermelho claro
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                fontWeight: 700,
+                fontSize: 15,
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(220, 38, 38, 0.10)',
+                alignSelf: 'stretch',
+                marginTop: 12,
+                transition: 'background 0.2s',
+                letterSpacing: 0.5,
+              }}
+              title="Limpar todos os filtros"
+            >
+              Limpar Filtros
+            </button>
           </div>
-          <div>
-            <label style={{ fontWeight: 600, color: '#2c3e50', marginRight: 8 }}>Atos:</label>
-            <select multiple value={filtroAtos} onChange={e => setFiltroAtos(Array.from(e.target.selectedOptions, o => o.value))} style={{ minWidth: 160, padding: 6, borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }}>
-              {tiposAto.map(a => <option key={a} value={a}>{a}</option>)}
-            </select>
-          </div>
-          <button
-            onClick={() => {
-              setPeriodo({ inicio: '', fim: '' });
-              setFiltroFormas([]);
-              setFiltroAtos([]);
-            }}
-            style={{
-              padding: '8px 18px',
-              background: '#e0e7ff',
-              color: '#4f46e5',
-              border: 'none',
-              borderRadius: 8,
-              fontWeight: 700,
-              fontSize: 15,
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(76, 81, 255, 0.08)',
-              alignSelf: 'flex-end',
-              marginLeft: 'auto',
-              transition: 'background 0.2s'
-            }}
-            title="Limpar todos os filtros"
-          >
-            Limpar Filtros
-          </button>
-          {/* Somatório */}
+          {/* Coluna 3: Somatório */}
           <div style={{
             minWidth: 220,
             background: '#f8f8ff',
