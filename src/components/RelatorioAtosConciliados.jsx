@@ -87,11 +87,10 @@ function RelatorioAtosConciliados() {
         } else {
           setFormasPagamento(Array.from(formas));
         }
-        if (atos.size === 0) {
-          setTiposAto([]);
-        } else {
-          setTiposAto(Array.from(atos));
-        }
+        // Sempre atualizar os tipos de ato para o período filtrado
+        setTiposAto(Array.from(atos));
+        // Se o filtro de atos estava com opções que não existem mais, limpa o filtro
+        setFiltroAtos(prev => prev.filter(a => atos.has(a)));
       } else {
         alert(data.message || 'Erro ao carregar relatórios.');
       }
@@ -199,7 +198,7 @@ function RelatorioAtosConciliados() {
       }}>
         {/* Header */}
         <div style={{
-          background: '#f7f8fa',
+          background: '#ececf3',
           borderRadius: '12px',
           padding: '14px 16px',
           marginBottom: '10px',
@@ -222,7 +221,7 @@ function RelatorioAtosConciliados() {
 
         {/* Filtros + Somatório */}
         <div style={{
-          background: '#f7f8fa',
+          background: '#ececf3',
           borderRadius: '12px',
           padding: '14px 16px',
           marginBottom: '10px',
@@ -431,7 +430,7 @@ function RelatorioAtosConciliados() {
               });
               return (
                 <div key={relatorio.id} style={{
-                  background: '#f7f8fa',
+                  background: '#ececf3',
                   border: '1.5px solid #764ba2',
                   borderRadius: 12,
                   boxShadow: '0 2px 10px rgba(76, 81, 255, 0.06)',
