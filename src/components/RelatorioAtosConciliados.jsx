@@ -1,5 +1,153 @@
 
 import React, { useState, useEffect } from 'react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+// Função auxiliar para buscar dados da serventia do usuário logado (padrão do sistema)
+function getDadosServentia(usuario) {
+  // Exemplo: CaixaTableEscrevente.jsx usa usuario.serventia_nome, usuario.endereco, usuario.cidade, usuario.telefone, usuario.cnpj
+  return {
+    nome: usuario?.serventia_nome || usuario?.serventia || '',
+    endereco: usuario?.endereco || '',
+    cidade: usuario?.cidade || '',
+    telefone: usuario?.telefone || '',
+    cnpj: usuario?.cnpj || '',
+  };
+}
+  // Função para gerar o PDF do relatório
+  const gerarRelatorioPDF = () => {
+    const doc = new jsPDF('p', 'pt', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let y = 40;
+
+    // Brasão da República (pequeno, à esquerda)
+    const brasaoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Coat_of_arms_of_Brazil.svg/120px-Coat_of_arms_of_Brazil.svg.png';
+    // Dados da serventia
+    const dadosServentia = getDadosServentia(usuario);
+
+    // Adiciona brasão (imagem externa, precisa ser carregada como base64)
+    // Como jsPDF não suporta imagens externas diretamente, faz fetch e converte para base64
+    const carregarImagem = (url) =>
+      fetch(url)
+        .then(r => r.blob())
+        .then(blob => new Promise((resolve) => {
+          const reader = new window.FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        }));
+
+    carregarImagem(brasaoUrl).then(imgData => {
+      // Brasão à esquerda
+      doc.addImage(imgData, 'PNG', 30, y, 40, 40);
+      // Dados da serventia ao lado
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      doc.text(dadosServentia.nome, 80, y + 15);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text([
+        dadosServentia.endereco,
+        dadosServentia.cidade,
+        dadosServentia.telefone ? `Telefone: ${dadosServentia.telefone}` : '',
+        dadosServentia.cnpj ? `CNPJ: ${dadosServentia.cnpj}` : ''
+      ].filter(Boolean), 80, y + 32);
+
+      y += 55;
+      // Linha horizontal
+      doc.setLineWidth(1);
+      doc.line(30, y, pageWidth - 30, y);
+      y += 18;
+
+      // Filtros utilizados
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Filtros Utilizados:', 30, y);
+      doc.setFont('helvetica', 'normal');
+      y += 16;
+      doc.text(`Período: ${periodo.inicio || '--'} a ${periodo.fim || '--'}`, 30, y);
+      y += 14;
+      doc.text(`Tipo de Atos: ${filtroAtos.length > 0 ? filtroAtos.join(', ') : 'Todos'}`, 30, y);
+      y += 14;
+      doc.text(`Forma de Pagamento: ${filtroFormas.length > 0 ? filtroFormas.join(', ') : 'Todas'}`, 30, y);
+      y += 18;
+
+      // Totalizadores
+      doc.setFont('helvetica', 'bold');
+      doc.text('Totalizadores:', 30, y);
+      doc.setFont('helvetica', 'normal');
+      y += 16;
+      doc.text(`Total em Dinheiro: R$ ${totalDinheiro.toFixed(2)}`, 30, y);
+      y += 14;
+      doc.text(`Total em Cartão: R$ ${totalCartao.toFixed(2)}`, 30, y);
+      y += 14;
+      doc.text(`Total em PIX: R$ ${totalPix.toFixed(2)}`, 30, y);
+      y += 14;
+      doc.text(`Total em CRC: R$ ${totalCrc.toFixed(2)}`, 30, y);
+      y += 14;
+      doc.text(`Total em Depósito Prévio: R$ ${totalDepositoPrevio.toFixed(2)}`, 30, y);
+      y += 14;
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Total Geral: R$ ${totalGeral.toFixed(2)}`, 30, y);
+      y += 18;
+
+      // Linha horizontal
+      doc.setLineWidth(1);
+      doc.line(30, y, pageWidth - 30, y);
+      y += 18;
+
+      // Dados da tabela (atos filtrados)
+      // Monta os dados igual à tabela da tela
+      let dadosTabela = [];
+      relatorios
+        .filter(relatorio => {
+          if (periodo.inicio && new Date(relatorio.data_geracao) < new Date(periodo.inicio)) return false;
+          if (periodo.fim && new Date(relatorio.data_geracao) > new Date(periodo.fim)) return false;
+          return true;
+        })
+        .forEach(relatorio => {
+          let dados;
+          try {
+            dados = typeof relatorio.dados_relatorio === 'string' ? JSON.parse(relatorio.dados_relatorio) : relatorio.dados_relatorio;
+          } catch {
+            dados = {};
+          }
+          const atosFiltrados = filtrarAtos(dados.atos || []);
+          atosFiltrados.forEach(ato => {
+            dadosTabela.push([
+              ato.quantidade,
+              ato.codigo,
+              ato.descricao,
+              `R$ ${Number(ato.valor_total).toFixed(2)}`,
+              `R$ ${Number(ato.valor_faltante).toFixed(2)}`,
+              `${ato.dinheiro_qtd} / R$ ${Number(ato.dinheiro_valor).toFixed(2)}`,
+              `${ato.cartao_qtd} / R$ ${Number(ato.cartao_valor).toFixed(2)}`,
+              `${ato.pix_qtd} / R$ ${Number(ato.pix_valor).toFixed(2)}`,
+              `${ato.crc_qtd} / R$ ${Number(ato.crc_valor).toFixed(2)}`,
+              `${ato.deposito_previo_qtd} / R$ ${Number(ato.deposito_previo_valor).toFixed(2)}`,
+              ato.observacoes || ''
+            ]);
+          });
+        });
+
+      // Cabeçalho da tabela
+      const head = [[
+        'Qtde', 'Código', 'Descrição', 'Valor Total', 'Valor Faltante',
+        'Dinheiro', 'Cartão', 'Pix', 'CRC', 'Depósito Prévio', 'Observações']];
+
+      doc.autoTable({
+        head,
+        body: dadosTabela,
+        startY: y,
+        styles: { fontSize: 9, cellPadding: 3 },
+        headStyles: { fillColor: [118, 75, 162], textColor: 255 },
+        alternateRowStyles: { fillColor: [240, 240, 240] },
+        margin: { left: 18, right: 18 },
+        tableWidth: 'auto',
+      });
+
+      // Abrir PDF em nova guia
+      window.open(doc.output('bloburl'), '_blank');
+    });
+  };
 import config from '../config';
 
 // Função auxiliar para pegar usuário logado (igual MeusRelatorios.jsx)
@@ -332,32 +480,56 @@ function RelatorioAtosConciliados() {
               </select>
             </div>
             {/* Espaço para alinhar o botão abaixo dos filtros */}
-            <div style={{ height: 8 }} />
-            <button
-              onClick={() => {
-                setPeriodo({ inicio: '', fim: '' });
-                setFiltroFormas([]);
-                setFiltroAtos([]);
-              }}
-              style={{
-                padding: '10px 22px',
-                background: '#f87171', // vermelho claro
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                fontWeight: 700,
-                fontSize: 15,
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(220, 38, 38, 0.10)',
-                alignSelf: 'stretch',
-                marginTop: 12,
-                transition: 'background 0.2s',
-                letterSpacing: 0.5,
-              }}
-              title="Limpar todos os filtros"
-            >
-              Limpar Filtros
-            </button>
+            <div style={{ height: 8, display: 'flex', gap: 10, width: '100%' }}>
+              <button
+                onClick={() => {
+                  setPeriodo({ inicio: '', fim: '' });
+                  setFiltroFormas([]);
+                  setFiltroAtos([]);
+                }}
+                style={{
+                  padding: '10px 22px',
+                  background: '#f87171', // vermelho claro
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: 15,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(220, 38, 38, 0.10)',
+                  alignSelf: 'stretch',
+                  marginTop: 12,
+                  transition: 'background 0.2s',
+                  letterSpacing: 0.5,
+                  flex: 1
+                }}
+                title="Limpar todos os filtros"
+              >
+                Limpar Filtros
+              </button>
+              <button
+                onClick={gerarRelatorioPDF}
+                style={{
+                  padding: '10px 22px',
+                  background: '#4f46e5',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: 15,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(76, 81, 255, 0.10)',
+                  alignSelf: 'stretch',
+                  marginTop: 12,
+                  transition: 'background 0.2s',
+                  letterSpacing: 0.5,
+                  flex: 1
+                }}
+                title="Gerar relatório PDF com os dados filtrados"
+              >
+                Gerar Relatório PDF
+              </button>
+            </div>
           </div>
           {/* Coluna 3: Somatório */}
           <div style={{
