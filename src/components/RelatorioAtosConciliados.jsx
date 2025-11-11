@@ -192,13 +192,13 @@ function RelatorioAtosConciliados() {
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
     }}>
       <div style={{
-        maxWidth: '1200px',
+        maxWidth: '1600px',
         margin: '0 auto',
         width: '100%'
       }}>
         {/* Header */}
         <div style={{
-          background: '#ececf3',
+          background: '#d1d5e6',
           borderRadius: '12px',
           padding: '14px 16px',
           marginBottom: '10px',
@@ -221,7 +221,7 @@ function RelatorioAtosConciliados() {
 
         {/* Filtros + Somatório */}
         <div style={{
-          background: '#ececf3',
+          background: '#d1d5e6',
           borderRadius: '12px',
           padding: '14px 16px',
           marginBottom: '10px',
@@ -362,6 +362,7 @@ function RelatorioAtosConciliados() {
           {/* Coluna 3: Somatório */}
           <div style={{
             width: '100%',
+            minWidth: 300,
             background: '#f8f8ff',
             border: '1px solid #c7d2fe',
             borderRadius: 10,
@@ -430,7 +431,7 @@ function RelatorioAtosConciliados() {
               });
               return (
                 <div key={relatorio.id} style={{
-                  background: '#ececf3',
+                  background: '#d1d5e6',
                   border: '1.5px solid #764ba2',
                   borderRadius: 12,
                   boxShadow: '0 2px 10px rgba(76, 81, 255, 0.06)',
