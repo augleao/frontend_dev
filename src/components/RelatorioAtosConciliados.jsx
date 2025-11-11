@@ -130,7 +130,7 @@ function RelatorioAtosConciliados() {
     });
   };
 
-  // Calcular somatório dos valores filtrados
+  // Calcular somatório dos valores filtrados, respeitando filtro de forma de pagamento
   let totalDinheiro = 0, totalCartao = 0, totalPix = 0, totalCrc = 0, totalDepositoPrevio = 0;
   relatorios
     .filter(relatorio => {
@@ -147,18 +147,43 @@ function RelatorioAtosConciliados() {
       }
       (dados.atos || []).forEach(ato => {
         // Aplicar filtros de forma e ato
-        const formaOk = filtroFormas.length === 0 || filtroFormas.includes(ato.forma_pagamento);
+        let formaOk = true;
+        if (filtroFormas.length > 0) {
+          // Considera ok se o ato tem valor > 0 em qualquer campo das formas selecionadas
+          formaOk = filtroFormas.some(forma => {
+            const campos = formaPagamentoCampos[forma];
+            if (!campos) return false;
+            return campos.some(campo => Number(ato[campo] || 0) > 0);
+          });
+        }
         const atoOk = filtroAtos.length === 0 || filtroAtos.includes(ato.descricao);
         if (formaOk && atoOk) {
-          totalDinheiro += Number(ato.dinheiro_valor || ato.dinheiro || 0);
-          totalCartao += Number(ato.cartao_valor || ato.cartao || 0);
-          totalPix += Number(ato.pix_valor || ato.pix || 0);
-          totalCrc += Number(ato.crc_valor || ato.crc || 0);
-          totalDepositoPrevio += Number(ato.deposito_previo_valor || ato.deposito_previo || 0);
+          // Só soma as formas selecionadas (ou todas se nenhum filtro)
+          if (filtroFormas.length === 0 || filtroFormas.includes('Dinheiro')) {
+            totalDinheiro += Number(ato.dinheiro_valor || ato.dinheiro || 0);
+          }
+          if (filtroFormas.length === 0 || filtroFormas.includes('Cartão')) {
+            totalCartao += Number(ato.cartao_valor || ato.cartao || 0);
+          }
+          if (filtroFormas.length === 0 || filtroFormas.includes('PIX')) {
+            totalPix += Number(ato.pix_valor || ato.pix || 0);
+          }
+          if (filtroFormas.length === 0 || filtroFormas.includes('CRC')) {
+            totalCrc += Number(ato.crc_valor || ato.crc || 0);
+          }
+          if (filtroFormas.length === 0 || filtroFormas.includes('Depósito Prévio')) {
+            totalDepositoPrevio += Number(ato.deposito_previo_valor || ato.deposito_previo || 0);
+          }
         }
       });
     });
-  const totalGeral = totalDinheiro + totalCartao + totalPix + totalCrc + totalDepositoPrevio;
+  // O total geral deve ser a soma apenas das formas filtradas (ou todas se nenhum filtro)
+  const totalGeral =
+    (filtroFormas.length === 0 || filtroFormas.includes('Dinheiro') ? totalDinheiro : 0) +
+    (filtroFormas.length === 0 || filtroFormas.includes('Cartão') ? totalCartao : 0) +
+    (filtroFormas.length === 0 || filtroFormas.includes('PIX') ? totalPix : 0) +
+    (filtroFormas.length === 0 || filtroFormas.includes('CRC') ? totalCrc : 0) +
+    (filtroFormas.length === 0 || filtroFormas.includes('Depósito Prévio') ? totalDepositoPrevio : 0);
 
   return (
     <div style={{
@@ -337,12 +362,12 @@ function RelatorioAtosConciliados() {
           </div>
           {/* Coluna 3: Somatório */}
           <div style={{
-            minWidth: 220,
+            width: '100%',
             background: '#f8f8ff',
             border: '1px solid #c7d2fe',
             borderRadius: 10,
-            padding: '16px 18px',
-            /* marginLeft removido para alinhar dentro do container de filtros */
+            padding: '14px 12px',
+            boxSizing: 'border-box',
             boxShadow: '0 2px 8px rgba(76, 81, 255, 0.06)',
             fontWeight: 600,
             color: '#2c3e50',
