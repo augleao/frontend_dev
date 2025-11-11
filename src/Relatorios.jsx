@@ -22,6 +22,14 @@ function Relatorios() {
       route: '/pesquisa-atos-praticados' // aproveita a tela existente de pesquisa
     },
     {
+      id: 'relatorio-atos-conciliados',
+      title: 'RELATÓRIO DE ATOS CONCILIADOS',
+      description: 'Filtre e gere relatório dos atos conciliados por período, forma de pagamento e tipo de ato',
+      icon: '🤝',
+      color: '#8e44ad',
+      route: '/relatorio-atos-conciliados'
+    },
+    {
       id: 'relatorios-obrigatorios',
       title: 'RELATÓRIOS OBRIGATÓRIOS',
       description: 'Registre envios mensais exigidos pelos órgãos públicos',

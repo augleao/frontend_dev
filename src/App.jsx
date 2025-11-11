@@ -9,6 +9,15 @@ import Conciliacao from './Conciliacao';
 import PrivateRoute from './PrivateRoute';
 import Home2 from './Home2';
 import MeusRelatorios from './components/MeusRelatorios';
+import RelatorioAtosConciliados from './components/RelatorioAtosConciliados';
+        <Route
+          path="/relatorio-atos-conciliados"
+          element={
+            <PrivateRoute>
+              <RelatorioAtosConciliados />
+            </PrivateRoute>
+          }
+        />
 import AdminDashboard from './AdminDashboard';
 import UsuariosAdmin from './UsuariosAdmin';
 import RenderBackupManager from './RenderBackupManager';
