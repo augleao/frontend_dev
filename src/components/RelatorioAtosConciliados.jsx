@@ -145,7 +145,11 @@ function RelatorioAtosConciliados() {
       relatorios
         .filter(relatorio => {
           if (periodo.inicio && new Date(relatorio.data_geracao) < new Date(periodo.inicio)) return false;
-          if (periodo.fim && new Date(relatorio.data_geracao) > new Date(periodo.fim)) return false;
+          if (periodo.fim) {
+            const dataFim = new Date(periodo.fim);
+            dataFim.setHours(23, 59, 59, 999);
+            if (new Date(relatorio.data_geracao) > dataFim) return false;
+          }
           return true;
         })
         .forEach(relatorio => {
@@ -246,7 +250,11 @@ function RelatorioAtosConciliados() {
           .filter(rel => {
             // Filtro de período pelo campo Data de Geração
             if (periodo.inicio && new Date(rel.data_geracao) < new Date(periodo.inicio)) return false;
-            if (periodo.fim && new Date(rel.data_geracao) > new Date(periodo.fim)) return false;
+            if (periodo.fim) {
+              const dataFim = new Date(periodo.fim);
+              dataFim.setHours(23, 59, 59, 999);
+              if (new Date(rel.data_geracao) > dataFim) return false;
+            }
             return true;
           })
           .forEach(rel => {
@@ -321,7 +329,11 @@ function RelatorioAtosConciliados() {
   relatorios
     .filter(relatorio => {
       if (periodo.inicio && new Date(relatorio.data_geracao) < new Date(periodo.inicio)) return false;
-      if (periodo.fim && new Date(relatorio.data_geracao) > new Date(periodo.fim)) return false;
+      if (periodo.fim) {
+        const dataFim = new Date(periodo.fim);
+        dataFim.setHours(23, 59, 59, 999);
+        if (new Date(relatorio.data_geracao) > dataFim) return false;
+      }
       return true;
     })
     .forEach(relatorio => {
@@ -615,7 +627,11 @@ function RelatorioAtosConciliados() {
               .filter(relatorio => {
                 // Filtro de período pelo campo Data de Geração
                 if (periodo.inicio && new Date(relatorio.data_geracao) < new Date(periodo.inicio)) return false;
-                if (periodo.fim && new Date(relatorio.data_geracao) > new Date(periodo.fim)) return false;
+                if (periodo.fim) {
+                  const dataFim = new Date(periodo.fim);
+                  dataFim.setHours(23, 59, 59, 999);
+                  if (new Date(relatorio.data_geracao) > dataFim) return false;
+                }
                 return true;
               })
               .map(relatorio => {
