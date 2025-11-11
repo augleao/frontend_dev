@@ -156,12 +156,11 @@ function RelatorioAtosConciliados() {
       }}>
         {/* Header */}
         <div style={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
+          background: '#f7f8fa',
           borderRadius: '12px',
-          padding: '16px',
-          marginBottom: '18px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          padding: '14px 16px',
+          marginBottom: '10px',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.07)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -180,11 +179,11 @@ function RelatorioAtosConciliados() {
 
         {/* Filtros + Somatório */}
         <div style={{
-          background: 'white',
+          background: '#f7f8fa',
           borderRadius: '12px',
-          padding: '16px',
-          marginBottom: '18px',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          padding: '14px 16px',
+          marginBottom: '10px',
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.06)',
           display: 'grid',
           gridTemplateColumns: '1fr 1.2fr 1fr',
           gap: '24px',
@@ -350,8 +349,8 @@ function RelatorioAtosConciliados() {
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr',
-          gap: '24px',
-          marginBottom: '24px'
+          gap: '12px',
+          marginBottom: '10px'
         }}>
           {loading ? (
             <div style={{ color: '#764ba2', fontWeight: 600, fontSize: 18, textAlign: 'center', padding: 32 }}>Carregando...</div>
@@ -389,12 +388,12 @@ function RelatorioAtosConciliados() {
               });
               return (
                 <div key={relatorio.id} style={{
-                  background: 'white',
+                  background: '#f7f8fa',
                   border: '1.5px solid #764ba2',
                   borderRadius: 12,
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                  padding: 20,
-                  marginBottom: 8
+                  boxShadow: '0 2px 10px rgba(76, 81, 255, 0.06)',
+                  padding: 16,
+                  marginBottom: 0
                 }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginBottom: 12 }}>
                     <div><strong>ID:</strong> {relatorio.id}</div>
