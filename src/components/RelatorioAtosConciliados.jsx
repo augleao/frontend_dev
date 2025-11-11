@@ -29,6 +29,23 @@ function getUsuarioLogado() {
 
 
 function RelatorioAtosConciliados() {
+  // Estado para dados completos da serventia
+  const [serventiaCompleta, setServentiaCompleta] = useState(null);
+  // Buscar dados completos da serventia ao montar
+  useEffect(() => {
+    async function fetchServentiaCompleta() {
+      const usuario = getUsuarioLogado();
+      const id = usuario?.serventia || usuario?.serventiaId || usuario?.serventia_id;
+      if (!id) return;
+      try {
+        const res = await fetch(`${config.apiURL}/serventias/${encodeURIComponent(id)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        setServentiaCompleta(data.serventia || data);
+      } catch {}
+    }
+    fetchServentiaCompleta();
+  }, []);
   // Função para gerar o PDF do relatório (agora dentro do componente, com acesso ao estado)
   const gerarRelatorioPDF = () => {
     const doc = new jsPDF('p', 'pt', 'a4');
@@ -36,8 +53,9 @@ function RelatorioAtosConciliados() {
     let y = 40;
 
     // Brasão da República (pequeno, à esquerda) - arquivo local
-    const brasaoPath = `${window.location.origin}/brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png`;
-    const dadosServentia = getDadosServentia(usuario);
+  const brasaoPath = `${window.location.origin}/brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png`;
+  // Usa dados completos se disponíveis, senão fallback
+  const dadosServentia = serventiaCompleta || getDadosServentia(usuario);
 
     // Carrega imagem local como base64
     const carregarImagem = (src) => {
@@ -61,55 +79,64 @@ function RelatorioAtosConciliados() {
       doc.addImage(imgData, 'PNG', 30, y, 40, 40);
       doc.setFontSize(13);
       doc.setFont('helvetica', 'bold');
-      doc.text(dadosServentia.nome, 80, y + 15);
+      doc.text(dadosServentia.nome || dadosServentia.razao_social || '', 80, y + 15);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
-      doc.text([
-        dadosServentia.endereco,
-        dadosServentia.cidade,
-        dadosServentia.telefone ? `Telefone: ${dadosServentia.telefone}` : '',
-        dadosServentia.cnpj ? `CNPJ: ${dadosServentia.cnpj}` : ''
-      ].filter(Boolean), 80, y + 32);
+      // Monta linhas do cabeçalho com todos os dados possíveis
+      const headerLines = [];
+      if (dadosServentia.endereco) headerLines.push(dadosServentia.endereco);
+      if (dadosServentia.bairro) headerLines.push(dadosServentia.bairro);
+      if (dadosServentia.cidade && dadosServentia.uf) headerLines.push(`${dadosServentia.cidade} - ${dadosServentia.uf}`);
+      else if (dadosServentia.cidade) headerLines.push(dadosServentia.cidade);
+      if (dadosServentia.cep) headerLines.push(`CEP: ${dadosServentia.cep}`);
+      if (dadosServentia.telefone) headerLines.push(`Telefone: ${dadosServentia.telefone}`);
+      if (dadosServentia.cnpj) headerLines.push(`CNPJ: ${dadosServentia.cnpj}`);
+      if (dadosServentia.email) headerLines.push(`E-mail: ${dadosServentia.email}`);
+      doc.text(headerLines, 80, y + 32);
 
       y += 55;
       doc.setLineWidth(1);
       doc.line(30, y, pageWidth - 30, y);
       y += 18;
 
+      // Filtros Utilizados e Totalizadores lado a lado
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.text('Filtros Utilizados:', 30, y);
+      doc.text('Totalizadores:', pageWidth / 2 + 10, y);
       doc.setFont('helvetica', 'normal');
-      y += 16;
-      doc.text(`Período: ${periodo.inicio || '--'} a ${periodo.fim || '--'}`, 30, y);
-      y += 14;
-      doc.text(`Tipo de Atos: ${filtroAtos.length > 0 ? filtroAtos.join(', ') : 'Todos'}`, 30, y);
-      y += 14;
-      doc.text(`Forma de Pagamento: ${filtroFormas.length > 0 ? filtroFormas.join(', ') : 'Todas'}`, 30, y);
-      y += 18;
+      let yFiltros = y + 16;
+      let yTot = y + 16;
+      // Filtros Utilizados
+      doc.text(`Período: ${periodo.inicio || '--'} a ${periodo.fim || '--'}`, 30, yFiltros);
+      yFiltros += 14;
+      doc.text(`Tipo de Atos: ${filtroAtos.length > 0 ? filtroAtos.join(', ') : 'Todos'}`, 30, yFiltros);
+      yFiltros += 14;
+      doc.text(`Forma de Pagamento: ${filtroFormas.length > 0 ? filtroFormas.join(', ') : 'Todas'}`, 30, yFiltros);
 
+      // Totalizadores ao lado
+      doc.text(`Total em Dinheiro: R$ ${totalDinheiro.toFixed(2)}`, pageWidth / 2 + 10, yTot);
+      yTot += 14;
+      doc.text(`Total em Cartão: R$ ${totalCartao.toFixed(2)}`, pageWidth / 2 + 10, yTot);
+      yTot += 14;
+      doc.text(`Total em PIX: R$ ${totalPix.toFixed(2)}`, pageWidth / 2 + 10, yTot);
+      yTot += 14;
+      doc.text(`Total em CRC: R$ ${totalCrc.toFixed(2)}`, pageWidth / 2 + 10, yTot);
+      yTot += 14;
+      doc.text(`Total em Depósito Prévio: R$ ${totalDepositoPrevio.toFixed(2)}`, pageWidth / 2 + 10, yTot);
+      yTot += 14;
       doc.setFont('helvetica', 'bold');
-      doc.text('Totalizadores:', 30, y);
+      doc.text(`Total Geral: R$ ${totalGeral.toFixed(2)}`, pageWidth / 2 + 10, yTot);
       doc.setFont('helvetica', 'normal');
-      y += 16;
-      doc.text(`Total em Dinheiro: R$ ${totalDinheiro.toFixed(2)}`, 30, y);
-      y += 14;
-      doc.text(`Total em Cartão: R$ ${totalCartao.toFixed(2)}`, 30, y);
-      y += 14;
-      doc.text(`Total em PIX: R$ ${totalPix.toFixed(2)}`, 30, y);
-      y += 14;
-      doc.text(`Total em CRC: R$ ${totalCrc.toFixed(2)}`, 30, y);
-      y += 14;
-      doc.text(`Total em Depósito Prévio: R$ ${totalDepositoPrevio.toFixed(2)}`, 30, y);
-      y += 14;
-      doc.setFont('helvetica', 'bold');
-      doc.text(`Total Geral: R$ ${totalGeral.toFixed(2)}`, 30, y);
-      y += 18;
+
+      // Avançar y para o maior dos blocos
+      y = Math.max(yFiltros, yTot) + 10;
 
       doc.setLineWidth(1);
       doc.line(30, y, pageWidth - 30, y);
       y += 18;
 
+      // Montar tabela com Data de Geração
       let dadosTabela = [];
       relatorios
         .filter(relatorio => {
@@ -127,6 +154,7 @@ function RelatorioAtosConciliados() {
           const atosFiltrados = filtrarAtos(dados.atos || []);
           atosFiltrados.forEach(ato => {
             dadosTabela.push([
+              new Date(relatorio.data_geracao).toLocaleString('pt-BR'),
               ato.quantidade,
               ato.codigo,
               ato.descricao,
@@ -143,7 +171,7 @@ function RelatorioAtosConciliados() {
         });
 
       const head = [[
-        'Qtde', 'Código', 'Descrição', 'Valor Total', 'Valor Faltante',
+        'Data de Geração', 'Qtde', 'Código', 'Descrição', 'Valor Total', 'Valor Faltante',
         'Dinheiro', 'Cartão', 'Pix', 'CRC', 'Depósito Prévio', 'Observações']];
 
       autoTable(doc, {
