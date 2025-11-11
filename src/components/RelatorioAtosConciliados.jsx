@@ -325,7 +325,7 @@ function RelatorioAtosConciliados() {
   };
 
   // Calcular somatório dos valores filtrados, respeitando filtro de forma de pagamento
-  let totalDinheiro = 0, totalCartao = 0, totalPix = 0, totalCrc = 0, totalDepositoPrevio = 0;
+  let totalDinheiro = 0, totalCartao = 0, totalPix = 0, totalCrc = 0, totalDepositoPrevio = 0, totalAtos = 0;
   relatorios
     .filter(relatorio => {
       if (periodo.inicio && new Date(relatorio.data_geracao) < new Date(periodo.inicio)) return false;
@@ -356,6 +356,8 @@ function RelatorioAtosConciliados() {
         }
         const atoOk = filtroAtos.length === 0 || filtroAtos.includes(ato.descricao);
         if (formaOk && atoOk) {
+          // Soma quantidade de atos
+          totalAtos += Number(ato.quantidade || 0);
           // Só soma as formas selecionadas (ou todas se nenhum filtro)
           if (filtroFormas.length === 0 || filtroFormas.includes('Dinheiro')) {
             totalDinheiro += Number(ato.dinheiro_valor || ato.dinheiro || 0);
@@ -599,7 +601,8 @@ function RelatorioAtosConciliados() {
             flexDirection: 'column',
             gap: 8
           }}>
-            <div style={{ fontWeight: 700, color: '#4f46e5', fontSize: 16, marginBottom: 4 }}>Somatório dos Valores</div>
+            <div style={{ fontWeight: 700, color: '#4f46e5', fontSize: 16, marginBottom: 4 }}>Somatório</div>
+            <div>Total de Atos: <span style={{ color: '#2c3e50' }}>{totalAtos}</span></div>
             <div>Total em Dinheiro: <span style={{ color: '#2c3e50' }}>R$ {totalDinheiro.toFixed(2)}</span></div>
             <div>Total em Cartão: <span style={{ color: '#2c3e50' }}>R$ {totalCartao.toFixed(2)}</span></div>
             <div>Total em PIX: <span style={{ color: '#2c3e50' }}>R$ {totalPix.toFixed(2)}</span></div>
