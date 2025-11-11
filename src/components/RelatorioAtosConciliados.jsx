@@ -124,6 +124,7 @@ function RelatorioAtosConciliados() {
         }
       });
     });
+  const totalGeral = totalDinheiro + totalCartao + totalPix + totalCrc + totalDepositoPrevio;
 
   return (
     <div style={{
@@ -317,6 +318,9 @@ function RelatorioAtosConciliados() {
             <div>Total em PIX: <span style={{ color: '#2c3e50' }}>R$ {totalPix.toFixed(2)}</span></div>
             <div>Total em CRC: <span style={{ color: '#2c3e50' }}>R$ {totalCrc.toFixed(2)}</span></div>
             <div>Total em Depósito Prévio: <span style={{ color: '#2c3e50' }}>R$ {totalDepositoPrevio.toFixed(2)}</span></div>
+            <div style={{ borderTop: '1px solid #c7d2fe', marginTop: 6, paddingTop: 6, fontWeight: 700, color: '#1e293b' }}>
+              Total Geral: <span style={{ color: '#1e293b' }}>R$ {totalGeral.toFixed(2)}</span>
+            </div>
           </div>
         </div>
 
