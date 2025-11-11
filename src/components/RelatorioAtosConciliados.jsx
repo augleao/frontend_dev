@@ -5,8 +5,7 @@ import config from '../config';
 function RelatorioAtosConciliados() {
   const [relatorios, setRelatorios] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [datasGeracao, setDatasGeracao] = useState([]);
-  const [filtroDatasGeracao, setFiltroDatasGeracao] = useState([]);
+  const [periodo, setPeriodo] = useState({ inicio: '', fim: '' });
   const formasPagamentoPadrao = [
     'Dinheiro',
     'Cartão',
@@ -37,12 +36,10 @@ function RelatorioAtosConciliados() {
       const data = await response.json();
       if (response.ok) {
         setRelatorios(data.relatorios || []);
-        // Coletar formas de pagamento, tipos de ato e datas de geração únicas
+        // Coletar formas de pagamento e tipos de ato únicos
         const formas = new Set();
         const atos = new Set();
-        const datas = new Set();
         (data.relatorios || []).forEach(rel => {
-          datas.add(rel.data_geracao);
           let dados;
           try {
             dados = typeof rel.dados_relatorio === 'string' ? JSON.parse(rel.dados_relatorio) : rel.dados_relatorio;
@@ -51,28 +48,13 @@ function RelatorioAtosConciliados() {
           }
           (dados.atos || []).forEach(ato => {
             if (ato) {
-              // Só adiciona forma se valor > 0
-              if (
-                (Number(ato.dinheiro_valor || ato.dinheiro || 0) > 0 && formasPagamentoPadrao.includes('Dinheiro'))
-              ) formas.add('Dinheiro');
-              if (
-                (Number(ato.cartao_valor || ato.cartao || 0) > 0 && formasPagamentoPadrao.includes('Cartão'))
-              ) formas.add('Cartão');
-              if (
-                (Number(ato.pix_valor || ato.pix || 0) > 0 && formasPagamentoPadrao.includes('PIX'))
-              ) formas.add('PIX');
-              if (
-                (Number(ato.crc_valor || ato.crc || 0) > 0 && formasPagamentoPadrao.includes('CRC'))
-              ) formas.add('CRC');
-              if (
-                (Number(ato.deposito_previo_valor || ato.deposito_previo || 0) > 0 && formasPagamentoPadrao.includes('Depósito Prévio'))
-              ) formas.add('Depósito Prévio');
+              if (ato.forma_pagamento) formas.add(ato.forma_pagamento);
               if (ato.descricao) atos.add(ato.descricao);
             }
           });
         });
-        setDatasGeracao(Array.from(datas).sort((a, b) => new Date(b) - new Date(a)));
-        setFormasPagamento(Array.from(formas));
+  // Sempre usar as formas padronizadas
+  setFormasPagamento(formasPagamentoPadrao);
         setTiposAto(Array.from(atos));
       } else {
         alert(data.message || 'Erro ao carregar relatórios.');
@@ -85,11 +67,12 @@ function RelatorioAtosConciliados() {
   };
 
   // Filtros
-  const filtrarAtos = (atos, dataGeracao) => {
+  const filtrarAtos = (atos) => {
     return atos.filter(ato => {
+      const dentroPeriodo = (!periodo.inicio || new Date(ato.data) >= new Date(periodo.inicio)) && (!periodo.fim || new Date(ato.data) <= new Date(periodo.fim));
       const formaOk = filtroFormas.length === 0 || filtroFormas.includes(ato.forma_pagamento);
       const atoOk = filtroAtos.length === 0 || filtroAtos.includes(ato.descricao);
-      return formaOk && atoOk;
+      return dentroPeriodo && formaOk && atoOk;
     });
   };
 
@@ -143,17 +126,81 @@ function RelatorioAtosConciliados() {
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <label style={{ fontWeight: 600, color: '#2c3e50', marginRight: 8 }}>Data de Geração:</label>
-              <select
-                multiple
-                value={filtroDatasGeracao}
-                onChange={e => setFiltroDatasGeracao(Array.from(e.target.selectedOptions, o => o.value))}
-                style={{ minWidth: 220, padding: 6, borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }}
-              >
-                {datasGeracao.map(dt => (
-                  <option key={dt} value={dt}>{new Date(dt).toLocaleString('pt-BR')}</option>
-                ))}
-              </select>
+              <label style={{ fontWeight: 600, color: '#2c3e50', marginRight: 8 }}>Período:</label>
+              <input type="date" value={periodo.inicio} onChange={e => setPeriodo(p => ({ ...p, inicio: e.target.value }))} style={{ padding: '6px', borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }} />
+              <span style={{ margin: '0 8px', color: '#888' }}>a</span>
+              <input type="date" value={periodo.fim} onChange={e => setPeriodo(p => ({ ...p, fim: e.target.value }))} style={{ padding: '6px', borderRadius: 6, border: '1px solid #764ba2', fontWeight: 500 }} />
+            </div>
+            <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+              {[
+                { label: 'Hoje', fn: () => {
+                  const hoje = new Date();
+                  const d = hoje.toISOString().slice(0,10);
+                  setPeriodo({ inicio: d, fim: d });
+                }},
+                { label: 'Ontem', fn: () => {
+                  const ontem = new Date(); ontem.setDate(ontem.getDate() - 1);
+                  const d = ontem.toISOString().slice(0,10);
+                  setPeriodo({ inicio: d, fim: d });
+                }},
+                { label: 'Esta Semana', fn: () => {
+                  const hoje = new Date();
+                  const diaSemana = hoje.getDay() === 0 ? 7 : hoje.getDay();
+                  const inicio = new Date(hoje); inicio.setDate(hoje.getDate() - (diaSemana - 1));
+                  const fim = new Date(hoje); fim.setDate(inicio.getDate() + 6);
+                  setPeriodo({
+                    inicio: inicio.toISOString().slice(0,10),
+                    fim: fim.toISOString().slice(0,10)
+                  });
+                }},
+                { label: 'Semana Passada', fn: () => {
+                  const hoje = new Date();
+                  const diaSemana = hoje.getDay() === 0 ? 7 : hoje.getDay();
+                  const fim = new Date(hoje); fim.setDate(hoje.getDate() - diaSemana);
+                  const inicio = new Date(fim); inicio.setDate(fim.getDate() - 6);
+                  setPeriodo({
+                    inicio: inicio.toISOString().slice(0,10),
+                    fim: fim.toISOString().slice(0,10)
+                  });
+                }},
+                { label: 'Este Mês', fn: () => {
+                  const hoje = new Date();
+                  const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+                  const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+                  setPeriodo({
+                    inicio: inicio.toISOString().slice(0,10),
+                    fim: fim.toISOString().slice(0,10)
+                  });
+                }},
+                { label: 'Mês Passado', fn: () => {
+                  const hoje = new Date();
+                  const inicio = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+                  const fim = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
+                  setPeriodo({
+                    inicio: inicio.toISOString().slice(0,10),
+                    fim: fim.toISOString().slice(0,10)
+                  });
+                }},
+              ].map(({ label, fn }) => (
+                <button
+                  key={label}
+                  onClick={fn}
+                  style={{
+                    padding: '4px 12px',
+                    background: '#f3f4f6',
+                    color: '#4f46e5',
+                    border: '1px solid #c7d2fe',
+                    borderRadius: 6,
+                    fontWeight: 600,
+                    fontSize: 13,
+                    cursor: 'pointer',
+                    transition: 'background 0.2s',
+                  }}
+                  type="button"
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
           <div>
@@ -170,7 +217,7 @@ function RelatorioAtosConciliados() {
           </div>
           <button
             onClick={() => {
-              setFiltroDatasGeracao([]);
+              setPeriodo({ inicio: '', fim: '' });
               setFiltroFormas([]);
               setFiltroAtos([]);
             }}
@@ -206,93 +253,89 @@ function RelatorioAtosConciliados() {
           ) : relatorios.length === 0 ? (
             <div style={{ color: '#888', fontWeight: 500, fontSize: 18, textAlign: 'center', padding: 32 }}>Nenhum relatório encontrado.</div>
           ) : (
-            relatorios
-              .filter(relatorio =>
-                filtroDatasGeracao.length === 0 || filtroDatasGeracao.includes(relatorio.data_geracao)
-              )
-              .map(relatorio => {
-                let dados;
-                try {
-                  dados = typeof relatorio.dados_relatorio === 'string' ? JSON.parse(relatorio.dados_relatorio) : relatorio.dados_relatorio;
-                } catch {
-                  dados = {};
-                }
-                const atosFiltrados = filtrarAtos(dados.atos || [], relatorio.data_geracao);
-                if (atosFiltrados.length === 0) return null;
-                // Calcular totais por forma de pagamento
-                let totalDinheiro = 0;
-                let totalCartao = 0;
-                let totalPix = 0;
-                let totalCrc = 0;
-                let totalDepositoPrevio = 0;
-                atosFiltrados.forEach(ato => {
-                  totalDinheiro += Number(ato.dinheiro_valor || ato.dinheiro || 0);
-                  totalCartao += Number(ato.cartao_valor || ato.cartao || 0);
-                  totalPix += Number(ato.pix_valor || ato.pix || 0);
-                  totalCrc += Number(ato.crc_valor || ato.crc || 0);
-                  totalDepositoPrevio += Number(ato.deposito_previo_valor || ato.deposito_previo || 0);
-                });
-                return (
-                  <div key={relatorio.id} style={{
-                    background: 'white',
-                    border: '1.5px solid #764ba2',
-                    borderRadius: 12,
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    padding: 20,
-                    marginBottom: 8
-                  }}>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginBottom: 12 }}>
-                      <div><strong>ID:</strong> {relatorio.id}</div>
-                      <div><strong>Data de Geração:</strong> {new Date(relatorio.data_geracao).toLocaleString('pt-BR')}</div>
-                      <div><strong>Responsável:</strong> {dados.responsavel}</div>
-                      <div><strong>Total em Dinheiro:</strong> R$ {totalDinheiro.toFixed(2)}</div>
-                      <div><strong>Total em Cartão:</strong> R$ {totalCartao.toFixed(2)}</div>
-                      <div><strong>Total em PIX:</strong> R$ {totalPix.toFixed(2)}</div>
-                      <div><strong>Total em CRC:</strong> R$ {totalCrc.toFixed(2)}</div>
-                      <div><strong>Total em Depósito Prévio:</strong> R$ {totalDepositoPrevio.toFixed(2)}</div>
-                    </div>
-                    <div style={{ marginTop: 12 }}>
-                      <strong style={{ color: '#764ba2' }}>Atos Conciliados:</strong>
-                      <div style={{ overflowX: 'auto', marginTop: 8 }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15, background: 'white' }}>
-                          <thead>
-                            <tr style={{ background: '#f0f0f0' }}>
-                              <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Qtde</th>
-                              <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Código</th>
-                              <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Descrição</th>
-                              <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Valor Total</th>
-                              <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Valor Faltante</th>
-                              <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Dinheiro</th>
-                              <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Cartão</th>
-                              <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Pix</th>
-                              <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>CRC</th>
-                              <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Depósito Prévio</th>
-                              <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Observações</th>
+            relatorios.map(relatorio => {
+              let dados;
+              try {
+                dados = typeof relatorio.dados_relatorio === 'string' ? JSON.parse(relatorio.dados_relatorio) : relatorio.dados_relatorio;
+              } catch {
+                dados = {};
+              }
+              const atosFiltrados = filtrarAtos(dados.atos || []);
+              if (atosFiltrados.length === 0) return null;
+              // Calcular totais por forma de pagamento
+              let totalDinheiro = 0;
+              let totalCartao = 0;
+              let totalPix = 0;
+              let totalCrc = 0;
+              let totalDepositoPrevio = 0;
+              atosFiltrados.forEach(ato => {
+                totalDinheiro += Number(ato.dinheiro_valor || ato.dinheiro || 0);
+                totalCartao += Number(ato.cartao_valor || ato.cartao || 0);
+                totalPix += Number(ato.pix_valor || ato.pix || 0);
+                totalCrc += Number(ato.crc_valor || ato.crc || 0);
+                totalDepositoPrevio += Number(ato.deposito_previo_valor || ato.deposito_previo || 0);
+              });
+              return (
+                <div key={relatorio.id} style={{
+                  background: 'white',
+                  border: '1.5px solid #764ba2',
+                  borderRadius: 12,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                  padding: 20,
+                  marginBottom: 8
+                }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginBottom: 12 }}>
+                    <div><strong>ID:</strong> {relatorio.id}</div>
+                    <div><strong>Data de Geração:</strong> {new Date(relatorio.data_geracao).toLocaleString('pt-BR')}</div>
+                    <div><strong>Responsável:</strong> {dados.responsavel}</div>
+                    <div><strong>Total em Dinheiro:</strong> R$ {totalDinheiro.toFixed(2)}</div>
+                    <div><strong>Total em Cartão:</strong> R$ {totalCartao.toFixed(2)}</div>
+                    <div><strong>Total em PIX:</strong> R$ {totalPix.toFixed(2)}</div>
+                    <div><strong>Total em CRC:</strong> R$ {totalCrc.toFixed(2)}</div>
+                    <div><strong>Total em Depósito Prévio:</strong> R$ {totalDepositoPrevio.toFixed(2)}</div>
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <strong style={{ color: '#764ba2' }}>Atos Conciliados:</strong>
+                    <div style={{ overflowX: 'auto', marginTop: 8 }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15, background: 'white' }}>
+                        <thead>
+                          <tr style={{ background: '#f0f0f0' }}>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Qtde</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Código</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Descrição</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Valor Total</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Valor Faltante</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Dinheiro</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Cartão</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Pix</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>CRC</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Depósito Prévio</th>
+                            <th style={{ padding: 8, borderBottom: '2px solid #764ba2' }}>Observações</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {atosFiltrados.map((ato, idx) => (
+                            <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
+                              <td style={{ padding: 8 }}>{ato.quantidade}</td>
+                              <td style={{ padding: 8 }}>{ato.codigo}</td>
+                              <td style={{ padding: 8 }}>{ato.descricao}</td>
+                              <td style={{ padding: 8 }}>R$ {Number(ato.valor_total).toFixed(2)}</td>
+                              <td style={{ padding: 8 }}>R$ {Number(ato.valor_faltante).toFixed(2)}</td>
+                              <td style={{ padding: 8 }}>{ato.dinheiro_qtd} / R$ {Number(ato.dinheiro_valor).toFixed(2)}</td>
+                              <td style={{ padding: 8 }}>{ato.cartao_qtd} / R$ {Number(ato.cartao_valor).toFixed(2)}</td>
+                              <td style={{ padding: 8 }}>{ato.pix_qtd} / R$ {Number(ato.pix_valor).toFixed(2)}</td>
+                              <td style={{ padding: 8 }}>{ato.crc_qtd} / R$ {Number(ato.crc_valor).toFixed(2)}</td>
+                              <td style={{ padding: 8 }}>{ato.deposito_previo_qtd} / R$ {Number(ato.deposito_previo_valor).toFixed(2)}</td>
+                              <td style={{ padding: 8 }}>{ato.observacoes}</td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {atosFiltrados.map((ato, idx) => (
-                              <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: 8 }}>{ato.quantidade}</td>
-                                <td style={{ padding: 8 }}>{ato.codigo}</td>
-                                <td style={{ padding: 8 }}>{ato.descricao}</td>
-                                <td style={{ padding: 8 }}>R$ {Number(ato.valor_total).toFixed(2)}</td>
-                                <td style={{ padding: 8 }}>R$ {Number(ato.valor_faltante).toFixed(2)}</td>
-                                <td style={{ padding: 8 }}>{ato.dinheiro_qtd} / R$ {Number(ato.dinheiro_valor).toFixed(2)}</td>
-                                <td style={{ padding: 8 }}>{ato.cartao_qtd} / R$ {Number(ato.cartao_valor).toFixed(2)}</td>
-                                <td style={{ padding: 8 }}>{ato.pix_qtd} / R$ {Number(ato.pix_valor).toFixed(2)}</td>
-                                <td style={{ padding: 8 }}>{ato.crc_qtd} / R$ {Number(ato.crc_valor).toFixed(2)}</td>
-                                <td style={{ padding: 8 }}>{ato.deposito_previo_qtd} / R$ {Number(ato.deposito_previo_valor).toFixed(2)}</td>
-                                <td style={{ padding: 8 }}>{ato.observacoes}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
-                );
-              })
+                </div>
+              );
+            })
           )}
         </div>
       </div>
