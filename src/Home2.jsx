@@ -36,7 +36,7 @@ function Home() {
     {
       id: 'atos-hub',
       title: 'Atos Praticados',
-      description: 'Acesse o hub de atos praticados, pesquisa, conciliação e atos gratuitos',
+      description: 'Acesse o hub de atos praticados, pesquisa e conciliação',
       icon: '🔗',
       color: '#27ae60',
       route: '/atos'
