@@ -9,6 +9,15 @@ import Conciliacao from './Conciliacao';
 import PrivateRoute from './PrivateRoute';
 import Home2 from './Home2';
 import CaixaHub from './CaixaHub';
+import AtosHub from './AtosHub';
+        <Route
+          path="/atos"
+          element={
+            <PrivateRoute>
+              <AtosHub />
+            </PrivateRoute>
+          }
+        />
 import MeusRelatorios from './components/MeusRelatorios';
 import RelatorioAtosConciliados from './components/RelatorioAtosConciliados';
 import AdminDashboard from './AdminDashboard';

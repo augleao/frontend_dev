@@ -34,36 +34,12 @@ function Home() {
       route: '/lista-servicos'
     },
     {
-      id: 'atos-praticados',
-      title: 'ATOS PRATICADOS',
-      description: 'Gerencie os atos praticados no dia (atos selados)',
+      id: 'atos-hub',
+      title: 'Atos Praticados',
+      description: 'Acesse o hub de atos praticados, pesquisa, conciliação e atos gratuitos',
       icon: '🔗',
       color: '#27ae60',
-      route: '/atos-praticados'
-    },
-    {
-      id: 'pesquisa-atos',
-      title: 'PESQUISA DE ATOS PRATICADOS',
-      description: 'Pesquise e consulte atos praticados por período, escrevente e tipo',
-      icon: '🔍',
-      color: '#f39c12',
-      route: '/pesquisa-atos-praticados'
-    },
-    {
-      id: 'conciliacao',
-      title: 'CONCILIAÇÃO ATOS PAGOS',
-      description: 'Realize a conciliação e fechamento dos atos pagos',
-      icon: '⚖️',
-      color: '#3498db',
-      route: '/conciliacao'
-    },
-    {
-      id: 'relatorios',
-      title: 'ATOS CONCILIADOS',
-      description: 'Visualize relatórios e histórico de atos conciliados',
-      icon: '⚖️',
-      color: '#3498db',
-      route: '/meus-relatorios'
+      route: '/atos'
     },
     {
       id: 'relatorios-hub',
