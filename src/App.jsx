@@ -1,11 +1,3 @@
-        <Route
-          path="/atos"
-          element={
-            <PrivateRoute>
-              <AtosHub />
-            </PrivateRoute>
-          }
-        />
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './AuthContext';
