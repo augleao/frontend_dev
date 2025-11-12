@@ -72,6 +72,14 @@ function App() {
       <ScrollToTop />
       <NavBar />
       <Routes>
+        <Route
+          path="/atos"
+          element={
+            <PrivateRoute>
+              <AtosHub />
+            </PrivateRoute>
+          }
+        />
         <Route path="/" element={<Home />} />
         <Route
           path="/relatorio-atos-conciliados"
