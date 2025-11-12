@@ -8,6 +8,7 @@ import Signup from './Signup';
 import Conciliacao from './Conciliacao';
 import PrivateRoute from './PrivateRoute';
 import Home2 from './Home2';
+import CaixaHub from './CaixaHub';
 import MeusRelatorios from './components/MeusRelatorios';
 import RelatorioAtosConciliados from './components/RelatorioAtosConciliados';
 import AdminDashboard from './AdminDashboard';
@@ -96,6 +97,14 @@ function App() {
           element={
             <PrivateRoute>
               <Home2 />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/caixa"
+          element={
+            <PrivateRoute>
+              <CaixaHub />
             </PrivateRoute>
           }
         />

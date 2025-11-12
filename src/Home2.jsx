@@ -18,20 +18,12 @@ function Home() {
 
   const featureCards = [
     {
-      id: 'caixa-diario',
-      title: 'CAIXA DIÁRIO',
-      description: 'Registre atos e pagamentos do movimento diário do caixa',
+      id: 'caixa-hub',
+      title: 'CAIXA',
+      description: 'Acesse o hub do caixa para registrar movimentos diários e visualizar caixas fechados',
       icon: '💰',
       color: '#27ae60',
-      route: '/caixa-diario'
-    },
-    {
-      id: 'meus-fechamentos',
-      title: 'CAIXAS FECHADOS',
-      description: 'Visualize seus fechamentos de caixa',
-      icon: '💰',
-      color: '#27ae60',
-      route: '/meus-fechamentos'
+      route: '/caixa'
     },
     {
       id: 'manutencao-servicos',
