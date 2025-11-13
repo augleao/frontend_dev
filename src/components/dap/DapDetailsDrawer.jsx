@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 function DapDetailsDrawer({ dap, onClose, loading }) {
   if (!dap && !loading) {
@@ -7,8 +7,8 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
 
   if (loading) {
     return (
-      <div style={drawerOverlayStyle}>
-        <div style={drawerStyle}>
+      <div style={drawerOverlayStyle} onClick={(e) => e.currentTarget === e.target && onClose && onClose()}>
+        <div style={drawerStyle} onClick={(e) => e.stopPropagation()}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 style={{ color: '#0f172a' }}>Carregando detalhes...</h2>
             <button type="button" onClick={onClose} style={closeButtonStyle}>
@@ -23,9 +23,18 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
 
   const periodos = dap.periodos ?? dap.dap_periodos ?? [];
 
+  // close on Escape key
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === 'Escape' && onClose) onClose();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   return (
-    <div style={drawerOverlayStyle}>
-      <div style={drawerStyle}>
+    <div style={drawerOverlayStyle} onClick={(e) => e.currentTarget === e.target && onClose && onClose()}>
+      <div style={drawerStyle} onClick={(e) => e.stopPropagation()}>
         <div style={drawerHeaderStyle}>
           <div>
             <h2 style={{ margin: 0, color: '#0f172a' }}>Detalhes da DAP</h2>
@@ -33,7 +42,7 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
               {dap.ano}/{String(dap.mes).padStart(2, '0')} · {dap.tipo ?? 'ORIGINAL'} · {dap.status ?? 'ATIVA'}
             </p>
           </div>
-          <button type="button" onClick={onClose} style={closeButtonStyle}>
+          <button type="button" onClick={onClose} style={closeButtonStyle} aria-label="Fechar detalhes">
             ×
           </button>
         </div>
@@ -151,17 +160,22 @@ const drawerOverlayStyle = {
   background: 'rgba(15, 23, 42, 0.55)',
   backdropFilter: 'blur(6px)',
   display: 'flex',
-  justifyContent: 'flex-end',
+  justifyContent: 'center',
+  alignItems: 'center',
   zIndex: 999,
 };
 
 const drawerStyle = {
-  width: 'min(540px, 100%)',
+  width: '100%',
+  maxWidth: '1200px',
   height: '100%',
   background: '#f8fafc',
-  boxShadow: '-20px 0 60px rgba(15, 23, 42, 0.35)',
-  padding: '32px 28px',
+  boxShadow: '0 8px 40px rgba(15, 23, 42, 0.45)',
+  padding: '28px',
   overflowY: 'auto',
+  borderRadius: 0,
+  display: 'flex',
+  flexDirection: 'column',
 };
 
 const drawerHeaderStyle = {
