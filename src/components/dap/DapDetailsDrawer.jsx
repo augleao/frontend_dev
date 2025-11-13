@@ -129,7 +129,7 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
                 </span>
               </header>
               {/* Métricas removidas: Emolumentos, TED, ISS, Total líquido (solicitado) */}
-              {renderAtos(periodo)}
+              {renderAtos(periodo, descricaoMap)}
             </div>
           ))}
         </section>
@@ -138,7 +138,7 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
   );
 }
 
-function renderAtos(periodo) {
+function renderAtos(periodo, descricaoMap) {
   const atos = periodo.atos ?? periodo.dap_atos ?? [];
   if (!Array.isArray(atos) || atos.length === 0) {
     return null;
