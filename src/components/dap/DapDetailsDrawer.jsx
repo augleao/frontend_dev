@@ -62,16 +62,11 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
             <InfoItem label="Retificadora de" value={dap.retificadora_de_id ? `#${dap.retificadora_de_id}` : '—'} />
             <InfoItem label="Retificada por" value={dap.retificada_por_id ? `#${dap.retificada_por_id}` : '—'} />
           </div>
-          {dap.observacoes && (
-            <div style={noteBoxStyle}>
-              <strong>Anotações:</strong>
-              <p style={{ margin: '6px 0 0 0', color: '#0f172a', fontSize: '13px' }}>{dap.observacoes}</p>
-            </div>
-          )}
+          {/* Observações removidas conforme solicitação */}
         </section>
 
         <section>
-          <h3 style={sectionTitleStyle}>Períodos</h3>
+          <h3 style={sectionTitleStyle}>Atos Praticados</h3>
           {periodos.length === 0 && (
             <p style={{ color: '#64748b', fontSize: '13px' }}>Nenhum período registrado para esta DAP.</p>
           )}
@@ -111,27 +106,31 @@ function renderAtos(periodo) {
           <tr>
             <th>Código</th>
             <th>Descrição</th>
+            <th>Trib.</th>
             <th>Qtd</th>
             <th>Emolumentos</th>
             <th>ISS</th>
-            <th>CNS</th>
             <th>Valor líquido</th>
           </tr>
         </thead>
         <tbody>
-          {atos.map((ato) => (
-            <tr key={ato.id ?? `${ato.codigo_ato}-${ato.descricao}`}
-              style={{ background: 'white' }}
-            >
-              <td>{ato.codigo_ato ?? '—'}</td>
-              <td>{ato.descricao ?? '—'}</td>
-              <td>{ato.quantidade ?? '—'}</td>
-              <td>{formatCurrency(ato.emolumentos)}</td>
-              <td>{formatCurrency(ato.taxa_iss)}</td>
-              <td>{formatCurrency(ato.taxa_cns)}</td>
-              <td>{formatCurrency(ato.valor_liquido)}</td>
-            </tr>
-          ))}
+          {atos.map((ato) => {
+            const tributacaoTexto = ato.tributacao
+              || (ato.tributacao_codigo
+                ? `${ato.tributacao_codigo}${ato.tributacao_descricao ? ' - ' + ato.tributacao_descricao : ''}`
+                : '—');
+            return (
+              <tr key={ato.id ?? `${ato.codigo_ato}-${ato.descricao}`} style={{ background: 'white' }}>
+                <td>{ato.codigo_ato ?? '—'}</td>
+                <td>{ato.descricao ?? '—'}</td>
+                <td>{tributacaoTexto}</td>
+                <td>{ato.quantidade ?? '—'}</td>
+                <td>{formatCurrency(ato.emolumentos)}</td>
+                <td>{formatCurrency(ato.taxa_iss)}</td>
+                <td>{formatCurrency(ato.valor_liquido)}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
