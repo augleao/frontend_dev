@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { apiURL } from '../../config';
 
 function DapDetailsDrawer({ dap, onClose, loading }) {
+  const [descricaoMap, setDescricaoMap] = useState({});
   // keep hook order stable: always register useEffect (it will only attach listener when modal is open)
   useEffect(() => {
     if (!(dap || loading)) return undefined;
@@ -10,6 +12,56 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose, dap, loading]);
+
+  // Populate missing ato descriptions by querying the backend `/atos?search=` route.
+  useEffect(() => {
+    if (!dap) return undefined;
+    const periodosLocal = dap.periodos ?? dap.dap_periodos ?? [];
+    const codesSet = new Set();
+    periodosLocal.forEach((p) => {
+      const atos = p.atos ?? p.dap_atos ?? [];
+      atos.forEach((a) => {
+        const code = a.codigo ?? a.codigo_ato ?? a.ato_codigo;
+        if (code && code !== '—' && !descricaoMap[String(code)]) codesSet.add(String(code));
+      });
+    });
+    const codes = Array.from(codesSet);
+    if (codes.length === 0) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const results = await Promise.all(codes.map(async (code) => {
+          try {
+            const res = await fetch(`${apiURL}/atos?search=${encodeURIComponent(code)}`, {
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+            if (!res.ok) return null;
+            const json = await res.json();
+            const found = (json.atos || []).find((it) => String(it.codigo) === String(code) || String(it.codigo_ato) === String(code));
+            if (found) return { code, descricao: found.descricao ?? found.descricao_ato ?? found.nome ?? null };
+            return null;
+          } catch (e) {
+            return null;
+          }
+        }));
+        if (cancelled) return;
+        const newMap = { ...descricaoMap };
+        let changed = false;
+        results.forEach((r) => {
+          if (r && r.code && !newMap[r.code]) {
+            newMap[r.code] = r.descricao ?? '—';
+            changed = true;
+          }
+        });
+        if (changed) setDescricaoMap(newMap);
+      } catch (e) {
+        // ignore
+        // console.error('Erro ao buscar descrições de atos', e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [dap, descricaoMap]);
 
   if (!dap && !loading) {
     return null;
@@ -114,14 +166,20 @@ function renderAtos(periodo) {
                 : '—');
             // DEBUG: inspecionar objeto `ato` no console para verificar campos
             console.log('[DEBUG][DAP ATOS]', ato);
-            const rowBg = i % 2 === 0 ? 'white' : '#f8fafc';
+            const rowBg = i % 2 === 0 ? 'white' : '#e6e6e6';
             return (
               <tr
                 key={ato.id ?? `${(ato.codigo || ato.codigo_ato || ato.ato_codigo || 'sem-codigo')}-${ato.descricao ?? ''}` }
                 style={{ background: rowBg }}
               >
                 <td style={atoCellStyle}>{ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '—'}</td>
-                <td style={atoCellStyle}>{ato.descricao ?? '—'}</td>
+                <td style={atoCellStyle}>{
+                  (() => {
+                    const codeKey = ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '';
+                    if (codeKey && descricaoMap[String(codeKey)]) return descricaoMap[String(codeKey)];
+                    return ato.descricao ?? '—';
+                  })()
+                }</td>
                 <td style={atoCellStyle}>{tributacaoTexto}</td>
                 <td style={atoCellStyle}>{ato.quantidade ?? '—'}</td>
                 <td style={atoCellStyle}>{formatCurrency(ato.emolumentos)}</td>
