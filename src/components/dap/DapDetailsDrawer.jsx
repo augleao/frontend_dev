@@ -51,16 +51,14 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
         <section style={{ marginBottom: 24 }}>
           <h3 style={sectionTitleStyle}>Resumo</h3>
           <div style={infoGridStyle}>
-            <InfoItem label="ID" value={dap.id ?? '—'} />
-            <InfoItem label="Referência (M/A)" value={`${String(dap.mes_referencia ?? dap.mes ?? '').padStart(2, '0')}/${dap.ano_referencia ?? dap.ano ?? '—'}`} />
+            <InfoItem label="Referência (M/A)" value={getReferencia(dap)} />
             <InfoItem label="Serventia" value={dap.serventia_nome ?? '—'} />
             <InfoItem label="Código Serventia" value={dap.codigo_serventia ?? '—'} />
             <InfoItem label="CNPJ" value={dap.cnpj ?? '—'} />
             <InfoItem label="Data de transmissão" value={dap.data_transmissao ? new Date(dap.data_transmissao).toLocaleString('pt-BR') : '—'} />
             <InfoItem label="Código do recibo" value={dap.codigo_recibo ?? '—'} />
             <InfoItem label="Retificadora" value={dap.retificadora ? 'Sim' : 'Não'} />
-            <InfoItem label="Retificadora de" value={dap.retificadora_de_id ? `#${dap.retificadora_de_id}` : '—'} />
-            <InfoItem label="Retificada por" value={dap.retificada_por_id ? `#${dap.retificada_por_id}` : '—'} />
+            {/* IDs de retificação removidos do resumo conforme solicitado */}
           </div>
           {/* Observações removidas conforme solicitação */}
         </section>
@@ -73,17 +71,12 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
           {periodos.map((periodo) => (
             <div key={periodo.id ?? periodo.periodo_numero} style={periodCardStyle}>
               <header style={periodHeaderStyle}>
-                <span style={periodBadgeStyle}>Período {periodo.periodo_numero}</span>
+                <span style={periodBadgeStyle}>{periodo.periodo_numero}</span>
                 <span style={{ color: '#0f172a', fontWeight: 700 }}>
                   Total de atos: {periodo.total_atos ?? '—'}
                 </span>
               </header>
-              <div style={periodStatsStyle}>
-                <InfoItem label="Emolumentos" value={formatCurrency(periodo.total_emolumentos ?? periodo.emolumento_apurado)} />
-                <InfoItem label="TED" value={formatCurrency(periodo.total_ted)} />
-                <InfoItem label="ISS" value={formatCurrency(periodo.total_iss ?? periodo.issqn_recebido_usuarios)} />
-                <InfoItem label="Total líquido" value={formatCurrency(periodo.total_liquido)} />
-              </div>
+              {/* Métricas removidas: Emolumentos, TED, ISS, Total líquido (solicitado) */}
               {renderAtos(periodo)}
             </div>
           ))}
@@ -155,6 +148,45 @@ function formatCurrency(value) {
   const number = Number(value);
   if (Number.isNaN(number)) return '—';
   return number.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function getReferencia(dap) {
+  if (!dap) return '—';
+  // Se existir um campo combinado em string, tente extrair MM/YYYY ou YYYY/MM
+  if (dap.referencia && typeof dap.referencia === 'string') {
+    const m = dap.referencia.match(/(\d{1,2})[\/\-](\d{4})/);
+    if (m) return String(m[1]).padStart(2, '0') + '/' + m[2];
+    const m2 = dap.referencia.match(/(\d{4})[\/\-](\d{1,2})/);
+    if (m2) return String(m2[2]).padStart(2, '0') + '/' + m2[1];
+  }
+
+  // possíveis nomes de campo usados na base/serialização
+  const mesCandidates = [
+    dap.mes_referencia,
+    dap.mes,
+    dap.mes_ref,
+    dap.mesReferencia,
+    dap.mes_referente,
+  ];
+  const anoCandidates = [
+    dap.ano_referencia,
+    dap.ano,
+    dap.ano_ref,
+    dap.anoReferencia,
+    dap.ano_referente,
+  ];
+
+  const mes = mesCandidates.find((v) => v !== undefined && v !== null && v !== '');
+  const ano = anoCandidates.find((v) => v !== undefined && v !== null && v !== '');
+
+  if (mes || ano) {
+    const mesStr = mes === undefined || mes === null || mes === '' ? '—' : String(mes).padStart(2, '0');
+    const anoStr = ano === undefined || ano === null || ano === '' ? '—' : String(ano);
+    if (mesStr === '—' && anoStr === '—') return '—';
+    return `${mesStr}/${anoStr}`;
+  }
+
+  return '—';
 }
 
 const drawerOverlayStyle = {
