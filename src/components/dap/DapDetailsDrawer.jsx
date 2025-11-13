@@ -40,7 +40,7 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
           <div>
             <h2 style={{ margin: 0, color: '#0f172a' }}>Detalhes da DAP</h2>
             <p style={{ margin: 0, color: '#475569', fontSize: '13px' }}>
-              {dap.ano}/{String(dap.mes).padStart(2, '0')} · {dap.tipo ?? 'ORIGINAL'} · {dap.status ?? 'ATIVA'}
+              {String(dap.mes_referencia ?? dap.mes ?? '').padStart(2, '0')}/{dap.ano_referencia ?? dap.ano ?? ''} · {dap.tipo ?? 'ORIGINAL'} · {dap.status ?? 'ATIVA'}
             </p>
           </div>
           <button type="button" onClick={onClose} style={closeButtonStyle} aria-label="Fechar detalhes">
@@ -51,15 +51,16 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
         <section style={{ marginBottom: 24 }}>
           <h3 style={sectionTitleStyle}>Resumo</h3>
           <div style={infoGridStyle}>
-            <InfoItem label="Número" value={dap.numero ?? '—'} />
-            <InfoItem
-              label="Data de emissão"
-              value={dap.data_emissao ? new Date(dap.data_emissao).toLocaleDateString('pt-BR') : '—'}
-            />
-            <InfoItem label="Situação" value={dap.status ?? 'ATIVA'} />
-            <InfoItem label="Retifica" value={dap.retificadora_de_id ? `#${dap.retificadora_de_id}` : 'Não'} />
+            <InfoItem label="ID" value={dap.id ?? '—'} />
+            <InfoItem label="Referência (M/A)" value={`${String(dap.mes_referencia ?? dap.mes ?? '').padStart(2, '0')}/${dap.ano_referencia ?? dap.ano ?? '—'}`} />
+            <InfoItem label="Serventia" value={dap.serventia_nome ?? '—'} />
+            <InfoItem label="Código Serventia" value={dap.codigo_serventia ?? '—'} />
+            <InfoItem label="CNPJ" value={dap.cnpj ?? '—'} />
+            <InfoItem label="Data de transmissão" value={dap.data_transmissao ? new Date(dap.data_transmissao).toLocaleString('pt-BR') : '—'} />
+            <InfoItem label="Código do recibo" value={dap.codigo_recibo ?? '—'} />
+            <InfoItem label="Retificadora" value={dap.retificadora ? 'Sim' : 'Não'} />
+            <InfoItem label="Retificadora de" value={dap.retificadora_de_id ? `#${dap.retificadora_de_id}` : '—'} />
             <InfoItem label="Retificada por" value={dap.retificada_por_id ? `#${dap.retificada_por_id}` : '—'} />
-            <InfoItem label="Serventia" value={dap.serventia_nome ?? dap.serventia_id ?? '—'} />
           </div>
           {dap.observacoes && (
             <div style={noteBoxStyle}>
@@ -83,9 +84,9 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
                 </span>
               </header>
               <div style={periodStatsStyle}>
-                <InfoItem label="Emolumentos" value={formatCurrency(periodo.total_emolumentos)} />
+                <InfoItem label="Emolumentos" value={formatCurrency(periodo.total_emolumentos ?? periodo.emolumento_apurado)} />
                 <InfoItem label="TED" value={formatCurrency(periodo.total_ted)} />
-                <InfoItem label="ISS" value={formatCurrency(periodo.total_iss)} />
+                <InfoItem label="ISS" value={formatCurrency(periodo.total_iss ?? periodo.issqn_recebido_usuarios)} />
                 <InfoItem label="Total líquido" value={formatCurrency(periodo.total_liquido)} />
               </div>
               {renderAtos(periodo)}
