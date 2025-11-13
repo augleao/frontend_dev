@@ -104,13 +104,13 @@ function renderAtos(periodo) {
       <table style={atosTableStyle}>
         <thead>
           <tr>
-            <th>Código</th>
-            <th>Descrição</th>
-            <th>Trib.</th>
-            <th>Qtd</th>
-            <th>Emolumentos</th>
-            <th>ISS</th>
-            <th>Valor líquido</th>
+            <th style={atoHeaderCellStyle}>Código</th>
+            <th style={atoHeaderCellStyle}>Descrição</th>
+            <th style={atoHeaderCellStyle}>Trib.</th>
+            <th style={atoHeaderCellStyle}>Qtd</th>
+            <th style={atoHeaderCellStyle}>Emolumentos</th>
+            <th style={atoHeaderCellStyle}>ISS</th>
+            <th style={atoHeaderCellStyle}>Valor líquido</th>
           </tr>
         </thead>
         <tbody>
@@ -119,17 +119,19 @@ function renderAtos(periodo) {
               || (ato.tributacao_codigo
                 ? `${ato.tributacao_codigo}${ato.tributacao_descricao ? ' - ' + ato.tributacao_descricao : ''}`
                 : '—');
-            return (
-              <tr key={ato.id ?? `${ato.codigo_ato}-${ato.descricao}`} style={{ background: 'white' }}>
-                <td>{ato.codigo_ato ?? '—'}</td>
-                <td>{ato.descricao ?? '—'}</td>
-                <td>{tributacaoTexto}</td>
-                <td>{ato.quantidade ?? '—'}</td>
-                <td>{formatCurrency(ato.emolumentos)}</td>
-                <td>{formatCurrency(ato.taxa_iss)}</td>
-                <td>{formatCurrency(ato.valor_liquido)}</td>
-              </tr>
-            );
+              // DEBUG: inspecionar objeto `ato` no console para verificar campos
+              console.log('[DEBUG][DAP ATOS]', ato);
+              return (
+                <tr key={ato.id ?? `${(ato.codigo || ato.codigo_ato || ato.ato_codigo || 'sem-codigo')}-${ato.descricao ?? ''}` } style={{ background: 'white' }}>
+                  <td style={atoCellStyle}>{ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '—'}</td>
+                  <td style={atoCellStyle}>{ato.descricao ?? '—'}</td>
+                  <td style={atoCellStyle}>{tributacaoTexto}</td>
+                  <td style={atoCellStyle}>{ato.quantidade ?? '—'}</td>
+                  <td style={atoCellStyle}>{formatCurrency(ato.emolumentos)}</td>
+                  <td style={atoCellStyle}>{formatCurrency(ato.taxa_iss)}</td>
+                  <td style={atoCellStyle}>{formatCurrency(ato.valor_liquido)}</td>
+                </tr>
+              );
           })}
         </tbody>
       </table>
@@ -260,6 +262,22 @@ const atosTableStyle = {
   overflow: 'hidden',
   fontSize: '12px',
   boxShadow: '0 6px 16px rgba(15, 23, 42, 0.1)',
+};
+
+const atoHeaderCellStyle = {
+  padding: '10px 12px',
+  textAlign: 'center',
+  background: '#f1f5f9',
+  fontWeight: 700,
+  color: '#0f172a',
+  borderBottom: '1px solid #e6e6e6'
+};
+
+const atoCellStyle = {
+  padding: '10px 12px',
+  textAlign: 'center',
+  borderBottom: '1px solid #f0f0f0',
+  verticalAlign: 'middle'
 };
 
 export default DapDetailsDrawer;
