@@ -52,11 +52,11 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
           <h3 style={sectionTitleStyle}>Resumo</h3>
           <div style={infoGridStyle}>
             <InfoItem label="Referência (M/A)" value={getReferencia(dap)} />
-            <InfoItem label="Serventia" value={dap.serventia_nome ?? '—'} />
-            <InfoItem label="Código Serventia" value={dap.codigo_serventia ?? '—'} />
+            <InfoItem label="Serventia" value={getServentiaName(dap)} />
+            <InfoItem label="Código Serventia" value={getCodigoServentia(dap)} />
             <InfoItem label="CNPJ" value={dap.cnpj ?? '—'} />
-            <InfoItem label="Data de transmissão" value={dap.data_transmissao ? new Date(dap.data_transmissao).toLocaleString('pt-BR') : '—'} />
-            <InfoItem label="Código do recibo" value={dap.codigo_recibo ?? '—'} />
+            <InfoItem label="Data de transmissão" value={getDataTransmissao(dap)} />
+            <InfoItem label="Código do recibo" value={getCodigoRecibo(dap)} />
             <InfoItem label="Retificadora" value={dap.retificadora ? 'Sim' : 'Não'} />
             {/* IDs de retificação removidos do resumo conforme solicitado */}
           </div>
@@ -107,24 +107,28 @@ function renderAtos(periodo) {
           </tr>
         </thead>
         <tbody>
-          {atos.map((ato) => {
+          {atos.map((ato, i) => {
             const tributacaoTexto = ato.tributacao
               || (ato.tributacao_codigo
                 ? `${ato.tributacao_codigo}${ato.tributacao_descricao ? ' - ' + ato.tributacao_descricao : ''}`
                 : '—');
-              // DEBUG: inspecionar objeto `ato` no console para verificar campos
-              console.log('[DEBUG][DAP ATOS]', ato);
-              return (
-                <tr key={ato.id ?? `${(ato.codigo || ato.codigo_ato || ato.ato_codigo || 'sem-codigo')}-${ato.descricao ?? ''}` } style={{ background: 'white' }}>
-                  <td style={atoCellStyle}>{ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '—'}</td>
-                  <td style={atoCellStyle}>{ato.descricao ?? '—'}</td>
-                  <td style={atoCellStyle}>{tributacaoTexto}</td>
-                  <td style={atoCellStyle}>{ato.quantidade ?? '—'}</td>
-                  <td style={atoCellStyle}>{formatCurrency(ato.emolumentos)}</td>
-                  <td style={atoCellStyle}>{formatCurrency(ato.taxa_iss)}</td>
-                  <td style={atoCellStyle}>{formatCurrency(ato.valor_liquido)}</td>
-                </tr>
-              );
+            // DEBUG: inspecionar objeto `ato` no console para verificar campos
+            console.log('[DEBUG][DAP ATOS]', ato);
+            const rowBg = i % 2 === 0 ? 'white' : '#f8fafc';
+            return (
+              <tr
+                key={ato.id ?? `${(ato.codigo || ato.codigo_ato || ato.ato_codigo || 'sem-codigo')}-${ato.descricao ?? ''}` }
+                style={{ background: rowBg }}
+              >
+                <td style={atoCellStyle}>{ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '—'}</td>
+                <td style={atoCellStyle}>{ato.descricao ?? '—'}</td>
+                <td style={atoCellStyle}>{tributacaoTexto}</td>
+                <td style={atoCellStyle}>{ato.quantidade ?? '—'}</td>
+                <td style={atoCellStyle}>{formatCurrency(ato.emolumentos)}</td>
+                <td style={atoCellStyle}>{formatCurrency(ato.taxa_iss)}</td>
+                <td style={atoCellStyle}>{formatCurrency(ato.valor_liquido)}</td>
+              </tr>
+            );
           })}
         </tbody>
       </table>
@@ -187,6 +191,57 @@ function getReferencia(dap) {
   }
 
   return '—';
+}
+
+function getServentiaName(dap) {
+  if (!dap) return '—';
+  return (
+    dap.serventia_nome
+    ?? dap.serventiaNome
+    ?? dap.serventia
+    ?? dap.nome_serventia
+    ?? dap.nomeServentia
+    ?? '—'
+  );
+}
+
+function getCodigoServentia(dap) {
+  if (!dap) return '—';
+  return (
+    dap.codigo_serventia
+    ?? dap.codigoServentia
+    ?? dap.serventia_codigo
+    ?? dap.codigo_ser
+    ?? '—'
+  );
+}
+
+function getDataTransmissao(dap) {
+  if (!dap) return '—';
+  const candidates = [
+    dap.data_transmissao,
+    dap.dataTransmissao,
+    dap.transmissao_data,
+    dap.data_envio,
+    dap.data_enviado,
+  ];
+  for (const v of candidates) {
+    if (v === undefined || v === null || v === '') continue;
+    const date = new Date(v);
+    if (!Number.isNaN(date.getTime())) return date.toLocaleString('pt-BR');
+  }
+  return '—';
+}
+
+function getCodigoRecibo(dap) {
+  if (!dap) return '—';
+  return (
+    dap.codigo_recibo
+    ?? dap.codigoRecibo
+    ?? dap.recibo_codigo
+    ?? dap.codigo_recibo_dap
+    ?? '—'
+  );
 }
 
 const drawerOverlayStyle = {
