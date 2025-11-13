@@ -1,6 +1,16 @@
 import React, { useEffect } from 'react';
 
 function DapDetailsDrawer({ dap, onClose, loading }) {
+  // keep hook order stable: always register useEffect (it will only attach listener when modal is open)
+  useEffect(() => {
+    if (!(dap || loading)) return undefined;
+    function onKey(e) {
+      if (e.key === 'Escape' && onClose) onClose();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose, dap, loading]);
+
   if (!dap && !loading) {
     return null;
   }
@@ -22,15 +32,6 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
   }
 
   const periodos = dap.periodos ?? dap.dap_periodos ?? [];
-
-  // close on Escape key
-  useEffect(() => {
-    function onKey(e) {
-      if (e.key === 'Escape' && onClose) onClose();
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
 
   return (
     <div style={drawerOverlayStyle} onClick={(e) => e.currentTarget === e.target && onClose && onClose()}>
