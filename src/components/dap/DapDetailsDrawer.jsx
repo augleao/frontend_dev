@@ -195,9 +195,7 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
             <div key={periodo.id ?? periodo.periodo_numero} style={periodCardStyle}>
               <header style={periodHeaderStyle}>
                 <span style={periodBadgeStyle}>{periodo.periodo_numero}</span>
-                <span style={{ color: '#0f172a', fontWeight: 700 }}>
-                  Total de atos: {periodo.total_atos ?? '—'}
-                </span>
+                {/* removed 'Total de atos' label as requested */}
               </header>
               {/* Métricas removidas: Emolumentos, TED, ISS, Total líquido (solicitado) */}
               {renderAtos(periodo, descricaoMap)}
