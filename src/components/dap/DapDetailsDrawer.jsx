@@ -85,6 +85,35 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
 
   const periodos = dap.periodos ?? dap.dap_periodos ?? [];
 
+  // Compute summary totals across all periods/atos
+  const summary = (() => {
+    const totalsByCode = Object.create(null);
+    let totalActs = 0;
+    let totalPaid = 0;
+    let totalFree = 0;
+
+    periodos.forEach((p) => {
+      const atos = p.atos ?? p.dap_atos ?? [];
+      atos.forEach((ato) => {
+        const code = ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? 'sem-codigo';
+        const qtyRaw = ato.quantidade ?? ato.qtde ?? ato.qtd ?? 0;
+        const qty = Number(qtyRaw) || 0;
+        const tribRaw = ato.tributacao ?? ato.tributacao_codigo ?? ato.trib ?? ato.tributacao;
+        const trib = (tribRaw === undefined || tribRaw === null) ? '' : String(tribRaw).trim();
+
+        totalsByCode[code] = (totalsByCode[code] || 0) + qty;
+        totalActs += qty;
+        if (trib === '1' || Number(trib) === 1) {
+          totalPaid += qty;
+        } else {
+          totalFree += qty;
+        }
+      });
+    });
+
+    return { totalsByCode, totalActs, totalPaid, totalFree };
+  })();
+
   return (
     <div style={drawerOverlayStyle} onClick={(e) => e.currentTarget === e.target && onClose && onClose()}>
       <div style={drawerStyle} onClick={(e) => e.stopPropagation()}>
@@ -101,7 +130,7 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
         </div>
 
         <section style={{ marginBottom: 24 }}>
-          <h3 style={sectionTitleStyle}>Resumo</h3>
+          <h3 style={sectionTitleStyle}>Informações</h3>
           <div style={infoGridStyle}>
             <InfoItem label="Referência (M/A)" value={getReferencia(dap)} />
             <InfoItem label="Serventia" value={getServentiaName(dap)} />
@@ -113,6 +142,15 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
             {/* IDs de retificação removidos do resumo conforme solicitado */}
           </div>
           {/* Observações removidas conforme solicitação */}
+        </section>
+
+        <section style={{ marginBottom: 24 }}>
+          <h3 style={sectionTitleStyle}>Resumo da DAP</h3>
+          <div style={infoGridStyle}>
+            <InfoItem label="Quantidade de atos praticados" value={summary.totalActs ?? 0} />
+            <InfoItem label="Quantidade de atos pagos (Trib = 1)" value={summary.totalPaid ?? 0} />
+            <InfoItem label="Quantidade de atos gratuitos (Trib ≠ 1)" value={summary.totalFree ?? 0} />
+          </div>
         </section>
 
         <section>
