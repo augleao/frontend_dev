@@ -209,9 +209,47 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
 
 function renderAtos(periodo, descricaoMap) {
   const atos = periodo.atos ?? periodo.dap_atos ?? [];
-  if (!Array.isArray(atos) || atos.length === 0) {
-    return null;
-  }
+  if (!Array.isArray(atos) || atos.length === 0) return null;
+
+  // Group by codigo + tributacao
+  const grouped = new Map();
+  atos.forEach((ato) => {
+    const codigo = String(ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '').trim() || 'sem-codigo';
+    const tribRaw = ato.tributacao ?? ato.tributacao_codigo ?? ato.trib ?? '';
+    const tributacao = String(tribRaw ?? '').trim();
+    const key = `${codigo}||${tributacao}`;
+
+    const quantidade = Number(ato.quantidade ?? ato.qtde ?? ato.qtd ?? 0) || 0;
+    const emolumentos = Number(ato.emolumentos ?? ato.emol ?? ato.valor_emol ?? 0) || 0;
+    const taxa_iss = Number(ato.taxa_iss ?? ato.iss ?? 0) || 0;
+    const valor_liquido = Number(ato.valor_liquido ?? ato.valor_liq ?? ato.liquido ?? 0) || 0;
+
+    if (!grouped.has(key)) {
+      grouped.set(key, {
+        codigo,
+        tributacao,
+        quantidade: 0,
+        emolumentos: 0,
+        taxa_iss: 0,
+        valor_liquido: 0,
+        descricao: (descricaoMap && descricaoMap[codigo]) ? descricaoMap[codigo] : (ato.descricao ?? undefined),
+      });
+    }
+
+    const entry = grouped.get(key);
+    entry.quantidade += quantidade;
+    entry.emolumentos += emolumentos;
+    entry.taxa_iss += taxa_iss;
+    entry.valor_liquido += valor_liquido;
+  });
+
+  const rows = Array.from(grouped.values()).sort((a, b) => {
+    if (a.codigo < b.codigo) return -1;
+    if (a.codigo > b.codigo) return 1;
+    if ((a.tributacao || '') < (b.tributacao || '')) return -1;
+    if ((a.tributacao || '') > (b.tributacao || '')) return 1;
+    return 0;
+  });
 
   return (
     <div style={{ marginTop: 16 }}>
@@ -228,41 +266,17 @@ function renderAtos(periodo, descricaoMap) {
           </tr>
         </thead>
         <tbody>
-          {atos.map((ato, i) => {
-            const tributacaoTexto = ato.tributacao
-              || (ato.tributacao_codigo
-                ? `${ato.tributacao_codigo}${ato.tributacao_descricao ? ' - ' + ato.tributacao_descricao : ''}`
-                : '—');
-            // DEBUG: inspecionar objeto `ato` no console para verificar campos
-            console.log('[DEBUG][DAP ATOS]', ato);
-            const rowBg = i % 2 === 0 ? 'white' : '#e6e6e6';
-            return (
-              <tr
-                key={ato.id ?? `${(ato.codigo || ato.codigo_ato || ato.ato_codigo || 'sem-codigo')}-${ato.descricao ?? ''}` }
-                style={{ background: rowBg }}
-              >
-                <td style={atoCellStyle}>{ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '—'}</td>
-                <td
-                  style={atoCellStyle}
-                  title={(() => {
-                    const codeKey = ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '';
-                    return (codeKey && descricaoMap[String(codeKey)])
-                      ? descricaoMap[String(codeKey)]
-                      : (ato.descricao ?? undefined);
-                  })()}
-                >{(() => {
-                  const codeKey = ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '';
-                  const rawDesc = (codeKey && descricaoMap[String(codeKey)]) ? descricaoMap[String(codeKey)] : (ato.descricao ?? '—');
-                  return truncateString(rawDesc, 60);
-                })()}</td>
-                <td style={atoCellStyle}>{tributacaoTexto}</td>
-                <td style={atoCellStyle}>{ato.quantidade ?? '—'}</td>
-                <td style={atoCellStyle}>{formatCurrency(ato.emolumentos)}</td>
-                <td style={atoCellStyle}>{formatCurrency(ato.taxa_iss)}</td>
-                <td style={atoCellStyle}>{formatCurrency(ato.valor_liquido)}</td>
-              </tr>
-            );
-          })}
+          {rows.map((r, i) => (
+            <tr key={`${r.codigo}-${r.tributacao}`} style={{ background: i % 2 === 0 ? 'white' : '#e6e6e6' }}>
+              <td style={atoCellStyle}>{r.codigo ?? '—'}</td>
+              <td style={atoCellStyle} title={r.descricao}>{truncateString(r.descricao ?? '—', 60)}</td>
+              <td style={atoCellStyle}>{r.tributacao ?? '—'}</td>
+              <td style={atoCellStyle}>{r.quantidade ?? 0}</td>
+              <td style={atoCellStyle}>{formatCurrency(r.emolumentos)}</td>
+              <td style={atoCellStyle}>{formatCurrency(r.taxa_iss)}</td>
+              <td style={atoCellStyle}>{formatCurrency(r.valor_liquido)}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
