@@ -211,13 +211,19 @@ function renderAtos(periodo, descricaoMap) {
                 style={{ background: rowBg }}
               >
                 <td style={atoCellStyle}>{ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '—'}</td>
-                <td style={atoCellStyle}>{
-                  (() => {
+                <td
+                  style={atoCellStyle}
+                  title={(() => {
                     const codeKey = ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '';
-                    if (codeKey && descricaoMap[String(codeKey)]) return descricaoMap[String(codeKey)];
-                    return ato.descricao ?? '—';
-                  })()
-                }</td>
+                    return (codeKey && descricaoMap[String(codeKey)])
+                      ? descricaoMap[String(codeKey)]
+                      : (ato.descricao ?? undefined);
+                  })()}
+                >{(() => {
+                  const codeKey = ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '';
+                  const rawDesc = (codeKey && descricaoMap[String(codeKey)]) ? descricaoMap[String(codeKey)] : (ato.descricao ?? '—');
+                  return truncateString(rawDesc, 60);
+                })()}</td>
                 <td style={atoCellStyle}>{tributacaoTexto}</td>
                 <td style={atoCellStyle}>{ato.quantidade ?? '—'}</td>
                 <td style={atoCellStyle}>{formatCurrency(ato.emolumentos)}</td>
@@ -248,6 +254,13 @@ function formatCurrency(value) {
   const number = Number(value);
   if (Number.isNaN(number)) return '—';
   return number.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function truncateString(value, max = 60) {
+  if (value === null || value === undefined) return '—';
+  const s = String(value);
+  if (s.length <= max) return s;
+  return s.slice(0, max - 1) + '…';
 }
 
 function getReferencia(dap) {
