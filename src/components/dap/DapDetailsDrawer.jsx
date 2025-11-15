@@ -163,6 +163,10 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
             <InfoItem label="Data de transmissão" value={getDataTransmissao(dap)} />
             <InfoItem label="Código do recibo" value={getCodigoRecibo(dap)} />
             <InfoItem label="Retificadora" value={dap.retificadora ? 'Sim' : 'Não'} />
+            <InfoItem label="Emolumento apurado" value={formatCurrency(dap.emolumento_apurado ?? dap.emolumentoApurado)} />
+            <InfoItem label="Taxa fiscalização apurada" value={formatCurrency(dap.taxa_fiscalizacao_judiciaria_apurada ?? dap.taxaFiscalizacaoJudiciariaApurada)} />
+            <InfoItem label="RECOMPE apurado" value={formatCurrency(dap.recompe_apurado ?? dap.recompeApurado)} />
+            <InfoItem label="Valores recebidos RECOMPE" value={formatCurrency(dap.valores_recebidos_recompe ?? dap.valoresRecebidosRecompe)} />
             {/* IDs de retificação removidos do resumo conforme solicitado */}
           </div>
           {/* Observações removidas conforme solicitação */}
