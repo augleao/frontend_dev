@@ -99,6 +99,7 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
   // Aggregated monetary fallbacks (sum from ato-level when header fields missing/zero)
   let emolTotal = 0;
   let tfjTotal = 0;
+  let recompeTotal = 0;
 
     periodos.forEach((p) => {
       const atos = p.atos ?? p.dap_atos ?? [];
@@ -111,10 +112,12 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
         const tribNum = Number(tribRaw);
         const emolRaw = ato.emolumentos ?? ato.emol ?? ato.valor_emol ?? ato.emolumento ?? 0;
         const emol = Number(String(emolRaw).replace(',', '.')) || 0;
-        const tfjRaw = ato.tfj_valor ?? ato.tfj ?? ato.tfjValor ?? 0;
-        const tfj = Number(String(tfjRaw).replace(',', '.')) || 0;
+  const tfjRaw = ato.tfj_valor ?? ato.tfj ?? ato.tfjValor ?? 0;
+  const tfj = Number(String(tfjRaw).replace(',', '.')) || 0;
+  const recompeRaw = ato.recompe ?? ato.recompe_valor ?? ato.recompe_val ?? ato.recompeValor ?? 0;
+  const recompe = Number(String(recompeRaw).replace(',', '.')) || 0;
 
-        totalsByCode[codeStr] = (totalsByCode[codeStr] || 0) + qty;
+  totalsByCode[codeStr] = (totalsByCode[codeStr] || 0) + qty;
         totalActs += qty;
         if (tribNum === 1) {
           totalPaid += qty;
@@ -123,8 +126,9 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
         }
 
         // monetary aggregates
-        emolTotal += emol;
-        tfjTotal += tfj;
+  emolTotal += emol;
+  tfjTotal += tfj;
+  recompeTotal += recompe;
 
         // Special counters
         if (codeStr === '9101') {
@@ -149,6 +153,7 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
       obitosUI,
       emolTotal,
       tfjTotal,
+      recompeTotal,
     };
   })();
 
@@ -179,7 +184,7 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
             <InfoItem label="Retificadora" value={dap.retificadora ? 'Sim' : 'Não'} />
             <InfoItem label="Emolumento apurado" value={formatCurrency((dap.emolumento_apurado ?? dap.emolumentoApurado) || summary.emolTotal)} />
             <InfoItem label="Taxa fiscalização apurada" value={formatCurrency((dap.taxa_fiscalizacao_judiciaria_apurada ?? dap.taxaFiscalizacaoJudiciariaApurada) || summary.tfjTotal)} />
-            <InfoItem label="RECOMPE apurado" value={formatCurrency(dap.recompe_apurado ?? dap.recompeApurado)} />
+            <InfoItem label="RECOMPE apurado" value={formatCurrency((dap.recompe_apurado ?? dap.recompeApurado) || summary.recompeTotal)} />
             <InfoItem label="Valores recebidos RECOMPE" value={formatCurrency(dap.valores_recebidos_recompe ?? dap.valoresRecebidosRecompe)} />
             {/* IDs de retificação removidos do resumo conforme solicitado */}
           </div>
