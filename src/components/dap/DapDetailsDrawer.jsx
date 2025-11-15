@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { apiURL } from '../../config';
 
@@ -91,10 +92,13 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
     let totalActs = 0;
     let totalPaid = 0;
     let totalFree = 0;
-    let nascimentosProprios = 0; // 9101 trib 26
-    let nascimentosUI = 0;       // 9101 trib 29
-    let obitosProprios = 0;      // 9201 trib 26
-    let obitosUI = 0;            // 9201 trib 29
+  let nascimentosProprios = 0; // 9101 trib 26
+  let nascimentosUI = 0;       // 9101 trib 29
+  let obitosProprios = 0;      // 9201 trib 26
+  let obitosUI = 0;            // 9201 trib 29
+  // Aggregated monetary fallbacks (sum from ato-level when header fields missing/zero)
+  let emolTotal = 0;
+  let tfjTotal = 0;
 
     periodos.forEach((p) => {
       const atos = p.atos ?? p.dap_atos ?? [];
@@ -105,6 +109,10 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
         const qty = Number(qtyRaw) || 0;
         const tribRaw = ato.tributacao ?? ato.tributacao_codigo ?? ato.trib ?? ato.tributacao;
         const tribNum = Number(tribRaw);
+        const emolRaw = ato.emolumentos ?? ato.emol ?? ato.valor_emol ?? ato.emolumento ?? 0;
+        const emol = Number(String(emolRaw).replace(',', '.')) || 0;
+        const tfjRaw = ato.tfj_valor ?? ato.tfj ?? ato.tfjValor ?? 0;
+        const tfj = Number(String(tfjRaw).replace(',', '.')) || 0;
 
         totalsByCode[codeStr] = (totalsByCode[codeStr] || 0) + qty;
         totalActs += qty;
@@ -113,6 +121,10 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
         } else {
           totalFree += qty;
         }
+
+        // monetary aggregates
+        emolTotal += emol;
+        tfjTotal += tfj;
 
         // Special counters
         if (codeStr === '9101') {
@@ -135,6 +147,8 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
       nascimentosUI,
       obitosProprios,
       obitosUI,
+      emolTotal,
+      tfjTotal,
     };
   })();
 
@@ -163,8 +177,8 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
             <InfoItem label="Data de transmissão" value={getDataTransmissao(dap)} />
             <InfoItem label="Código do recibo" value={getCodigoRecibo(dap)} />
             <InfoItem label="Retificadora" value={dap.retificadora ? 'Sim' : 'Não'} />
-            <InfoItem label="Emolumento apurado" value={formatCurrency(dap.emolumento_apurado ?? dap.emolumentoApurado)} />
-            <InfoItem label="Taxa fiscalização apurada" value={formatCurrency(dap.taxa_fiscalizacao_judiciaria_apurada ?? dap.taxaFiscalizacaoJudiciariaApurada)} />
+            <InfoItem label="Emolumento apurado" value={formatCurrency((dap.emolumento_apurado ?? dap.emolumentoApurado) || summary.emolTotal)} />
+            <InfoItem label="Taxa fiscalização apurada" value={formatCurrency((dap.taxa_fiscalizacao_judiciaria_apurada ?? dap.taxaFiscalizacaoJudiciariaApurada) || summary.tfjTotal)} />
             <InfoItem label="RECOMPE apurado" value={formatCurrency(dap.recompe_apurado ?? dap.recompeApurado)} />
             <InfoItem label="Valores recebidos RECOMPE" value={formatCurrency(dap.valores_recebidos_recompe ?? dap.valoresRecebidosRecompe)} />
             {/* IDs de retificação removidos do resumo conforme solicitado */}
