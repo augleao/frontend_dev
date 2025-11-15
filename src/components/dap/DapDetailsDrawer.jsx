@@ -91,27 +91,51 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
     let totalActs = 0;
     let totalPaid = 0;
     let totalFree = 0;
+    let nascimentosProprios = 0; // 9101 trib 26
+    let nascimentosUI = 0;       // 9101 trib 29
+    let obitosProprios = 0;      // 9201 trib 26
+    let obitosUI = 0;            // 9201 trib 29
 
     periodos.forEach((p) => {
       const atos = p.atos ?? p.dap_atos ?? [];
       atos.forEach((ato) => {
         const code = ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? 'sem-codigo';
+        const codeStr = String(code ?? '');
         const qtyRaw = ato.quantidade ?? ato.qtde ?? ato.qtd ?? 0;
         const qty = Number(qtyRaw) || 0;
         const tribRaw = ato.tributacao ?? ato.tributacao_codigo ?? ato.trib ?? ato.tributacao;
-        const trib = (tribRaw === undefined || tribRaw === null) ? '' : String(tribRaw).trim();
+        const tribNum = Number(tribRaw);
 
-        totalsByCode[code] = (totalsByCode[code] || 0) + qty;
+        totalsByCode[codeStr] = (totalsByCode[codeStr] || 0) + qty;
         totalActs += qty;
-        if (trib === '1' || Number(trib) === 1) {
+        if (tribNum === 1) {
           totalPaid += qty;
         } else {
           totalFree += qty;
         }
+
+        // Special counters
+        if (codeStr === '9101') {
+          if (tribNum === 26) nascimentosProprios += qty;
+          if (tribNum === 29) nascimentosUI += qty;
+        }
+        if (codeStr === '9201') {
+          if (tribNum === 26) obitosProprios += qty;
+          if (tribNum === 29) obitosUI += qty;
+        }
       });
     });
 
-    return { totalsByCode, totalActs, totalPaid, totalFree };
+    return {
+      totalsByCode,
+      totalActs,
+      totalPaid,
+      totalFree,
+      nascimentosProprios,
+      nascimentosUI,
+      obitosProprios,
+      obitosUI,
+    };
   })();
 
   return (
@@ -150,6 +174,15 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
             <InfoItem label="Quantidade de atos praticados" value={summary.totalActs ?? 0} />
             <InfoItem label="Quantidade de atos pagos (Trib = 1)" value={summary.totalPaid ?? 0} />
             <InfoItem label="Quantidade de atos gratuitos (Trib ≠ 1)" value={summary.totalFree ?? 0} />
+          </div>
+        </section>
+        <section style={{ marginBottom: 24 }}>
+          <h3 style={sectionTitleStyle}>Registros específicos</h3>
+          <div style={infoGridStyle}>
+            <InfoItem label="Registros de Nascimento Próprios (9101, trib 26)" value={summary.nascimentosProprios ?? 0} />
+            <InfoItem label="Registros de Nascimento UI (9101, trib 29)" value={summary.nascimentosUI ?? 0} />
+            <InfoItem label="Registros de Óbito Próprios (9201, trib 26)" value={summary.obitosProprios ?? 0} />
+            <InfoItem label="Registros de Óbito UI (9201, trib 29)" value={summary.obitosUI ?? 0} />
           </div>
         </section>
 
