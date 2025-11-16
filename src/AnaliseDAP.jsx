@@ -40,7 +40,27 @@ function AnaliseDAP() {
       const resposta = await listDaps(filtrosComServentia);
       // eslint-disable-next-line no-console
       console.debug('DAPs normalizadas', resposta);
-      setDaps(resposta.items);
+      // Filtra DAPs por serventia do usuário logado
+      let dapsFiltradas = resposta.items;
+      if (codigoServentia) {
+        dapsFiltradas = resposta.items.filter((dap) => {
+          const dapServ = dap.codigo_serventia || dap.codigoServentia || dap.serventia_id || dap.serventiaId || dap.serventia;
+          const match = String(dapServ).trim() === String(codigoServentia).trim();
+          // LOG: Mostra cada DAP e resultado da comparação
+          console.log('[Filtro DAP]', {
+            dapId: dap.id,
+            dapServ,
+            codigoServentia,
+            match,
+            dap,
+          });
+          return match;
+        });
+      } else {
+        console.log('[Filtro DAP] Nenhum codigoServentia encontrado no usuario logado. Exibindo todas as DAPs.');
+      }
+      console.log('[Filtro DAP] DAPs finais exibidas:', dapsFiltradas);
+      setDaps(dapsFiltradas);
     } catch (error) {
       const mensagem = error?.response?.data?.mensagem || 'Não foi possível carregar as DAPs.';
       // eslint-disable-next-line no-console
