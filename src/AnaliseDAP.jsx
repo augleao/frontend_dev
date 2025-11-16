@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { listDaps, getDapById, deleteDap, uploadDap } from './services/dapService';
 import DapTable from './components/dap/DapTable';
 import DapDetailsDrawer from './components/dap/DapDetailsDrawer';
+import { apiURL } from './config';
 
 const currentYear = new Date().getFullYear();
 
@@ -36,10 +37,43 @@ function AnaliseDAP() {
 
       // Obter usuário logado (mesma fonte usada em CaixaDiario)
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-      // campos possíveis para nome abreviado no objeto usuário
-      const userNomeAbreviado = (
-        usuario?.nome_abreviado || usuario?.nomeAbreviado || usuario?.nome_abrev || usuario?.nomeAbrev || usuario?.nome || ''
-      );
+
+      // Primeiro tente obter a serventia detalhada via API (pelo id ou pelo nome)
+      const token = localStorage.getItem('token');
+      let userServentiaAbreviada = '';
+      try {
+        let serv = null;
+        const serventiaId = usuario?.serventiaId || usuario?.serventia_id || usuario?.serventiaId || usuario?.serventia_id_serventia || null;
+        if (serventiaId) {
+          const res = await fetch(`${apiURL}/serventias/${encodeURIComponent(serventiaId)}`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+          if (res.ok) {
+            const text = await res.text();
+            const parsed = text ? JSON.parse(text) : {};
+            serv = parsed?.serventia || parsed || null;
+          }
+        }
+        if ((!serv || Object.keys(serv || {}).length === 0) && usuario?.serventia) {
+          const res2 = await fetch(`${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(usuario.serventia)}`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+          if (res2.ok) {
+            const text = await res2.text();
+            const parsed = text ? JSON.parse(text) : {};
+            serv = parsed?.serventia || parsed || serv;
+          }
+        }
+        if (serv) {
+          userServentiaAbreviada = serv.nome_abreviado || serv.nomeAbreviado || serv.nome_abrev || serv.nome || usuario?.serventia || '';
+        } else {
+          // fallback para o que estiver no objeto usuario (sem usar nome do usuário)
+          userServentiaAbreviada = usuario?.serventia || usuario?.nome_abreviado || usuario?.nomeAbreviado || '';
+        }
+      } catch (e) {
+        // se qualquer erro, use fallback simples
+        userServentiaAbreviada = usuario?.serventia || usuario?.nome_abreviado || usuario?.nome || '';
+      }
 
       // Helper: extrai o nome exibido da serventia da DAP
       const getServentiaDisplay = (dap) => (
@@ -62,15 +96,15 @@ function AnaliseDAP() {
 
       // Aplica filtro: manter apenas DAPs cuja serventia contém o token final
       let items = resposta.items || [];
-      if (userNomeAbreviado) {
-        const userLower = String(userNomeAbreviado).toLowerCase();
+      if (userServentiaAbreviada) {
+        const userLower = String(userServentiaAbreviada).toLowerCase();
         const filtered = items.filter((dap) => {
           const servDisplay = String(getServentiaDisplay(dap) || '').trim();
           const finalToken = String(getFinalToken(servDisplay) || '').toLowerCase();
           const match = finalToken && userLower.includes(finalToken);
           // logs de debug
           // eslint-disable-next-line no-console
-          console.debug('[Filtro DAP] usuário nome_abreviado:', userNomeAbreviado, '| serventia DAP:', servDisplay, '| token:', finalToken, '| match:', match);
+          console.debug('[Filtro DAP] usuário serventia_abreviada:', userServentiaAbreviada, '| serventia DAP:', servDisplay, '| token:', finalToken, '| match:', match);
           return match;
         });
         // eslint-disable-next-line no-console
@@ -78,7 +112,7 @@ function AnaliseDAP() {
         items = filtered;
       } else {
         // eslint-disable-next-line no-console
-        console.warn('[Filtro DAP] usuário sem nome_abreviado definido; exibindo todas as DAPs temporariamente');
+        console.warn('[Filtro DAP] usuário sem serventia abreviada definida; exibindo todas as DAPs temporariamente');
       }
 
       setDaps(items);
