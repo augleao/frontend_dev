@@ -30,37 +30,10 @@ function AnaliseDAP() {
   const carregarDaps = async () => {
     setLoading(true);
     try {
-      // Pega codigoServentia do usuario logado (localStorage)
-      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-      const codigoServentia = usuario.codigo_serventia || usuario.codigoServentia || usuario.serventia_id || usuario.serventiaId || usuario.serventia;
-      const filtrosComServentia = { ...filtros };
-      if (codigoServentia) {
-        filtrosComServentia.codigoServentia = codigoServentia;
-      }
-      const resposta = await listDaps(filtrosComServentia);
+      const resposta = await listDaps(filtros);
       // eslint-disable-next-line no-console
       console.debug('DAPs normalizadas', resposta);
-      // Filtra DAPs por serventia do usuário logado
-      let dapsFiltradas = resposta.items;
-      if (codigoServentia) {
-        dapsFiltradas = resposta.items.filter((dap) => {
-          const dapServ = dap.codigo_serventia || dap.codigoServentia || dap.serventia_id || dap.serventiaId || dap.serventia;
-          const match = String(dapServ).trim() === String(codigoServentia).trim();
-          // LOG: Mostra cada DAP e resultado da comparação
-          console.log('[Filtro DAP]', {
-            dapId: dap.id,
-            dapServ,
-            codigoServentia,
-            match,
-            dap,
-          });
-          return match;
-        });
-      } else {
-        console.log('[Filtro DAP] Nenhum codigoServentia encontrado no usuario logado. Exibindo todas as DAPs.');
-      }
-      console.log('[Filtro DAP] DAPs finais exibidas:', dapsFiltradas);
-      setDaps(dapsFiltradas);
+      setDaps(resposta.items);
     } catch (error) {
       const mensagem = error?.response?.data?.mensagem || 'Não foi possível carregar as DAPs.';
       // eslint-disable-next-line no-console
