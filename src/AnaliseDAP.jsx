@@ -31,7 +31,17 @@ function AnaliseDAP() {
   const carregarDaps = async () => {
     setLoading(true);
     try {
-      const resposta = await listDaps(filtros);
+      // Mapear o filtro de 'tipo' para o parâmetro esperado pela API 'retificadora'
+      const apiFilters = { ...filtros };
+      if (apiFilters.tipo === 'RETIFICADORA') {
+        apiFilters.retificadora = true;
+        delete apiFilters.tipo;
+      } else if (apiFilters.tipo === 'ORIGINAL') {
+        apiFilters.retificadora = false;
+        delete apiFilters.tipo;
+      }
+
+      const resposta = await listDaps(apiFilters);
       // eslint-disable-next-line no-console
       console.debug('DAPs normalizadas', resposta);
 
