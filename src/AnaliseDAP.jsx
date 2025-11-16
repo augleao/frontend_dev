@@ -30,7 +30,14 @@ function AnaliseDAP() {
   const carregarDaps = async () => {
     setLoading(true);
     try {
-      const resposta = await listDaps(filtros);
+      // Pega codigoServentia do usuario logado (localStorage)
+      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      const codigoServentia = usuario.codigo_serventia || usuario.codigoServentia || usuario.serventia_id || usuario.serventiaId || usuario.serventia;
+      const filtrosComServentia = { ...filtros };
+      if (codigoServentia) {
+        filtrosComServentia.codigoServentia = codigoServentia;
+      }
+      const resposta = await listDaps(filtrosComServentia);
       // eslint-disable-next-line no-console
       console.debug('DAPs normalizadas', resposta);
       setDaps(resposta.items);
