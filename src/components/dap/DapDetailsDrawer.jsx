@@ -200,7 +200,7 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
           </div>
         </section>
         <section style={{ marginBottom: 24 }}>
-          <h3 style={sectionTitleStyle}>Registros específicos</h3>
+          <h3 style={sectionTitleStyle}>Resumo dos Registros de Nascimento-Óbito</h3>
           <div style={infoGridStyle}>
             <InfoItem label="Registros de Nascimento Próprios (9101, trib 26)" value={summary.nascimentosProprios ?? 0} />
             <InfoItem label="Registros de Nascimento UI (9101, trib 29)" value={summary.nascimentosUI ?? 0} />
