@@ -186,6 +186,9 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
             <InfoItem label="Taxa fiscalização apurada" value={formatCurrency((dap.taxa_fiscalizacao_judiciaria_apurada ?? dap.taxaFiscalizacaoJudiciariaApurada) || summary.tfjTotal)} />
             <InfoItem label="RECOMPE apurado" value={formatCurrency((dap.recompe_apurado ?? dap.recompeApurado) || summary.recompeTotal)} />
             <InfoItem label="Valores recebidos RECOMPE" value={formatCurrency(dap.valores_recebidos_recompe ?? dap.valoresRecebidosRecompe)} />
+            <InfoItem label="Estoque de Selos" value={
+              (dap.estoque_selos_eletronicos_transmissao ?? dap.estoqueSelosEletronicosTransmissao ?? dap.estoque_selos ?? dap.estoqueSelos ?? '—')
+            } />
             {/* IDs de retificação removidos do resumo conforme solicitado */}
           </div>
           {/* Observações removidas conforme solicitação */}
