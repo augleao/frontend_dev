@@ -64,6 +64,34 @@ function DapDetailsDrawer({ dap, onClose, loading }) {
     return () => { cancelled = true; };
   }, [dap, descricaoMap]);
 
+
+  // Logica de debug: mostrar serventia do usuário logado e da DAP
+  useEffect(() => {
+    if (!dap) return;
+    // Tenta obter a serventia do usuário logado do localStorage
+    let userServentia = null;
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        userServentia = user?.serventia || user?.codigo_serventia || user?.codigoServentia || null;
+      }
+    } catch (e) {
+      // ignora
+    }
+    // Tenta obter a serventia da DAP
+    const dapServentia = dap.codigo_serventia
+      ?? dap.codigoServentia
+      ?? dap.serventia_codigo
+      ?? dap.codigo_ser
+      ?? null;
+    // Teste lógico: exibe se a DAP seria exibida para o usuário
+    const match = String(userServentia) === String(dapServentia);
+    console.log('[DAP DEBUG] Serventia do usuário logado:', userServentia);
+    console.log('[DAP DEBUG] Serventia da DAP:', dapServentia);
+    console.log('[DAP DEBUG] DAP será exibida para este usuário?', match);
+  }, [dap]);
+
   if (!dap && !loading) {
     return null;
   }
