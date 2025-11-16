@@ -125,6 +125,22 @@ function AnaliseDAP() {
         console.warn('[Filtro DAP] usuário sem serventia abreviada definida; exibindo todas as DAPs temporariamente');
       }
 
+      // Ordenar DAPs do mais recente para o mais antigo (ano desc, mes desc)
+      const parseYearMonth = (dap) => {
+        const anoCandidates = [dap?.ano_referencia, dap?.ano, dap?.ano_ref, dap?.anoReferencia, dap?.ano_referente];
+        const mesCandidates = [dap?.mes_referencia, dap?.mes, dap?.mes_ref, dap?.mesReferencia, dap?.mes_referente];
+        const anoVal = Number(anoCandidates.find((v) => v !== undefined && v !== null && v !== '') ?? 0) || 0;
+        const mesVal = Number(mesCandidates.find((v) => v !== undefined && v !== null && v !== '') ?? 0) || 0;
+        return { ano: anoVal, mes: mesVal };
+      };
+
+      items.sort((a, b) => {
+        const A = parseYearMonth(a);
+        const B = parseYearMonth(b);
+        if (A.ano !== B.ano) return B.ano - A.ano; // ano desc
+        return B.mes - A.mes; // mes desc
+      });
+
       setDaps(items);
     } catch (error) {
       const mensagem = error?.response?.data?.mensagem || 'Não foi possível carregar as DAPs.';
