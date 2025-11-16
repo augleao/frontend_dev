@@ -33,7 +33,55 @@ function AnaliseDAP() {
       const resposta = await listDaps(filtros);
       // eslint-disable-next-line no-console
       console.debug('DAPs normalizadas', resposta);
-      setDaps(resposta.items);
+
+      // Obter usuário logado (mesma fonte usada em CaixaDiario)
+      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      // campos possíveis para nome abreviado no objeto usuário
+      const userNomeAbreviado = (
+        usuario?.nome_abreviado || usuario?.nomeAbreviado || usuario?.nome_abrev || usuario?.nomeAbrev || usuario?.nome || ''
+      );
+
+      // Helper: extrai o nome exibido da serventia da DAP
+      const getServentiaDisplay = (dap) => (
+        dap?.serventia_nome
+        ?? dap?.serventiaNome
+        ?? dap?.serventia
+        ?? dap?.nome_serventia
+        ?? dap?.nomeServentia
+        ?? ''
+      );
+
+      // Helper: obtem o token final (última palavra significativa) de uma string
+      const getFinalToken = (s) => {
+        if (!s || typeof s !== 'string') return '';
+        const parts = s.trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return '';
+        // remove pontuação do final
+        return parts[parts.length - 1].replace(/[^\p{L}\p{N}_-]+/gu, '');
+      };
+
+      // Aplica filtro: manter apenas DAPs cuja serventia contém o token final
+      let items = resposta.items || [];
+      if (userNomeAbreviado) {
+        const userLower = String(userNomeAbreviado).toLowerCase();
+        const filtered = items.filter((dap) => {
+          const servDisplay = String(getServentiaDisplay(dap) || '').trim();
+          const finalToken = String(getFinalToken(servDisplay) || '').toLowerCase();
+          const match = finalToken && userLower.includes(finalToken);
+          // logs de debug
+          // eslint-disable-next-line no-console
+          console.debug('[Filtro DAP] usuário nome_abreviado:', userNomeAbreviado, '| serventia DAP:', servDisplay, '| token:', finalToken, '| match:', match);
+          return match;
+        });
+        // eslint-disable-next-line no-console
+        console.debug('[Filtro DAP] DAPs finais exibidas:', filtered);
+        items = filtered;
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn('[Filtro DAP] usuário sem nome_abreviado definido; exibindo todas as DAPs temporariamente');
+      }
+
+      setDaps(items);
     } catch (error) {
       const mensagem = error?.response?.data?.mensagem || 'Não foi possível carregar as DAPs.';
       // eslint-disable-next-line no-console
