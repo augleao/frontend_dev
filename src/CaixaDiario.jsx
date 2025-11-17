@@ -393,6 +393,9 @@ useEffect(() => {
       valor_unitario: Number(valorFinalCalculado.toFixed(2)),
       pagamentos: pagamentosZerados,
       usuario: nomeUsuario,
+      // incluir totais para facilitar persistência/relatórios no backend
+      total_entradas: Number(totalEntradasDoDia || 0),
+      total_saidas: Number(totalSaidasDoDia || 0),
     };
 
     try {
@@ -418,6 +421,10 @@ useEffect(() => {
       }
 
       await carregarDadosDaData();
+
+      // Totais foram incluídos no próprio ato de fechamento enviado ao backend
+      console.log('[CaixaDiario] Totais enviados com o ato de fechamento:', { total_entradas: totalEntradasDoDia, total_saidas: totalSaidasDoDia });
+
       alert('Fechamento diário realizado com sucesso!');
 
       // Gere o PDF no frontend:
