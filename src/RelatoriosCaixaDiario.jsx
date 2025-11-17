@@ -12,6 +12,48 @@ function MeusFechamentos() {
   const nomeUsuario = usuario?.nome || '';
   const idServentia = usuario?.serventia_id || usuario?.serventiaId || usuario?.serventia;
 
+  // Helper para extrair um valor numérico real de um registro de ato/fechamento
+  const obterValorAto = (ato) => {
+    if (!ato) return 0;
+    const toNum = (v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    // 1) detalhes_pagamentos.valor_total (quando presente)
+    if (ato.detalhes_pagamentos && (ato.detalhes_pagamentos.valor_total || ato.detalhes_pagamentos.valor_total === 0)) {
+      return toNum(ato.detalhes_pagamentos.valor_total);
+    }
+
+    // 2) total_valor (campo usado em outros relatórios)
+    if (ato.total_valor || ato.total_valor === 0) {
+      return toNum(ato.total_valor);
+    }
+
+    // 3) valor_unitario
+    if (ato.valor_unitario || ato.valor_unitario === 0) {
+      return toNum(ato.valor_unitario);
+    }
+
+    // 4) se existe objeto pagamentos com valores, somar esses valores
+    if (ato.pagamentos && typeof ato.pagamentos === 'object') {
+      try {
+        const soma = Object.values(ato.pagamentos).reduce((acc, p) => {
+          // p pode ser número ou objeto com .valor
+          if (p == null) return acc;
+          if (typeof p === 'number') return acc + toNum(p);
+          if (typeof p === 'object') return acc + toNum(p.valor || p.valor_total || 0);
+          return acc + toNum(p);
+        }, 0);
+        if (soma) return soma;
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    return 0;
+  };
+
   useEffect(() => {
     async function fetchConfigECaixas() {
       setLoading(true);
@@ -129,13 +171,18 @@ function MeusFechamentos() {
                 );
 
                 // Calcular Entradas (código 0003) e Saídas (código 0002) para a mesma data
-                const entradasValor = fechamentos
-                  .filter(fi => fi.codigo === '0003' && fi.data === f.data)
-                  .reduce((acc, it) => acc + Number(it.valor_unitario || it.total_valor || 0), 0);
+                const entradasLista = fechamentos.filter(fi => fi.codigo === '0003' && fi.data === f.data);
+                const entradasValor = entradasLista.reduce((acc, it) => acc + obterValorAto(it), 0);
 
-                const saidasValor = fechamentos
-                  .filter(fi => fi.codigo === '0002' && fi.data === f.data)
-                  .reduce((acc, it) => acc + Number(it.valor_unitario || it.total_valor || 0), 0);
+                const saidasLista = fechamentos.filter(fi => fi.codigo === '0002' && fi.data === f.data);
+                const saidasValor = saidasLista.reduce((acc, it) => acc + obterValorAto(it), 0);
+
+                // Logs de debug para entender por que saiu 0
+                if ((entradasValor === 0 && entradasLista.length > 0) || (saidasValor === 0 && saidasLista.length > 0)) {
+                  console.log(`[RelatoriosCaixaDiario] Debug valores para data ${f.data}: entradasCount=${entradasLista.length}, entradasSum=${entradasValor}, saidasCount=${saidasLista.length}, saidasSum=${saidasValor}`);
+                  console.log('Exemplos de registros de entrada:', entradasLista.slice(0,3));
+                  console.log('Exemplos de registros de saída:', saidasLista.slice(0,3));
+                }
 
                 // Determinar cor de fundo baseada na comparação entre Valor Inicial da linha atual e Valor Final da linha posterior
                 let backgroundColor = '#d4edda'; // verde padrão (mesma cor do CaixaDiario)
