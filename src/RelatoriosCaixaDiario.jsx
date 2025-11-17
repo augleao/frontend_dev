@@ -11,6 +11,24 @@ function MeusFechamentos() {
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
   const nomeUsuario = usuario?.nome || '';
   const idServentia = usuario?.serventia_id || usuario?.serventiaId || usuario?.serventia;
+  const [atosPorData, setAtosPorData] = useState({}); // cache: { '2025-11-17': [atos] }
+
+  const normalizeCode = (c) => {
+    if (c === null || c === undefined) return '';
+    return String(c).trim();
+  };
+
+  const codeMatches = (itemCode, target) => {
+    const c = normalizeCode(itemCode);
+    if (!c) return false;
+    if (c === target) return true;
+    // padded
+    if (c.padStart && c.padStart(4, '0') === target) return true;
+    // numeric match
+    const num = Number(c);
+    if (!isNaN(num) && Number(target) === num) return true;
+    return false;
+  };
 
   // Helper para extrair um valor numérico real de um registro de ato/fechamento
   const obterValorAto = (ato) => {
@@ -116,13 +134,46 @@ function MeusFechamentos() {
   console.log('[RelatoriosCaixaDiario] Fechamentos recebidos (count):', lista.length);
   // Log amostras para depuração: primeiros 10 itens e exemplos de códigos 0003/0002
   console.log('[RelatoriosCaixaDiario] Amostra primeiros 10 fechamentos:', lista.slice(0, 10));
-  const entradasEx = lista.filter(it => it.codigo === '0003').slice(0,5);
-  const saidasEx = lista.filter(it => it.codigo === '0002').slice(0,5);
+  console.log('[RelatoriosCaixaDiario] Códigos únicos encontrados nos fechamentos:', [...new Set(lista.map(it => normalizeCode(it.codigo)))].slice(0,50));
+  const entradasEx = lista.filter(it => codeMatches(it.codigo, '0003')).slice(0,5);
+  const saidasEx = lista.filter(it => codeMatches(it.codigo, '0002')).slice(0,5);
   console.log('[RelatoriosCaixaDiario] Exemplos entradas (0003):', entradasEx.map(it => ({ id: it.id, data: it.data, codigo: it.codigo, valor_unitario: it.valor_unitario, total_valor: it.total_valor, pagamentos: it.pagamentos, detalhes_pagamentos: it.detalhes_pagamentos })));
   console.log('[RelatoriosCaixaDiario] Exemplos saidas (0002):', saidasEx.map(it => ({ id: it.id, data: it.data, codigo: it.codigo, valor_unitario: it.valor_unitario, total_valor: it.total_valor, pagamentos: it.pagamentos, detalhes_pagamentos: it.detalhes_pagamentos })));
       } catch (e) {
         setErro('Erro ao buscar fechamentos: ' + (e.message || e));
         console.error('[RelatoriosCaixaDiario] Erro ao buscar fechamentos:', e);
+      }
+      // Após receber fechamentos, buscar atos-pagos por data (cache)
+      try {
+        const datasUnicas = [...new Set(lista.map(it => it.data))].filter(Boolean);
+        for (const d of datasUnicas) {
+          // não bloquear - fetch em background
+          (async (dataDia) => {
+            const key = dataDia;
+            if (atosPorData[key]) return; // já em cache
+            try {
+              const token2 = localStorage.getItem('token');
+              const serventiaParam = caixaUnificado ? `&serventia=${encodeURIComponent(usuario.serventia)}` : `&usuario=${encodeURIComponent(nomeUsuario)}`;
+              const urlAtos = `${apiURL}/atos-pagos?data=${dataDia}${serventiaParam}`;
+              console.log('[RelatoriosCaixaDiario] Buscando atos-pagos para data', dataDia, urlAtos);
+              const resAtos = await fetch(urlAtos, { headers: { Authorization: `Bearer ${token2}` } });
+              if (!resAtos.ok) {
+                console.warn('[RelatoriosCaixaDiario] Erro ao buscar atos-pagos:', resAtos.status);
+                setAtosPorData(prev => ({ ...prev, [key]: [] }));
+                return;
+              }
+              const dataAtos = await resAtos.json();
+              const listaAtos = dataAtos.CaixaDiario || dataAtos.atos || dataAtos || [];
+              setAtosPorData(prev => ({ ...prev, [key]: listaAtos }));
+              console.log(`[RelatoriosCaixaDiario] atos-pagos recebidos para ${dataDia}:`, listaAtos.length);
+            } catch (fetchErr) {
+              console.error('[RelatoriosCaixaDiario] Erro interno ao buscar atos-pagos:', fetchErr);
+              setAtosPorData(prev => ({ ...prev, [dataDia]: [] }));
+            }
+          })(d);
+        }
+      } catch (bgErr) {
+        console.warn('[RelatoriosCaixaDiario] Erro no fetch background de atos-pagos:', bgErr);
       }
       setLoading(false);
     }
@@ -178,13 +229,14 @@ function MeusFechamentos() {
                 );
 
                 // Calcular Entradas (código 0003) e Saídas (código 0002) para a mesma data
-                const entradasLista = fechamentos.filter(fi => fi.codigo === '0003' && fi.data === f.data);
+                const atosDoDia = atosPorData[f.data] || [];
+                const entradasLista = atosDoDia.filter(fi => codeMatches(fi.codigo, '0003'));
                 const entradasValor = entradasLista.reduce((acc, it) => {
                   const v = parseFloat(it.valor_unitario) || parseFloat(it.total_valor) || parseFloat(it.pagamentos?.dinheiro?.valor) || 0;
                   return acc + v;
                 }, 0);
 
-                const saidasLista = fechamentos.filter(fi => fi.codigo === '0002' && fi.data === f.data);
+                const saidasLista = atosDoDia.filter(fi => codeMatches(fi.codigo, '0002'));
                 const saidasValor = saidasLista.reduce((acc, it) => {
                   const v = parseFloat(it.valor_unitario) || parseFloat(it.total_valor) || parseFloat(it.pagamentos?.dinheiro?.valor) || 0;
                   return acc + v;
