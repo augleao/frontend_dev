@@ -361,15 +361,6 @@ export default function AverbacoesLista() {
                   </td>
                   <td style={{ padding: 8, display: 'flex', gap: 8 }}>
                     <button
-                      style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}
-                      onClick={() => {
-                        console.log('[AverbacoesLista] Botão ANEXAR PDF clicado', { id: item.id });
-                        abrirModalAnexo(item.id);
-                      }}
-                    >
-                      ANEXAR PDF
-                    </button>
-                    <button
                       style={{ background: '#3498db', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}
                       onClick={() => navigate(`/averbacoes-gratuitas/${encodeURIComponent(item.id)}/editar`)}
                     >
