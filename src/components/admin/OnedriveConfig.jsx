@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import OnedriveConfigService from '../../services/OnedriveConfigService';
+import BackblazeConfigService from '../../services/BackblazeConfigService';
 import Toast from '../Toast';
 import { DEFAULT_TOAST_DURATION } from '../toastConfig';
 
@@ -34,6 +35,20 @@ function OnedriveConfig() {
   const [toastType, setToastType] = useState('success');
   const toastTimerRef = useRef(null);
 
+  // Backblaze config state
+  const [bbConfig, setBbConfig] = useState({
+    keyId: '',
+    appKey: '',
+    bucket: '',
+    endpoint: '',
+    region: '',
+    corsOrigins: ''
+  });
+  const [bbRecordId, setBbRecordId] = useState(null);
+  const [loadingBb, setLoadingBb] = useState(true);
+  const [savingBb, setSavingBb] = useState(false);
+  const [deletingBb, setDeletingBb] = useState(false);
+
   const triggerToast = (type, message) => {
     setToastType(type);
     setToastMessage(message);
@@ -62,6 +77,24 @@ function OnedriveConfig() {
             driveId: data.driveId || data.drive_id || data.sharepointDriveId || data.sharepoint_drive_id || '',
             refreshToken: data.refreshToken || data.refresh_token || ''
           });
+          // também buscar config Backblaze
+          try {
+            const bb = await BackblazeConfigService.getConfig();
+            if (bb) {
+              setBbRecordId(bb.id || bb._id || null);
+              setBbConfig({
+                keyId: bb.keyId || bb.key_id || '',
+                appKey: bb.appKey || bb.app_key || '',
+                bucket: bb.bucket || bb.bucket_name || '',
+                endpoint: bb.endpoint || bb.s3_endpoint || '',
+                region: bb.region || bb.s3_region || '',
+                corsOrigins: (bb.cors_origins && bb.cors_origins.join(',')) || bb.corsOrigins || ''
+              });
+            }
+          } catch (errBb) {
+            // não bloquear carregamento principal por erro do Backblaze
+            console.warn('Não foi possível carregar config Backblaze:', errBb.message || errBb);
+          }
         }
       } catch (err) {
         triggerToast('error', err.message || 'Falha ao carregar configuração.');
@@ -80,6 +113,10 @@ function OnedriveConfig() {
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleBbChange = (field, value) => {
+    setBbConfig(prev => ({ ...prev, [field]: value }));
   };
 
   const handleOpenAuthUrl = async () => {
@@ -196,6 +233,90 @@ function OnedriveConfig() {
           <small style={{ color: '#64748b', alignSelf: 'center' }}>
             Use esta URL para obter o código OAuth e, na sequência, gerar um novo refresh token.
           </small>
+        </div>
+
+        {/* Backblaze Configuration Container */}
+        <div style={{ marginTop: 24, paddingTop: 12, borderTop: '1px dashed #e6eef8' }}>
+          <h3 style={{ marginTop: 0, color: '#0f172a', fontSize: 18 }}>Configuração Backblaze B2</h3>
+          <p style={{ color: '#64748b', marginTop: -6, marginBottom: 12 }}>Insira as credenciais e informações do bucket para uploads diretos.</p>
+
+          <div style={{ display: 'grid', gap: 12 }}>
+            <div>
+              <label style={fieldLabelStyle}>BACKBLAZE_KEY_ID</label>
+              <input type="text" style={inputStyle} value={bbConfig.keyId} onChange={e => handleBbChange('keyId', e.target.value)} placeholder="Application Key ID" />
+            </div>
+            <div>
+              <label style={fieldLabelStyle}>BACKBLAZE_APP_KEY</label>
+              <input type="password" style={inputStyle} value={bbConfig.appKey} onChange={e => handleBbChange('appKey', e.target.value)} placeholder="Application Key (secret)" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={fieldLabelStyle}>BUCKET NAME</label>
+                <input type="text" style={inputStyle} value={bbConfig.bucket} onChange={e => handleBbChange('bucket', e.target.value)} placeholder="Nome do bucket" />
+              </div>
+              <div>
+                <label style={fieldLabelStyle}>S3 ENDPOINT</label>
+                <input type="text" style={inputStyle} value={bbConfig.endpoint} onChange={e => handleBbChange('endpoint', e.target.value)} placeholder="ex: https://s3.us-west-000.backblazeb2.com" />
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={fieldLabelStyle}>REGIÃO</label>
+                <input type="text" style={inputStyle} value={bbConfig.region} onChange={e => handleBbChange('region', e.target.value)} placeholder="ex: us-west-000" />
+              </div>
+              <div>
+                <label style={fieldLabelStyle}>CORS ORIGINS</label>
+                <input type="text" style={inputStyle} value={bbConfig.corsOrigins} onChange={e => handleBbChange('corsOrigins', e.target.value)} placeholder="ex: https://app.seudominio.com,http://localhost:3000" />
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+            <button
+              type="button"
+              onClick={async () => {
+                setSavingBb(true);
+                try {
+                  const payload = {
+                    keyId: bbConfig.keyId.trim(),
+                    appKey: bbConfig.appKey.trim(),
+                    bucket: bbConfig.bucket.trim(),
+                    endpoint: bbConfig.endpoint.trim(),
+                    region: bbConfig.region.trim(),
+                    cors_origins: bbConfig.corsOrigins.split(',').map(s => s.trim()).filter(Boolean)
+                  };
+                  if (!payload.keyId || !payload.appKey || !payload.bucket) throw new Error('Preencha Key ID, App Key e Bucket.');
+                  const saved = await BackblazeConfigService.saveConfig(payload, bbRecordId);
+                  setBbRecordId(saved.id || saved._id || bbRecordId);
+                  triggerToast('success', 'Configuração Backblaze salva com sucesso.');
+                } catch (err) {
+                  triggerToast('error', err.message || 'Falha ao salvar Backblaze.');
+                } finally {
+                  setSavingBb(false);
+                }
+              }}
+              disabled={savingBb}
+              style={{ background: savingBb ? '#94a3b8' : 'linear-gradient(135deg,#2563eb,#1d4ed8)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 18px', fontWeight: 800, cursor: savingBb ? 'not-allowed' : 'pointer' }}
+            >{savingBb ? 'Salvando…' : 'Salvar Backblaze'}</button>
+            <button
+              type="button"
+              onClick={async () => {
+                if (!bbRecordId) { triggerToast('warning', 'Nenhum registro Backblaze para remover.'); return; }
+                if (!window.confirm('Remover configuração Backblaze?')) return;
+                setDeletingBb(true);
+                try {
+                  await BackblazeConfigService.deleteConfig(bbRecordId);
+                  setBbRecordId(null);
+                  setBbConfig({ keyId: '', appKey: '', bucket: '', endpoint: '', region: '', corsOrigins: '' });
+                  triggerToast('success', 'Configuração Backblaze removida.');
+                } catch (err) {
+                  triggerToast('error', err.message || 'Falha ao remover Backblaze.');
+                } finally { setDeletingBb(false); }
+              }}
+              disabled={deletingBb || !bbRecordId}
+              style={{ background: deletingBb ? '#f87171' : '#dc2626', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 18px', fontWeight: 800, cursor: deletingBb || !bbRecordId ? 'not-allowed' : 'pointer' }}
+            >{deletingBb ? 'Removendo…' : 'Excluir Backblaze'}</button>
+          </div>
         </div>
 
         {loading ? (
