@@ -172,16 +172,22 @@ function MeusFechamentos() {
 
                 // Calcular Entradas (código 0003) e Saídas (código 0002) para a mesma data
                 const entradasLista = fechamentos.filter(fi => fi.codigo === '0003' && fi.data === f.data);
-                const entradasValor = entradasLista.reduce((acc, it) => acc + obterValorAto(it), 0);
+                const entradasValor = entradasLista.reduce((acc, it) => {
+                  const v = parseFloat(it.valor_unitario) || parseFloat(it.total_valor) || parseFloat(it.pagamentos?.dinheiro?.valor) || 0;
+                  return acc + v;
+                }, 0);
 
                 const saidasLista = fechamentos.filter(fi => fi.codigo === '0002' && fi.data === f.data);
-                const saidasValor = saidasLista.reduce((acc, it) => acc + obterValorAto(it), 0);
+                const saidasValor = saidasLista.reduce((acc, it) => {
+                  const v = parseFloat(it.valor_unitario) || parseFloat(it.total_valor) || parseFloat(it.pagamentos?.dinheiro?.valor) || 0;
+                  return acc + v;
+                }, 0);
 
                 // Logs de debug para entender por que saiu 0
                 if ((entradasValor === 0 && entradasLista.length > 0) || (saidasValor === 0 && saidasLista.length > 0)) {
-                  console.log(`[RelatoriosCaixaDiario] Debug valores para data ${f.data}: entradasCount=${entradasLista.length}, entradasSum=${entradasValor}, saidasCount=${saidasLista.length}, saidasSum=${saidasValor}`);
-                  console.log('Exemplos de registros de entrada:', entradasLista.slice(0,3));
-                  console.log('Exemplos de registros de saída:', saidasLista.slice(0,3));
+                  console.log(`[RelatoriosCaixaDiario] Debug valores (Caixa-style) para data ${f.data}: entradasCount=${entradasLista.length}, entradasSum=${entradasValor}, saidasCount=${saidasLista.length}, saidasSum=${saidasValor}`);
+                  console.log('Exemplos de registros de entrada (campos relevantes):', entradasLista.slice(0,3).map(it => ({ id: it.id, codigo: it.codigo, valor_unitario: it.valor_unitario, total_valor: it.total_valor, pagamentos: it.pagamentos, detalhes_pagamentos: it.detalhes_pagamentos })));
+                  console.log('Exemplos de registros de saída (campos relevantes):', saidasLista.slice(0,3).map(it => ({ id: it.id, codigo: it.codigo, valor_unitario: it.valor_unitario, total_valor: it.total_valor, pagamentos: it.pagamentos, detalhes_pagamentos: it.detalhes_pagamentos })));
                 }
 
                 // Determinar cor de fundo baseada na comparação entre Valor Inicial da linha atual e Valor Final da linha posterior
