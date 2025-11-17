@@ -285,23 +285,6 @@ function CaixaDiario() {
     }
   };
 
-  // Totais de Entradas (0003) e Saídas (0002) usados no Resumo
-  const totalEntradasDoDia = atos.reduce((acc, ato) => {
-    if (ato.codigo === '0003') {
-      const v = parseFloat(ato.valor_unitario) || 0;
-      return acc + v;
-    }
-    return acc;
-  }, 0);
-
-  const totalSaidasDoDia = atos.reduce((acc, ato) => {
-    if (ato.codigo === '0002') {
-      const v = parseFloat(ato.valor_unitario) || 0;
-      return acc + v;
-    }
-    return acc;
-  }, 0);
-
   // Função para carregar atos do backend
   const carregarDadosDaData = async () => {
     try {
@@ -544,6 +527,10 @@ useEffect(() => {
   }
 }, []);
 
+  // Log para depuração: verificar se o usuário é Registrador ou Substituto
+  const isRegistradorOuSubstituto = (usuario?.cargo === 'Registrador' || usuario?.cargo === 'Substituto');
+  console.log('[CaixaDiario] usuario.cargo:', usuario?.cargo, 'isRegistradorOuSubstituto:', isRegistradorOuSubstituto, 'usuario:', usuario);
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -594,20 +581,6 @@ useEffect(() => {
             <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
           </div>
         </div>
-        {/* Segunda linha: Totais (visível apenas pra Registrador/Substituto) */}
-        {(usuario?.cargo === 'Registrador' || usuario?.cargo === 'Substituto') && (
-          <div style={{ marginTop: '12px', display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#2c3e50', fontSize: '16px', fontWeight: '600' }}>Total de Entradas:</span>
-              <span style={{ color: '#27ae60', fontSize: '16px', fontWeight: '700' }}>{formatarMoeda(totalEntradasDoDia)}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#2c3e50', fontSize: '16px', fontWeight: '600' }}>Total de Saídas:</span>
-              <span style={{ color: '#e74c3c', fontSize: '16px', fontWeight: '700' }}>{formatarMoeda(totalSaidasDoDia)}</span>
-            </div>
-          </div>
-        )}
-
       </div>
 
       {/* Resumo do Caixa */}
