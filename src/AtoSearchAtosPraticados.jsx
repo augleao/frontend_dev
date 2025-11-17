@@ -266,8 +266,23 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
         // Limpar formulário
         setSelectedAto(null);
         setQuantidade(1);
-  setSelectedCodigoTributario(null);
-  setCodigoTributarioTerm('01');
+        // Mantemos (ou restauramos) o código tributário padrão para facilitar entradas consecutivas.
+        // Se já havia um código selecionado, mantemos. Caso contrário, tentamos auto-selecionar
+        // o código padrão '01' a partir das sugestões; se não estiver disponível, criamos
+        // um objeto mínimo para que o botão permaneça habilitado.
+        if (selectedCodigoTributario) {
+          // mantém o que já estava selecionado
+          setCodigoTributarioTerm(String(selectedCodigoTributario.codigo || '01'));
+        } else {
+          const defaultCode = codigoTributarioSuggestions.find(c => String(c.codigo) === '01');
+          if (defaultCode) {
+            handleSelectCodigoTributario(defaultCode);
+          } else {
+            // cria um objeto mínimo para permitir submissões subsequentes sem forçar retyping
+            setSelectedCodigoTributario({ codigo: '01', descricao: '' });
+            setCodigoTributarioTerm('01');
+          }
+        }
         setPagamentos(
           formasPagamento.reduce((acc, fp) => {
             acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
