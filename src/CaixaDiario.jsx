@@ -671,10 +671,10 @@ useEffect(() => {
         {/* Totais visíveis apenas para Registrador/Substituto */}
         {isRegistradorOuSubstituto && (
           <div style={{ marginTop: '12px', display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#2c3e50', fontSize: '16px', fontWeight: '600' }}>Total de Entradas:</span>
-              <span style={{ color: '#27ae60', fontSize: '16px', fontWeight: '700' }}>{formatarMoeda(totalEntradasDoDia)}</span>
-            </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ color: '#2c3e50', fontSize: '16px', fontWeight: '600', marginLeft: '8px' }}>Total de Entradas:</span>
+                <span style={{ color: '#27ae60', fontSize: '16px', fontWeight: '700' }}>{formatarMoeda(totalEntradasDoDia)}</span>
+              </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ color: '#2c3e50', fontSize: '16px', fontWeight: '600' }}>Total de Saídas:</span>
               <span style={{ color: '#e74c3c', fontSize: '16px', fontWeight: '700' }}>{formatarMoeda(totalSaidasDoDia)}</span>
