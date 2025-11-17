@@ -111,8 +111,15 @@ function MeusFechamentos() {
         const token = localStorage.getItem('token');
         const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
-        setFechamentos(data.fechamentos || []);
-        console.log('[RelatoriosCaixaDiario] Fechamentos recebidos:', data.fechamentos);
+  const lista = data.fechamentos || [];
+  setFechamentos(lista);
+  console.log('[RelatoriosCaixaDiario] Fechamentos recebidos (count):', lista.length);
+  // Log amostras para depuração: primeiros 10 itens e exemplos de códigos 0003/0002
+  console.log('[RelatoriosCaixaDiario] Amostra primeiros 10 fechamentos:', lista.slice(0, 10));
+  const entradasEx = lista.filter(it => it.codigo === '0003').slice(0,5);
+  const saidasEx = lista.filter(it => it.codigo === '0002').slice(0,5);
+  console.log('[RelatoriosCaixaDiario] Exemplos entradas (0003):', entradasEx.map(it => ({ id: it.id, data: it.data, codigo: it.codigo, valor_unitario: it.valor_unitario, total_valor: it.total_valor, pagamentos: it.pagamentos, detalhes_pagamentos: it.detalhes_pagamentos })));
+  console.log('[RelatoriosCaixaDiario] Exemplos saidas (0002):', saidasEx.map(it => ({ id: it.id, data: it.data, codigo: it.codigo, valor_unitario: it.valor_unitario, total_valor: it.total_valor, pagamentos: it.pagamentos, detalhes_pagamentos: it.detalhes_pagamentos })));
       } catch (e) {
         setErro('Erro ao buscar fechamentos: ' + (e.message || e));
         console.error('[RelatoriosCaixaDiario] Erro ao buscar fechamentos:', e);
