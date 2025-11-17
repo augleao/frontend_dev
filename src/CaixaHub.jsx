@@ -10,7 +10,7 @@ function CaixaHub() {
       title: 'MOVIMENTO DIÁRIO DO CAIXA',
       description: 'Registre atos e pagamentos do movimento diário do caixa',
       icon: '💰',
-      color: '#27ae60',
+      color: '#007bff',
       route: '/caixa-diario'
     },
     {
@@ -18,7 +18,7 @@ function CaixaHub() {
       title: 'CAIXAS FECHADOS',
       description: 'Visualize seus fechamentos de caixa',
       icon: '💰',
-      color: '#27ae60',
+      color: '#0056b3',
       route: '/meus-fechamentos'
     }
   ];
@@ -47,15 +47,15 @@ function CaixaHub() {
       fontFamily: 'Arial, sans-serif'
     }}>
       <header style={{
-        background: 'rgba(44, 62, 80, 0.95)',
-        backdropFilter: 'blur(10px)',
+        background: 'linear-gradient(90deg, rgba(0,123,255,0.95), rgba(0,86,179,0.95))',
+        backdropFilter: 'blur(6px)',
         padding: '16px 32px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+        boxShadow: '0 6px 30px rgba(0, 0, 0, 0.12)'
       }}>
-        <h1 style={{
+          <h1 style={{
           color: 'white',
           margin: 0,
           fontSize: '24px',
@@ -126,7 +126,7 @@ function CaixaHub() {
               <h3 style={{
                 fontSize: '20px',
                 fontWeight: '700',
-                color: '#2c3e50',
+                color: '#053962',
                 margin: '0 0 12px 0',
                 letterSpacing: '0.5px'
               }}>
