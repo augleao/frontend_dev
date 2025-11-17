@@ -11,66 +11,6 @@ function MeusFechamentos() {
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
   const nomeUsuario = usuario?.nome || '';
   const idServentia = usuario?.serventia_id || usuario?.serventiaId || usuario?.serventia;
-  const [atosPorData, setAtosPorData] = useState({}); // cache: { '2025-11-17': [atos] }
-
-  const normalizeCode = (c) => {
-    if (c === null || c === undefined) return '';
-    return String(c).trim();
-  };
-
-  const codeMatches = (itemCode, target) => {
-    const c = normalizeCode(itemCode);
-    if (!c) return false;
-    if (c === target) return true;
-    // padded
-    if (c.padStart && c.padStart(4, '0') === target) return true;
-    // numeric match
-    const num = Number(c);
-    if (!isNaN(num) && Number(target) === num) return true;
-    return false;
-  };
-
-  // Helper para extrair um valor numérico real de um registro de ato/fechamento
-  const obterValorAto = (ato) => {
-    if (!ato) return 0;
-    const toNum = (v) => {
-      const n = Number(v);
-      return Number.isFinite(n) ? n : 0;
-    };
-
-    // 1) detalhes_pagamentos.valor_total (quando presente)
-    if (ato.detalhes_pagamentos && (ato.detalhes_pagamentos.valor_total || ato.detalhes_pagamentos.valor_total === 0)) {
-      return toNum(ato.detalhes_pagamentos.valor_total);
-    }
-
-    // 2) total_valor (campo usado em outros relatórios)
-    if (ato.total_valor || ato.total_valor === 0) {
-      return toNum(ato.total_valor);
-    }
-
-    // 3) valor_unitario
-    if (ato.valor_unitario || ato.valor_unitario === 0) {
-      return toNum(ato.valor_unitario);
-    }
-
-    // 4) se existe objeto pagamentos com valores, somar esses valores
-    if (ato.pagamentos && typeof ato.pagamentos === 'object') {
-      try {
-        const soma = Object.values(ato.pagamentos).reduce((acc, p) => {
-          // p pode ser número ou objeto com .valor
-          if (p == null) return acc;
-          if (typeof p === 'number') return acc + toNum(p);
-          if (typeof p === 'object') return acc + toNum(p.valor || p.valor_total || 0);
-          return acc + toNum(p);
-        }, 0);
-        if (soma) return soma;
-      } catch (e) {
-        // ignore
-      }
-    }
-
-    return 0;
-  };
 
   useEffect(() => {
     async function fetchConfigECaixas() {
@@ -129,51 +69,11 @@ function MeusFechamentos() {
         const token = localStorage.getItem('token');
         const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
-  const lista = data.fechamentos || [];
-  setFechamentos(lista);
-  console.log('[RelatoriosCaixaDiario] Fechamentos recebidos (count):', lista.length);
-  // Log amostras para depuração: primeiros 10 itens e exemplos de códigos 0003/0002
-  console.log('[RelatoriosCaixaDiario] Amostra primeiros 10 fechamentos:', lista.slice(0, 10));
-  console.log('[RelatoriosCaixaDiario] Códigos únicos encontrados nos fechamentos:', [...new Set(lista.map(it => normalizeCode(it.codigo)))].slice(0,50));
-  const entradasEx = lista.filter(it => codeMatches(it.codigo, '0003')).slice(0,5);
-  const saidasEx = lista.filter(it => codeMatches(it.codigo, '0002')).slice(0,5);
-  console.log('[RelatoriosCaixaDiario] Exemplos entradas (0003):', entradasEx.map(it => ({ id: it.id, data: it.data, codigo: it.codigo, valor_unitario: it.valor_unitario, total_valor: it.total_valor, pagamentos: it.pagamentos, detalhes_pagamentos: it.detalhes_pagamentos })));
-  console.log('[RelatoriosCaixaDiario] Exemplos saidas (0002):', saidasEx.map(it => ({ id: it.id, data: it.data, codigo: it.codigo, valor_unitario: it.valor_unitario, total_valor: it.total_valor, pagamentos: it.pagamentos, detalhes_pagamentos: it.detalhes_pagamentos })));
+        setFechamentos(data.fechamentos || []);
+        console.log('[RelatoriosCaixaDiario] Fechamentos recebidos:', data.fechamentos);
       } catch (e) {
         setErro('Erro ao buscar fechamentos: ' + (e.message || e));
         console.error('[RelatoriosCaixaDiario] Erro ao buscar fechamentos:', e);
-      }
-      // Após receber fechamentos, buscar atos-pagos por data (cache)
-      try {
-        const datasUnicas = [...new Set(lista.map(it => it.data))].filter(Boolean);
-        for (const d of datasUnicas) {
-          // não bloquear - fetch em background
-          (async (dataDia) => {
-            const key = dataDia;
-            if (atosPorData[key]) return; // já em cache
-            try {
-              const token2 = localStorage.getItem('token');
-              const serventiaParam = caixaUnificado ? `&serventia=${encodeURIComponent(usuario.serventia)}` : `&usuario=${encodeURIComponent(nomeUsuario)}`;
-              const urlAtos = `${apiURL}/atos-pagos?data=${dataDia}${serventiaParam}`;
-              console.log('[RelatoriosCaixaDiario] Buscando atos-pagos para data', dataDia, urlAtos);
-              const resAtos = await fetch(urlAtos, { headers: { Authorization: `Bearer ${token2}` } });
-              if (!resAtos.ok) {
-                console.warn('[RelatoriosCaixaDiario] Erro ao buscar atos-pagos:', resAtos.status);
-                setAtosPorData(prev => ({ ...prev, [key]: [] }));
-                return;
-              }
-              const dataAtos = await resAtos.json();
-              const listaAtos = dataAtos.CaixaDiario || dataAtos.atos || dataAtos || [];
-              setAtosPorData(prev => ({ ...prev, [key]: listaAtos }));
-              console.log(`[RelatoriosCaixaDiario] atos-pagos recebidos para ${dataDia}:`, listaAtos.length);
-            } catch (fetchErr) {
-              console.error('[RelatoriosCaixaDiario] Erro interno ao buscar atos-pagos:', fetchErr);
-              setAtosPorData(prev => ({ ...prev, [dataDia]: [] }));
-            }
-          })(d);
-        }
-      } catch (bgErr) {
-        console.warn('[RelatoriosCaixaDiario] Erro no fetch background de atos-pagos:', bgErr);
       }
       setLoading(false);
     }
@@ -200,8 +100,6 @@ function MeusFechamentos() {
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Data</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Hora</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Valor Inicial</th>
-                  <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Entradas</th>
-                  <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Saídas</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Valor Final</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Usuário</th>
             </tr>
@@ -220,34 +118,13 @@ function MeusFechamentos() {
                 const dateB = new Date(b.data + ' ' + (b.hora || '00:00:00'));
                 return dateA - dateB;
               })
-                .map((f, idx, sortedArray) => {
+              .map((f, idx, sortedArray) => {
                 // Busca valor de abertura de qualquer usuário da mesma serventia na mesma data
                 const valorInicial = fechamentos.find(
                   fi =>
                     fi.codigo === '0005' &&
                     fi.data === f.data
                 );
-
-                // Calcular Entradas (código 0003) e Saídas (código 0002) para a mesma data
-                const atosDoDia = atosPorData[f.data] || [];
-                const entradasLista = atosDoDia.filter(fi => codeMatches(fi.codigo, '0003'));
-                const entradasValor = entradasLista.reduce((acc, it) => {
-                  const v = parseFloat(it.valor_unitario) || parseFloat(it.total_valor) || parseFloat(it.pagamentos?.dinheiro?.valor) || 0;
-                  return acc + v;
-                }, 0);
-
-                const saidasLista = atosDoDia.filter(fi => codeMatches(fi.codigo, '0002'));
-                const saidasValor = saidasLista.reduce((acc, it) => {
-                  const v = parseFloat(it.valor_unitario) || parseFloat(it.total_valor) || parseFloat(it.pagamentos?.dinheiro?.valor) || 0;
-                  return acc + v;
-                }, 0);
-
-                // Logs de debug para entender por que saiu 0
-                if ((entradasValor === 0 && entradasLista.length > 0) || (saidasValor === 0 && saidasLista.length > 0)) {
-                  console.log(`[RelatoriosCaixaDiario] Debug valores (Caixa-style) para data ${f.data}: entradasCount=${entradasLista.length}, entradasSum=${entradasValor}, saidasCount=${saidasLista.length}, saidasSum=${saidasValor}`);
-                  console.log('Exemplos de registros de entrada (campos relevantes):', entradasLista.slice(0,3).map(it => ({ id: it.id, codigo: it.codigo, valor_unitario: it.valor_unitario, total_valor: it.total_valor, pagamentos: it.pagamentos, detalhes_pagamentos: it.detalhes_pagamentos })));
-                  console.log('Exemplos de registros de saída (campos relevantes):', saidasLista.slice(0,3).map(it => ({ id: it.id, codigo: it.codigo, valor_unitario: it.valor_unitario, total_valor: it.total_valor, pagamentos: it.pagamentos, detalhes_pagamentos: it.detalhes_pagamentos })));
-                }
 
                 // Determinar cor de fundo baseada na comparação entre Valor Inicial da linha atual e Valor Final da linha posterior
                 let backgroundColor = '#d4edda'; // verde padrão (mesma cor do CaixaDiario)
@@ -282,12 +159,6 @@ function MeusFechamentos() {
                       {valorInicial && (valorInicial.valor_unitario || valorInicial.total_valor)
                         ? Number(valorInicial.valor_unitario || valorInicial.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                         : '-'}
-                    </td>
-                    <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
-                      {Number(entradasValor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                    </td>
-                    <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
-                      {Number(saidasValor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </td>
                     <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
                       {Number(f.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
