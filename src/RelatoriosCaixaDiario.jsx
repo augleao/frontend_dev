@@ -100,6 +100,8 @@ function MeusFechamentos() {
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Data</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Hora</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Valor Inicial</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Total Entradas</th>
+              <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Total Saídas</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Valor Final</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Usuário</th>
             </tr>
@@ -159,6 +161,12 @@ function MeusFechamentos() {
                       {valorInicial && (valorInicial.valor_unitario || valorInicial.total_valor)
                         ? Number(valorInicial.valor_unitario || valorInicial.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                         : '-'}
+                    </td>
+                    <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
+                      {Number(f.total_entradas || f.totalEntradas || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </td>
+                    <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
+                      {Number(f.total_saidas || f.totalSaidas || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </td>
                     <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
                       {Number(f.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
