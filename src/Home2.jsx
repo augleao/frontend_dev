@@ -35,7 +35,7 @@ function Home() {
     },
     {
       id: 'atos-hub',
-      title: 'Atos Praticados',
+      title: 'ATOS PRATICADOS',
       description: 'Acesse o hub de atos praticados, pesquisa e conciliação',
       icon: '🔗',
       color: '#27ae60',
@@ -56,16 +56,9 @@ function Home() {
       icon: '🧾',
       color: '#1d4ed8',
       route: '/relatorios/dap'
-    },
-    
-    {
-      id: 'atos-gratuitos',
-      title: 'ATOS GRATUITOS',
-      description: 'Gerencie atos gratuitos e demais funcionalidades relacionadas',
-      icon: '📋',
-      color: '#16a085',
-      route: '/atos-gratuitos'
     }
+    
+
   ];
   
   // Extra: Ferramentas de IA
