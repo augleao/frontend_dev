@@ -600,7 +600,7 @@ useEffect(() => {
             fontSize: '18px',
             fontWeight: '600'
           }}>
-            📊 Resumo do Caixa:
+            📊 Resumo:
           </h2>
 
           {/* Percentual de ISS */}
@@ -610,7 +610,7 @@ useEffect(() => {
               fontSize: '18px',
               fontWeight: '600'
             }}>
-              Percentual de ISS (%): {percentualISS}%
+              ISS: {percentualISS}%
             </span>
           </div>
 
