@@ -327,7 +327,7 @@ export default function AverbacoesLista() {
             <span> — Ressarcíveis: <strong>{contagem.sim}</strong>; Não: <strong>{contagem.nao}</strong></span>
           )}
         </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'center' }}>
           <thead>
             <tr style={{ background: '#e9ecef' }}>
               <th style={{ padding: 8 }}>Data</th>
