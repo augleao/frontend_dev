@@ -7,7 +7,7 @@ function CaixaHub() {
   const featureCards = [
     {
       id: 'caixa-diario',
-      title: 'CAIXA DIÁRIO',
+      title: 'MOVIMENTO DO CAIXA DIÁRIO',
       description: 'Registre atos e pagamentos do movimento diário do caixa',
       icon: '💰',
       color: '#27ae60',

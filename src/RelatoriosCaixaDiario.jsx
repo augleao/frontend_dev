@@ -100,6 +100,8 @@ function MeusFechamentos() {
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Data</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Hora</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Valor Inicial</th>
+                  <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Entradas</th>
+                  <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Saídas</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Valor Final</th>
               <th style={{ padding: 8, borderBottom: '1px solid #ddd', textAlign: 'center' }}>Usuário</th>
             </tr>
@@ -118,13 +120,22 @@ function MeusFechamentos() {
                 const dateB = new Date(b.data + ' ' + (b.hora || '00:00:00'));
                 return dateA - dateB;
               })
-              .map((f, idx, sortedArray) => {
+                .map((f, idx, sortedArray) => {
                 // Busca valor de abertura de qualquer usuário da mesma serventia na mesma data
                 const valorInicial = fechamentos.find(
                   fi =>
                     fi.codigo === '0005' &&
                     fi.data === f.data
                 );
+
+                // Calcular Entradas (código 0003) e Saídas (código 0002) para a mesma data
+                const entradasValor = fechamentos
+                  .filter(fi => fi.codigo === '0003' && fi.data === f.data)
+                  .reduce((acc, it) => acc + Number(it.valor_unitario || it.total_valor || 0), 0);
+
+                const saidasValor = fechamentos
+                  .filter(fi => fi.codigo === '0002' && fi.data === f.data)
+                  .reduce((acc, it) => acc + Number(it.valor_unitario || it.total_valor || 0), 0);
 
                 // Determinar cor de fundo baseada na comparação entre Valor Inicial da linha atual e Valor Final da linha posterior
                 let backgroundColor = '#d4edda'; // verde padrão (mesma cor do CaixaDiario)
@@ -159,6 +170,12 @@ function MeusFechamentos() {
                       {valorInicial && (valorInicial.valor_unitario || valorInicial.total_valor)
                         ? Number(valorInicial.valor_unitario || valorInicial.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                         : '-'}
+                    </td>
+                    <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
+                      {Number(entradasValor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </td>
+                    <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
+                      {Number(saidasValor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </td>
                     <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}>
                       {Number(f.total_valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
