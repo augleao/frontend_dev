@@ -215,6 +215,84 @@ export default function AverbacaoManutencao() {
     return sucesso;
   };
 
+  // New: select file(s) and upload directly to Backblaze using presigned URL flow
+  const selectAndUploadFiles = async () => {
+    try {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.pdf,application/pdf';
+      input.multiple = false;
+      input.onchange = async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        setUploading(true);
+        try {
+          await uploadFileToBackblaze(file);
+        } catch (err) {
+          console.error('[AverbacaoManutencao] upload error', err);
+          showToast('error', err?.message || 'Falha no upload do PDF.');
+        } finally {
+          setUploading(false);
+        }
+      };
+      input.click();
+    } catch (e) {
+      console.error('[AverbacaoManutencao] select file error', e);
+      showToast('error', 'Não foi possível abrir o seletor de arquivos.');
+    }
+  };
+
+  const uploadFileToBackblaze = async (file) => {
+    const token = localStorage.getItem('token');
+    // 1) request presigned URL from backend
+    const prepareRes = await fetch(`${config.apiURL}/uploads/prepare`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ filename: file.name, contentType: file.type || 'application/pdf', folder: 'averbacoes' })
+    });
+    let prepareJson = {};
+    try { prepareJson = await prepareRes.json(); } catch (_) { prepareJson = {}; }
+    if (!prepareRes.ok) {
+      throw new Error(prepareJson.error || prepareJson.message || 'Falha ao preparar upload.');
+    }
+
+    const { url, key } = prepareJson;
+    if (!url || !key) throw new Error('Resposta inválida do servidor ao preparar upload.');
+
+    // 2) upload file directly to Backblaze
+    const putRes = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type || 'application/pdf' },
+      body: file
+    });
+    if (!putRes.ok && putRes.status !== 200 && putRes.status !== 201) {
+      const text = await putRes.text().catch(() => '');
+      throw new Error(text || 'Falha ao enviar arquivo para o Backblaze.');
+    }
+
+    // 3) inform backend that upload completed (and let it persist metadata)
+    const completeRes = await fetch(`${config.apiURL}/uploads/complete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ key, metadata: { originalName: file.name } })
+    });
+    let completeJson = {};
+    try { completeJson = await completeRes.json(); } catch (_) { completeJson = {}; }
+    if (!completeRes.ok) {
+      throw new Error(completeJson.error || completeJson.message || 'Falha ao confirmar upload no servidor.');
+    }
+
+    // Update local state with returned info when available
+    setPdfInfo(prev => ({
+      originalName: file.name,
+      storedName: completeJson.storedName || completeJson.nome || key,
+      url: completeJson.url || prev.url || '',
+      id: completeJson.id || prev.id || null
+    }));
+    showToast('success', 'PDF enviado com sucesso.');
+    return true;
+  };
+
   const enviarAnexoModal = async (file) => {
     console.log('[AverbacaoManutencao] Enviando PDF via modal');
     const sucesso = await handleUploadPDF(file);
@@ -264,7 +342,7 @@ export default function AverbacaoManutencao() {
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={abrirModalAnexo}
+                  onClick={selectAndUploadFiles}
                   disabled={uploading}
                   style={{ minWidth: 140 }}
                 >
