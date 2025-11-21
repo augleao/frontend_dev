@@ -29,6 +29,7 @@ import EditarCombos from './components/admin/EditarCombos';
 import LegislacaoAdmin from './components/admin/LegislacaoAdmin';
 import PromptsIAAdmin from './components/admin/PromptsIAAdmin';
 import OnedriveConfig from './components/admin/OnedriveConfig';
+import BackblazeConfig from './components/admin/BackblazeConfig';
 import OnedriveOAuthCallback from './components/admin/OnedriveOAuthCallback';
 import ProtocoloAcesso from './ProtocoloAcesso';
 import AtosGratuitos from './AtosGratuitos';
@@ -194,6 +195,14 @@ function App() {
           element={
             <AdminRoute>
               <OnedriveConfig />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/backblaze"
+          element={
+            <AdminRoute>
+              <BackblazeConfig />
             </AdminRoute>
           }
         />

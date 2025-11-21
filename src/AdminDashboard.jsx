@@ -30,6 +30,7 @@ export default function AdminDashboard() {
     { label: 'Legislação', icon: FaBalanceScale, to: '/admin/legislacao' },
     { label: 'Backup', icon: FaArchive, to: '/admin/backup' },
     { label: 'OneDrive', icon: FaCloud, to: '/admin/onedrive' },
+    { label: 'Backblaze B2', icon: FaCloud, to: '/admin/backblaze' },
     { label: 'Prompts IA', icon: FaRobot, to: '/admin/prompts-ia' }
   ];
 
@@ -59,6 +60,14 @@ export default function AdminDashboard() {
       to: '/admin/onedrive'
     }
   ];
+
+  // add Backblaze card to quick access
+  featureCards.push({
+    label: 'Backblaze',
+    description: 'Configure Backblaze B2 (armazenamento de PDFs).',
+    icon: FaCloud,
+    to: '/admin/backblaze'
+  });
 
   const quickActions = [
     {

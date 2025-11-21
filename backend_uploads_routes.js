@@ -4,7 +4,13 @@ Drop into your backend project and adapt imports (DB pool, auth) as needed.
 
 Requirements:
 - npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner pg
-- Set env vars: BZ_S3_ENDPOINT, BZ_S3_REGION, BZ_S3_KEY, BZ_S3_SECRET, BZ_S3_BUCKET
+- Set env vars (examples used in this project):
+  - BB_ENDPOINT (e.g. https://s3.us-east-005.backblazeb2.com)
+  - BB_REGION (e.g. us-east)
+  - BB_KEY_ID (access key id)
+  - BB_APP_KEY (application key / secret)
+  - BB_BUCKET_NAME (bucket)
+  The router will also accept the older BZ_S3_* names as fallback.
 - Database must have `uploads` table (you created it) and `averbacoes_upload_seq` sequence table.
 
 Usage:
@@ -39,20 +45,20 @@ module.exports = function createUploadsRouter(opts = {}) {
 
   // S3 client: prefer provided, otherwise build from env
   let s3Client = opts.s3Client;
-  const BUCKET = process.env.BZ_S3_BUCKET || opts.bucket || 'your-bucket';
+  const BUCKET = process.env.BB_BUCKET_NAME || process.env.BZ_S3_BUCKET || opts.bucket || 'your-bucket';
   if (!s3Client) {
-    const endpoint = process.env.BZ_S3_ENDPOINT; // e.g. 'https://s3.us-east-005.backblazeb2.com'
-    const region = process.env.BZ_S3_REGION || 'us-east-1';
-    const accessKeyId = process.env.BZ_S3_KEY;
-    const secretAccessKey = process.env.BZ_S3_SECRET;
+    const endpoint = process.env.BB_ENDPOINT || process.env.BZ_S3_ENDPOINT; // e.g. 'https://s3.us-east-005.backblazeb2.com'
+    const region = process.env.BB_REGION || process.env.BZ_S3_REGION || 'us-east-1';
+    const accessKeyId = process.env.BB_KEY_ID || process.env.BZ_S3_KEY;
+    const secretAccessKey = process.env.BB_APP_KEY || process.env.BZ_S3_SECRET;
     if (!accessKeyId || !secretAccessKey) {
-      console.warn('[uploads] Missing BZ_S3_KEY/SECRET in env; S3 operations will fail until configured.');
+      console.warn('[uploads] Missing Backblaze credentials in env (BB_KEY_ID/BB_APP_KEY); S3 operations will fail until configured.');
     }
     s3Client = new S3Client({
       region,
       endpoint: endpoint || undefined,
       credentials: accessKeyId && secretAccessKey ? { accessKeyId, secretAccessKey } : undefined,
-      forcePathStyle: true // Backblaze requires path-style
+      forcePathStyle: true // Backblaze works with path-style; keep true
     });
   }
 
