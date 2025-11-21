@@ -53,7 +53,7 @@ export default function BackblazeConfig() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Remover configuração Backblaze?')) return;
+    if (!window.confirm('Remover configuração Backblaze?')) return;
     setLoading(true);
     try {
       // Try to fetch current id (service may return id or not)
