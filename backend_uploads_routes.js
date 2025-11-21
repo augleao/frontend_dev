@@ -233,11 +233,4 @@ function registerUploads(app) {
   app.use('/api/uploads', router);
 }
 
-// Export compatibility shims so the module works whether the main server
-// expects a function, a named export, or a router object. This prevents
-// runtime `TypeError: registerUploads is not a function` if an older
-// deployment or `server.js` expects a different shape.
-module.exports = registerUploads;
-module.exports.registerUploads = registerUploads;
-module.exports.router = router;
-module.exports.default = registerUploads;
+module.exports = { registerUploads };
