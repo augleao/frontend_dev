@@ -1,189 +1,190 @@
 /*
 Express router for presigned uploads (prepare/complete) using S3-compatible Backblaze B2.
-Drop into your backend project and adapt imports (DB pool, auth) as needed.
+Mount: app.use('/api/uploads', uploadsRouter);
 
-Requirements:
-- npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner pg
-- Set env vars (examples used in this project):
-  - BB_ENDPOINT (e.g. https://s3.us-east-005.backblazeb2.com)
-  - BB_REGION (e.g. us-east)
-  - BB_KEY_ID (access key id)
-  - BB_APP_KEY (application key / secret)
-  - BB_BUCKET_NAME (bucket)
-  The router will also accept the older BZ_S3_* names as fallback.
-- Database must have `uploads` table (you created it) and `averbacoes_upload_seq` sequence table.
+This file is a self-contained router that:
+- POST /prepare  -> returns a presigned PUT URL for the client
+- POST /complete -> verifies object exists, updates uploads table (if present)
+  and attempts to attach the public URL/metadata to an averbacao record.
 
-Usage:
-const createUploadsRouter = require('./backend_uploads_routes');
-const uploadsRouter = createUploadsRouter({ pool: yourPgPool });
-app.use('/uploads', uploadsRouter);
+Environment vars required: BB_ENDPOINT, BB_REGION, BB_KEY_ID, BB_APP_KEY, BB_BUCKET_NAME
+Database: expects ./db to export a `pool`-like object (pg Pool). If you don't have
+an `uploads` table the code will still work but will skip inserting upload metadata.
+
+Do NOT put secrets into code. This file uses environment variables only.
 */
 
 const express = require('express');
 const { S3Client, PutObjectCommand, HeadObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
-const { Pool } = require('pg');
+const { v4: uuidv4 } = require('uuid');
+const pool = require('./db');
 
-function sanitizeStoredName(s) {
-  return (s || '').replace(/[^a-zA-Z0-9_.-]/g, '-').toUpperCase();
+const router = express.Router();
+
+// Env / config
+const BB_ENDPOINT = process.env.BB_ENDPOINT; // e.g. https://s3.us-east-005.backblazeb2.com
+const BB_REGION = process.env.BB_REGION || 'us-east-1';
+const BB_KEY_ID = process.env.BB_KEY_ID;
+const BB_APP_KEY = process.env.BB_APP_KEY;
+const BB_BUCKET_NAME = process.env.BB_BUCKET_NAME;
+
+if (!BB_ENDPOINT || !BB_KEY_ID || !BB_APP_KEY || !BB_BUCKET_NAME) {
+  console.warn('Backblaze upload routes: missing BB_* env variables. Ensure BB_ENDPOINT, BB_KEY_ID, BB_APP_KEY, BB_BUCKET_NAME are set.');
 }
 
-module.exports = function createUploadsRouter(opts = {}) {
-  const router = express.Router();
+const normalizedEndpoint = (BB_ENDPOINT && !/^https?:\/\//i.test(BB_ENDPOINT)) ? `https://${BB_ENDPOINT}` : BB_ENDPOINT;
 
-  // DB pool: prefer provided pool, otherwise build from DATABASE_URL
-  let pool = opts.pool;
-  if (!pool) {
-    const connectionString = process.env.DATABASE_URL || process.env.PG_CONNECTION_STRING;
-    if (!connectionString) {
-      console.warn('[uploads] No DB pool passed and no DATABASE_URL found. Creating a default pool using PG env vars.');
-      pool = new Pool();
-    } else {
-      pool = new Pool({ connectionString });
+const s3 = new S3Client({
+  region: BB_REGION,
+  endpoint: normalizedEndpoint || undefined,
+  credentials: BB_KEY_ID && BB_APP_KEY ? { accessKeyId: BB_KEY_ID, secretAccessKey: BB_APP_KEY } : undefined,
+  forcePathStyle: false
+});
+
+function maskKey(s) {
+  if (!s) return s;
+  if (s.length <= 12) return s;
+  return s.slice(0,6) + '...' + s.slice(-6);
+}
+
+function sanitizeFilename(name) {
+  if (!name) return 'file';
+  return String(name).replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-._]/g, '').slice(0, 200);
+}
+
+// POST /prepare
+// body: { filename, contentType, folder }
+// returns: { url, key, expiresIn }
+router.post('/prepare', async (req, res) => {
+  try {
+    if (!BB_ENDPOINT || !BB_KEY_ID || !BB_APP_KEY || !BB_BUCKET_NAME) {
+      console.error('uploads.prepare error: missing Backblaze configuration (BB_*)');
+      return res.status(500).json({ error: 'server misconfigured: missing Backblaze (BB_*) environment variables' });
     }
-  }
 
-  // S3 client: prefer provided, otherwise build from env
-  let s3Client = opts.s3Client;
-  const BUCKET = process.env.BB_BUCKET_NAME || process.env.BZ_S3_BUCKET || opts.bucket || 'your-bucket';
-  if (!s3Client) {
-    const endpoint = process.env.BB_ENDPOINT || process.env.BZ_S3_ENDPOINT; // e.g. 'https://s3.us-east-005.backblazeb2.com'
-    const region = process.env.BB_REGION || process.env.BZ_S3_REGION || 'us-east-1';
-    const accessKeyId = process.env.BB_KEY_ID || process.env.BZ_S3_KEY;
-    const secretAccessKey = process.env.BB_APP_KEY || process.env.BZ_S3_SECRET;
-    if (!accessKeyId || !secretAccessKey) {
-      console.warn('[uploads] Missing Backblaze credentials in env (BB_KEY_ID/BB_APP_KEY); S3 operations will fail until configured.');
-    }
-    s3Client = new S3Client({
-      region,
-      endpoint: endpoint || undefined,
-      credentials: accessKeyId && secretAccessKey ? { accessKeyId, secretAccessKey } : undefined,
-      forcePathStyle: true // Backblaze works with path-style; keep true
-    });
-  }
+    const { filename, contentType = 'application/pdf', folder = '' } = req.body || {};
+    if (!filename) return res.status(400).json({ error: 'filename required' });
 
-  async function reserveMonthSequence(txClient, anoMes) {
-    // Uses table averbacoes_upload_seq(ano_mes PK, seq int)
-    // Returns next sequence integer for the month
-    const selectSql = 'SELECT seq FROM public.averbacoes_upload_seq WHERE ano_mes = $1 FOR UPDATE';
-    const insertSql = 'INSERT INTO public.averbacoes_upload_seq (ano_mes, seq) VALUES ($1, 1)';
-    const updateSql = 'UPDATE public.averbacoes_upload_seq SET seq = seq + 1 WHERE ano_mes = $1 RETURNING seq';
+    const clean = sanitizeFilename(filename);
+    const key = `${folder ? folder.replace(/\/$/, '') + '/' : ''}${Date.now()}-${uuidv4()}-${clean}`;
 
-    const res = await txClient.query(selectSql, [anoMes]);
-    if (res.rowCount === 0) {
-      await txClient.query(insertSql, [anoMes]);
-      return 1;
-    }
-    const up = await txClient.query(updateSql, [anoMes]);
-    return up.rows[0].seq;
-  }
-
-  router.post('/prepare', async (req, res) => {
+    // Try to insert an uploads row if table exists. If it fails just continue.
     try {
-      const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-      // TODO: validate token / user if your app requires auth
-
-      const { filename, contentType, folder } = req.body || {};
-      if (!filename) return res.status(400).json({ error: 'filename required' });
-
-      const now = new Date();
-      const anoMes = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}`; // YYYYMM
-      const mesNome = now.toLocaleString('pt-BR', { month: 'long' }).toUpperCase();
-
-      // Reserve a sequence in a transaction
-      const client = await pool.connect();
-      let seq;
-      try {
-        await client.query('BEGIN');
-        seq = await reserveMonthSequence(client, anoMes);
-
-        // Build stored name / key
-        const ext = (filename && filename.split('.').pop()) || 'pdf';
-        const storedName = `AVERBACAO-${String(seq).padStart(3,'0')}-${mesNome}.${ext}`;
-        const keyPrefix = folder ? `${folder.replace(/^\/+|\/+$/g, '')}/` : '';
-        const key = `${keyPrefix}${storedName}`;
-
-        // Insert uploads record with status 'prepared'
-        const insertSql = `INSERT INTO public.uploads ("key", stored_name, original_name, bucket, content_type, status, metadata, created_at)
-          VALUES ($1,$2,$3,$4,$5,$6,$7,now()) RETURNING id`;
-        const insertVals = [key, storedName, filename, BUCKET, contentType || 'application/pdf', 'prepared', JSON.stringify({ preparedByToken: !!token })];
-        const ir = await client.query(insertSql, insertVals);
-        const uploadId = ir.rows[0].id;
-
-        await client.query('COMMIT');
-
-        // Generate presigned PUT URL
-        const putCommand = new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: contentType || 'application/pdf' });
-        const expiresIn = parseInt(process.env.UPLOAD_URL_EXPIRES || '900', 10); // seconds
-        const url = await getSignedUrl(s3Client, putCommand, { expiresIn });
-
-        return res.json({ ok: true, url, key, uploadId, expiresIn, storedName });
-      } catch (err) {
-        await client.query('ROLLBACK').catch(() => {});
-        throw err;
-      } finally {
-        client.release();
+      const insertSql = `INSERT INTO public.uploads ("key", stored_name, original_name, bucket, content_type, status, metadata, created_at)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,now()) RETURNING id`;
+      const storedName = key.split('/').pop();
+      const vals = [key, storedName, filename, BB_BUCKET_NAME, contentType, 'prepared', JSON.stringify({ preparedAt: new Date().toISOString() })];
+      const r = await pool.query(insertSql, vals).catch(() => null);
+      if (r && r.rows && r.rows[0]) {
+        // we could return uploadId if frontend needs it
       }
-    } catch (err) {
-      console.error('[uploads][prepare] error', err);
-      return res.status(500).json({ error: err.message || 'internal error' });
+    } catch (e) {
+      // ignore DB errors here
     }
-  });
 
-  router.post('/complete', async (req, res) => {
+    const putParams = { Bucket: BB_BUCKET_NAME, Key: key, ContentType: contentType };
+    const putCmd = new PutObjectCommand(putParams);
+    const expiresIn = parseInt(process.env.UPLOAD_URL_EXPIRES || '600', 10);
+    const url = await getSignedUrl(s3, putCmd, { expiresIn });
+
+    // Log host only
+    try { const u = new URL(url); console.info('[uploads.prepare] signedUrl host:', u.host); } catch (e) {}
+
+    return res.json({ ok: true, url, key, expiresIn });
+  } catch (err) {
+    console.error('uploads.prepare error', err && err.stack ? err.stack : err);
+    return res.status(500).json({ error: 'failed to prepare upload', details: err && err.message ? err.message : String(err) });
+  }
+});
+
+// POST /complete
+// body: { key, metadata, averbacaoId }
+// verifies object exists and persists metadata if desired
+router.post('/complete', async (req, res) => {
+  try {
+    const { key, metadata } = req.body || {};
+    console.info('[uploads.complete] incoming', { key: key ? maskKey(key) : null, metadata: metadata ? '[present]' : null, ip: req.ip });
+    if (!key) return res.status(400).json({ error: 'key required' });
+
+    // Verify object exists
     try {
-      const { key, metadata, averbacaoId } = req.body || {};
-      if (!key) return res.status(400).json({ error: 'key required' });
+      console.info('[uploads.complete] checking HeadObject', { bucket: BB_BUCKET_NAME, key: maskKey(key) });
+      const head = await s3.send(new HeadObjectCommand({ Bucket: BB_BUCKET_NAME, Key: key }));
+      console.info('[uploads.complete] HeadObject OK');
 
-      // Verify object exists with HEAD
+      // Build a public URL (best-effort). If your bucket is private you should return a signed GET instead.
+      const publicUrl = (() => {
+        try {
+          const host = (normalizedEndpoint || BB_ENDPOINT || '').replace(/^https?:\/\//, '').replace(/\/+$/,'');
+          if (host) return `https://${BB_BUCKET_NAME}.${host}/${encodeURIComponent(key)}`;
+        } catch (e) { }
+        return `${normalizedEndpoint || BB_ENDPOINT}/${BB_BUCKET_NAME}/${encodeURIComponent(key)}`;
+      })();
+
+      // Update uploads row if exists
       try {
-        const head = await s3Client.send(new HeadObjectCommand({ Bucket: BUCKET, Key: key }));
         const size = head.ContentLength || head.ContentLength === 0 ? Number(head.ContentLength) : null;
         const contentType = head.ContentType || null;
+        const updateSql = `UPDATE public.uploads SET size=$1, content_type=$2, status=$3, metadata = COALESCE(metadata, '{}'::jsonb) || $4::jsonb, updated_at=now() WHERE "key" = $5 RETURNING id, stored_name, original_name`;
+        const updateVals = [size, contentType, 'complete', JSON.stringify(metadata || {}), key];
+        await pool.query(updateSql, updateVals).catch(() => null);
+      } catch (e) {
+        // ignore
+      }
 
-        // Update uploads row
-        const updateSql = `UPDATE public.uploads SET size=$1, content_type=$2, status=$3, metadata = COALESCE(metadata, '{}'::jsonb) || $4::jsonb, averbacao_id = COALESCE($5, averbacao_id), updated_at=now() WHERE "key" = $6 RETURNING id, stored_name, original_name`;
-        const updateVals = [size, contentType, 'complete', JSON.stringify(metadata || {}), averbacaoId || null, key];
-        const ures = await pool.query(updateSql, updateVals);
-        if (ures.rowCount === 0) {
-          return res.status(404).json({ error: 'upload record not found' });
-        }
-
-        // Optionally provide a signed GET URL for downloads (short lived)
-        const getExpires = parseInt(process.env.DOWNLOAD_URL_EXPIRES || '300', 10);
-        const getCmd = new GetObjectCommand({ Bucket: BUCKET, Key: key });
-        const downloadUrl = await getSignedUrl(s3Client, getCmd, { expiresIn: getExpires });
-
-        // If an averbacaoId was provided, update the corresponding averbacao record
-        // Try `averbacoes_gratuitas` first, fallback to `averbacoes` table if not present
-        try {
-          if (averbacaoId) {
-            const pdfMeta = {
-              id: ures.rows[0].id,
-              storedName: ures.rows[0].stored_name,
-              originalName: ures.rows[0].original_name,
-              url: downloadUrl
-            };
+      // If caller provided an averbacao id, attach the public URL to that averbacao
+      let attachedAverbacaoId = null;
+      try {
+        const averbacaoIdFromBody = req.body && (req.body.averbacaoId || req.body.averbacao_id || (metadata && (metadata.averbacaoId || metadata.averbacao_id)));
+        const averbacaoId = averbacaoIdFromBody ? parseInt(String(averbacaoIdFromBody), 10) : NaN;
+        if (!Number.isNaN(averbacaoId)) {
+          const pdfMeta = { url: publicUrl, key, metadata };
+          // Try jsonb `pdf` column first
+          try {
             const upd1 = await pool.query('UPDATE public.averbacoes_gratuitas SET pdf = $1 WHERE id = $2 RETURNING id', [pdfMeta, averbacaoId]);
-            if (upd1.rowCount === 0) {
-              // try alternate table name
-              await pool.query('UPDATE public.averbacoes SET pdf = $1 WHERE id = $2', [pdfMeta, averbacaoId]);
+            if (upd1 && upd1.rowCount > 0) attachedAverbacaoId = upd1.rows[0].id;
+            else {
+              // fallback to anexo_url/anexo_metadata
+              const upd2 = await pool.query('UPDATE public.averbacoes_gratuitas SET anexo_url = $1, anexo_metadata = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [publicUrl, metadata || null, averbacaoId]);
+              if (upd2 && upd2.rowCount > 0) attachedAverbacaoId = upd2.rows[0].id;
+            }
+          } catch (inner) {
+            // If the `averbacoes_gratuitas` table/column doesn't exist, try the alternate table
+            try {
+              const updA = await pool.query('UPDATE public.averbacoes SET pdf = $1 WHERE id = $2 RETURNING id', [pdfMeta, averbacaoId]);
+              if (updA && updA.rowCount > 0) attachedAverbacaoId = updA.rows[0].id;
+              else {
+                await pool.query('UPDATE public.averbacoes SET anexo_url = $1, anexo_metadata = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [publicUrl, metadata || null, averbacaoId]).catch(() => null);
+              }
+            } catch (inner2) {
+              console.warn('[uploads.complete] attach fallback failed', inner2 && inner2.message ? inner2.message : inner2);
             }
           }
-        } catch (upderr) {
-          console.warn('[uploads][complete] could not update averbacao with pdf metadata', upderr && upderr.message);
         }
-
-        return res.json({ ok: true, id: ures.rows[0].id, storedName: ures.rows[0].stored_name, originalName: ures.rows[0].original_name, url: downloadUrl });
-      } catch (headErr) {
-        console.error('[uploads][complete] HeadObject error', headErr);
-        return res.status(400).json({ error: 'object not found in storage or not yet available' });
+      } catch (err) {
+        console.warn('[uploads.complete] failed to attach to averbacao', err && err.message ? err.message : err);
       }
-    } catch (err) {
-      console.error('[uploads][complete] error', err);
-      return res.status(500).json({ error: err.message || 'internal error' });
-    }
-  });
 
-  return router;
-};
+      // Optionally provide a signed GET as a safer download mechanism
+      let downloadUrl = null;
+      try {
+        const getExpires = parseInt(process.env.DOWNLOAD_URL_EXPIRES || '300', 10);
+        const getCmd = new GetObjectCommand({ Bucket: BB_BUCKET_NAME, Key: key });
+        downloadUrl = await getSignedUrl(s3, getCmd, { expiresIn: getExpires });
+      } catch (e) {
+        // ignore signed GET generation errors
+      }
+
+      return res.json({ ok: true, storedName: key.split('/').pop(), url: publicUrl, downloadUrl, attachedAverbacaoId });
+    } catch (headErr) {
+      console.warn('[uploads.complete] HeadObject error', headErr && headErr.message ? headErr.message : headErr);
+      return res.status(404).json({ error: 'object not found in storage or not yet available' });
+    }
+  } catch (err) {
+    console.error('uploads.complete error', err && err.stack ? err.stack : err);
+    return res.status(500).json({ error: 'failed to confirm upload', details: err && err.message ? err.message : String(err) });
+  }
+});
+
+module.exports = router;
