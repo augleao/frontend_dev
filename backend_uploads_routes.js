@@ -327,10 +327,12 @@ router.delete('/:id', async (req, res) => {
     if (Number.isNaN(id)) return res.status(400).json({ error: 'invalid id' });
 
     // Find the uploads row
-    const sel = await pool.query('SELECT id, "key", bucket, status FROM public.uploads WHERE id = $1 LIMIT 1', [id]);
+    const sel = await pool.query('SELECT id, "key", bucket, status, averbacao_id, stored_name, metadata FROM public.uploads WHERE id = $1 LIMIT 1', [id]);
     if (!sel || sel.rowCount === 0) return res.status(404).json({ error: 'upload not found' });
     const row = sel.rows[0];
     const key = row.key;
+    const storedName = row.stored_name || null;
+    const linkedAverbacaoId = row.averbacao_id ? parseInt(String(row.averbacao_id), 10) : null;
 
     // Attempt to delete from storage (best-effort)
     try {
@@ -348,6 +350,43 @@ router.delete('/:id', async (req, res) => {
       console.info('[uploads.delete] uploads row updated', { rowCount: up && up.rowCount });
     } catch (eUp) {
       console.warn('[uploads.delete] failed to update uploads row status', eUp && eUp.message ? eUp.message : eUp);
+    }
+
+    // If this upload was linked to an averbacao, attempt to remove references
+    if (linkedAverbacaoId) {
+      try {
+        // Build public URL used elsewhere
+        const host = (normalizedEndpoint || BB_ENDPOINT || '').replace(/^https?:\/\//, '').replace(/\/+$/,'');
+        const publicUrl = host ? `https://${BB_BUCKET_NAME}.${host}/${encodeURIComponent(key)}` : `${normalizedEndpoint || BB_ENDPOINT}/${BB_BUCKET_NAME}/${encodeURIComponent(key)}`;
+
+        // Attempt to nullify json/pdf fields or legacy url fields on averbacoes_gratuitas
+        try {
+          await pool.query(`UPDATE public.averbacoes_gratuitas SET pdf = NULL WHERE id = $1 AND ( (pdf->> 'key') = $2 OR (pdf->> 'url') = $3 )`, [linkedAverbacaoId, key, publicUrl]);
+        } catch (e) { console.warn('[uploads.delete] clearing pdf json failed', e && e.message ? e.message : e); }
+
+        try {
+          await pool.query(`UPDATE public.averbacoes_gratuitas SET anexo_url = NULL, anexo_metadata = NULL, updated_at = NOW() WHERE id = $1 AND (anexo_url = $2 OR anexo_url = $3)`, [linkedAverbacaoId, publicUrl, publicUrl]);
+        } catch (e) { console.warn('[uploads.delete] clearing anexo_url failed', e && e.message ? e.message : e); }
+
+        try {
+          await pool.query(`UPDATE public.averbacoes_gratuitas SET pdf_url = NULL, pdf_filename = NULL, updated_at = NOW() WHERE id = $1 AND (pdf_url = $2 OR pdf_filename = $3 OR pdf_filename = $4)`, [linkedAverbacaoId, publicUrl, storedName, storedName]);
+        } catch (e) { console.warn('[uploads.delete] clearing legacy pdf fields failed', e && e.message ? e.message : e); }
+
+        // Repeat for alternate table
+        try {
+          await pool.query(`UPDATE public.averbacoes SET pdf = NULL WHERE id = $1 AND ( (pdf->> 'key') = $2 OR (pdf->> 'url') = $3 )`, [linkedAverbacaoId, key, publicUrl]);
+        } catch (e) { console.warn('[uploads.delete] clearing averbacoes.pdf json failed', e && e.message ? e.message : e); }
+
+        try {
+          await pool.query(`UPDATE public.averbacoes SET anexo_url = NULL, anexo_metadata = NULL, updated_at = NOW() WHERE id = $1 AND (anexo_url = $2 OR anexo_url = $3)`, [linkedAverbacaoId, publicUrl, publicUrl]);
+        } catch (e) { console.warn('[uploads.delete] clearing averbacoes.anexo_url failed', e && e.message ? e.message : e); }
+
+        try {
+          await pool.query(`UPDATE public.averbacoes SET pdf_url = NULL, pdf_filename = NULL, updated_at = NOW() WHERE id = $1 AND (pdf_url = $2 OR pdf_filename = $3)`, [linkedAverbacaoId, publicUrl, storedName]);
+        } catch (e) { /* some schemas may not exist; ignore */ }
+      } catch (e) {
+        console.warn('[uploads.delete] error while detaching from averbacao', e && e.message ? e.message : e);
+      }
     }
 
     return res.json({ ok: true, deletedId: id });
