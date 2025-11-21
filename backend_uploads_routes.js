@@ -132,8 +132,14 @@ router.post('/complete', async (req, res) => {
       try {
         const size = head.ContentLength || head.ContentLength === 0 ? Number(head.ContentLength) : null;
         const contentType = head.ContentType || null;
-        const updateSql = `UPDATE public.uploads SET size=$1, content_type=$2, status=$3, metadata = COALESCE(metadata, '{}'::jsonb) || $4::jsonb, updated_at=now() WHERE "key" = $5 RETURNING id, stored_name, original_name`;
-        const updateVals = [size, contentType, 'complete', JSON.stringify(metadata || {}), key];
+        // If the caller provided an averbacao id, set it on the uploads row so
+        // the upload is linked even if the averbacao's schema doesn't have
+        // dedicated pdf/anexo columns.
+        const averbacaoIdFromBody = req.body && (req.body.averbacaoId || req.body.averbacao_id || (metadata && (metadata.averbacaoId || metadata.averbacao_id)));
+        let averbacaoId = averbacaoIdFromBody ? parseInt(String(averbacaoIdFromBody), 10) : null;
+        if (Number.isNaN(averbacaoId)) averbacaoId = null;
+        const updateSql = `UPDATE public.uploads SET size=$1, content_type=$2, status=$3, metadata = COALESCE(metadata, '{}'::jsonb) || $4::jsonb, averbacao_id = $5, updated_at=now() WHERE "key" = $6 RETURNING id, stored_name, original_name, averbacao_id`;
+        const updateVals = [size, contentType, 'complete', JSON.stringify(metadata || {}), averbacaoId, key];
         let ures = null;
         try {
           ures = await pool.query(updateSql, updateVals);
@@ -148,7 +154,11 @@ router.post('/complete', async (req, res) => {
         console.warn('[uploads.complete] unexpected error updating uploads row', e && e.message ? e.message : e);
       }
 
-      // If caller provided an averbacao id, attach the public URL to that averbacao
+      // If caller provided an averbacao id, attach the public URL to that averbacao.
+      // Try several possible schema shapes in order, performing sequential
+      // attempts on the same table before falling back to another table. This
+      // prevents aborting the chain when a single missing column causes an
+      // exception (e.g. `column "pdf" of relation "averbacoes_gratuitas" does not exist`).
       let attachedAverbacaoId = null;
       try {
         const averbacaoIdFromBody = req.body && (req.body.averbacaoId || req.body.averbacao_id || (metadata && (metadata.averbacaoId || metadata.averbacao_id)));
@@ -156,49 +166,69 @@ router.post('/complete', async (req, res) => {
         if (!Number.isNaN(averbacaoId)) {
           console.info('[uploads.complete] attempting to attach upload to averbacao', { averbacaoId, publicUrl });
           const pdfMeta = { url: publicUrl, key, metadata };
-          // Try jsonb `pdf` column first
+
+          // First, attempt updates on `public.averbacoes_gratuitas` using
+          // multiple column strategies. Each attempt catches its own errors so
+          // a missing column won't abort subsequent attempts.
           try {
-            const upd1 = await pool.query('UPDATE public.averbacoes_gratuitas SET pdf = $1 WHERE id = $2 RETURNING id', [pdfMeta, averbacaoId]);
-            console.info('[uploads.complete] update averbacoes_gratuitas(pdf) result', { rowCount: upd1 && upd1.rowCount });
-            if (upd1 && upd1.rowCount > 0) attachedAverbacaoId = upd1.rows[0].id;
-            else {
-              // fallback to anexo_url/anexo_metadata
-              const upd2 = await pool.query('UPDATE public.averbacoes_gratuitas SET anexo_url = $1, anexo_metadata = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [publicUrl, metadata || null, averbacaoId]);
-              console.info('[uploads.complete] update averbacoes_gratuitas(anexo) result', { rowCount: upd2 && upd2.rowCount });
-              if (upd2 && upd2.rowCount > 0) attachedAverbacaoId = upd2.rows[0].id;
-              else {
-                // another legacy schema: pdf_filename / pdf_url
-                const filenameToWrite = metadata && (metadata.originalName || metadata.original_name || metadata.filename) ? (metadata.originalName || metadata.original_name || metadata.filename) : key.split('/').pop();
-                let upd3 = null;
-                try {
-                  upd3 = await pool.query('UPDATE public.averbacoes_gratuitas SET pdf_filename = $1, pdf_url = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [filenameToWrite, publicUrl, averbacaoId]);
-                  console.info('[uploads.complete] update averbacoes_gratuitas(legacy pdf) result', { rowCount: upd3 && upd3.rowCount });
-                  if (upd3 && upd3.rowCount > 0) attachedAverbacaoId = upd3.rows[0].id;
-                } catch (e3) {
-                  console.warn('[uploads.complete] failed legacy update on averbacoes_gratuitas', e3 && e3.message ? e3.message : e3);
-                }
-              }
-            }
-          } catch (inner) {
-            console.warn('[uploads.complete] averbacoes_gratuitas updates failed, trying alternate table', inner && inner.message ? inner.message : inner);
-            // If the `averbacoes_gratuitas` table/column doesn't exist, try the alternate table
+            const updPdf = await pool.query('UPDATE public.averbacoes_gratuitas SET pdf = $1 WHERE id = $2 RETURNING id', [pdfMeta, averbacaoId]);
+            console.info('[uploads.complete] update averbacoes_gratuitas(pdf) result', { rowCount: updPdf && updPdf.rowCount });
+            if (updPdf && updPdf.rowCount > 0) attachedAverbacaoId = updPdf.rows[0].id;
+          } catch (ePdf) {
+            console.warn('[uploads.complete] averbacoes_gratuitas(pdf) failed', ePdf && ePdf.message ? ePdf.message : ePdf);
+          }
+
+          if (!attachedAverbacaoId) {
             try {
-              const updA = await pool.query('UPDATE public.averbacoes SET pdf = $1 WHERE id = $2 RETURNING id', [pdfMeta, averbacaoId]);
-              console.info('[uploads.complete] update averbacoes(pdf) result', { rowCount: updA && updA.rowCount });
-              if (updA && updA.rowCount > 0) attachedAverbacaoId = updA.rows[0].id;
-              else {
-                const updAn = await pool.query('UPDATE public.averbacoes SET anexo_url = $1, anexo_metadata = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [publicUrl, metadata || null, averbacaoId]).catch(() => null);
-                console.info('[uploads.complete] update averbacoes(anexo) result', { rowCount: updAn && updAn.rowCount });
-                try {
-                  const filenameToWrite = metadata && (metadata.originalName || metadata.original_name || metadata.filename) ? (metadata.originalName || metadata.original_name || metadata.filename) : key.split('/').pop();
-                  const updLegacy = await pool.query('UPDATE public.averbacoes SET pdf_filename = $1, pdf_url = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [filenameToWrite, publicUrl, averbacaoId]).catch(() => null);
-                  console.info('[uploads.complete] update averbacoes(legacy pdf) result', { rowCount: updLegacy && updLegacy.rowCount });
-                } catch (inner2) {
-                  console.warn('[uploads.complete] attach fallback failed', inner2 && inner2.message ? inner2.message : inner2);
-                }
-              }
-            } catch (inner2) {
-              console.warn('[uploads.complete] attach fallback failed', inner2 && inner2.message ? inner2.message : inner2);
+              const updAnexo = await pool.query('UPDATE public.averbacoes_gratuitas SET anexo_url = $1, anexo_metadata = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [publicUrl, metadata || null, averbacaoId]);
+              console.info('[uploads.complete] update averbacoes_gratuitas(anexo) result', { rowCount: updAnexo && updAnexo.rowCount });
+              if (updAnexo && updAnexo.rowCount > 0) attachedAverbacaoId = updAnexo.rows[0].id;
+            } catch (eAnexo) {
+              console.warn('[uploads.complete] averbacoes_gratuitas(anexo) failed', eAnexo && eAnexo.message ? eAnexo.message : eAnexo);
+            }
+          }
+
+          if (!attachedAverbacaoId) {
+            try {
+              const filenameToWrite = metadata && (metadata.originalName || metadata.original_name || metadata.filename) ? (metadata.originalName || metadata.original_name || metadata.filename) : key.split('/').pop();
+              const updLegacy = await pool.query('UPDATE public.averbacoes_gratuitas SET pdf_filename = $1, pdf_url = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [filenameToWrite, publicUrl, averbacaoId]);
+              console.info('[uploads.complete] update averbacoes_gratuitas(legacy pdf) result', { rowCount: updLegacy && updLegacy.rowCount });
+              if (updLegacy && updLegacy.rowCount > 0) attachedAverbacaoId = updLegacy.rows[0].id;
+            } catch (eLegacy) {
+              console.warn('[uploads.complete] averbacoes_gratuitas(legacy) failed', eLegacy && eLegacy.message ? eLegacy.message : eLegacy);
+            }
+          }
+
+          // If none of the attempts on `averbacoes_gratuitas` succeeded, try
+          // the alternate table `public.averbacoes` using the same strategies.
+          if (!attachedAverbacaoId) {
+            try {
+              const updPdfA = await pool.query('UPDATE public.averbacoes SET pdf = $1 WHERE id = $2 RETURNING id', [pdfMeta, averbacaoId]);
+              console.info('[uploads.complete] update averbacoes(pdf) result', { rowCount: updPdfA && updPdfA.rowCount });
+              if (updPdfA && updPdfA.rowCount > 0) attachedAverbacaoId = updPdfA.rows[0].id;
+            } catch (ePdfA) {
+              console.warn('[uploads.complete] averbacoes(pdf) failed', ePdfA && ePdfA.message ? ePdfA.message : ePdfA);
+            }
+          }
+
+          if (!attachedAverbacaoId) {
+            try {
+              const updAnexoA = await pool.query('UPDATE public.averbacoes SET anexo_url = $1, anexo_metadata = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [publicUrl, metadata || null, averbacaoId]);
+              console.info('[uploads.complete] update averbacoes(anexo) result', { rowCount: updAnexoA && updAnexoA.rowCount });
+              if (updAnexoA && updAnexoA.rowCount > 0) attachedAverbacaoId = updAnexoA.rows[0].id;
+            } catch (eAnexoA) {
+              console.warn('[uploads.complete] averbacoes(anexo) failed', eAnexoA && eAnexoA.message ? eAnexoA.message : eAnexoA);
+            }
+          }
+
+          if (!attachedAverbacaoId) {
+            try {
+              const filenameToWrite = metadata && (metadata.originalName || metadata.original_name || metadata.filename) ? (metadata.originalName || metadata.original_name || metadata.filename) : key.split('/').pop();
+              const updLegacyA = await pool.query('UPDATE public.averbacoes SET pdf_filename = $1, pdf_url = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [filenameToWrite, publicUrl, averbacaoId]);
+              console.info('[uploads.complete] update averbacoes(legacy pdf) result', { rowCount: updLegacyA && updLegacyA.rowCount });
+              if (updLegacyA && updLegacyA.rowCount > 0) attachedAverbacaoId = updLegacyA.rows[0].id;
+            } catch (eLegacyA) {
+              console.warn('[uploads.complete] averbacoes(legacy) failed', eLegacyA && eLegacyA.message ? eLegacyA.message : eLegacyA);
             }
           }
         }
