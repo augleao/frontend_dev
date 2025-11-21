@@ -236,6 +236,31 @@ router.post('/complete', async (req, res) => {
         console.warn('[uploads.complete] failed to attach to averbacao', err && err.message ? err.message : err);
       }
 
+      // If we attempted to attach to an averbacao, fetch and return the
+      // current averbacao row so the frontend can update immediately.
+      let averbacaoRow = null;
+      try {
+        const averbacaoIdFromBody2 = req.body && (req.body.averbacaoId || req.body.averbacao_id || (metadata && (metadata.averbacaoId || metadata.averbacao_id)));
+        const averbacaoId2 = averbacaoIdFromBody2 ? parseInt(String(averbacaoIdFromBody2), 10) : NaN;
+        if (!Number.isNaN(averbacaoId2)) {
+          try {
+            const sel = await pool.query('SELECT * FROM public.averbacoes_gratuitas WHERE id = $1 LIMIT 1', [averbacaoId2]);
+            if (sel && sel.rowCount > 0) {
+              averbacaoRow = sel.rows[0];
+            } else {
+              // try alternate table
+              const selA = await pool.query('SELECT * FROM public.averbacoes WHERE id = $1 LIMIT 1', [averbacaoId2]).catch(() => null);
+              if (selA && selA.rowCount > 0) averbacaoRow = selA.rows[0];
+            }
+            console.info('[uploads.complete] fetched averbacao row', { found: !!averbacaoRow, id: averbacaoId2 });
+          } catch (eSel) {
+            console.warn('[uploads.complete] failed to select averbacao', eSel && eSel.message ? eSel.message : eSel);
+          }
+        }
+      } catch (e) {
+        console.warn('[uploads.complete] unexpected error while fetching averbacao', e && e.message ? e.message : e);
+      }
+
       // Optionally provide a signed GET as a safer download mechanism
       let downloadUrl = null;
       try {
@@ -246,7 +271,7 @@ router.post('/complete', async (req, res) => {
         // ignore signed GET generation errors
       }
 
-      return res.json({ ok: true, storedName: key.split('/').pop(), url: publicUrl, downloadUrl, attachedAverbacaoId });
+      return res.json({ ok: true, storedName: key.split('/').pop(), url: publicUrl, downloadUrl, attachedAverbacaoId, averbacao: averbacaoRow });
     } catch (headErr) {
       console.warn('[uploads.complete] HeadObject error', headErr && headErr.message ? headErr.message : headErr);
       return res.status(404).json({ error: 'object not found in storage or not yet available' });
