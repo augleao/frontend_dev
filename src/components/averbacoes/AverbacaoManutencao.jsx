@@ -271,10 +271,11 @@ export default function AverbacaoManutencao() {
     }
 
     // 3) inform backend that upload completed (and let it persist metadata)
+    // Include averbacao id when present so backend can link the upload to the averbação
     const completeRes = await fetch(`${config.apiURL}/uploads/complete`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ key, metadata: { originalName: file.name } })
+      body: JSON.stringify({ key, metadata: { originalName: file.name }, averbacaoId: isEdicao ? id : null })
     });
     let completeJson = {};
     try { completeJson = await completeRes.json(); } catch (_) { completeJson = {}; }
