@@ -95,11 +95,23 @@ export default function AverbacaoManutencao() {
           if (item.pdf) {
             console.log('[AverbacaoManutencao] fetchItem: item possui pdf', { pdf: item.pdf });
             setPdfInfo({
-              originalName: item.pdf.originalName || '',
-              storedName: item.pdf.storedName || item.pdf.nome || '',
+              originalName: item.pdf.originalName || item.pdf.original_name || '',
+              storedName: item.pdf.storedName || item.pdf.nome || item.pdf.filename || '',
               url: item.pdf.url || '',
               id: item.pdf.id || null
             });
+          } else if (item.pdf_filename || item.pdf_url || item.pdf_filename === null) {
+            // legacy fields: some DB schemas use pdf_filename / pdf_url
+            console.log('[AverbacaoManutencao] fetchItem: item possui campos legados de PDF', { pdf_filename: item.pdf_filename, pdf_url: item.pdf_url, anexo_url: item.anexo_url });
+            setPdfInfo({
+              originalName: item.pdf_filename || (item.anexo_metadata && (item.anexo_metadata.originalName || item.anexo_metadata.filename)) || '',
+              storedName: item.pdf_filename || '',
+              url: item.pdf_url || item.anexo_url || '' ,
+              id: null
+            });
+          } else if (item.anexo_url) {
+            // another legacy option
+            setPdfInfo({ originalName: '', storedName: '', url: item.anexo_url || '', id: null });
           }
         }
       } catch (e) {}

@@ -148,6 +148,11 @@ router.post('/complete', async (req, res) => {
               // fallback to anexo_url/anexo_metadata
               const upd2 = await pool.query('UPDATE public.averbacoes_gratuitas SET anexo_url = $1, anexo_metadata = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [publicUrl, metadata || null, averbacaoId]);
               if (upd2 && upd2.rowCount > 0) attachedAverbacaoId = upd2.rows[0].id;
+              else {
+                // another legacy schema: pdf_filename / pdf_url
+                const upd3 = await pool.query('UPDATE public.averbacoes_gratuitas SET pdf_filename = $1, pdf_url = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [metadata && (metadata.originalName || metadata.original_name || metadata.filename) ? (metadata.originalName || metadata.original_name || metadata.filename) : key.split('/').pop(), publicUrl, averbacaoId]).catch(() => null);
+                if (upd3 && upd3.rowCount > 0) attachedAverbacaoId = upd3.rows[0].id;
+              }
             }
           } catch (inner) {
             // If the `averbacoes_gratuitas` table/column doesn't exist, try the alternate table
@@ -156,6 +161,8 @@ router.post('/complete', async (req, res) => {
               if (updA && updA.rowCount > 0) attachedAverbacaoId = updA.rows[0].id;
               else {
                 await pool.query('UPDATE public.averbacoes SET anexo_url = $1, anexo_metadata = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [publicUrl, metadata || null, averbacaoId]).catch(() => null);
+                // legacy fields on `averbacoes`
+                await pool.query('UPDATE public.averbacoes SET pdf_filename = $1, pdf_url = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [metadata && (metadata.originalName || metadata.original_name || metadata.filename) ? (metadata.originalName || metadata.original_name || metadata.filename) : key.split('/').pop(), publicUrl, averbacaoId]).catch(() => null);
               }
             } catch (inner2) {
               console.warn('[uploads.complete] attach fallback failed', inner2 && inner2.message ? inner2.message : inner2);
