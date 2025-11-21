@@ -104,6 +104,26 @@ router.post('/prepare', async (req, res) => {
   }
 });
 
+// GET /?averbacaoId=123
+// List uploads linked to an averbacao
+router.get('/', async (req, res) => {
+  try {
+    const averbacaoId = req.query && (req.query.averbacaoId || req.query.averbacao_id) ? parseInt(String(req.query.averbacaoId || req.query.averbacao_id), 10) : NaN;
+    if (Number.isNaN(averbacaoId)) return res.status(400).json({ error: 'averbacaoId query parameter required' });
+    const rows = await pool.query(`SELECT id, "key", stored_name, original_name, bucket, content_type, size, status, metadata, created_at, updated_at FROM public.uploads WHERE averbacao_id = $1 ORDER BY created_at DESC`, [averbacaoId]);
+    const list = (rows && rows.rows || []).map(r => {
+      const key = r.key || r['key'];
+      const host = (normalizedEndpoint || BB_ENDPOINT || '').replace(/^https?:\/\//, '').replace(/\/+$/,'');
+      const url = host ? `https://${BB_BUCKET_NAME}.${host}/${encodeURIComponent(key)}` : `${normalizedEndpoint || BB_ENDPOINT}/${BB_BUCKET_NAME}/${encodeURIComponent(key)}`;
+      return { ...r, url };
+    });
+    return res.json({ ok: true, uploads: list });
+  } catch (e) {
+    console.error('[uploads.list] error', e && e.message ? e.message : e);
+    return res.status(500).json({ error: 'failed to list uploads' });
+  }
+});
+
 // POST /complete
 // body: { key, metadata, averbacaoId }
 // verifies object exists and persists metadata if desired
@@ -253,6 +273,23 @@ router.post('/complete', async (req, res) => {
               if (selA && selA.rowCount > 0) averbacaoRow = selA.rows[0];
             }
             console.info('[uploads.complete] fetched averbacao row', { found: !!averbacaoRow, id: averbacaoId2 });
+
+            // Also fetch uploads linked to this averbacao so frontend can list all files
+            try {
+              const ul = await pool.query(`SELECT id, "key", stored_name, original_name, bucket, content_type, size, status, metadata, created_at, updated_at FROM public.uploads WHERE averbacao_id = $1 ORDER BY created_at DESC`, [averbacaoId2]);
+              if (ul && ul.rowCount > 0) {
+                const uploadsList = ul.rows.map(r => {
+                  const key = r.key || r['key'];
+                  const host = (normalizedEndpoint || BB_ENDPOINT || '').replace(/^https?:\/\//, '').replace(/\/+$/,'');
+                  const url = host ? `https://${BB_BUCKET_NAME}.${host}/${encodeURIComponent(key)}` : `${normalizedEndpoint || BB_ENDPOINT}/${BB_BUCKET_NAME}/${encodeURIComponent(key)}`;
+                  return { ...r, url };
+                });
+                // attach uploads list to the averbacaoRow for convenience
+                averbacaoRow.uploads = uploadsList;
+              }
+            } catch (eUl) {
+              console.warn('[uploads.complete] failed to fetch linked uploads', eUl && eUl.message ? eUl.message : eUl);
+            }
           } catch (eSel) {
             console.warn('[uploads.complete] failed to select averbacao', eSel && eSel.message ? eSel.message : eSel);
           }
