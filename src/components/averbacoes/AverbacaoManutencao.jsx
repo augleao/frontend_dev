@@ -364,8 +364,10 @@ export default function AverbacaoManutencao() {
         const storedName = pdfObj.storedName || pdfObj.nome || pdfObj.filename || (pdfObj.key ? String(pdfObj.key).split('/').pop() : '') || '';
         const url = pdfObj.url || a.anexo_url || '';
         setPdfInfo({ originalName, storedName, url, id: pdfObj.id || null });
-        // refresh list from server if available
-        if (averbacaoId) fetchUploadsList(averbacaoId);
+        // refresh list from server if available. Determine the averbacao id
+        // from the response, falling back to the current route id when in edit mode.
+        const attachedAverbacaoId = completeJson?.attachedAverbacaoId || a.id || (isEdicao ? id : null);
+        if (attachedAverbacaoId) fetchUploadsList(attachedAverbacaoId);
       }
     } else {
       setPdfInfo(prev => ({
