@@ -196,4 +196,10 @@ router.post('/complete', async (req, res) => {
   }
 });
 
-module.exports = router;
+// Export a register function so the main server can call `registerUploads(app)`
+// (this matches how `server.js` expects to mount the routes).
+function registerUploads(app) {
+  app.use('/api/uploads', router);
+}
+
+module.exports = registerUploads;
