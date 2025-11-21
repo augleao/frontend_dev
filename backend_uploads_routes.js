@@ -15,7 +15,7 @@ Do NOT put secrets into code. This file uses environment variables only.
 */
 
 const express = require('express');
-const { S3Client, PutObjectCommand, HeadObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, HeadObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { v4: uuidv4 } = require('uuid');
 // Use the application's shared DB pool. The routes file is located in `routes/` so
@@ -316,6 +316,44 @@ router.post('/complete', async (req, res) => {
   } catch (err) {
     console.error('uploads.complete error', err && err.stack ? err.stack : err);
     return res.status(500).json({ error: 'failed to confirm upload', details: err && err.message ? err.message : String(err) });
+  }
+});
+
+// DELETE /:id
+// Soft-delete an upload record and attempt to delete the object from the bucket.
+router.delete('/:id', async (req, res) => {
+  try {
+    const id = parseInt(String(req.params && req.params.id || ''), 10);
+    if (Number.isNaN(id)) return res.status(400).json({ error: 'invalid id' });
+
+    // Find the uploads row
+    const sel = await pool.query('SELECT id, "key", bucket, status FROM public.uploads WHERE id = $1 LIMIT 1', [id]);
+    if (!sel || sel.rowCount === 0) return res.status(404).json({ error: 'upload not found' });
+    const row = sel.rows[0];
+    const key = row.key;
+
+    // Attempt to delete from storage (best-effort)
+    try {
+      if (key && BB_BUCKET_NAME) {
+        await s3.send(new DeleteObjectCommand({ Bucket: BB_BUCKET_NAME, Key: key }));
+        console.info('[uploads.delete] S3 DeleteObject attempted', { id, key });
+      }
+    } catch (eDel) {
+      console.warn('[uploads.delete] failed to delete object from storage (continuing)', eDel && eDel.message ? eDel.message : eDel);
+    }
+
+    // Mark uploads row as deleted (soft-delete)
+    try {
+      const up = await pool.query('UPDATE public.uploads SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING id', ['deleted', id]);
+      console.info('[uploads.delete] uploads row updated', { rowCount: up && up.rowCount });
+    } catch (eUp) {
+      console.warn('[uploads.delete] failed to update uploads row status', eUp && eUp.message ? eUp.message : eUp);
+    }
+
+    return res.json({ ok: true, deletedId: id });
+  } catch (err) {
+    console.error('[uploads.delete] error', err && err.stack ? err.stack : err);
+    return res.status(500).json({ error: 'failed to delete upload' });
   }
 });
 

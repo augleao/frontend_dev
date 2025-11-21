@@ -34,6 +34,7 @@ export default function AverbacaoManutencao() {
   const [uploading, setUploading] = useState(false);
   const [pdfInfo, setPdfInfo] = useState({ originalName: '', storedName: '', url: '', id: null });
   const [pdfList, setPdfList] = useState([]);
+  const [deletingUploadId, setDeletingUploadId] = useState(null);
   const [codigoSugestoes, setCodigoSugestoes] = useState([]);
   const [codigoLoading, setCodigoLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -93,7 +94,7 @@ export default function AverbacaoManutencao() {
             selo_consulta: item.selo_consulta || '',
             codigo_seguranca: item.codigo_seguranca || ''
           });
-          if (item.pdf) {
+            if (item.pdf) {
             console.log('[AverbacaoManutencao] fetchItem: item possui pdf', { pdf: item.pdf });
             // pdf JSON may contain different shapes. Common shapes observed:
             // { key, url, metadata: { originalName } }
@@ -106,7 +107,15 @@ export default function AverbacaoManutencao() {
             setPdfInfo({ originalName, storedName, url, id: pdf.id || null });
             // if the server returned uploads embedded, use them
             if (item.uploads && Array.isArray(item.uploads)) {
-              setPdfList(item.uploads.map(u => ({ id: u.id, storedName: u.stored_name || u.storedName, originalName: u.original_name || (u.metadata && (u.metadata.originalName || u.metadata.filename)), url: u.url || '' })));
+              setPdfList(item.uploads.map(u => ({
+                id: u.id,
+                storedName: u.stored_name || u.storedName,
+                originalName: u.original_name || (u.metadata && (u.metadata.originalName || u.metadata.filename)) || '',
+                url: u.url || '',
+                size: u.size || null,
+                contentType: u.content_type || u.contentType || '',
+                createdAt: u.created_at || u.createdAt || null
+              })));
             }
           } else if (item.pdf_filename || item.pdf_url || item.pdf_filename === null) {
             // legacy fields: some DB schemas use pdf_filename / pdf_url
@@ -145,7 +154,15 @@ export default function AverbacaoManutencao() {
         if (!res.ok) return setPdfList([]);
         const j = await res.json();
         if (j && Array.isArray(j.uploads)) {
-          setPdfList(j.uploads.map(u => ({ id: u.id, storedName: u.stored_name || u.storedName, originalName: u.original_name || (u.metadata && (u.metadata.originalName || u.metadata.filename)), url: u.url || '' })));
+          setPdfList(j.uploads.map(u => ({
+            id: u.id,
+            storedName: u.stored_name || u.storedName,
+            originalName: u.original_name || (u.metadata && (u.metadata.originalName || u.metadata.filename)) || '',
+            url: u.url || '',
+            size: u.size || null,
+            contentType: u.content_type || u.contentType || '',
+            createdAt: u.created_at || u.createdAt || null
+          })));
         }
       } catch (e) {
         console.warn('[AverbacaoManutencao] fetchUploadsList failed', e && e.message ? e.message : e);
@@ -381,6 +398,41 @@ export default function AverbacaoManutencao() {
     return true;
   };
 
+  const handleViewUpload = (u) => {
+    if (!u || !u.url) {
+      showToast('error', 'URL do arquivo não disponível');
+      return;
+    }
+    window.open(u.url, '_blank', 'noopener');
+  };
+
+  const handleDeleteUpload = async (uploadId) => {
+    if (!uploadId) return;
+    if (!window.confirm('Deseja realmente excluir este arquivo? Esta ação não pode ser desfeita.')) return;
+    try {
+      setDeletingUploadId(uploadId);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${config.apiURL}/uploads/${encodeURIComponent(uploadId)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        showToast('error', text || 'Erro ao excluir arquivo.');
+      } else {
+        showToast('success', 'Arquivo excluído.');
+        // refresh list
+        const aId = isEdicao ? id : null;
+        if (aId) fetchUploadsList(aId);
+        // clear pdfInfo if it matches
+        setPdfInfo(prev => (prev && prev.id === uploadId ? { originalName: '', storedName: '', url: '', id: null } : prev));
+      }
+    } catch (e) {
+      showToast('error', 'Erro ao excluir arquivo.');
+    }
+    setDeletingUploadId(null);
+  };
+
   const enviarAnexoModal = async (file) => {
     console.log('[AverbacaoManutencao] Enviando PDF via modal');
     const sucesso = await handleUploadPDF(file);
@@ -438,11 +490,24 @@ export default function AverbacaoManutencao() {
                 </button>
                 {uploading && <span style={{ color: '#888' }}>Enviando...</span>}
                 {pdfList && pdfList.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ marginTop: 8, border: '1px solid #e6e9ee', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1fr 1fr 160px', gap: 0, background: '#f7fafc', padding: '10px 12px', fontSize: 13, fontWeight: 600, color: '#2c3e50' }}>
+                      <div>Nome</div>
+                      <div>Nome salvo</div>
+                      <div style={{ textAlign: 'right' }}>Tamanho</div>
+                      <div>Tipo</div>
+                      <div style={{ textAlign: 'center' }}>Ações</div>
+                    </div>
                     {pdfList.map(p => (
-                      <div key={p.id || p.url} style={{ fontSize: 13, color: '#2c3e50' }}>
-                        <strong>{p.originalName || p.storedName || (p.url ? p.url.split('/').pop() : '')}</strong>
-                        {p.url && (<a href={p.url} target="_blank" rel="noreferrer" style={{ marginLeft: 8 }}>abrir</a>)}
+                      <div key={p.id || p.url} style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1fr 1fr 160px', gap: 0, alignItems: 'center', padding: '10px 12px', borderTop: '1px solid #f1f5f9', fontSize: 13, color: '#334155' }}>
+                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.originalName || p.storedName || (p.url ? decodeURIComponent(p.url.split('/').pop()) : '')}</div>
+                        <div style={{ color: '#475569' }}>{p.storedName || ''}</div>
+                        <div style={{ textAlign: 'right', color: '#64748b' }}>{p.size ? `${Math.round(p.size/1024)} KB` : '-'}</div>
+                        <div style={{ color: '#64748b' }}>{p.contentType || '-'}</div>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+                          <button type="button" onClick={() => handleViewUpload(p)} className="btn btn-sm btn-outline" style={{ padding: '6px 8px' }}>Exibir</button>
+                          <button type="button" onClick={() => handleDeleteUpload(p.id)} disabled={deletingUploadId === p.id} className="btn btn-sm btn-danger" style={{ padding: '6px 8px' }}>{deletingUploadId === p.id ? 'Excluindo…' : 'Excluir'}</button>
+                        </div>
                       </div>
                     ))}
                   </div>
