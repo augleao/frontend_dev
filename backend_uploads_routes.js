@@ -66,6 +66,7 @@ router.post('/prepare', async (req, res) => {
     }
 
     const { filename, contentType = 'application/pdf', folder = '' } = req.body || {};
+    console.info('[uploads.prepare] body', { filename: filename ? String(filename).slice(0,200) : null, contentType, folder, ip: req.ip });
     if (!filename) return res.status(400).json({ error: 'filename required' });
 
     const clean = sanitizeFilename(filename);
@@ -77,12 +78,15 @@ router.post('/prepare', async (req, res) => {
         VALUES ($1,$2,$3,$4,$5,$6,$7,now()) RETURNING id`;
       const storedName = key.split('/').pop();
       const vals = [key, storedName, filename, BB_BUCKET_NAME, contentType, 'prepared', JSON.stringify({ preparedAt: new Date().toISOString() })];
-      const r = await pool.query(insertSql, vals).catch(() => null);
-      if (r && r.rows && r.rows[0]) {
-        // we could return uploadId if frontend needs it
+      let r = null;
+      try {
+        r = await pool.query(insertSql, vals);
+        console.info('[uploads.prepare] inserted uploads row', { rowCount: r.rowCount, id: r.rows && r.rows[0] && r.rows[0].id });
+      } catch (dbErr) {
+        console.warn('[uploads.prepare] uploads insert failed (continuing)', dbErr && dbErr.message ? dbErr.message : dbErr);
       }
     } catch (e) {
-      // ignore DB errors here
+      console.warn('[uploads.prepare] unexpected error in insert attempt', e && e.message ? e.message : e);
     }
 
     const putParams = { Bucket: BB_BUCKET_NAME, Key: key, ContentType: contentType };
@@ -106,14 +110,14 @@ router.post('/prepare', async (req, res) => {
 router.post('/complete', async (req, res) => {
   try {
     const { key, metadata } = req.body || {};
-    console.info('[uploads.complete] incoming', { key: key ? maskKey(key) : null, metadata: metadata ? '[present]' : null, ip: req.ip });
+    console.info('[uploads.complete] incoming', { key: key ? maskKey(key) : null, metadata: metadata ? metadata : null, ip: req.ip, body: req.body });
     if (!key) return res.status(400).json({ error: 'key required' });
 
     // Verify object exists
     try {
       console.info('[uploads.complete] checking HeadObject', { bucket: BB_BUCKET_NAME, key: maskKey(key) });
       const head = await s3.send(new HeadObjectCommand({ Bucket: BB_BUCKET_NAME, Key: key }));
-      console.info('[uploads.complete] HeadObject OK');
+      console.info('[uploads.complete] HeadObject OK', { contentLength: head.ContentLength, contentType: head.ContentType, lastModified: head.LastModified });
 
       // Build a public URL (best-effort). If your bucket is private you should return a signed GET instead.
       const publicUrl = (() => {
@@ -130,9 +134,18 @@ router.post('/complete', async (req, res) => {
         const contentType = head.ContentType || null;
         const updateSql = `UPDATE public.uploads SET size=$1, content_type=$2, status=$3, metadata = COALESCE(metadata, '{}'::jsonb) || $4::jsonb, updated_at=now() WHERE "key" = $5 RETURNING id, stored_name, original_name`;
         const updateVals = [size, contentType, 'complete', JSON.stringify(metadata || {}), key];
-        await pool.query(updateSql, updateVals).catch(() => null);
+        let ures = null;
+        try {
+          ures = await pool.query(updateSql, updateVals);
+          console.info('[uploads.complete] uploads table update result', { rowCount: ures.rowCount, rows: ures.rows });
+        } catch (updErr) {
+          console.warn('[uploads.complete] failed to update uploads table', updErr && updErr.message ? updErr.message : updErr);
+        }
+        if (!ures || ures.rowCount === 0) {
+          console.info('[uploads.complete] no uploads record found for key', { key: maskKey(key) });
+        }
       } catch (e) {
-        // ignore
+        console.warn('[uploads.complete] unexpected error updating uploads row', e && e.message ? e.message : e);
       }
 
       // If caller provided an averbacao id, attach the public URL to that averbacao
@@ -141,30 +154,48 @@ router.post('/complete', async (req, res) => {
         const averbacaoIdFromBody = req.body && (req.body.averbacaoId || req.body.averbacao_id || (metadata && (metadata.averbacaoId || metadata.averbacao_id)));
         const averbacaoId = averbacaoIdFromBody ? parseInt(String(averbacaoIdFromBody), 10) : NaN;
         if (!Number.isNaN(averbacaoId)) {
+          console.info('[uploads.complete] attempting to attach upload to averbacao', { averbacaoId, publicUrl });
           const pdfMeta = { url: publicUrl, key, metadata };
           // Try jsonb `pdf` column first
           try {
             const upd1 = await pool.query('UPDATE public.averbacoes_gratuitas SET pdf = $1 WHERE id = $2 RETURNING id', [pdfMeta, averbacaoId]);
+            console.info('[uploads.complete] update averbacoes_gratuitas(pdf) result', { rowCount: upd1 && upd1.rowCount });
             if (upd1 && upd1.rowCount > 0) attachedAverbacaoId = upd1.rows[0].id;
             else {
               // fallback to anexo_url/anexo_metadata
               const upd2 = await pool.query('UPDATE public.averbacoes_gratuitas SET anexo_url = $1, anexo_metadata = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [publicUrl, metadata || null, averbacaoId]);
+              console.info('[uploads.complete] update averbacoes_gratuitas(anexo) result', { rowCount: upd2 && upd2.rowCount });
               if (upd2 && upd2.rowCount > 0) attachedAverbacaoId = upd2.rows[0].id;
               else {
                 // another legacy schema: pdf_filename / pdf_url
-                const upd3 = await pool.query('UPDATE public.averbacoes_gratuitas SET pdf_filename = $1, pdf_url = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [metadata && (metadata.originalName || metadata.original_name || metadata.filename) ? (metadata.originalName || metadata.original_name || metadata.filename) : key.split('/').pop(), publicUrl, averbacaoId]).catch(() => null);
-                if (upd3 && upd3.rowCount > 0) attachedAverbacaoId = upd3.rows[0].id;
+                const filenameToWrite = metadata && (metadata.originalName || metadata.original_name || metadata.filename) ? (metadata.originalName || metadata.original_name || metadata.filename) : key.split('/').pop();
+                let upd3 = null;
+                try {
+                  upd3 = await pool.query('UPDATE public.averbacoes_gratuitas SET pdf_filename = $1, pdf_url = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [filenameToWrite, publicUrl, averbacaoId]);
+                  console.info('[uploads.complete] update averbacoes_gratuitas(legacy pdf) result', { rowCount: upd3 && upd3.rowCount });
+                  if (upd3 && upd3.rowCount > 0) attachedAverbacaoId = upd3.rows[0].id;
+                } catch (e3) {
+                  console.warn('[uploads.complete] failed legacy update on averbacoes_gratuitas', e3 && e3.message ? e3.message : e3);
+                }
               }
             }
           } catch (inner) {
+            console.warn('[uploads.complete] averbacoes_gratuitas updates failed, trying alternate table', inner && inner.message ? inner.message : inner);
             // If the `averbacoes_gratuitas` table/column doesn't exist, try the alternate table
             try {
               const updA = await pool.query('UPDATE public.averbacoes SET pdf = $1 WHERE id = $2 RETURNING id', [pdfMeta, averbacaoId]);
+              console.info('[uploads.complete] update averbacoes(pdf) result', { rowCount: updA && updA.rowCount });
               if (updA && updA.rowCount > 0) attachedAverbacaoId = updA.rows[0].id;
               else {
-                await pool.query('UPDATE public.averbacoes SET anexo_url = $1, anexo_metadata = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [publicUrl, metadata || null, averbacaoId]).catch(() => null);
-                // legacy fields on `averbacoes`
-                await pool.query('UPDATE public.averbacoes SET pdf_filename = $1, pdf_url = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [metadata && (metadata.originalName || metadata.original_name || metadata.filename) ? (metadata.originalName || metadata.original_name || metadata.filename) : key.split('/').pop(), publicUrl, averbacaoId]).catch(() => null);
+                const updAn = await pool.query('UPDATE public.averbacoes SET anexo_url = $1, anexo_metadata = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [publicUrl, metadata || null, averbacaoId]).catch(() => null);
+                console.info('[uploads.complete] update averbacoes(anexo) result', { rowCount: updAn && updAn.rowCount });
+                try {
+                  const filenameToWrite = metadata && (metadata.originalName || metadata.original_name || metadata.filename) ? (metadata.originalName || metadata.original_name || metadata.filename) : key.split('/').pop();
+                  const updLegacy = await pool.query('UPDATE public.averbacoes SET pdf_filename = $1, pdf_url = $2, updated_at = NOW() WHERE id = $3 RETURNING id', [filenameToWrite, publicUrl, averbacaoId]).catch(() => null);
+                  console.info('[uploads.complete] update averbacoes(legacy pdf) result', { rowCount: updLegacy && updLegacy.rowCount });
+                } catch (inner2) {
+                  console.warn('[uploads.complete] attach fallback failed', inner2 && inner2.message ? inner2.message : inner2);
+                }
               }
             } catch (inner2) {
               console.warn('[uploads.complete] attach fallback failed', inner2 && inner2.message ? inner2.message : inner2);
