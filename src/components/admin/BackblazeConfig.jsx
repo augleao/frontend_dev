@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import BackblazeConfigService from '../../services/BackblazeConfigService';
-import Toast from '../../Toast';
-import { DEFAULT_TOAST_DURATION } from '../../toastConfig';
+import Toast from '../Toast';
+import { DEFAULT_TOAST_DURATION } from '../toastConfig';
 
 export default function BackblazeConfig() {
   const [config, setConfig] = useState({ endpoint: '', region: '', key: '', secret: '', bucket: '', prefix: '' });
