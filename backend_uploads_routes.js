@@ -18,7 +18,9 @@ const express = require('express');
 const { S3Client, PutObjectCommand, HeadObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { v4: uuidv4 } = require('uuid');
-const pool = require('./db');
+// Use the application's shared DB pool. The routes file is located in `routes/` so
+// the correct relative path to the project's `db` is `../db`.
+const pool = require('../db');
 
 const router = express.Router();
 
