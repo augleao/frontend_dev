@@ -65,14 +65,17 @@ export default function AverbacaoManutencao() {
     if (!isEdicao) return;
     const fetchItem = async () => {
       setLoading(true);
+      console.log('[AverbacaoManutencao] fetchItem: iniciando fetch da averbação', { id });
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${config.apiURL}/averbacoes-gratuitas/${encodeURIComponent(id)}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        console.log('[AverbacaoManutencao] fetchItem: resposta inicial', { status: res.status });
         if (res.ok) {
           const data = await res.json();
           const item = data?.averbacao || data;
+          console.log('[AverbacaoManutencao] fetchItem: dados recebidos', { item });
           setForm({
             data: (item.data || new Date().toISOString().slice(0, 10)).slice(0,10),
             tipo: item.tipo || '',
@@ -90,6 +93,7 @@ export default function AverbacaoManutencao() {
             codigo_seguranca: item.codigo_seguranca || ''
           });
           if (item.pdf) {
+            console.log('[AverbacaoManutencao] fetchItem: item possui pdf', { pdf: item.pdf });
             setPdfInfo({
               originalName: item.pdf.originalName || '',
               storedName: item.pdf.storedName || item.pdf.nome || '',
@@ -141,6 +145,7 @@ export default function AverbacaoManutencao() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
+      console.log('[AverbacaoManutencao] salvar: resposta do save', { status: res.status });
       if (!res.ok) {
         const t = await res.text();
         showToast('error', t || 'Erro ao salvar.');
@@ -179,6 +184,7 @@ export default function AverbacaoManutencao() {
     setUploading(true);
     let sucesso = false;
     try {
+      console.log('[AverbacaoManutencao] handleUploadPDF: iniciando upload via multipart', { name: file.name, size: file.size });
       const token = localStorage.getItem('token');
       const formData = new FormData();
       // Backend espera o campo "file" e opcionalmente "data" (YYYY-MM-DD)
@@ -197,6 +203,7 @@ export default function AverbacaoManutencao() {
       if (!res.ok) {
         showToast('error', data.error || 'Erro ao enviar PDF.');
       } else {
+        console.log('[AverbacaoManutencao] handleUploadPDF: backend retornou', { data });
         const info = data.arquivo || data;
         setPdfInfo({
           originalName: info.originalName || file.name,
@@ -225,6 +232,7 @@ export default function AverbacaoManutencao() {
       input.onchange = async (e) => {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
+        console.log('[AverbacaoManutencao] selectAndUploadFiles: arquivo selecionado', { name: file.name, size: file.size });
         setUploading(true);
         try {
           await uploadFileToBackblaze(file);
@@ -245,13 +253,16 @@ export default function AverbacaoManutencao() {
   const uploadFileToBackblaze = async (file) => {
     const token = localStorage.getItem('token');
     // 1) request presigned URL from backend
+    const prepareBody = { filename: file.name, contentType: file.type || 'application/pdf', folder: 'averbacoes' };
+    console.log('[AverbacaoManutencao] uploadFileToBackblaze: preparando upload', { prepareBody });
     const prepareRes = await fetch(`${config.apiURL}/uploads/prepare`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ filename: file.name, contentType: file.type || 'application/pdf', folder: 'averbacoes' })
+      body: JSON.stringify(prepareBody)
     });
     let prepareJson = {};
     try { prepareJson = await prepareRes.json(); } catch (_) { prepareJson = {}; }
+    console.log('[AverbacaoManutencao] uploadFileToBackblaze: prepare response', { status: prepareRes.status, body: prepareJson });
     if (!prepareRes.ok) {
       throw new Error(prepareJson.error || prepareJson.message || 'Falha ao preparar upload.');
     }
@@ -265,20 +276,24 @@ export default function AverbacaoManutencao() {
       headers: { 'Content-Type': file.type || 'application/pdf' },
       body: file
     });
+    console.log('[AverbacaoManutencao] uploadFileToBackblaze: put result', { status: putRes.status });
     if (!putRes.ok && putRes.status !== 200 && putRes.status !== 201) {
       const text = await putRes.text().catch(() => '');
       throw new Error(text || 'Falha ao enviar arquivo para o Backblaze.');
     }
 
     // 3) inform backend that upload completed (and let it persist metadata)
-    // Include averbacao id when present so backend can link the upload to the averbação
+    // Include averbacao id when present so backend can link the upload to the averbacao
+    const completeBody = { key, metadata: { originalName: file.name }, averbacaoId: isEdicao ? id : null };
+    console.log('[AverbacaoManutencao] uploadFileToBackblaze: confirmando upload (complete)', { completeBody });
     const completeRes = await fetch(`${config.apiURL}/uploads/complete`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ key, metadata: { originalName: file.name }, averbacaoId: isEdicao ? id : null })
+      body: JSON.stringify(completeBody)
     });
     let completeJson = {};
     try { completeJson = await completeRes.json(); } catch (_) { completeJson = {}; }
+    console.log('[AverbacaoManutencao] uploadFileToBackblaze: complete response', { status: completeRes.status, body: completeJson });
     if (!completeRes.ok) {
       throw new Error(completeJson.error || completeJson.message || 'Falha ao confirmar upload no servidor.');
     }

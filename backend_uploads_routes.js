@@ -154,6 +154,26 @@ module.exports = function createUploadsRouter(opts = {}) {
         const getCmd = new GetObjectCommand({ Bucket: BUCKET, Key: key });
         const downloadUrl = await getSignedUrl(s3Client, getCmd, { expiresIn: getExpires });
 
+        // If an averbacaoId was provided, update the corresponding averbacao record
+        // Try `averbacoes_gratuitas` first, fallback to `averbacoes` table if not present
+        try {
+          if (averbacaoId) {
+            const pdfMeta = {
+              id: ures.rows[0].id,
+              storedName: ures.rows[0].stored_name,
+              originalName: ures.rows[0].original_name,
+              url: downloadUrl
+            };
+            const upd1 = await pool.query('UPDATE public.averbacoes_gratuitas SET pdf = $1 WHERE id = $2 RETURNING id', [pdfMeta, averbacaoId]);
+            if (upd1.rowCount === 0) {
+              // try alternate table name
+              await pool.query('UPDATE public.averbacoes SET pdf = $1 WHERE id = $2', [pdfMeta, averbacaoId]);
+            }
+          }
+        } catch (upderr) {
+          console.warn('[uploads][complete] could not update averbacao with pdf metadata', upderr && upderr.message);
+        }
+
         return res.json({ ok: true, id: ures.rows[0].id, storedName: ures.rows[0].stored_name, originalName: ures.rows[0].original_name, url: downloadUrl });
       } catch (headErr) {
         console.error('[uploads][complete] HeadObject error', headErr);
