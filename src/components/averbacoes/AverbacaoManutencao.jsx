@@ -94,12 +94,15 @@ export default function AverbacaoManutencao() {
           });
           if (item.pdf) {
             console.log('[AverbacaoManutencao] fetchItem: item possui pdf', { pdf: item.pdf });
-            setPdfInfo({
-              originalName: item.pdf.originalName || item.pdf.original_name || '',
-              storedName: item.pdf.storedName || item.pdf.nome || item.pdf.filename || '',
-              url: item.pdf.url || '',
-              id: item.pdf.id || null
-            });
+            // pdf JSON may contain different shapes. Common shapes observed:
+            // { key, url, metadata: { originalName } }
+            // { originalName, storedName, url }
+            const pdf = item.pdf || {};
+            const meta = pdf.metadata || {};
+            const originalName = pdf.originalName || pdf.original_name || meta.originalName || meta.original_name || '';
+            const storedName = pdf.storedName || pdf.nome || pdf.filename || (pdf.key ? String(pdf.key).split('/').pop() : '') || '';
+            const url = pdf.url || '';
+            setPdfInfo({ originalName, storedName, url, id: pdf.id || null });
           } else if (item.pdf_filename || item.pdf_url || item.pdf_filename === null) {
             // legacy fields: some DB schemas use pdf_filename / pdf_url
             console.log('[AverbacaoManutencao] fetchItem: item possui campos legados de PDF', { pdf_filename: item.pdf_filename, pdf_url: item.pdf_url, anexo_url: item.anexo_url });
@@ -311,12 +314,43 @@ export default function AverbacaoManutencao() {
     }
 
     // Update local state with returned info when available
-    setPdfInfo(prev => ({
-      originalName: file.name,
-      storedName: completeJson.storedName || completeJson.nome || key,
-      url: completeJson.url || prev.url || '',
-      id: completeJson.id || prev.id || null
-    }));
+    // If backend returned the updated averbacao, merge it into local state
+    if (completeJson && completeJson.averbacao) {
+      const a = completeJson.averbacao;
+      // merge form fields (keep existing when not provided)
+      setForm(prev => ({
+        ...prev,
+        data: a.data ? String(a.data).slice(0,10) : prev.data,
+        tipo: a.tipo || prev.tipo,
+        tipoOutro: a.tipoOutro || a.tipo_outro || prev.tipoOutro,
+        descricao: a.descricao || prev.descricao,
+        ressarcivel: typeof a.ressarcivel !== 'undefined' ? Boolean(a.ressarcivel) : prev.ressarcivel,
+        observacoes: a.observacoes || prev.observacoes,
+        livro: a.livro || prev.livro,
+        folha: a.folha || prev.folha,
+        termo: a.termo || prev.termo,
+        nomePessoa1: a.nomePessoa1 || a.nome || prev.nomePessoa1,
+        nomePessoa2: a.nomePessoa2 || prev.nomePessoa2,
+        codigoTributario: a.codigoTributario || prev.codigoTributario
+      }));
+
+      // normalize pdf info from returned averbacao
+      const pdfObj = a.pdf || (a.anexo_metadata ? { url: a.anexo_url, metadata: a.anexo_metadata } : null);
+      if (pdfObj) {
+        const meta = pdfObj.metadata || {};
+        const originalName = pdfObj.originalName || pdfObj.original_name || meta.originalName || meta.original_name || '';
+        const storedName = pdfObj.storedName || pdfObj.nome || pdfObj.filename || (pdfObj.key ? String(pdfObj.key).split('/').pop() : '') || '';
+        const url = pdfObj.url || a.anexo_url || '';
+        setPdfInfo({ originalName, storedName, url, id: pdfObj.id || null });
+      }
+    } else {
+      setPdfInfo(prev => ({
+        originalName: file.name,
+        storedName: completeJson.storedName || completeJson.nome || key,
+        url: completeJson.url || prev.url || '',
+        id: completeJson.id || prev.id || null
+      }));
+    }
     showToast('success', 'PDF enviado com sucesso.');
     return true;
   };
@@ -379,8 +413,11 @@ export default function AverbacaoManutencao() {
                 {uploading && <span style={{ color: '#888' }}>Enviando...</span>}
                 {pdfInfo?.storedName && (
                   <span style={{ fontSize: 13, color: '#2c3e50' }}>
-                    Arquivo salvo como: <strong>{pdfInfo.storedName}</strong> {pdfInfo.url && (<a href={pdfInfo.url} target="_blank" rel="noreferrer" style={{ marginLeft: 8 }}>abrir</a>)}
-                  </span>
+                      Arquivo salvo como: <strong>{pdfInfo.originalName || pdfInfo.storedName || (pdfInfo.url ? pdfInfo.url.split('/').pop() : '')}</strong>
+                      {pdfInfo.url && (
+                        <a href={pdfInfo.url} target="_blank" rel="noreferrer" style={{ marginLeft: 8 }}>abrir</a>
+                      )}
+                    </span>
                 )}
               </div>
               <small style={{ color: '#777' }}>O arquivo será renomeado como AVERBACAO-XXX-{getMesReferencia()}.PDF automaticamente.</small>
