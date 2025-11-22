@@ -416,11 +416,24 @@ export default function AverbacaoManutencao() {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
+      let j = {};
+      try { j = await res.json(); } catch (_) { j = {}; }
       if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        showToast('error', text || 'Erro ao excluir arquivo.');
+        const message = j && j.error ? j.error : (await res.text().catch(() => 'Erro ao excluir arquivo.'));
+        showToast('error', message || 'Erro ao excluir arquivo.');
       } else {
-        showToast('success', 'Arquivo excluído.');
+        // Use backend details to inform the user
+        if (j && typeof j.storageDeleted !== 'undefined') {
+          if (j.storageDeleted) {
+            showToast('success', 'Arquivo excluído do storage e marcado no sistema.');
+          } else if (j.storageDeleteError) {
+            showToast('warning', 'Registro removido, mas falha ao excluir do storage: ' + j.storageDeleteError);
+          } else {
+            showToast('warning', 'Registro removido, mas objeto aparentemente ainda existe no storage.');
+          }
+        } else {
+          showToast('success', 'Arquivo excluído.');
+        }
         // refresh list
         const aId = isEdicao ? id : null;
         if (aId) fetchUploadsList(aId);
