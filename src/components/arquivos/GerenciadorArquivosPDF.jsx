@@ -180,20 +180,20 @@ export default function GerenciadorArquivosPDF() {
               filtered.map(it => (
                 <div key={it.key} style={{ background: 'white', padding: 14, borderRadius: 10, boxShadow: '0 6px 20px rgba(16,24,40,0.04)', display: 'flex', flexDirection: 'column', gap: 8, transition: 'transform 0.12s ease', cursor: 'default' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center', flex: 1, minWidth: 0 }}>
                       <div style={{ width: 44, height: 44, borderRadius: 8, background: it.type === 'folder' ? '#e6f4f1' : '#eef2fb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
                         {it.type === 'folder' ? '📁' : '📄'}
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ fontWeight: 700, color: '#233240', fontSize: 15 }}>{it.name}</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, color: '#233240', fontSize: 15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.name}</div>
                         <div style={{ fontSize: 12, color: '#7b8794' }}>{it.type} • {it.size ? `${(it.size/1024).toFixed(1)} KB` : '-'}</div>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                       {it.type === 'folder' ? (
                         <>
-                          <button onClick={() => enterFolder(it.key)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#0ea5a4', color: 'white', cursor: 'pointer' }}>Abrir</button>
-                          <button onClick={() => downloadFolder(it)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6edf3', background: 'white', cursor: 'pointer' }}>Baixar pasta</button>
+                          <button onClick={() => enterFolder(it.key)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#0ea5a4', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}>Abrir</button>
+                          <button onClick={() => downloadFolder(it)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6edf3', background: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}>Baixar pasta</button>
                           {/* show count if available */}
                           {(() => {
                             const count = it.itemsCount || it.count || it.fileCount || it.childrenCount || null;
@@ -204,7 +204,7 @@ export default function GerenciadorArquivosPDF() {
                                   onClick={() => downloadAllFolder(it)}
                                   disabled={!canBulk}
                                   title={count === null ? 'Baixar tudo (contagem desconhecida)' : `Baixar todos os ${count} arquivos`}
-                                  style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6edf3', background: canBulk ? 'white' : '#f3f5f7', cursor: canBulk ? 'pointer' : 'not-allowed', marginLeft: 4 }}
+                                  style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6edf3', background: canBulk ? 'white' : '#f3f5f7', cursor: canBulk ? 'pointer' : 'not-allowed', marginLeft: 4, whiteSpace: 'nowrap' }}
                                 >
                                   Baixar tudo
                                 </button>
@@ -225,7 +225,7 @@ export default function GerenciadorArquivosPDF() {
                                   }}
                                   disabled={!canBulk}
                                   title={count === null ? 'Excluir tudo (contagem desconhecida)' : `Excluir todos os ${count} arquivos`}
-                                  style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #fdecea', background: canBulk ? '#fff5f5' : '#fff8f8', color: '#c53030', cursor: canBulk ? 'pointer' : 'not-allowed', marginLeft: 4 }}
+                                  style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #fdecea', background: canBulk ? '#fff5f5' : '#fff8f8', color: '#c53030', cursor: canBulk ? 'pointer' : 'not-allowed', marginLeft: 4, whiteSpace: 'nowrap' }}
                                 >
                                   Excluir tudo
                                 </button>
@@ -234,10 +234,10 @@ export default function GerenciadorArquivosPDF() {
                           })()}
                         </>
                       ) : (
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <button onClick={() => openItem(it)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6edf3', background: 'white', cursor: 'pointer' }}>Abrir</button>
-                          <button onClick={() => downloadItem(it)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#2563eb', color: 'white', cursor: 'pointer' }}>Baixar</button>
-                          <button onClick={() => deleteItem(it)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #fdecea', background: '#fff5f5', color: '#c53030', cursor: 'pointer' }}>Excluir</button>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                          <button onClick={() => openItem(it)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6edf3', background: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}>Abrir</button>
+                          <button onClick={() => downloadItem(it)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#2563eb', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}>Baixar</button>
+                          <button onClick={() => deleteItem(it)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #fdecea', background: '#fff5f5', color: '#c53030', cursor: 'pointer', whiteSpace: 'nowrap' }}>Excluir</button>
                         </div>
                       )}
                     </div>
