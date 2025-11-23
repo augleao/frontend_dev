@@ -160,6 +160,48 @@ export default function GerenciadorArquivosPDF() {
           ))}
         </div>
 
+        {/* Bulk actions for current folder (only when inside a folder and more than 1 file present) */}
+        {path && (() => {
+          const fileCount = Array.isArray(items) ? items.filter(i => i.type === 'file').length : 0;
+          if (fileCount > 1) {
+            const folderName = path.endsWith('/') ? path.slice(0, -1).split('/').pop() : path.split('/').pop();
+            return (
+              <div style={{ marginBottom: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
+                <button
+                  onClick={() => downloadFolder({ key: path, name: folderName })}
+                  style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: '#0b74ff', color: 'white', cursor: 'pointer' }}
+                >
+                  Baixar tudo ({fileCount})
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!window.confirm(`Deseja realmente excluir TODOS os arquivos dentro de "${folderName}"? Esta ação é irreversível.`)) return;
+                    try {
+                      const token = localStorage.getItem('token');
+                      const res = await fetch(`${config.apiURL}/storage?key=${encodeURIComponent(path)}&recursive=true`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+                      if (!res.ok) {
+                        const t = await res.text().catch(() => '');
+                        throw new Error(t || 'Erro ao excluir todos');
+                      }
+                      // after deletion, navigate to parent
+                      let p = path.endsWith('/') ? path.slice(0, -1) : path;
+                      const idx = p.lastIndexOf('/');
+                      const parent = idx === -1 ? '' : p.slice(0, idx + 1);
+                      fetchList(parent);
+                    } catch (e) {
+                      setError(e.message || 'Erro ao excluir todos');
+                    }
+                  }}
+                  style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #fdecea', background: '#fff5f5', color: '#c53030', cursor: 'pointer' }}
+                >
+                  Excluir tudo
+                </button>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         {/* Error */}
         {error && <div style={{ color: 'crimson', marginBottom: 12 }}>{error}</div>}
 
@@ -191,48 +233,27 @@ export default function GerenciadorArquivosPDF() {
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                       {it.type === 'folder' ? (
-                        <>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                           <button onClick={() => enterFolder(it.key)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#0ea5a4', color: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}>Abrir</button>
-                          <button onClick={() => downloadFolder(it)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6edf3', background: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}>Baixar pasta</button>
-                          {/* show count if available */}
-                          {(() => {
-                            const count = it.itemsCount || it.count || it.fileCount || it.childrenCount || null;
-                            const canBulk = count === null ? true : count > 1;
-                            return (
-                              <>
-                                <button
-                                  onClick={() => downloadAllFolder(it)}
-                                  disabled={!canBulk}
-                                  title={count === null ? 'Baixar tudo (contagem desconhecida)' : `Baixar todos os ${count} arquivos`}
-                                  style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6edf3', background: canBulk ? 'white' : '#f3f5f7', cursor: canBulk ? 'pointer' : 'not-allowed', marginLeft: 4, whiteSpace: 'nowrap' }}
-                                >
-                                  Baixar tudo
-                                </button>
-                                <button
-                                  onClick={async () => {
-                                    if (!window.confirm(`Deseja realmente excluir TODOS os arquivos dentro de "${it.name}"? Esta ação é irreversível.`)) return;
-                                    try {
-                                      const token = localStorage.getItem('token');
-                                      const res = await fetch(`${config.apiURL}/storage?key=${encodeURIComponent(it.key)}&recursive=true`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-                                      if (!res.ok) {
-                                        const t = await res.text().catch(() => '');
-                                        throw new Error(t || 'Erro ao excluir todos');
-                                      }
-                                      fetchList(path);
-                                    } catch (e) {
-                                      setError(e.message || 'Erro ao excluir todos');
-                                    }
-                                  }}
-                                  disabled={!canBulk}
-                                  title={count === null ? 'Excluir tudo (contagem desconhecida)' : `Excluir todos os ${count} arquivos`}
-                                  style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #fdecea', background: canBulk ? '#fff5f5' : '#fff8f8', color: '#c53030', cursor: canBulk ? 'pointer' : 'not-allowed', marginLeft: 4, whiteSpace: 'nowrap' }}
-                                >
-                                  Excluir tudo
-                                </button>
-                              </>
-                            );
-                          })()}
-                        </>
+                          <button onClick={async () => {
+                            if (!window.confirm(`Deseja realmente excluir TODOS os arquivos dentro de "${it.name}"? Esta ação é irreversível.`)) return;
+                            try {
+                              const token = localStorage.getItem('token');
+                              const res = await fetch(`${config.apiURL}/storage?key=${encodeURIComponent(it.key)}&recursive=true`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+                              if (!res.ok) {
+                                const t = await res.text().catch(() => '');
+                                throw new Error(t || 'Erro ao excluir todos');
+                              }
+                              // refresh list (stay in same parent)
+                              let p = path.endsWith('/') ? path.slice(0, -1) : path;
+                              const idx = p.lastIndexOf('/');
+                              const parent = idx === -1 ? '' : p.slice(0, idx + 1);
+                              fetchList(parent);
+                            } catch (e) {
+                              setError(e.message || 'Erro ao excluir todos');
+                            }
+                          }} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #fdecea', background: '#fff5f5', color: '#c53030', cursor: 'pointer', whiteSpace: 'nowrap' }}>Excluir tudo</button>
+                        </div>
                       ) : (
                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                           <button onClick={() => openItem(it)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6edf3', background: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}>Abrir</button>
