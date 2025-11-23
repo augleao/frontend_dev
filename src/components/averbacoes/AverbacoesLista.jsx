@@ -351,7 +351,31 @@ export default function AverbacoesLista() {
                   <td style={{ padding: 8 }}>{item.descricao || '-'}</td>
                   <td style={{ padding: 8 }}>{item.ressarcivel ? 'Sim' : 'Não'}</td>
                   <td style={{ padding: 8 }}>
-                    {item.anexoUrl || item.anexo_url ? (
+                    {/* Renderizar todos os anexos (quando presentes) em uma mini-tabela responsiva */}
+                    {Array.isArray(item.uploads) && item.uploads.length > 0 ? (
+                      <div style={{ background: 'white', borderRadius: 8, padding: 6, boxShadow: '0 1px 6px rgba(0,0,0,0.06)', maxWidth: 420 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, alignItems: 'center', padding: '4px 6px', fontSize: 13, fontWeight: 700, color: '#2c3e50' }}>
+                          <div>{item.uploads.length} anexo(s)</div>
+                          <div style={{ fontSize: 12, color: '#64748b' }}>{/* espaço para informação */}</div>
+                        </div>
+                        <div style={{ marginTop: 6 }}>
+                          {item.uploads.map(u => (
+                            <div key={u.id || u.url} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: '6px 8px', borderTop: '1px solid #f1f5f9', fontSize: 13, color: '#334155' }}>
+                              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }} title={u.original_name || u.originalName || u.stored_name || u.storedName || (u.url ? (u.url.split('/').pop()) : '')}>
+                                {u.original_name || u.originalName || u.stored_name || u.storedName || (u.url ? decodeURIComponent(u.url.split('/').pop()) : '')}
+                              </div>
+                              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                {u.url ? (
+                                  <a href={u.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12 }}>Abrir</a>
+                                ) : (
+                                  <span style={{ color: '#94a3b8', fontSize: 12 }}>—</span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : item.anexoUrl || item.anexo_url ? (
                       <a href={(item.anexoUrl || item.anexo_url)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>
                         Abrir PDF
                       </a>
