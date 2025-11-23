@@ -66,10 +66,11 @@ export default function AverbacaoManutencao() {
 
   useEffect(() => {
     if (!isEdicao) return;
+    // track whether the server returned uploads embedded in the averbacao
+    let hadEmbeddedUploads = false;
     const fetchItem = async () => {
       setLoading(true);
       console.log('[AverbacaoManutencao] fetchItem: iniciando fetch da averbação', { id });
-      let hadEmbeddedUploads = false;
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${config.apiURL}/averbacoes-gratuitas/${encodeURIComponent(id)}`, {
