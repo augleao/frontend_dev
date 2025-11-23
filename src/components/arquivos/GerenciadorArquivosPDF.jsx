@@ -56,11 +56,31 @@ export default function GerenciadorArquivosPDF() {
     if (!it || !it.key) return;
     try {
       const token = localStorage.getItem('token');
-      const url = `${config.apiURL}/storage/download?key=${encodeURIComponent(it.key)}&archive=true`;
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) {
-        const t = await res.text().catch(() => '');
-        throw new Error(t || 'Erro ao baixar pasta.');
+      // Try several possible backend endpoints/param names to request an archive
+      const candidates = [
+        `${config.apiURL}/storage/download?key=${encodeURIComponent(it.key)}&archive=true`,
+        `${config.apiURL}/storage/download?path=${encodeURIComponent(it.key)}&archive=true`,
+        `${config.apiURL}/storage/archive?key=${encodeURIComponent(it.key)}`,
+        `${config.apiURL}/storage/archive?path=${encodeURIComponent(it.key)}`,
+      ];
+      let res = null;
+      let tried = [];
+      for (const url of candidates) {
+        tried.push(url);
+        try {
+          res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+          if (res && res.ok) break;
+        } catch (e) {
+          // network error, continue trying
+          console.warn('[GerenciadorArquivosPDF] downloadFolder candidate failed', url, e && e.message ? e.message : e);
+        }
+      }
+      if (!res || !res.ok) {
+        // If we got a 404 specifically, surface a helpful message listing tried urls
+        const status = res ? res.status : null;
+        const body = res ? await res.text().catch(() => '') : '';
+        console.warn('[GerenciadorArquivosPDF] downloadFolder failed for all candidates', { tried, status, body });
+        throw new Error(`Arquivo ZIP não disponível no servidor (404/endpoint). Verifique o backend. Tried: ${candidates.join(' | ')}. Server response: ${status} ${body}`);
       }
       const blob = await res.blob();
       const disposition = res.headers.get('content-disposition') || '';
@@ -78,7 +98,11 @@ export default function GerenciadorArquivosPDF() {
       a.remove();
       URL.revokeObjectURL(blobUrl);
     } catch (e) {
-      setError(e.message || 'Erro ao baixar pasta');
+      // Show a user-friendly message and log details to console for debugging
+      console.error('[GerenciadorArquivosPDF] downloadFolder error', e);
+      const msg = e && e.message ? e.message : 'Erro ao baixar pasta';
+      setError(msg);
+      alert('Falha ao baixar pasta: ' + msg + '\nVerifique se o backend suporta geração de ZIP para pastas (archive=true).');
     }
   };
 
