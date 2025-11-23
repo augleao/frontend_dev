@@ -53,8 +53,8 @@ export default function AverbacaoPdfManager({
                       <td style={{ padding: '12px 16px', fontSize: 13, color: '#475569' }}>{p.storedName || ''}</td>
                       <td style={{ padding: '12px 16px', fontSize: 13, color: '#64748b', textAlign: 'right' }}>{p.size ? `${Math.round(p.size/1024)} KB` : '-'}</td>
                       <td style={{ padding: '12px 16px', fontSize: 13, color: '#64748b' }}>{p.contentType || '-'}</td>
-                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+                      <td style={{ padding: '12px 16px', textAlign: 'center', verticalAlign: 'middle' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
                           <button type="button" onClick={() => handleViewUpload(p)} className="btn btn-sm btn-outline" style={{ padding: '6px 8px' }}>Exibir</button>
                           <button type="button" onClick={() => handleDeleteUpload(p.id)} disabled={deletingUploadId === p.id} className="btn btn-sm btn-danger" style={{ padding: '6px 8px' }}>{deletingUploadId === p.id ? 'Excluindo…' : 'Excluir'}</button>
                         </div>

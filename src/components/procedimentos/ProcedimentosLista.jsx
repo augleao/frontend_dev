@@ -382,7 +382,7 @@ export default function ProcedimentosLista() {
                       <span style={{ color: '#94a3b8' }}>—</span>
                     )}
                   </td>
-                  <td style={{ padding: 8, display: 'flex', gap: 8 }}>
+                  <td style={{ padding: 8, display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center', verticalAlign: 'middle' }}>
                     <button
                       style={{ background: '#3498db', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}
                       onClick={() => navigate(`/procedimentos-gratuitos/${encodeURIComponent(item.id)}/editar`)}
