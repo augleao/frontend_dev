@@ -21,7 +21,6 @@ const { v4: uuidv4 } = require('uuid');
 // Use the application's shared DB pool. The routes file is located in `routes/` so
 // the correct relative path to the project's `db` is `../db`.
 const pool = require('../db');
-const { ensureAuth } = require('../middlewares/auth');
 
 const router = express.Router();
 
@@ -119,22 +118,6 @@ router.post('/prepare', async (req, res) => {
   } catch (err) {
     console.error('uploads.prepare error', err && err.stack ? err.stack : err);
     return res.status(500).json({ error: 'failed to prepare upload', details: err && err.message ? err.message : String(err) });
-  }
-});
-
-// DEBUG: GET /debug/tables
-// Returns whether averbacao-related tables exist and a short list of public tables.
-// Useful to diagnose "skipping updates on public.averbacoes (table missing)" logs.
-router.get('/debug/tables', async (req, res) => {
-  try {
-    const hasAverbacoes = await tableExists('averbacoes');
-    const hasAverbacoesGratuitas = await tableExists('averbacoes_gratuitas');
-    const tbls = await pool.query("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public' ORDER BY tablename");
-    const tables = (tbls && tbls.rows || []).map(r => r.tablename);
-    return res.json({ ok: true, hasAverbacoes, hasAverbacoesGratuitas, tables });
-  } catch (e) {
-    console.warn('[uploads.debug.tables] failed', e && e.message ? e.message : e);
-    return res.status(500).json({ error: 'failed to list tables' });
   }
 });
 
@@ -324,138 +307,22 @@ router.delete('/:id', async (req, res) => {
     const storedName = row.stored_name || null;
     const linkedAverbacaoId = row.averbacao_id ? parseInt(String(row.averbacao_id), 10) : null;
 
-    // If a permanent purge is requested, require auth (Registrador) before proceeding.
-    try {
-      const purgeCleanupAuth = req.query && String(req.query.purge || '').toLowerCase() === 'true';
-      if (purgeCleanupAuth) {
-        await new Promise((resolve) => ensureAuth(req, res, resolve));
-        if (res.headersSent) return; // ensureAuth already responded (401/403)
-
-        // Require explicit confirm flag to avoid accidental purges
-        const confirmCleanup = req.query && String(req.query.confirm || '').toLowerCase() === 'true';
-        if (!confirmCleanup) {
-          return res.status(400).json({ error: 'purge requires confirm=true to proceed' });
-        }
-      }
-    } catch (e) {
-      // ignore and continue; ensureAuth handles responses
-    }
-
     // Attempt to delete from storage (best-effort)
-    console.info('[uploads.delete] attempting DeleteObject', { id, key });
-    let deletedConfirmed = false;
     try {
       if (key && BB_BUCKET_NAME) {
         await s3.send(new DeleteObjectCommand({ Bucket: BB_BUCKET_NAME, Key: key }));
-        // Verify deletion: HeadObject should return 404 when object removed.
-        try {
-          await s3.send(new HeadObjectCommand({ Bucket: BB_BUCKET_NAME, Key: key }));
-          // if HeadObject succeeds, object still present
-          console.warn('[uploads.delete] HeadObject succeeded after DeleteObject - object still exists', { id, key });
-        } catch (headErr) {
-          const status = headErr && headErr.$metadata && headErr.$metadata.httpStatusCode;
-          if (status === 404 || headErr && (headErr.name === 'NotFound' || headErr.code === 'NotFound')) {
-            deletedConfirmed = true;
-            console.info('[uploads.delete] object deletion confirmed (HeadObject 404)', { id, key });
-          } else {
-            console.warn('[uploads.delete] HeadObject check after delete failed', headErr && headErr.message ? headErr.message : headErr);
-          }
-        }
-        console.info('[uploads.delete] S3 DeleteObject attempted', { id, key, deletedConfirmed });
+        console.info('[uploads.delete] S3 DeleteObject attempted', { id, key });
       }
     } catch (eDel) {
       console.warn('[uploads.delete] failed to delete object from storage (continuing)', eDel && eDel.message ? eDel.message : eDel);
     }
 
-    // If storage deletion was confirmed, remove the DB row automatically.
-    if (deletedConfirmed) {
-      console.info('[uploads.delete] storage deletion confirmed — attempting automatic DB removal', { id });
-      try {
-        // Insert audit log if table exists
-        try {
-          const hasLogs = await tableExists('uploads_cleanup_logs');
-          if (hasLogs) {
-            const performedBy = (req.user && (req.user.email || req.user.id || req.user.username)) || 'system-auto';
-            const details = JSON.stringify({ id, key, action: 'auto-purge', at: new Date().toISOString() });
-            await pool.query('INSERT INTO public.uploads_cleanup_logs (upload_id, performed_by, action, details) VALUES ($1,$2,$3,$4)', [id, performedBy, 'auto-purge', details]);
-            console.info('[uploads.delete] audit log inserted for automatic purge', { id });
-          } else {
-            console.info('[uploads.delete] uploads_cleanup_logs missing; skipping audit log for automatic purge', { id });
-          }
-        } catch (eLogAuto) {
-          console.warn('[uploads.delete] failed to insert audit log for automatic purge', eLogAuto && eLogAuto.message ? eLogAuto.message : eLogAuto);
-        }
-
-        const delRes = await pool.query('DELETE FROM public.uploads WHERE id = $1 RETURNING id', [id]);
-        if (delRes && delRes.rowCount > 0) {
-          console.info('[uploads.delete] uploads row automatically purged', { id });
-          return res.json({ ok: true, deletedId: id, purged: true, auto: true });
-        }
-        console.warn('[uploads.delete] automatic DB delete returned no rows (falling back to soft-delete)', { id });
-      } catch (eAutoDel) {
-        console.warn('[uploads.delete] automatic DB deletion failed, will try soft-delete', eAutoDel && eAutoDel.message ? eAutoDel.message : eAutoDel);
-      }
-    }
-
-    // Fallback: Mark uploads row as deleted (soft-delete)
+    // Mark uploads row as deleted (soft-delete)
     try {
       const up = await pool.query('UPDATE public.uploads SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING id', ['deleted', id]);
-      console.info('[uploads.delete] uploads row updated (soft-delete)', { rowCount: up && up.rowCount });
+      console.info('[uploads.delete] uploads row updated', { rowCount: up && up.rowCount });
     } catch (eUp) {
-      console.warn('[uploads.delete] failed to update uploads row status (soft-delete)', eUp && eUp.message ? eUp.message : eUp);
-    }
-
-    // Optional permanent purge: DELETE /api/uploads/:id?purge=true
-    try {
-      const purge = req.query && String(req.query.purge || '').toLowerCase() === 'true';
-      if (purge) {
-        // Require authenticated Registrador (ensureAuth) for destructive purge.
-        await new Promise((resolve) => ensureAuth(req, res, resolve));
-        if (res.headersSent) return; // ensureAuth already responded (401/403)
-
-        // Require explicit confirm flag to avoid accidental purges
-        const confirm = req.query && String(req.query.confirm || '').toLowerCase() === 'true';
-        if (!confirm) {
-          return res.status(400).json({ error: 'purge requires confirm=true to proceed' });
-        }
-
-        // Only allow permanent purge if storage deletion was confirmed
-        if (!deletedConfirmed) {
-          return res.status(409).json({ error: 'object deletion in storage not confirmed; aborting purge' });
-        }
-
-        try {
-          // Insert audit log prior to permanent deletion when the logs table exists.
-          try {
-            const hasLogs = await tableExists('uploads_cleanup_logs');
-            if (hasLogs) {
-              const performedBy = (req.user && (req.user.email || req.user.id || req.user.username)) || 'unknown';
-              const details = JSON.stringify({ id, key, action: 'purge', at: new Date().toISOString() });
-              try {
-                await pool.query('INSERT INTO public.uploads_cleanup_logs (upload_id, performed_by, action, details) VALUES ($1,$2,$3,$4)', [id, performedBy, 'purge', details]);
-                console.info('[uploads.delete] audit log inserted for purge', { id });
-              } catch (eLog) {
-                console.warn('[uploads.delete] failed to insert audit log for purge', eLog && eLog.message ? eLog.message : eLog);
-              }
-            }
-          } catch (eLogCheck) {
-            console.warn('[uploads.delete] failed to check logs table existence before purge', eLogCheck && eLogCheck.message ? eLogCheck.message : eLogCheck);
-          }
-
-          const delRes = await pool.query('DELETE FROM public.uploads WHERE id = $1 RETURNING id', [id]);
-          if (delRes && delRes.rowCount > 0) {
-            console.info('[uploads.delete] uploads row permanently purged', { id });
-            return res.json({ ok: true, deletedId: id, purged: true });
-          } else {
-            return res.status(404).json({ error: 'upload not found for purge' });
-          }
-        } catch (eP) {
-          console.warn('[uploads.delete] failed to purge uploads row', eP && eP.message ? eP.message : eP);
-          return res.status(500).json({ error: 'failed to purge uploads row' });
-        }
-      }
-    } catch (e) {
-      /* ignore purge errors and continue with soft-delete */
+      console.warn('[uploads.delete] failed to update uploads row status', eUp && eUp.message ? eUp.message : eUp);
     }
 
     // If this upload was linked to an averbacao, attempt to remove references
@@ -509,167 +376,6 @@ router.delete('/:id', async (req, res) => {
   } catch (err) {
     console.error('[uploads.delete] error', err && err.stack ? err.stack : err);
     return res.status(500).json({ error: 'failed to delete upload' });
-  }
-});
-
-// POST /:id/cleanup
-// One-off endpoint to forcibly cleanup an upload: delete object from storage,
-// clear references in any existing averbacao tables, and mark the uploads row
-// as deleted. Returns a structured report of actions performed.
-router.post('/:id/cleanup', async (req, res) => {
-  try {
-    const id = parseInt(String(req.params && req.params.id || ''), 10);
-    if (Number.isNaN(id)) return res.status(400).json({ error: 'invalid id' });
-
-    // Find the uploads row
-    const sel = await pool.query('SELECT id, "key", bucket, status, averbacao_id, stored_name, metadata FROM public.uploads WHERE id = $1 LIMIT 1', [id]);
-    if (!sel || sel.rowCount === 0) return res.status(404).json({ error: 'upload not found' });
-    const row = sel.rows[0];
-    const key = row.key;
-    const storedName = row.stored_name || null;
-    const linkedAverbacaoId = row.averbacao_id ? parseInt(String(row.averbacao_id), 10) : null;
-
-    const report = {
-      id,
-      key,
-      deletedFromStorage: false,
-      uploadsRowUpdated: false,
-      clearedAverbacoesGratuitas: 0,
-      clearedAverbacoes: 0
-    };
-
-    // Attempt to delete from storage (best-effort)
-    try {
-      if (key && BB_BUCKET_NAME) {
-        await s3.send(new DeleteObjectCommand({ Bucket: BB_BUCKET_NAME, Key: key }));
-        // Verify deletion via HeadObject
-        try {
-          await s3.send(new HeadObjectCommand({ Bucket: BB_BUCKET_NAME, Key: key }));
-          // still exists
-          report.deletedFromStorage = false;
-          console.warn('[uploads.cleanup] HeadObject succeeded after DeleteObject - object still exists', { id, key });
-        } catch (headErr) {
-          const status = headErr && headErr.$metadata && headErr.$metadata.httpStatusCode;
-          if (status === 404 || headErr && (headErr.name === 'NotFound' || headErr.code === 'NotFound')) {
-            report.deletedFromStorage = true;
-            console.info('[uploads.cleanup] object deletion confirmed (HeadObject 404)', { id, key });
-          } else {
-            console.warn('[uploads.cleanup] HeadObject check after delete failed', headErr && headErr.message ? headErr.message : headErr);
-          }
-        }
-        console.info('[uploads.cleanup] S3 DeleteObject attempted', { id, key, deletedFromStorage: report.deletedFromStorage });
-      }
-    } catch (eDel) {
-      console.warn('[uploads.cleanup] failed to delete object from storage (continuing)', eDel && eDel.message ? eDel.message : eDel);
-    }
-
-    // Mark uploads row as deleted (soft-delete)
-    try {
-      const up = await pool.query('UPDATE public.uploads SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING id', ['deleted', id]);
-      report.uploadsRowUpdated = !!(up && up.rowCount > 0);
-      console.info('[uploads.cleanup] uploads row updated', { rowCount: up && up.rowCount });
-    } catch (eUp) {
-      console.warn('[uploads.cleanup] failed to update uploads row status', eUp && eUp.message ? eUp.message : eUp);
-    }
-
-    // Build public URL used elsewhere
-    const host = (normalizedEndpoint || BB_ENDPOINT || '').replace(/^https?:\/\//, '').replace(/\/+$/,'');
-    const publicUrl = host ? `https://${BB_BUCKET_NAME}.${host}/${encodeURIComponent(key)}` : `${normalizedEndpoint || BB_ENDPOINT}/${BB_BUCKET_NAME}/${encodeURIComponent(key)}`;
-
-    // If this upload was linked to an averbacao, attempt to remove references
-    if (linkedAverbacaoId) {
-      try {
-        const hasAverbacoesGratuitas = await tableExists('averbacoes_gratuitas');
-        const hasAverbacoes = await tableExists('averbacoes');
-
-        if (hasAverbacoesGratuitas) {
-          try {
-            const r1 = await pool.query(`UPDATE public.averbacoes_gratuitas SET pdf = NULL WHERE id = $1 AND ( (pdf->> 'key') = $2 OR (pdf->> 'url') = $3 ) RETURNING id`, [linkedAverbacaoId, key, publicUrl]);
-            report.clearedAverbacoesGratuitas += (r1 && r1.rowCount) || 0;
-          } catch (e) { console.warn('[uploads.cleanup] clearing pdf json failed (averbacoes_gratuitas)', e && e.message ? e.message : e); }
-
-          try {
-            const r2 = await pool.query(`UPDATE public.averbacoes_gratuitas SET anexo_url = NULL, anexo_metadata = NULL, updated_at = NOW() WHERE id = $1 AND (anexo_url = $2 OR anexo_url = $3) RETURNING id`, [linkedAverbacaoId, publicUrl, publicUrl]);
-            report.clearedAverbacoesGratuitas += (r2 && r2.rowCount) || 0;
-          } catch (e) { console.warn('[uploads.cleanup] clearing anexo_url failed (averbacoes_gratuitas)', e && e.message ? e.message : e); }
-
-          try {
-            const r3 = await pool.query(`UPDATE public.averbacoes_gratuitas SET pdf_url = NULL, pdf_filename = NULL, updated_at = NOW() WHERE id = $1 AND (pdf_url = $2 OR pdf_filename = $3 OR pdf_filename = $4) RETURNING id`, [linkedAverbacaoId, publicUrl, storedName, storedName]);
-            report.clearedAverbacoesGratuitas += (r3 && r3.rowCount) || 0;
-          } catch (e) { console.warn('[uploads.cleanup] clearing legacy pdf fields failed (averbacoes_gratuitas)', e && e.message ? e.message : e); }
-        }
-
-        if (hasAverbacoes) {
-          try {
-            const r4 = await pool.query(`UPDATE public.averbacoes SET pdf = NULL WHERE id = $1 AND ( (pdf->> 'key') = $2 OR (pdf->> 'url') = $3 ) RETURNING id`, [linkedAverbacaoId, key, publicUrl]);
-            report.clearedAverbacoes += (r4 && r4.rowCount) || 0;
-          } catch (e) { console.warn('[uploads.cleanup] clearing averbacoes.pdf json failed (averbacoes)', e && e.message ? e.message : e); }
-
-          try {
-            const r5 = await pool.query(`UPDATE public.averbacoes SET anexo_url = NULL, anexo_metadata = NULL, updated_at = NOW() WHERE id = $1 AND (anexo_url = $2 OR anexo_url = $3) RETURNING id`, [linkedAverbacaoId, publicUrl, publicUrl]);
-            report.clearedAverbacoes += (r5 && r5.rowCount) || 0;
-          } catch (e) { console.warn('[uploads.cleanup] clearing averbacoes.anexo_url failed (averbacoes)', e && e.message ? e.message : e); }
-
-          try {
-            const r6 = await pool.query(`UPDATE public.averbacoes SET pdf_url = NULL, pdf_filename = NULL, updated_at = NOW() WHERE id = $1 AND (pdf_url = $2 OR pdf_filename = $3) RETURNING id`, [linkedAverbacaoId, publicUrl, storedName]);
-            report.clearedAverbacoes += (r6 && r6.rowCount) || 0;
-          } catch (e) { /* some schemas may not have these legacy fields; ignore */ }
-        }
-      } catch (e) {
-        console.warn('[uploads.cleanup] error while detaching from averbacao', e && e.message ? e.message : e);
-      }
-    }
-
-    // Attempt to write an audit log for this cleanup if the table exists.
-    try {
-      const hasLogs = await tableExists('uploads_cleanup_logs');
-      if (hasLogs) {
-        const performedBy = (req.user && (req.user.email || req.user.id || req.user.username)) || null;
-        try {
-          await pool.query('INSERT INTO public.uploads_cleanup_logs (upload_id, performed_by, action, details) VALUES ($1,$2,$3,$4)', [id, performedBy, 'cleanup', JSON.stringify(report)]);
-          console.info('[uploads.cleanup] audit log inserted', { uploadId: id });
-        } catch (eLog) {
-          console.warn('[uploads.cleanup] failed to insert audit log', eLog && eLog.message ? eLog.message : eLog);
-        }
-      } else {
-        console.info('[uploads.cleanup] uploads_cleanup_logs table missing; skipping audit log');
-      }
-    } catch (eLogCheck) {
-      console.warn('[uploads.cleanup] failed to check logs table existence', eLogCheck && eLogCheck.message ? eLogCheck.message : eLogCheck);
-    }
-
-    // Optional permanent purge: POST /api/uploads/:id/cleanup?purge=true&confirm=true
-    try {
-      const purgeCleanup = req.query && String(req.query.purge || '').toLowerCase() === 'true';
-      const confirmCleanup = req.query && String(req.query.confirm || '').toLowerCase() === 'true';
-      if (purgeCleanup) {
-        // ensureAuth was applied earlier when purgeCleanup was true
-        if (!confirmCleanup) {
-          report.purged = false;
-        } else if (!report.deletedFromStorage) {
-          // Only allow permanent purge if storage deletion was confirmed
-          report.purged = false;
-        } else {
-          try {
-            const delRes = await pool.query('DELETE FROM public.uploads WHERE id = $1 RETURNING id', [id]);
-            report.purged = !!(delRes && delRes.rowCount > 0);
-            if (report.purged) console.info('[uploads.cleanup] uploads row permanently purged', { id });
-          } catch (eP) {
-            console.warn('[uploads.cleanup] failed to purge uploads row', eP && eP.message ? eP.message : eP);
-            report.purged = false;
-          }
-        }
-      } else {
-        report.purged = false;
-      }
-    } catch (e) {
-      report.purged = false;
-    }
-
-    return res.json({ ok: true, report });
-  } catch (err) {
-    console.error('[uploads.cleanup] error', err && err.stack ? err.stack : err);
-    return res.status(500).json({ error: 'failed to cleanup upload' });
   }
 });
 
