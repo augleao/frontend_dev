@@ -660,6 +660,13 @@ export default function AverbacaoManutencao() {
         onClose={fecharModalAnexo}
         onSubmit={enviarAnexoModal}
         loading={uploading}
+        pdfList={pdfList}
+        pdfInfo={pdfInfo}
+        deletingUploadId={deletingUploadId}
+        handleViewUpload={handleViewUpload}
+        handleDeleteUpload={handleDeleteUpload}
+        getMesReferencia={getMesReferencia}
+        selectAndUploadFiles={selectAndUploadFiles}
       />
 
       <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage('')} />
