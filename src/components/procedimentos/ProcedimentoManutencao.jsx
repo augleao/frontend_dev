@@ -281,6 +281,11 @@ export default function ProcedimentoManutencao() {
           url: info.url || '',
           id: info.id || null
         });
+        // refresh uploads list: use attached id from backend when present, otherwise current route id
+        try {
+          const attachedId = data?.attachedProcedimentoId || (data.arquivo && data.arquivo.attachedProcedimentoId) || (isEdicao ? id : null);
+          if (attachedId) fetchUploadsList(attachedId);
+        } catch (e) { /* ignore */ }
         showToast('success', 'PDF enviado e renomeado com sucesso.');
         sucesso = true;
       }
