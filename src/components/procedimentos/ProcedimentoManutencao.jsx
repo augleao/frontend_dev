@@ -136,7 +136,9 @@ export default function ProcedimentoManutencao() {
   const fetchUploadsList = async (procedimentoId) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${config.apiURL}/uploads?procedimentoId=${encodeURIComponent(procedimentoId)}`, { headers: { Authorization: `Bearer ${token}` } });
+      // Query uploads by atoId and tipo to avoid collisions with other 'ato' types
+      const qs = `atoId=${encodeURIComponent(procedimentoId)}&tipo=procedimento`;
+      const res = await fetch(`${config.apiURL}/uploads?${qs}`, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) return setPdfList([]);
       const j = await res.json();
       if (j && Array.isArray(j.uploads)) {
@@ -226,6 +228,11 @@ export default function ProcedimentoManutencao() {
       formData.append('file', file);
       if (form && form.data) {
         formData.append('data', form.data);
+        // include explicit ato identifiers for backend convenience
+        if (isEdicao && id) {
+          formData.append('atoId', id);
+          formData.append('atoTipo', 'procedimento');
+        }
       }
         // Informar ao backend o tipo do anexo para regras específicas (ex: renomeação)
         formData.append('metadata', JSON.stringify({ tipo: 'procedimento' }));
@@ -305,7 +312,7 @@ export default function ProcedimentoManutencao() {
       throw new Error(text || 'Falha ao enviar arquivo para o Backblaze.');
     }
 
-    const completeBody = { key, metadata: { originalName: file.name, tipo: 'procedimento' }, procedimentoId: isEdicao ? id : null };
+    const completeBody = { key, metadata: { originalName: file.name, tipo: 'procedimento' }, procedimentoId: isEdicao ? id : null, averbacaoId: null, atoId: isEdicao ? id : null, atoTipo: 'procedimento' };
     const completeRes = await fetch(`${config.apiURL}/uploads/complete`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
