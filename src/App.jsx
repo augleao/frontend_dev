@@ -35,6 +35,8 @@ import ProtocoloAcesso from './ProtocoloAcesso';
 import AtosGratuitos from './AtosGratuitos';
 import AverbacoesLista from './components/averbacoes/AverbacoesLista';
 import AverbacaoManutencao from './components/averbacoes/AverbacaoManutencao';
+import ProcedimentosLista from './components/procedimentos/ProcedimentosLista';
+import ProcedimentoManutencao from './components/procedimentos/ProcedimentoManutencao';
 import FerramentasIA from './FerramentasIA';
 import AssistenteMandadosAverbacao from './components/ia/AssistenteMandadosAverbacao';
 import LeituraLivros from './components/ia/LeituraLivros';
@@ -281,6 +283,31 @@ function App() {
           element={
             <PrivateRoute>
               <AverbacaoManutencao />
+            </PrivateRoute>
+          }
+        />
+        {/* Procedimentos Gratuitos */}
+        <Route
+          path="/procedimentos-gratuitos"
+          element={
+            <PrivateRoute>
+              <ProcedimentosLista />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/procedimentos-gratuitos/nova"
+          element={
+            <PrivateRoute>
+              <ProcedimentoManutencao />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/procedimentos-gratuitos/:id/editar"
+          element={
+            <PrivateRoute>
+              <ProcedimentoManutencao />
             </PrivateRoute>
           }
         />
