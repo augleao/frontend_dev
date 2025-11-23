@@ -247,6 +247,8 @@ export default function AverbacaoManutencao() {
       if (form && form.data) {
         formData.append('data', form.data);
       }
+      // Informar ao backend o tipo do anexo para regras específicas (ex: renomeação)
+      formData.append('metadata', JSON.stringify({ tipo: 'averbacao' }));
       const res = await fetch(`${config.apiURL}/averbacoes-gratuitas/upload-pdf`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -308,7 +310,7 @@ export default function AverbacaoManutencao() {
   const uploadFileToBackblaze = async (file) => {
     const token = localStorage.getItem('token');
     // 1) request presigned URL from backend
-    const prepareBody = { filename: file.name, contentType: file.type || 'application/pdf', folder: 'averbacoes' };
+    const prepareBody = { filename: file.name, contentType: file.type || 'application/pdf', folder: 'averbacoes', metadata: { tipo: 'averbacao' } };
     console.log('[AverbacaoManutencao] uploadFileToBackblaze: preparando upload', { prepareBody });
     const prepareRes = await fetch(`${config.apiURL}/uploads/prepare`, {
       method: 'POST',
@@ -339,7 +341,7 @@ export default function AverbacaoManutencao() {
 
     // 3) inform backend that upload completed (and let it persist metadata)
     // Include averbacao id when present so backend can link the upload to the averbacao
-    const completeBody = { key, metadata: { originalName: file.name }, averbacaoId: isEdicao ? id : null };
+    const completeBody = { key, metadata: { originalName: file.name, tipo: 'averbacao' }, averbacaoId: isEdicao ? id : null };
     console.log('[AverbacaoManutencao] uploadFileToBackblaze: confirmando upload (complete)', { completeBody });
     const completeRes = await fetch(`${config.apiURL}/uploads/complete`, {
       method: 'POST',
