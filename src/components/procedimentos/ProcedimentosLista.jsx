@@ -1,0 +1,419 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import config from '../../config';
+import Toast from '../Toast';
+import AnexarPdfModal from '../averbacoes/AnexarPdfModal';
+import ProcedimentosService from '../../services/ProcedimentosService';
+import { DEFAULT_TOAST_DURATION } from '../toastConfig';
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const dia = String(d.getDate()).padStart(2, '0');
+  const mes = String(d.getMonth() + 1).padStart(2, '0');
+  const ano = d.getFullYear();
+  return `${dia}/${mes}/${ano}`;
+}
+
+export default function ProcedimentosLista() {
+  console.log('[ProcedimentosLista] Render iniciado');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [itens, setItens] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [dataInicial, setDataInicial] = useState('');
+  const [dataFinal, setDataFinal] = useState('');
+  const [ressarcivel, setRessarcivel] = useState('todos'); // 'todos' | 'sim' | 'nao'
+  const [tipoFiltro, setTipoFiltro] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
+  const toastTimerRef = useRef(null);
+  const [modalAberto, setModalAberto] = useState(false);
+  const [idSelecionado, setIdSelecionado] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  const showToast = useCallback((type, message) => {
+    setToastType(type);
+    setToastMessage(message);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => {
+      setToastMessage('');
+      toastTimerRef.current = null;
+    }, DEFAULT_TOAST_DURATION);
+  }, []);
+
+  const fetchLista = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const qs = [];
+      if (dataInicial) qs.push(`dataInicial=${encodeURIComponent(dataInicial)}`);
+      if (dataFinal) qs.push(`dataFinal=${encodeURIComponent(dataFinal)}`);
+      if (ressarcivel === 'sim') qs.push('ressarcivel=true');
+      if (ressarcivel === 'nao') qs.push('ressarcivel=false');
+      if (tipoFiltro) qs.push(`tipo=${encodeURIComponent(tipoFiltro)}`);
+      const query = qs.length ? `?${qs.join('&')}` : '';
+      const res = await fetch(`${config.apiURL}/procedimentos-gratuitos${query}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      let parsed = null;
+      try {
+        parsed = await res.json();
+      } catch (_) {
+        parsed = null;
+      }
+      if (!res.ok) {
+        console.error('[ProcedimentosLista] Falha ao carregar lista', { status: res.status, payload: parsed });
+      } else {
+        const totalItens = Array.isArray(parsed?.procedimentos)
+          ? parsed.procedimentos.length
+          : Array.isArray(parsed)
+            ? parsed.length
+            : 0;
+        console.log('[ProcedimentosLista] Lista carregada', { total: totalItens });
+      }
+      if (!res.ok) {
+        const msg = (parsed && (parsed.message || parsed.error || parsed.detail)) || 'Erro ao carregar lista.';
+        throw new Error(msg);
+      }
+      const lista = Array.isArray(parsed?.procedimentos) ? parsed.procedimentos : (Array.isArray(parsed) ? parsed : []);
+      setItens(lista);
+      return lista;
+    } catch (e) {
+      setItens([]);
+      showToast('error', e?.message || 'Erro ao carregar lista.');
+      throw e;
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  }, [dataFinal, dataInicial, ressarcivel, tipoFiltro, showToast]);
+
+  useEffect(() => {
+    console.log('[ProcedimentosLista] Montagem / efeito inicial iniciado');
+    fetchLista().catch(() => {});
+    return () => {
+      console.log('[ProcedimentosLista] Componente desmontado');
+    };
+  }, [fetchLista]);
+
+  // Mostrar toast vindo de navegacao (ex: salvou na tela de manutencao)
+  useEffect(() => {
+    if (location.state?.message) {
+      showToast(location.state?.type || 'success', location.state.message);
+      // limpar state para não reaparecer em refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const tiposDisponiveis = useMemo(() => {
+    const setTipos = new Set((itens || []).map(i => i.tipo).filter(Boolean));
+    return Array.from(setTipos).sort();
+  }, [itens]);
+
+  const contagem = useMemo(() => {
+    const total = (itens || []).length;
+    const sim = (itens || []).filter(i => !!i.ressarcivel).length;
+    const nao = Math.max(0, total - sim);
+    return { total, sim, nao };
+  }, [itens]);
+
+  const limparFiltros = () => {
+    setDataInicial('');
+    setDataFinal('');
+    setRessarcivel('todos');
+    setTipoFiltro('');
+  };
+
+  const handleExcluir = async (id) => {
+    if (!id) return;
+    if (!window.confirm('Deseja realmente excluir este procedimento gratuito?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${config.apiURL}/procedimentos-gratuitos/${encodeURIComponent(id)}`,
+        { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        setItens(prev => prev.filter(i => i.id !== id));
+        showToast('success', 'Procedimento excluído com sucesso!');
+      } else {
+        const t = await res.text();
+        showToast('error', t || 'Erro ao excluir.');
+      }
+    } catch (e) {
+      showToast('error', 'Erro ao excluir.');
+    }
+  };
+
+  const abrirModalAnexo = (id) => {
+    console.log('[ProcedimentosLista] Solicitando abertura do modal de anexo', { id });
+    setIdSelecionado(id);
+    setModalAberto(true);
+  };
+
+  const fecharModalAnexo = () => {
+    if (uploading) return;
+    console.log('[ProcedimentosLista] Fechando modal de anexo');
+    setModalAberto(false);
+    setIdSelecionado(null);
+  };
+
+  useEffect(() => {
+    console.log('[ProcedimentosLista] Estado do modal atualizado', {
+      modalAberto,
+      idSelecionado,
+      uploading
+    });
+  }, [modalAberto, idSelecionado, uploading]);
+
+  const enviarAnexo = async (file) => {
+    if (!idSelecionado || !file) return;
+    try {
+      setUploading(true);
+      console.log('[ProcedimentosLista] Iniciando upload PDF', {
+        idSelecionado,
+        nomeArquivo: file.name,
+        tamanhoKB: Math.round(file.size / 1024)
+      });
+      const uploadResult = await ProcedimentosService.uploadAnexoPdf(idSelecionado, file);
+      const { url, shareLink, webUrl } = uploadResult || {};
+      console.log('[ProcedimentosLista] Upload finalizado', uploadResult);
+      await fetchLista({ silent: true });
+      const linkInfo = shareLink || webUrl || url;
+      showToast('success', linkInfo ? 'Anexo enviado e link gerado com sucesso!' : 'Anexo enviado com sucesso!');
+      setModalAberto(false);
+      setIdSelecionado(null);
+    } catch (e) {
+      console.error('[ProcedimentosLista] Erro ao enviar anexo', e);
+      showToast('error', e?.message || 'Falha ao enviar anexo.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  console.log('[ProcedimentosLista] Render concluído', {
+    totalItens: itens?.length || 0,
+    loading,
+    modalAberto,
+    idSelecionado
+  });
+
+  return (
+    <div style={{ padding: 16 }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+        padding: '8px 12px',
+        background: '#ffffff',
+        borderRadius: 12,
+        boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
+      }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button
+            onClick={() => navigate('/procedimentos-gratuitos/nova')}
+            style={{
+              background: '#27ae60',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              padding: '10px 20px',
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
+            }}
+          >
+            + NOVO PROCEDIMENTO GRATUITO
+          </button>
+          <button
+            onClick={() => {
+              try {
+                const header = ['Data', 'Tipo', 'Descrição', 'Ressarcível'];
+                const linhas = (itens || []).map(i => {
+                  const data = formatDate(i.data || i.criado_em);
+                  const tipo = i.tipo || '';
+                  const descricao = (i.descricao || '').replace(/\r?\n/g, ' ').replace(/"/g, '""');
+                  const ress = i.ressarcivel ? 'Sim' : 'Não';
+                  return [data, tipo, `"${descricao}"`, ress].join(',');
+                });
+                const csv = [header.join(','), ...linhas].join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'procedimentos_gratuitos.csv';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+              } catch (_) {
+                showToast('error', 'Falha ao exportar CSV.');
+              }
+            }}
+            style={{
+              background: '#6366f1',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              padding: '10px 14px',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
+            }}
+          >
+            Exportar CSV
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Data Inicial</label>
+            <input type="date" value={dataInicial} onChange={e => setDataInicial(e.target.value)}
+              style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '6px 10px', fontSize: 14 }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Data Final</label>
+            <input type="date" value={dataFinal} onChange={e => setDataFinal(e.target.value)}
+              style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '6px 10px', fontSize: 14 }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Ressarcível?</label>
+            <select value={ressarcivel} onChange={e => setRessarcivel(e.target.value)}
+              style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '6px 10px', fontSize: 14, minWidth: 140 }}>
+              <option value="todos">Todos</option>
+              <option value="sim">Sim</option>
+              <option value="nao">Não</option>
+            </select>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#2c3e50' }}>Tipo de Procedimento</label>
+            <input list="tipos-procedimento" value={tipoFiltro} onChange={e => setTipoFiltro(e.target.value)}
+              placeholder="Digite ou escolha..."
+              style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '6px 10px', fontSize: 14, minWidth: 220 }} />
+            <datalist id="tipos-procedimento">
+              {tiposDisponiveis.map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </datalist>
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 2 }}>
+            <button
+              onClick={limparFiltros}
+              title="Limpar filtros"
+              style={{
+                background: '#f1f5f9',
+                color: '#334155',
+                border: '1px solid #cbd5e1',
+                borderRadius: 6,
+                padding: '6px 10px',
+                fontSize: 13,
+                cursor: 'pointer'
+              }}
+            >
+              Limpar filtros
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 12, borderRadius: 12, background: '#f4f6f8', padding: 16 }}>
+        <div style={{ marginBottom: 10, color: '#2c3e50', fontSize: 13 }}>
+          <strong>{contagem.total}</strong> item(s)
+          {contagem.total > 0 && (
+            <span> — Ressarcíveis: <strong>{contagem.sim}</strong>; Não: <strong>{contagem.nao}</strong></span>
+          )}
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'center' }}>
+          <thead>
+            <tr style={{ background: '#e9ecef' }}>
+              <th style={{ padding: 8 }}>Data</th>
+              <th style={{ padding: 8 }}>Tipo</th>
+              <th style={{ padding: 8 }}>Descrição</th>
+              <th style={{ padding: 8 }}>Ressarcível</th>
+              <th style={{ padding: 8 }}>Anexo</th>
+              <th style={{ padding: 8 }}>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 16, color: '#888' }}>Carregando...</td></tr>
+            ) : itens.length === 0 ? (
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 16, color: '#888' }}>Nenhum procedimento encontrado.</td></tr>
+            ) : (
+              itens.map(item => (
+                <tr key={item.id} style={{ background: '#fff' }}>
+                  <td style={{ padding: 8 }}>{formatDate(item.data || item.criado_em)}</td>
+                  <td style={{ padding: 8 }}>{item.tipo || '-'}</td>
+                  <td style={{ padding: 8 }}>{item.descricao || '-'}</td>
+                  <td style={{ padding: 8 }}>{item.ressarcivel ? 'Sim' : 'Não'}</td>
+                  <td style={{ padding: 8 }}>
+                    {Array.isArray(item.uploads) && item.uploads.length > 0 ? (
+                      <div style={{ background: 'white', borderRadius: 8, padding: 6, boxShadow: '0 1px 6px rgba(0,0,0,0.06)', maxWidth: 420 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, alignItems: 'center', padding: '4px 6px', fontSize: 13, fontWeight: 700, color: '#2c3e50' }}>
+                          <div>{item.uploads.length} anexo(s)</div>
+                          <div style={{ fontSize: 12, color: '#64748b' }}>{/* espaço para informação */}</div>
+                        </div>
+                        <div style={{ marginTop: 6 }}>
+                          {item.uploads.map(u => (
+                            <div key={u.id || u.url} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: '6px 8px', borderTop: '1px solid #f1f5f9', fontSize: 13, color: '#334155' }}>
+                              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }} title={u.original_name || u.originalName || u.stored_name || u.storedName || (u.url ? (u.url.split('/').pop()) : '')}>
+                                {u.original_name || u.originalName || u.stored_name || u.storedName || (u.url ? decodeURIComponent(u.url.split('/').pop()) : '')}
+                              </div>
+                              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                {u.url ? (
+                                  <a href={u.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none', fontSize: 12 }}>Abrir</a>
+                                ) : (
+                                  <span style={{ color: '#94a3b8', fontSize: 12 }}>—</span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : item.anexoUrl || item.anexo_url ? (
+                      <a href={(item.anexoUrl || item.anexo_url)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>
+                        Abrir PDF
+                      </a>
+                    ) : (
+                      <span style={{ color: '#94a3b8' }}>—</span>
+                    )}
+                  </td>
+                  <td style={{ padding: 8, display: 'flex', gap: 8 }}>
+                    <button
+                      style={{ background: '#3498db', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}
+                      onClick={() => navigate(`/procedimentos-gratuitos/${encodeURIComponent(item.id)}/editar`)}
+                    >
+                      EDITAR
+                    </button>
+                    <button
+                      style={{ background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}
+                      onClick={() => handleExcluir(item.id)}
+                    >
+                      EXCLUIR
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+        <AnexarPdfModal
+          open={modalAberto}
+          onClose={fecharModalAnexo}
+          onSubmit={enviarAnexo}
+          loading={uploading}
+        />
+        {/* Toast de feedback */}
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setToastMessage('')}
+        />
+    </div>
+  );
+}
