@@ -228,45 +228,7 @@ export default function AverbacoesLista() {
           >
             + NOVA AVERBAÇÃO GRATUITA
           </button>
-          <button
-            onClick={() => {
-              try {
-                const header = ['Data', 'Tipo', 'Descrição', 'Ressarcível'];
-                const linhas = (itens || []).map(i => {
-                  const data = formatDate(i.data || i.criado_em);
-                  const tipo = i.tipo || '';
-                  const descricao = (i.descricao || '').replace(/\r?\n/g, ' ').replace(/"/g, '""');
-                  const ress = i.ressarcivel ? 'Sim' : 'Não';
-                  return [data, tipo, `"${descricao}"`, ress].join(',');
-                });
-                const csv = [header.join(','), ...linhas].join('\n');
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'averbacoes_gratuitas.csv';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-              } catch (_) {
-                showToast('error', 'Falha ao exportar CSV.');
-              }
-            }}
-            style={{
-              background: '#6366f1',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              padding: '10px 14px',
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
-            }}
-          >
-            Exportar CSV
-          </button>
+          {/* Exportar CSV removido */}
         </div>
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
