@@ -7,11 +7,19 @@ function AtosHub() {
   const featureCards = [
     {
       id: 'atos-praticados',
-      title: 'ATOS PRATICADOS',
+      title: 'ATOS PAGOS',
       description: 'Gerencie os atos praticados no dia (atos selados)',
       icon: '🔗',
       color: '#27ae60',
       route: '/atos-praticados'
+    },
+    {
+      id: 'atos-gratuitos',
+      title: 'ATOS GRATUITOS',
+      description: 'Gerencie atos gratuitos e demais funcionalidades relacionadas',
+      icon: '📋',
+      color: '#16a085',
+      route: '/atos-gratuitos'
     },
     {
       id: 'pesquisa-atos',
@@ -28,15 +36,7 @@ function AtosHub() {
       icon: '⚖️',
       color: '#3498db',
       route: '/conciliacao'
-    },
-    {
-      id: 'atos-gratuitos',
-      title: 'ATOS GRATUITOS',
-      description: 'Gerencie atos gratuitos e demais funcionalidades relacionadas',
-      icon: '📋',
-      color: '#16a085',
-      route: '/atos-gratuitos'
-    }
+    }    
   ];
 
   const cardStyle = (color) => ({
