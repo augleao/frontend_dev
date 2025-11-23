@@ -503,8 +503,8 @@ export default function AverbacaoManutencao() {
                 </button>
                 {uploading && <span style={{ color: '#888' }}>Enviando...</span>}
                 {pdfList && pdfList.length > 0 ? (
-                  <div style={{ marginTop: 8, border: '1px solid #e6e9ee', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1fr 1fr 160px', gap: 0, background: '#f7fafc', padding: '10px 12px', fontSize: 13, fontWeight: 600, color: '#2c3e50' }}>
+                  <div style={{ marginTop: 8, background: 'white', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1fr 1fr 160px', gap: 0, background: '#f7fafc', padding: '12px', fontSize: 14, fontWeight: 700, color: '#2c3e50' }}>
                       <div>Nome</div>
                       <div>Nome salvo</div>
                       <div style={{ textAlign: 'right' }}>Tamanho</div>
@@ -512,7 +512,7 @@ export default function AverbacaoManutencao() {
                       <div style={{ textAlign: 'center' }}>Ações</div>
                     </div>
                     {pdfList.map(p => (
-                      <div key={p.id || p.url} style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1fr 1fr 160px', gap: 0, alignItems: 'center', padding: '10px 12px', borderTop: '1px solid #f1f5f9', fontSize: 13, color: '#334155' }}>
+                      <div key={p.id || p.url} style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1fr 1fr 160px', gap: 0, alignItems: 'center', padding: '12px', borderTop: '1px solid #f1f5f9', fontSize: 13, color: '#334155' }}>
                         <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.originalName || p.storedName || (p.url ? decodeURIComponent(p.url.split('/').pop()) : '')}</div>
                         <div style={{ color: '#475569' }}>{p.storedName || ''}</div>
                         <div style={{ textAlign: 'right', color: '#64748b' }}>{p.size ? `${Math.round(p.size/1024)} KB` : '-'}</div>
