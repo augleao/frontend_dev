@@ -8,6 +8,7 @@ export default function AverbacaoPdfManager({
   selectAndUploadFiles,
   handleViewUpload,
   handleDeleteUpload,
+  onSave,
   getMesReferencia
 }) {
   return (
