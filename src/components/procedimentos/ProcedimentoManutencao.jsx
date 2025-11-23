@@ -136,21 +136,48 @@ export default function ProcedimentoManutencao() {
   const fetchUploadsList = async (procedimentoId) => {
     try {
       const token = localStorage.getItem('token');
-      // Query uploads by atoId and tipo to avoid collisions with other 'ato' types
-      const qs = `atoId=${encodeURIComponent(procedimentoId)}&tipo=procedimento`;
-      const res = await fetch(`${config.apiURL}/uploads?${qs}`, { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) return setPdfList([]);
-      const j = await res.json();
-      if (j && Array.isArray(j.uploads)) {
-        setPdfList(j.uploads.map(u => ({
-          id: u.id,
-          storedName: u.stored_name || u.storedName,
-          originalName: u.original_name || (u.metadata && (u.metadata.originalName || u.metadata.filename)) || '',
-          url: u.url || '',
-          size: u.size || null,
-          contentType: u.content_type || u.contentType || '',
-          createdAt: u.created_at || u.createdAt || null
-        })));
+      // Try new API first (atoId + tipo). If it returns no uploads, fall back to legacy param for compatibility.
+      try {
+        const qs = `atoId=${encodeURIComponent(procedimentoId)}&tipo=procedimento`;
+        const res = await fetch(`${config.apiURL}/uploads?${qs}`, { headers: { Authorization: `Bearer ${token}` } });
+        let j = {};
+        if (res.ok) {
+          try { j = await res.json(); } catch (_) { j = {}; }
+          if (j && Array.isArray(j.uploads) && j.uploads.length > 0) {
+            return setPdfList(j.uploads.map(u => ({
+              id: u.id,
+              storedName: u.stored_name || u.storedName,
+              originalName: u.original_name || (u.metadata && (u.metadata.originalName || u.metadata.filename)) || '',
+              url: u.url || '',
+              size: u.size || null,
+              contentType: u.content_type || u.contentType || '',
+              createdAt: u.created_at || u.createdAt || null
+            })));
+          }
+        }
+      } catch (e) {
+        console.warn('[ProcedimentoManutencao] fetchUploadsList new query failed, falling back', e && e.message ? e.message : e);
+      }
+
+      // Fallback to legacy API
+      try {
+        const res2 = await fetch(`${config.apiURL}/uploads?procedimentoId=${encodeURIComponent(procedimentoId)}`, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res2.ok) return setPdfList([]);
+        const j2 = await res2.json();
+        if (j2 && Array.isArray(j2.uploads)) {
+          setPdfList(j2.uploads.map(u => ({
+            id: u.id,
+            storedName: u.stored_name || u.storedName,
+            originalName: u.original_name || (u.metadata && (u.metadata.originalName || u.metadata.filename)) || '',
+            url: u.url || '',
+            size: u.size || null,
+            contentType: u.content_type || u.contentType || '',
+            createdAt: u.created_at || u.createdAt || null
+          })));
+        }
+      } catch (e) {
+        console.warn('[ProcedimentoManutencao] fetchUploadsList fallback failed', e && e.message ? e.message : e);
+        setPdfList([]);
       }
     } catch (e) {
       console.warn('[ProcedimentoManutencao] fetchUploadsList failed', e && e.message ? e.message : e);
