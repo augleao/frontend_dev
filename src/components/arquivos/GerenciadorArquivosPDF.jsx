@@ -43,6 +43,15 @@ export default function GerenciadorArquivosPDF() {
     window.open(url + (token ? `&token=${encodeURIComponent(token)}` : ''), '_blank', 'noopener');
   };
 
+  const openItem = (it) => {
+    if (!it || !it.key) return;
+    const token = localStorage.getItem('token');
+    // prefer direct url if provided, otherwise hit download endpoint (may force download)
+    const base = it.url ? it.url : `${config.apiURL}/storage/download?key=${encodeURIComponent(it.key)}`;
+    const url = base + (token && !base.includes('?') ? `?token=${encodeURIComponent(token)}` : (token ? `&token=${encodeURIComponent(token)}` : ''));
+    window.open(url, '_blank', 'noopener');
+  };
+
   const downloadFolder = async (it) => {
     if (!it || !it.key) return;
     try {
@@ -71,6 +80,11 @@ export default function GerenciadorArquivosPDF() {
     } catch (e) {
       setError(e.message || 'Erro ao baixar pasta');
     }
+  };
+
+  const downloadAllFolder = async (it) => {
+    // alias for downloadFolder (keeps semantic name)
+    return downloadFolder(it);
   };
 
   const deleteItem = async (it) => {
@@ -180,13 +194,51 @@ export default function GerenciadorArquivosPDF() {
                         <>
                           <button onClick={() => enterFolder(it.key)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#0ea5a4', color: 'white', cursor: 'pointer' }}>Abrir</button>
                           <button onClick={() => downloadFolder(it)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6edf3', background: 'white', cursor: 'pointer' }}>Baixar pasta</button>
-                          <button onClick={() => deleteItem(it)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #fdecea', background: '#fff5f5', color: '#c53030', cursor: 'pointer' }}>Excluir</button>
+                          {/* show count if available */}
+                          {(() => {
+                            const count = it.itemsCount || it.count || it.fileCount || it.childrenCount || null;
+                            const canBulk = count === null ? true : count > 1;
+                            return (
+                              <>
+                                <button
+                                  onClick={() => downloadAllFolder(it)}
+                                  disabled={!canBulk}
+                                  title={count === null ? 'Baixar tudo (contagem desconhecida)' : `Baixar todos os ${count} arquivos`}
+                                  style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6edf3', background: canBulk ? 'white' : '#f3f5f7', cursor: canBulk ? 'pointer' : 'not-allowed', marginLeft: 4 }}
+                                >
+                                  Baixar tudo
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    if (!window.confirm(`Deseja realmente excluir TODOS os arquivos dentro de "${it.name}"? Esta ação é irreversível.`)) return;
+                                    try {
+                                      const token = localStorage.getItem('token');
+                                      const res = await fetch(`${config.apiURL}/storage?key=${encodeURIComponent(it.key)}&recursive=true`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+                                      if (!res.ok) {
+                                        const t = await res.text().catch(() => '');
+                                        throw new Error(t || 'Erro ao excluir todos');
+                                      }
+                                      fetchList(path);
+                                    } catch (e) {
+                                      setError(e.message || 'Erro ao excluir todos');
+                                    }
+                                  }}
+                                  disabled={!canBulk}
+                                  title={count === null ? 'Excluir tudo (contagem desconhecida)' : `Excluir todos os ${count} arquivos`}
+                                  style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #fdecea', background: canBulk ? '#fff5f5' : '#fff8f8', color: '#c53030', cursor: canBulk ? 'pointer' : 'not-allowed', marginLeft: 4 }}
+                                >
+                                  Excluir tudo
+                                </button>
+                              </>
+                            );
+                          })()}
                         </>
                       ) : (
-                        <>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button onClick={() => openItem(it)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6edf3', background: 'white', cursor: 'pointer' }}>Abrir</button>
                           <button onClick={() => downloadItem(it)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#2563eb', color: 'white', cursor: 'pointer' }}>Baixar</button>
                           <button onClick={() => deleteItem(it)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #fdecea', background: '#fff5f5', color: '#c53030', cursor: 'pointer' }}>Excluir</button>
-                        </>
+                        </div>
                       )}
                     </div>
                   </div>
