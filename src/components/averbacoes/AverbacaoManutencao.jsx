@@ -498,6 +498,7 @@ export default function AverbacaoManutencao() {
               selectAndUploadFiles={selectAndUploadFiles}
               handleViewUpload={handleViewUpload}
               handleDeleteUpload={handleDeleteUpload}
+              onSave={salvar}
               getMesReferencia={getMesReferencia}
             />
 
