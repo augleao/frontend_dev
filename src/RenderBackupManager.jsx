@@ -401,20 +401,30 @@ export default function RenderBackupManager() {
             )}
           </tbody>
         </table>
-        {/* Lista de exports (backups lógicos) */}
+        {/* Lista de exports (backups lógicos) - render em estilo moderno */}
         <div style={{ marginTop: 30 }}>
           <h4 style={{ marginBottom: 8 }}>Backups Lógicos (Exports)</h4>
           {exports.length === 0 ? (
             <div style={{ color: '#6c757d', fontSize: 14 }}>Nenhum export disponível para download.</div>
           ) : (
-            <ul style={{ paddingLeft: 18 }}>
+            <div style={{ background: 'white', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px', gap: 0, background: '#f7fafc', padding: '10px 12px', fontSize: 14, fontWeight: 700, color: '#2c3e50' }}>
+                <div>Data / Arquivo</div>
+                <div style={{ textAlign: 'center' }}>Ações</div>
+              </div>
               {exports.map((exp) => (
-                <li key={exp.id} style={{ marginBottom: 6 }}>
-                  <span style={{ fontSize: 13, color: '#333' }}>{new Date(exp.createdAt).toLocaleString('pt-BR')} -</span>
-                  <a href={exp.url} target="_blank" rel="noopener noreferrer" style={{ marginLeft: 8, color: '#1976d2', fontWeight: 'bold', textDecoration: 'underline' }}>Download</a>
-                </li>
+                <div key={exp.id} style={{ display: 'grid', gridTemplateColumns: '1fr 160px', gap: 0, alignItems: 'center', padding: '10px 12px', borderTop: '1px solid #f1f5f9', fontSize: 13, color: '#334155' }}>
+                  <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={exp.filename || exp.url}>
+                    <div style={{ fontWeight: 600 }}>{new Date(exp.createdAt).toLocaleString('pt-BR')}</div>
+                    <div style={{ color: '#64748b', fontSize: 12 }}>{exp.filename || (exp.url ? decodeURIComponent(String(exp.url).split('/').pop()) : '')}</div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+                    <a href={exp.url} target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2', fontWeight: 700, textDecoration: 'none', padding: '6px 10px', borderRadius: 8, border: '1px solid #dbeafe' }}>Download</a>
+                    <button onClick={() => { navigator.clipboard?.writeText(exp.url); }} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6e6e6', background: '#f8fafc', cursor: 'pointer' }}>Copiar link</button>
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       </div>
