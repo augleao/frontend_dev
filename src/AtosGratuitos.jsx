@@ -53,6 +53,16 @@ function AtosGratuitos() {
     }
   ];
 
+  // new: file manager card for PDF storage browsing
+  featureCards.push({
+    id: 'gerenciador-arquivos',
+    title: 'GERENCIADOR DE ARQUIVOS',
+    description: 'Navegue, baixe e exclua arquivos PDF armazenados',
+    icon: '📁',
+    color: '#34495e',
+    route: '/gerenciador-arquivos'
+  });
+
   const futureFeatures = [
     {
       title: 'ESTATÍSTICAS',

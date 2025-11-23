@@ -33,6 +33,7 @@ import BackblazeConfig from './components/admin/BackblazeConfig';
 import OnedriveOAuthCallback from './components/admin/OnedriveOAuthCallback';
 import ProtocoloAcesso from './ProtocoloAcesso';
 import AtosGratuitos from './AtosGratuitos';
+import GerenciadorArquivosPDF from './components/arquivos/GerenciadorArquivosPDF';
 import AverbacoesLista from './components/averbacoes/AverbacoesLista';
 import AverbacaoManutencao from './components/averbacoes/AverbacaoManutencao';
 import ProcedimentosLista from './components/procedimentos/ProcedimentosLista';
@@ -356,6 +357,14 @@ function App() {
           element={
             <PrivateRoute>
               <CertidaoGratuitaForm />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/gerenciador-arquivos"
+          element={
+            <PrivateRoute>
+              <GerenciadorArquivosPDF />
             </PrivateRoute>
           }
         />
