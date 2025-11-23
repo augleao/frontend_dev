@@ -227,6 +227,8 @@ export default function ProcedimentoManutencao() {
       if (form && form.data) {
         formData.append('data', form.data);
       }
+        // Informar ao backend o tipo do anexo para regras específicas (ex: renomeação)
+        formData.append('metadata', JSON.stringify({ tipo: 'procedimento' }));
       const res = await fetch(`${config.apiURL}/procedimentos-gratuitos/upload-pdf`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -283,7 +285,7 @@ export default function ProcedimentoManutencao() {
 
   const uploadFileToBackblaze = async (file) => {
     const token = localStorage.getItem('token');
-    const prepareBody = { filename: file.name, contentType: file.type || 'application/pdf', folder: 'procedimentos' };
+    const prepareBody = { filename: file.name, contentType: file.type || 'application/pdf', folder: 'procedimentos', metadata: { tipo: 'procedimento' } };
     const prepareRes = await fetch(`${config.apiURL}/uploads/prepare`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -303,7 +305,7 @@ export default function ProcedimentoManutencao() {
       throw new Error(text || 'Falha ao enviar arquivo para o Backblaze.');
     }
 
-    const completeBody = { key, metadata: { originalName: file.name }, procedimentoId: isEdicao ? id : null };
+    const completeBody = { key, metadata: { originalName: file.name, tipo: 'procedimento' }, procedimentoId: isEdicao ? id : null };
     const completeRes = await fetch(`${config.apiURL}/uploads/complete`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
