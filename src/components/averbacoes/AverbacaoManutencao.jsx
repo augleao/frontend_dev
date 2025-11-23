@@ -69,6 +69,7 @@ export default function AverbacaoManutencao() {
     const fetchItem = async () => {
       setLoading(true);
       console.log('[AverbacaoManutencao] fetchItem: iniciando fetch da averbação', { id });
+      let hadEmbeddedUploads = false;
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${config.apiURL}/averbacoes-gratuitas/${encodeURIComponent(id)}`, {
@@ -107,7 +108,8 @@ export default function AverbacaoManutencao() {
             const url = pdf.url || '';
             setPdfInfo({ originalName, storedName, url, id: pdf.id || null });
             // if the server returned uploads embedded, use them
-            if (item.uploads && Array.isArray(item.uploads)) {
+            if (item.uploads && Array.isArray(item.uploads) && item.uploads.length > 0) {
+              hadEmbeddedUploads = true;
               setPdfList(item.uploads.map(u => ({
                 id: u.id,
                 storedName: u.stored_name || u.storedName,
@@ -135,9 +137,11 @@ export default function AverbacaoManutencao() {
       } catch (e) {}
       setLoading(false);
     };
-    fetchItem();
-    // refresh uploads list for this averbacao
-    if (isEdicao && id) fetchUploadsList(id);
+    (async () => {
+      await fetchItem();
+      // refresh uploads list for this averbacao only if server didn't provide embedded uploads
+      if (!hadEmbeddedUploads && isEdicao && id) fetchUploadsList(id);
+    })();
   }, [id, isEdicao]);
 
   useEffect(() => {

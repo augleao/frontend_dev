@@ -64,6 +64,7 @@ export default function ProcedimentoManutencao() {
     const fetchItem = async () => {
       setLoading(true);
       console.log('[ProcedimentoManutencao] fetchItem: iniciando fetch do procedimento', { id });
+      let hadEmbeddedUploads = false;
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${config.apiURL}/procedimentos-gratuitos/${encodeURIComponent(id)}`, {
@@ -96,7 +97,8 @@ export default function ProcedimentoManutencao() {
             const storedName = pdf.storedName || pdf.nome || pdf.filename || (pdf.key ? String(pdf.key).split('/').pop() : '') || '';
             const url = pdf.url || '';
             setPdfInfo({ originalName, storedName, url, id: pdf.id || null });
-            if (item.uploads && Array.isArray(item.uploads)) {
+            if (item.uploads && Array.isArray(item.uploads) && item.uploads.length > 0) {
+              hadEmbeddedUploads = true;
               setPdfList(item.uploads.map(u => ({
                 id: u.id,
                 storedName: u.stored_name || u.storedName,
@@ -121,9 +123,12 @@ export default function ProcedimentoManutencao() {
         }
       } catch (e) {}
       setLoading(false);
+      return hadEmbeddedUploads;
     };
-    fetchItem();
-    if (isEdicao && id) fetchUploadsList(id);
+    (async () => {
+      const had = await fetchItem();
+      if (!had && isEdicao && id) fetchUploadsList(id);
+    })();
   }, [id, isEdicao]);
 
   useEffect(() => {
