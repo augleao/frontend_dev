@@ -13,7 +13,7 @@ export default function AverbacaoPdfManager({
 }) {
   return (
     <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px dashed #e1e5ea' }}>
-      <h4 className="servico-title" style={{ fontSize: 16, margin: '0 0 8px 0' }}>1) Anexar PDF da Averbação</h4>
+      
       <div className="servico-row" style={{ alignItems: 'center', gap: 12, display: 'flex', flexWrap: 'wrap', flexDirection: 'column', alignItems: 'flex-start' }}>
         <button
           type="button"

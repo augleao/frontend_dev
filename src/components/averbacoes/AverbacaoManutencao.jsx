@@ -474,15 +474,6 @@ export default function AverbacaoManutencao() {
 
   return (
     <div style={{ padding: 12 }}>
-      <div className="servico-section">
-        <div className="servico-header">
-          <h3 className="servico-title">{isEdicao ? 'Editar Averbação Gratuita' : 'Nova Averbação Gratuita'}</h3>
-          <div className="servico-actions" style={{ margin: 0 }}>
-            <button onClick={() => navigate('/averbacoes-gratuitas')} className="btn btn-secondary">Cancelar</button>
-            <button onClick={salvar} className="btn btn-success">Salvar</button>
-          </div>
-        </div>
-      </div>
 
       <div className="servico-section">
         {loading ? (
