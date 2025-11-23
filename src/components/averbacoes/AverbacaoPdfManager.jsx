@@ -14,17 +14,25 @@ export default function AverbacaoPdfManager({
   return (
     <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px dashed #e1e5ea' }}>
       
-      <div className="servico-row" style={{ alignItems: 'center', gap: 12, display: 'flex', flexWrap: 'wrap', flexDirection: 'column', alignItems: 'flex-start' }}>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={selectAndUploadFiles}
-          disabled={uploading}
-          style={{ minWidth: 140 }}
-        >
-          {uploading ? 'Enviando…' : 'Selecionar PDF'}
-        </button>
-        {uploading && <span style={{ color: '#888' }}>Enviando...</span>}
+      <div className="servico-row" style={{ alignItems: 'center', gap: 12, display: 'flex', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={selectAndUploadFiles}
+            disabled={uploading}
+            style={{ minWidth: 140 }}
+          >
+            Selecionar PDF
+          </button>
+
+          <button type="button" className="btn btn-success" onClick={onSave} disabled={uploading} style={{ minWidth: 120 }}>
+            Salvar
+          </button>
+
+          {uploading && <span style={{ color: '#888' }}>Enviando...</span>}
+        </div>
+
         {pdfList && pdfList.length > 0 ? (
           <div style={{ marginTop: 8, background: 'white', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
             <div style={{ overflowX: 'auto' }}>
@@ -67,11 +75,6 @@ export default function AverbacaoPdfManager({
             </span>
           )
         )}
-        <div style={{ marginTop: 8 }}>
-          <button type="button" className="btn btn-success" onClick={onSave} disabled={uploading} style={{ minWidth: 120 }}>
-            Salvar
-          </button>
-        </div>
       </div>
       
     </div>
