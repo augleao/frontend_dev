@@ -5,10 +5,12 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 
-console.log('Iniciando index.js');
+// Silencia globalmente logs no console para evitar poluição durante uso
+console.log = () => {};
+console.warn = () => {};
+console.error = () => {};
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-console.log('Renderizando App com BrowserRouter');
 root.render(
   <React.StrictMode>
     <BrowserRouter>
@@ -17,5 +19,4 @@ root.render(
   </React.StrictMode>
 );
 
-console.log('Chamando reportWebVitals');
 reportWebVitals();
