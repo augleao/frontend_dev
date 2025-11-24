@@ -1022,6 +1022,111 @@ useEffect(() => {
       const resultData = await resImportar.json();
       console.log('✅ Resultado da importação:', resultData);
 
+      // ========= Pre-processamento frontend dos atos retornados no preview/import =========
+      // Extrai a lista de atos retornada pelo endpoint (tenta várias chaves possíveis)
+      const atosPreview = resultData.atos || resultData.atosPreview || resultData.preview || resultData.itens || [];
+
+      if (Array.isArray(atosPreview) && atosPreview.length > 0) {
+        console.log('🔧 [Preprocess] Atos recebidos para pré-processamento:', atosPreview.length);
+
+        const cacheValorFinal = {};
+
+        const buscarValorFinalLocal = async (codigo) => {
+          if (!codigo) return null;
+          if (cacheValorFinal[codigo] !== undefined) return cacheValorFinal[codigo];
+          try {
+            const res = await fetch(`${apiURL}/atos?search=${encodeURIComponent(codigo)}`, {
+              headers: { Accept: 'application/json' }
+            });
+            if (!res.ok) {
+              console.warn('⚠️ [Preprocess] não foi possível buscar valor_final para', codigo, 'status=', res.status);
+              cacheValorFinal[codigo] = null;
+              return null;
+            }
+            const body = await res.json().catch(() => null);
+            let found = null;
+            if (Array.isArray(body) && body.length) found = body[0];
+            else if (body && Array.isArray(body.atos) && body.atos.length) found = body.atos[0];
+            else if (body && (body.valor_final !== undefined || body.valor !== undefined)) found = body;
+            const valor = found ? (found.valor_final ?? found.valor ?? null) : null;
+            cacheValorFinal[codigo] = valor;
+            return valor;
+          } catch (e) {
+            console.error('❌ [Preprocess] erro ao buscar valor_final para', codigo, e);
+            cacheValorFinal[codigo] = null;
+            return null;
+          }
+        };
+
+        const processedAtos = [];
+
+        for (const atoRaw of atosPreview) {
+          try {
+            const codigo = (atoRaw.codigo || atoRaw.codigo_servico || atoRaw.codigoServico || '').toString();
+            const quantidadeAto = Number(atoRaw.quantidade) || 1;
+
+            // Buscar valor_final por codigo (cacheado)
+            const valorFinalLookup = await buscarValorFinalLocal(codigo);
+
+            // Determinar valor_unitario: prefer lookup, depois campos existentes
+            const valor_unitario = valorFinalLookup ?? atoRaw.valor_unitario ?? atoRaw.valor_final ?? 0;
+
+            // Montar pagamentos: tenta usar detalhes de pagamento quando presentes
+            let novoPagamentos = formasPagamento.reduce((acc, fp) => {
+              acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
+              return acc;
+            }, {});
+
+            // Tentar extrair forma preferencial de detalhes ou protocolo
+            let escolhido = null;
+            try {
+              const detalhes = atoRaw.detalhes_pagamentos || atoRaw.detalhes_pagamento || null;
+              if (detalhes) {
+                const mask = converterDetalhesPagamentoParaMascara(detalhes);
+                escolhido = Object.keys(mask).find(k => mask[k] && Number(mask[k].valor) > 0) || Object.keys(mask)[0];
+              }
+            } catch (e) {
+              // ignore
+            }
+
+            // Se não detectou, fallback para 'dinheiro'
+            if (!escolhido) escolhido = 'dinheiro';
+
+            const totalAto = Number((Number(valor_unitario || 0) * quantidadeAto).toFixed(2));
+            novoPagamentos[escolhido] = { quantidade: quantidadeAto, valor: totalAto, manual: true };
+
+            // Montar payloadAto conforme solicitado
+            const payloadAto = {
+              data: atoRaw.data || dataSelecionada,
+              hora: atoRaw.hora || (new Date()).toLocaleTimeString('pt-BR', { hour12: false }),
+              codigo: codigo,
+              descricao: atoRaw.descricao || atoRaw.nome || atoRaw.titulo || '',
+              quantidade: quantidadeAto,
+              valor_unitario: Number(valor_unitario || 0),
+              valor_final: Number(valor_unitario || 0),
+              pagamentos: novoPagamentos,
+              usuario: nomeLogado,
+              origem_importacao: 'importacao_servicos'
+            };
+
+            processedAtos.push(payloadAto);
+          } catch (e) {
+            console.error('❌ [Preprocess] falha ao processar atoRaw:', atoRaw, e);
+          }
+        }
+
+        // Log do batch pré-processado (não altera envio atual)
+        try {
+          console.log('📦 [Preprocess] payloadBatch pronto (exemplo 5):', processedAtos.slice(0,5));
+        } catch (e) {
+          // noop
+        }
+      } else {
+        console.log('ℹ️ [Preprocess] Nenhum ato no preview para pré-processar');
+      }
+
+      // ========= Fim do pré-processamento =========
+
       const atosImportados = resultData.atosImportados || 0;
       const atosEncontrados = resultData.atosEncontrados || 0;
 
