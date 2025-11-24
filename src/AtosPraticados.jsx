@@ -282,6 +282,12 @@ function AtosPraticados() {
     
     try {
       const token = localStorage.getItem('token');
+      // Log mascarado do token para diagnóstico (não imprime o token completo)
+      try {
+        console.log('🔐 [AtosPraticados] token present?', token ? `yes len=${token.length} starts=${String(token).slice(0,6)}...` : 'no');
+      } catch (e) {
+        console.log('🔐 [AtosPraticados] token inspection failed', e);
+      }
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
       const nomeLogado = usuario?.nome || usuario?.email;
       const serventiaUsuario = usuario?.serventia;
@@ -492,25 +498,58 @@ function AtosPraticados() {
 
           // Cache para evitar buscas repetidas
           const cacheValorFinal = {};
+          // Flag para evitar spam de requisições quando o backend exige autorização e retorna 401
+          let lookupUnauthorized = false;
 
           // Função para buscar valor_final por codigo (usa rota /atos?search=)
           const buscarValorFinal = async (codigo) => {
             if (!codigo) return null;
-            if (cacheValorFinal[codigo] !== undefined) return cacheValorFinal[codigo];
+            if (lookupUnauthorized) {
+              // Já recebemos 401 anteriormente — evitar novas tentativas
+              console.warn('🔒 [buscarValorFinal] lookup bloqueado por 401 anterior para', codigo);
+              cacheValorFinal[codigo] = null;
+              return null;
+            }
+            if (cacheValorFinal[codigo] !== undefined) {
+              console.log('🔁 [buscarValorFinal] retornando cache para', codigo, cacheValorFinal[codigo]);
+              return cacheValorFinal[codigo];
+            }
             try {
-              const res = await fetch(`${apiURL}/atos?search=${encodeURIComponent(codigo)}`);
-              if (!res.ok) {
-                console.warn('⚠️ [AtosPraticados] Busca valor_final não ok para', codigo, res.status);
+              const hasToken = Boolean(token);
+              const masked = token ? `len=${token.length} starts=${String(token).slice(0,6)}...` : '<no token>';
+              console.log('🔎 [buscarValorFinal] iniciando lookup para codigo=', codigo, 'hasToken=', hasToken, 'token=', masked);
+              const headers = hasToken ? { Authorization: `Bearer ${token}`, Accept: 'application/json' } : { Accept: 'application/json' };
+              const res = await fetch(`${apiURL}/atos?search=${encodeURIComponent(codigo)}`, { headers });
+              console.log('🔎 [buscarValorFinal] resposta raw para', codigo, 'status=', res.status);
+              if (res.status === 401) {
+                // Marcar para evitar novas tentativas e usar fallback
+                console.warn('⚠️ [AtosPraticados] 401 Unauthorized ao buscar valor_final para', codigo);
+                lookupUnauthorized = true;
                 cacheValorFinal[codigo] = null;
                 return null;
               }
-              const body = await res.json();
+              if (!res.ok) {
+                const txt = await res.text().catch(() => '<unreadable>');
+                console.warn('⚠️ [AtosPraticados] Busca valor_final não ok para', codigo, res.status, txt);
+                cacheValorFinal[codigo] = null;
+                return null;
+              }
+              const body = await res.json().catch(async (e) => {
+                const txt = await res.text().catch(() => '<unreadable>');
+                console.error('❌ [buscarValorFinal] falha ao parsear JSON para', codigo, 'texto=', txt, e);
+                return null;
+              });
+              console.log('🔎 [buscarValorFinal] body recebida para', codigo, body && (Array.isArray(body) ? `array(${body.length})` : Object.keys(body).slice(0,5)));
               // body pode ser array ou objeto
               let found = null;
               if (Array.isArray(body) && body.length) found = body[0];
               else if (body && Array.isArray(body.atos) && body.atos.length) found = body.atos[0];
               else if (body && body.valor_final !== undefined) found = body;
+              if (!found) {
+                console.warn('⚠️ [buscarValorFinal] não encontrou registro com valor_final para codigo', codigo, 'body=', body);
+              }
               const valor = found ? (found.valor_final ?? found.valor ?? null) : null;
+              console.log('🔔 [buscarValorFinal] valor extraido para', codigo, valor);
               cacheValorFinal[codigo] = valor;
               return valor;
             } catch (e) {
