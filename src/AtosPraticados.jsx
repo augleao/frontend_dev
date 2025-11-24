@@ -29,7 +29,6 @@ function AtosPraticados() {
     return `${ano}-${mes}-${dia}`;
   });
 
-
   const [percentualISS, setPercentualISS] = useState(0); // Estado para ISS
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
