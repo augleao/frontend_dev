@@ -3,18 +3,6 @@ import { formasPagamento, formatarValor } from './utils';
 
 export default function AtosTableEscrevente({ atos, onRemover }) {
   console.log("Atos recebidos na tabela atos-table:", atos);
-  try {
-    const discrepancies = atos.map(a => {
-      const expected = (Number(a.valor_unitario || 0) * Number(a.quantidade || 1)) || 0;
-      const paid = (formasPagamento || []).reduce((s, fp) => s + (Number(a.pagamentos?.[fp.key]?.valor || 0)), 0);
-      return { id: a.id || null, codigo: a.codigo, expected: Number(expected.toFixed(2)), paid: Number(paid.toFixed(2)), diff: Number((expected - paid).toFixed(2)) };
-    }).filter(d => Math.abs(d.diff) > 0.009);
-    if (discrepancies.length > 0) {
-      console.warn('[AtosTable] Discrepâncias encontradas (expected - paid):', discrepancies.slice(0,20));
-    }
-  } catch (e) {
-    console.error('[AtosTable] Erro ao calcular discrepâncias:', e);
-  }
 
   // Função para formatar data no padrão brasileiro (DD/MM/AAAA)
   const formatarDataBR = (dataStr) => {

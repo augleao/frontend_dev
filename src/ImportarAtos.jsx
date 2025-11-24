@@ -68,10 +68,6 @@ function ImportarAtos() {
     setMsg('');
     try {
       const token = localStorage.getItem('token');
-      try {
-        const token = localStorage.getItem('token');
-        console.log('[ImportarAtos] Enviando PUT /atos/:id payload:', editAto, 'token=', token ? `len=${token.length} starts=${String(token).slice(0,6)}...` : '<no token>');
-      } catch (e) {}
       const res = await fetch(`${apiURL}/atos/${editAto.id}`, {
         method: 'PUT',
         headers: {
@@ -103,7 +99,6 @@ function ImportarAtos() {
     try {
       const token = localStorage.getItem('token');
       for (const ato of atos) {
-        try { const tokenLocal = localStorage.getItem('token'); console.log('[ImportarAtos] Enviando PUT /atos/:id payload (batch):', ato, 'token=', tokenLocal ? `len=${tokenLocal.length} starts=${String(tokenLocal).slice(0,6)}...` : '<no token>'); } catch(e){}
         const res = await fetch(`${apiURL}/atos/${ato.id}`, {
           method: 'PUT',
           headers: {
@@ -137,7 +132,6 @@ function ImportarAtos() {
     setMsg('');
     try {
       const token = localStorage.getItem('token');
-      try { const tokenLocal = localStorage.getItem('token'); console.log('[ImportarAtos] Enviando POST /atos payload (novoAto):', novoAto, 'token=', tokenLocal ? `len=${tokenLocal.length} starts=${String(tokenLocal).slice(0,6)}...` : '<no token>'); } catch(e){}
       const res = await fetch(`${apiURL}/atos`, {
         method: 'POST',
         headers: {

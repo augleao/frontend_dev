@@ -19,31 +19,23 @@ import { DEFAULT_TOAST_DURATION } from './components/toastConfig';
 //import { gerarRelatorioPDFAtosPraticados } from './components/RelatorioPDF';
 
 function AtosPraticados() {
-  // Conditionally silence logs while the component is mounted.
-  // By default logs are active; to silence set localStorage.setItem('SILENCE_ATOS','true')
+  // Silencia logs enquanto o componente estiver montado (não afeta outros módulos após unmount)
   useEffect(() => {
-    const shouldSilence = localStorage.getItem('SILENCE_ATOS') === 'true';
     const _orig = { log: console.log, warn: console.warn, error: console.error };
-    if (shouldSilence) {
-      try {
-        console.log = () => {};
-        console.warn = () => {};
-        console.error = () => {};
-      } catch (e) {
-        // noop
-      }
-    } else {
-      try { console.info('[AtosPraticados] Logs ativos (SILENCE_ATOS not set)'); } catch(e){}
+    try {
+      console.log = () => {};
+      console.warn = () => {};
+      console.error = () => {};
+    } catch (e) {
+      // noop
     }
     return () => {
-      if (shouldSilence) {
-        try {
-          console.log = _orig.log;
-          console.warn = _orig.warn;
-          console.error = _orig.error;
-        } catch (e) {
-          // noop
-        }
+      try {
+        console.log = _orig.log;
+        console.warn = _orig.warn;
+        console.error = _orig.error;
+      } catch (e) {
+        // noop
       }
     };
   }, []);
@@ -793,34 +785,8 @@ function AtosPraticados() {
           console.error('Erro ao ajustar grupos de selo:', e);
         }
 
-        try {
-          // Diagnostic: compare raw listaAtos (bruto do backend) vs atos convertidos
-          try {
-            const resumoBruto = listaAtos.map(a => ({ id: a.id, codigo: a.codigo, quantidade: a.quantidade || 1, valor_unitario: a.valor_unitario ?? a.valor_final ?? null, pagamentos: a.pagamentos || a.detalhes_pagamentos || a.detalhes_pagamento || null, origem_importacao: a.origem_importacao || null }));
-            const resumoConvertido = atosComPagamentosConvertidos.map(a => ({ id: a.id, codigo: a.codigo, quantidade: a.quantidade || 1, valor_unitario: a.valor_unitario ?? a.valor_final ?? null, pagamentos: a.pagamentos || null, origem_importacao: a.origem_importacao || null }));
-            console.log('🔬 [DIAGNOSTIC] bruto vs convertido (resumo):', { brutoCount: resumoBruto.length, convertidoCount: resumoConvertido.length });
-            // Log compact arrays to avoid huge dumps
-            console.log('🔬 [DIAGNOSTIC] bruto sample:', resumoBruto.slice(0, 20));
-            console.log('🔬 [DIAGNOSTIC] convertido sample:', resumoConvertido.slice(0, 20));
-
-            // Find per-codigo mismatches for quick view
-            const mismatches = [];
-            resumoConvertido.forEach(conv => {
-              const match = resumoBruto.find(b => (b.id && b.id === conv.id) || (b.codigo === conv.codigo && b.quantidade === conv.quantidade && b.origem_importacao === conv.origem_importacao));
-              const expected = Number(conv.valor_unitario || 0) * Number(conv.quantidade || 1);
-              const paid = Object.values(conv.pagamentos || {}).reduce((s, p) => s + (Number(p && p.valor) || 0), 0);
-              if (Math.abs(expected - paid) > 0.009) {
-                mismatches.push({ codigo: conv.codigo, id: conv.id, expected, paid, conv });
-              }
-            });
-            if (mismatches.length) console.log('🔍 [DIAGNOSTIC] Mismatches expected vs paid (first 20):', mismatches.slice(0,20));
-          } catch (e) {
-            console.error('🔬 [DIAGNOSTIC] erro ao gerar resumo diagnostic:', e);
-          }
-        } finally {
-          setAtos(atosComPagamentosConvertidos);
-          console.log('✅ [AtosPraticados] Estado dos atos atualizado com', atosComPagamentosConvertidos.length, 'atos (com conversão de pagamentos e ajustes)');
-        }
+        setAtos(atosComPagamentosConvertidos);
+        console.log('✅ [AtosPraticados] Estado dos atos atualizado com', atosComPagamentosConvertidos.length, 'atos (com conversão de pagamentos e ajustes)');
       } else {
         const errorText = await resAtos.text();
         console.error('❌ [AtosPraticados] Erro na resposta:', resAtos.status, errorText);
@@ -1009,251 +975,95 @@ useEffect(() => {
         serventia: serventiaUsuario,
         apiURL: apiURL
       });
-
-      // Preparar payload padrão para solicitacao de importacao
-      const payloadImport = {
-        data: dataSelecionada,
-        usuarios: [nomeLogado], // Apenas o usuário logado
-        serventia: serventiaUsuario
-      };
-
-      try {
-        const maskedToken = token ? `len=${token.length} starts=${String(token).slice(0,6)}...` : '<no token>';
-        console.log('📤 [ImportarAtos] solicitando lista para importação (preview) payload:', payloadImport, 'token=', maskedToken);
-      } catch (e) {}
-
-      // 1) Tentar solicitar um preview (backend pode aceitar um flag `preview`/`simular`)
-      let atosParaImportar = null;
-      try {
-        const resPreview = await fetch(`${apiURL}/atos-praticados/importar-servicos`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ ...payloadImport, preview: true })
-        });
-
-        if (resPreview.ok) {
-          const body = await resPreview.json().catch(() => null);
-          // Tentar extrair lista de atos de possíveis chaves
-          atosParaImportar = body && (body.atos || body.lista || body.items || body.data || body.attemptos || null) || null;
-          // Em alguns backends a chave pode ser `novosAtos` ou similar
-          if (!atosParaImportar && body) {
-            // procurar por qualquer array no body
-            const anyArrayKey = Object.keys(body).find(k => Array.isArray(body[k]));
-            if (anyArrayKey) atosParaImportar = body[anyArrayKey];
-          }
-        } else {
-          console.warn('[ImportarAtos] preview retornou não-ok:', resPreview.status);
-        }
-      } catch (e) {
-        console.warn('[ImportarAtos] erro no preview:', e);
-      }
-
-      // Helper local: buscar valor_final por codigo (sem poluir escopo global)
-      const buscarValorFinalLocal = async (codigo) => {
-        if (!codigo) return null;
-        try {
-          const tk = localStorage.getItem('token');
-          const headers = tk ? { Authorization: `Bearer ${tk}`, Accept: 'application/json' } : { Accept: 'application/json' };
-          const res = await fetch(`${apiURL}/atos?search=${encodeURIComponent(codigo)}`, { headers });
-          if (!res.ok) return null;
-          const body = await res.json().catch(() => null);
-          let found = null;
-          if (Array.isArray(body) && body.length) found = body[0];
-          else if (body && Array.isArray(body.atos) && body.atos.length) found = body.atos[0];
-          else if (body && body.valor_final !== undefined) found = body;
-          return found ? (found.valor_final ?? found.valor ?? null) : null;
-        } catch (e) {
-          return null;
-        }
-      };
-
-      // Se obtivemos uma lista de atos a importar, pré-processar e enviar cada um individualmente
-      if (Array.isArray(atosParaImportar) && atosParaImportar.length > 0) {
-        console.log('[ImportarAtos] Preview retornou', atosParaImportar.length, 'atos; pré-processando e salvando individualmente...');
-        let salvos = 0;
-        for (const atoRaw of atosParaImportar) {
-          try {
-            const ato = { ...atoRaw };
-            const codigo = ato.codigo || ato.codigoTributario || ato.codigo_tributario || null;
-            const quantidadeAto = Number(ato.quantidade) || 1;
-
-            // Buscar valor unitario via lookup
-            const valorLookup = await buscarValorFinalLocal(codigo);
-            const valorUnitario = valorLookup ?? ato.valor_unitario ?? ato.valor_final ?? 0;
-            ato.valor_unitario = valorUnitario;
-
-            // Montar pagamentos: tentativa simples — usar detalhes existentes ou escolher primeira forma conhecida
-            const novoPagamentos = formasPagamento.reduce((acc, fp) => {
-              acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
-              return acc;
-            }, {});
-
-            // Tentar extrair formas da estrutura existente (detalhes_pagamentos / pagamentos)
-            let chaveEscolhida = null;
-            if (ato.detalhes_pagamentos || ato.detalhes_pagamento) {
-              try {
-                const detalhes = ato.detalhes_pagamentos || ato.detalhes_pagamento;
-                const mask = converterDetalhesPagamentoParaMascara(detalhes);
-                chaveEscolhida = Object.keys(mask).find(k => mask[k] && Number(mask[k].valor) > 0) || Object.keys(mask)[0];
-              } catch (e) {
-                chaveEscolhida = null;
-              }
-            }
-
-            // Se não encontrou, usar a primeira forma presente em ato.pagamentos
-            if (!chaveEscolhida && ato.pagamentos) {
-              const keys = Object.keys(ato.pagamentos || {});
-              if (keys.length) chaveEscolhida = keys[0];
-            }
-
-            if (!chaveEscolhida) chaveEscolhida = 'dinheiro';
-
-            novoPagamentos[chaveEscolhida] = {
-              quantidade: quantidadeAto,
-              valor: Number(((valorUnitario || 0) * quantidadeAto).toFixed(2)),
-              manual: true
-            };
-
-            ato.pagamentos = novoPagamentos;
-
-            // Preparar payload final para salvar
-            const payloadAto = {
-              data: ato.data || dataSelecionada,
-              hora: ato.hora || ato.horaReg || new Date().toLocaleTimeString('pt-BR', { hour12: false }),
-              codigo: ato.codigo,
-              descricao: ato.descricao || ato.nome || '',
-              quantidade: quantidadeAto,
-              valor_unitario: ato.valor_unitario,
-              // enviar também valor_final para compatibilidade com backends que usam esse campo
-              valor_final: ato.valor_unitario,
-              pagamentos: ato.pagamentos,
-              usuario: nomeLogado,
-              origem_importacao: ato.origem_importacao || 'importado-frontend'
-            };
-
-            try {
-              const masked = token ? `len=${token.length} starts=${String(token).slice(0,6)}...` : '<no token>';
-              console.log('📤 [ImportarAtos] salvando ato preprocessado:', { payloadAto, token: masked });
-            } catch (e) {}
-            // Evitar duplicatas: se o ato já tiver um id no preview, atualize via PUT
-            let possibleId = ato.id || ato._id || ato.atoId || ato.ato_id || null;
-            // Se não temos id, tentar localizar um registro existente no server por codigo/data/usuario
-            if (!possibleId) {
-              try {
-                const queryUrl = `${apiURL}/atos-praticados?data=${encodeURIComponent(ato.data || dataSelecionada)}&codigo=${encodeURIComponent(codigo)}&usuario=${encodeURIComponent(nomeLogado)}`;
-                const resExist = await fetch(queryUrl, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-                if (resExist.ok) {
-                  const bodyExist = await resExist.json().catch(() => null);
-                  let candidates = [];
-                  if (Array.isArray(bodyExist)) candidates = bodyExist;
-                  else if (bodyExist && Array.isArray(bodyExist.atos)) candidates = bodyExist.atos;
-                  else if (bodyExist && Array.isArray(bodyExist.CaixaDiario)) candidates = bodyExist.CaixaDiario;
-                  if (candidates.length) {
-                    // tentar encontrar correspondência por quantidade e hora
-                    const match = candidates.find(c => (Number(c.quantidade || 1) === quantidadeAto) && (String(c.hora || '') === String(ato.hora || ato.horaReg || '')));
-                    if (match) possibleId = match.id || match._id || match.atoId || match.ato_id || null;
-                  }
-                }
-              } catch (e) {
-                console.warn('[ImportarAtos] erro ao checar existência de ato antes de POST:', e);
-              }
-            }
-            let resSave;
-            if (possibleId) {
-              try {
-                resSave = await fetch(`${apiURL}/atos-praticados/${encodeURIComponent(possibleId)}`, {
-                  method: 'PUT',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                  },
-                  body: JSON.stringify(payloadAto)
-                });
-              } catch (e) {
-                resSave = { ok: false, status: 0, text: async () => String(e) };
-              }
-            } else {
-              try {
-                resSave = await fetch(`${apiURL}/atos-praticados`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                  },
-                  body: JSON.stringify(payloadAto)
-                });
-              } catch (e) {
-                resSave = { ok: false, status: 0, text: async () => String(e) };
-              }
-            }
-
-            if (resSave && resSave.ok) salvos += 1;
-            else {
-              const txt = resSave ? await resSave.text().catch(() => '') : 'no-response';
-              console.warn('[ImportarAtos] falha ao salvar/atualizar ato preprocessado:', resSave ? resSave.status : 'no-status', txt);
-            }
-          } catch (e) {
-            console.error('[ImportarAtos] erro ao processar ato:', e);
-          }
-        }
-
-        alert(`✅ Importação concluída: ${salvos} de ${atosParaImportar.length} atos salvos (pré-processados).`);
-
-        // Recarregar dados
-        setAtos([]);
-        await new Promise(resolve => setTimeout(resolve, 400));
-        await carregarDadosPraticadosDaData();
-        setRefreshTrigger(prev => prev + 1);
-        return;
-      }
-
-      // Se não obteve preview com lista de atos, volta ao comportamento anterior (chamar import endpoint)
-      console.log('[ImportarAtos] Preview não retornou lista de atos — voltando ao import padrão (server-side).');
+      
       const resImportar = await fetch(`${apiURL}/atos-praticados/importar-servicos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(payloadImport)
+        body: JSON.stringify({
+          data: dataSelecionada,
+          usuarios: [nomeLogado], // Apenas o usuário logado
+          serventia: serventiaUsuario
+        })
       });
+
+      console.log('📡 Response status:', resImportar.status);
+      console.log('📡 Response headers:', resImportar.headers);
 
       if (!resImportar.ok) {
         let errorMessage = `Erro HTTP ${resImportar.status}: ${resImportar.statusText}`;
-        try { const errorText = await resImportar.text();
-          try { const errorData = JSON.parse(errorText); errorMessage = errorData.message || errorMessage; } catch {} }
-        catch(e){}
+        
+        // Tentar obter detalhes do erro
+        try {
+          const errorText = await resImportar.text();
+          console.error('❌ Resposta de erro completa:', errorText);
+          
+          // Tentar fazer parse como JSON
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorMessage;
+          } catch (jsonError) {
+            // Se não for JSON, usar o texto como está
+            if (errorText.length > 0 && !errorText.includes('<!DOCTYPE')) {
+              errorMessage = errorText;
+            }
+          }
+        } catch (textError) {
+          console.error('Erro ao ler texto da resposta:', textError);
+        }
+        
         alert('❌ Erro ao importar atos: ' + errorMessage);
         return;
       }
 
-      const resultData = await resImportar.json().catch(() => ({}));
+      // Resposta de sucesso
+      const resultData = await resImportar.json();
+      console.log('✅ Resultado da importação:', resultData);
+
       const atosImportados = resultData.atosImportados || 0;
       const atosEncontrados = resultData.atosEncontrados || 0;
+
       if (atosImportados === 0) {
         alert(`ℹ️ ${resultData.message || 'Nenhum ato novo encontrado para importar'}\n\nAtos encontrados: ${atosEncontrados}`);
       } else {
         alert(`✅ Importação concluída com sucesso!\n\n${atosImportados} atos foram importados de ${atosEncontrados} encontrados.`);
       }
 
-      // Recarregar após import padrão
+      // Recarregar os dados após a importação
+      console.log('🔄 [Importação] Iniciando recarregamento dos dados após importação...');
+      
+      // Limpar os atos atuais para forçar um refresh visual
       setAtos([]);
-      await new Promise(resolve => setTimeout(resolve, 800));
-      await carregarDadosPraticadosDaData();
-      let detectouMudanca = false;
-      for (let tentativa = 1; tentativa <= 6; tentativa++) {
-        await new Promise(r => setTimeout(r, 400));
-        await carregarDadosPraticadosDaData();
-        const assinaturasDepois = new Set(atos.map(assinaturaAto));
-        for (const s of assinaturasDepois) {
-          if (!assinaturasAntes.has(s)) { detectouMudanca = true; break; }
-        }
-        if (detectouMudanca) break;
+      
+  // Aguardar um pouco para garantir que o backend processou tudo
+  await new Promise(resolve => setTimeout(resolve, 800));
+
+  // Recarregar imediatamente os dados (sem depender apenas do trigger)
+  await carregarDadosPraticadosDaData();
+  
+  // Tentar algumas vezes até detectar os novos atos vindos do backend
+  let detectouMudanca = false;
+  for (let tentativa = 1; tentativa <= 6; tentativa++) {
+    await new Promise(r => setTimeout(r, 400));
+    await carregarDadosPraticadosDaData();
+    const assinaturasDepois = new Set(atos.map(assinaturaAto));
+    // Se qualquer assinatura nova aparecer, consideramos sucesso
+    for (const s of assinaturasDepois) {
+      if (!assinaturasAntes.has(s)) {
+        detectouMudanca = true;
+        console.log(`✅ [Importação] Novos atos detectados na tentativa ${tentativa}.`);
+        break;
       }
-      setRefreshTrigger(prev => prev + 1);
+    }
+    if (detectouMudanca) break;
+    console.log(`⏳ [Importação] Ainda não apareceu no GET, re-tentando (${tentativa}/6)...`);
+  }
+      
+  // E também acionar o trigger para manter consistência com os efeitos
+  setRefreshTrigger(prev => prev + 1);
+  console.log('✅ [Importação] Trigger de refresh acionado');
 
     } catch (error) {
       console.error('💥 Erro ao importar atos praticados:', error);
