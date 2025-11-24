@@ -537,9 +537,19 @@ function AtosPraticados() {
                 const ato = grupo[i];
                 ato.valor_unitario = 0;
                 ato.pagamentos = JSON.parse(JSON.stringify(zeroPagamentos));
+                // Garantir que a quantidade não cause multiplicação na UI
+                // quando o valor/pagamento representa o total do selo.
+                ato.quantidade = 1;
               }
               const ultimo = grupo[grupo.length - 1];
+              // Normalizar quantidades dentro do objeto de pagamentos totais
+              Object.keys(pagamentosTotais || {}).forEach(k => {
+                pagamentosTotais[k].quantidade = 1;
+              });
+
               ultimo.pagamentos = pagamentosTotais;
+              // Garantir que o último ato não traga uma quantidade que multiplique o total
+              ultimo.quantidade = 1;
 
               // também ajusta campo de total (se existir).
               // Se os pagamentos estavam duplicados em cada ato (todosIguais),
