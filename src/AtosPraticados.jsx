@@ -472,13 +472,19 @@ function AtosPraticados() {
 
         // Se houver grupos de selo com múltiplos atos, garantir valor_unitario via lookup
         try {
-          // Agrupar por chave de selo possível
-          const grupoPorSelo = {};
+          // Agrupar por chave de selo possível, mas APLICAR apenas a atos importados
           const chaveSelo = (ato) => (
             ato.selo_consulta || ato.selo || ato.selo_id || ato.import_batch || ato.origem_importacao || ato.selo_numero || null
           );
 
-          atosComPagamentosConvertidos.forEach(ato => {
+          const marcadoComoImportado = (ato) => Boolean(
+            ato.selo_consulta || ato.selo || ato.selo_id || ato.import_batch || ato.origem_importacao || ato.selo_numero
+          );
+
+          const grupoPorSelo = {};
+          const atosImportados = atosComPagamentosConvertidos.filter(marcadoComoImportado);
+
+          atosImportados.forEach(ato => {
             const k = chaveSelo(ato) || `sem_selo_${ato.usuario || 'x'}`;
             if (!grupoPorSelo[k]) grupoPorSelo[k] = [];
             grupoPorSelo[k].push(ato);
