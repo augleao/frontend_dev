@@ -401,6 +401,63 @@ function AtosPraticados() {
           console.log('👤 [AtosPraticados] Atos filtrados por usuário individual:', atosFiltrados.length);
         }
 
+        // Ajuste: quando vários atos pertencem ao mesmo selo/importação,
+        // o valor recebido representa o total de todos os atos no selo.
+        // Precisamos colocar valor unitário = 0 para todos e colocar
+        // o total apenas no último ato do grupo.
+        try {
+          const identificarChaveSelo = (ato) => {
+            return (
+              ato?.selo_consulta || ato?.selo || ato?.selo_numero || ato?.seloId || ato?.selo_id ||
+              ato?.seloConsulta || ato?.origem_importacao || ato?.lote_importacao || ato?.import_batch ||
+              ato?.batchId || ato?.referencia_selo || ato?.seloReferencia || ''
+            );
+          };
+
+          const obterValorNumerico = (ato) => {
+            const cand = ato?.valor_total ?? ato?.valor ?? ato?.valor_unitario ?? ato?.valor_final ?? ato?.valorTotal ?? ato?.emolumento ?? 0;
+            const n = Number(cand) || 0;
+            return n;
+          };
+
+          // Agrupar por chave de selo (somente chaves não vazias)
+          const grupos = atosFiltrados.reduce((acc, ato) => {
+            const chave = identificarChaveSelo(ato) || '__NO_SELO__' + Math.random();
+            if (!acc[chave]) acc[chave] = [];
+            acc[chave].push(ato);
+            return acc;
+          }, {});
+
+          // Para cada grupo com mais de 1 ato e com chave reconhecida (não vazia),
+          // zerar valor_unitario e somar o total, atribuindo-o apenas ao último ato.
+          Object.keys(grupos).forEach((chave) => {
+            const grupo = grupos[chave];
+            // detectar chaves significativas (ou seja, não geradas aleatoriamente)
+            if (!chave.startsWith('__NO_SELO__') && grupo.length > 1) {
+              const total = grupo.reduce((s, a) => s + obterValorNumerico(a), 0);
+              // Ordenar grupo pela ordem original (já está na ordem de listagem)
+              for (let i = 0; i < grupo.length; i++) {
+                const ato = grupo[i];
+                // setar valor_unitario para 0
+                ato.valor_unitario = 0;
+                // limpar campo de total para todos inicialmente
+                if (ato.hasOwnProperty('valor_total')) ato.valor_total = 0;
+                if (ato.hasOwnProperty('valorTotal')) ato.valorTotal = 0;
+                if (ato.hasOwnProperty('valor')) ato.valor = 0;
+              }
+              // Colocar o total agregado somente no último ato do grupo
+              const ultimo = grupo[grupo.length - 1];
+              // Preservar campo que exista preferencialmente 'valor_total' ou 'valor'
+              if (ultimo.hasOwnProperty('valor_total')) ultimo.valor_total = total;
+              else if (ultimo.hasOwnProperty('valorTotal')) ultimo.valorTotal = total;
+              else if (ultimo.hasOwnProperty('valor')) ultimo.valor = total;
+              else ultimo.valor_total = total;
+            }
+          });
+        } catch (e) {
+          console.warn('Erro ao ajustar valores por selo/importacao:', e);
+        }
+
         // Função para verificar se um usuário corresponde ao usuário de referência
         function usuarioCorresponde(usuarioAto, usuarioReferencia) {
           if (!usuarioAto || !usuarioReferencia) return false;
