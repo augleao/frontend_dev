@@ -609,30 +609,164 @@ function AtosPraticados() {
             const codigosUnicos = [...new Set(grupo.map(a => a.codigo))].filter(Boolean);
             await Promise.all(codigosUnicos.map(c => buscarValorFinal(c)));
 
+            // Cache para detalhes de pagamento do pedido (por protocolo)
+            const cachePedidoDetalhes = {};
+
+            // Tentativa robusta de encontrar um protocolo/pedido dentro do ato
+            const encontrarProtocoloNoAto = (ato) => {
+              if (!ato || typeof ato !== 'object') return null;
+              const candidates = [
+                'protocolo',
+                'pedido_protocolo',
+                'protocolo_pedido',
+                'pedidoNumero',
+                'pedido_numero',
+                'pedidoId',
+                'pedido_id',
+                'recibo',
+                'selo_protocolo',
+                'protocolo_recibo'
+              ];
+              for (const k of candidates) {
+                if (ato[k]) return String(ato[k]);
+              }
+              // Tentar dentro de sub-objetos comuns
+              if (ato.pedido && (ato.pedido.protocolo || ato.pedido.numero)) return String(ato.pedido.protocolo || ato.pedido.numero);
+              if (ato.recibo && ato.recibo.protocolo) return String(ato.recibo.protocolo);
+              return null;
+            };
+
+            // Buscar detalhes de pagamento do pedido/recibo (retorna array de detalhes ou null)
+            const buscarDetalhesPagamentoDoPedido = async (protocolo) => {
+              if (!protocolo) return null;
+              if (cachePedidoDetalhes[protocolo] !== undefined) return cachePedidoDetalhes[protocolo];
+              try {
+                const tokenLocal = localStorage.getItem('token');
+                // Primeiro tentar endpoint /recibo/:protocolo que retorna objeto { pedido }
+                try {
+                  const resRecibo = await fetch(`${apiURL}/recibo/${encodeURIComponent(protocolo)}`, {
+                    headers: tokenLocal ? { Authorization: `Bearer ${tokenLocal}` } : {}
+                  });
+                  if (resRecibo.ok) {
+                    const body = await resRecibo.json().catch(() => null);
+                    const pedido = body && (body.pedido || body);
+                    if (pedido) {
+                      const detalhes = pedido.valorAdiantadoDetalhes || pedido.valor_adiantado_detalhes || pedido.valorAdiantado || null;
+                      if (detalhes && (Array.isArray(detalhes) && detalhes.length > 0)) {
+                        cachePedidoDetalhes[protocolo] = detalhes;
+                        return detalhes;
+                      }
+                    }
+                  }
+                } catch (e) {
+                  // ignore and fallback
+                }
+
+                // Em seguida tentar /pedido_pagamento/:protocolo
+                try {
+                  const resPag = await fetch(`${apiURL}/pedido_pagamento/${encodeURIComponent(protocolo)}`, {
+                    headers: tokenLocal ? { Authorization: `Bearer ${tokenLocal}` } : {}
+                  });
+                  if (resPag.ok) {
+                    const dataPag = await resPag.json().catch(() => null);
+                    // detectar formatos possíveis
+                    let detalhes = null;
+                    if (Array.isArray(dataPag.detalhes_pagamento) && dataPag.detalhes_pagamento.length > 0) detalhes = dataPag.detalhes_pagamento;
+                    else if (Array.isArray(dataPag.complementos_pagamento) && dataPag.complementos_pagamento.length > 0) detalhes = dataPag.complementos_pagamento;
+                    else if (Array.isArray(dataPag.valorAdiantadoDetalhes) && dataPag.valorAdiantadoDetalhes.length > 0) detalhes = dataPag.valorAdiantadoDetalhes;
+                    else if (Array.isArray(dataPag)) detalhes = dataPag;
+
+                    if (detalhes) {
+                      cachePedidoDetalhes[protocolo] = detalhes;
+                      return detalhes;
+                    }
+                  }
+                } catch (e) {
+                  // ignore
+                }
+
+                cachePedidoDetalhes[protocolo] = null;
+                return null;
+              } catch (e) {
+                cachePedidoDetalhes[protocolo] = null;
+                return null;
+              }
+            };
+
             // Ajustar cada ato: set valor_unitario e pagamentos por forma = quantidade * valor_unitario
-            grupo.forEach(ato => {
+            for (const ato of grupo) {
               const codigo = ato.codigo;
               const valorFinal = cacheValorFinal[codigo] ?? ato.valor_unitario ?? ato.valor_final ?? 0;
               const quantidadeAto = Number(ato.quantidade) || 1;
               // Atualizar valor_unitario no ato
               ato.valor_unitario = valorFinal;
 
-              // Construir máscara de pagamentos respeitando somente as formas detectadas
-              const novoPagamentos = formasPagamento.reduce((acc, fp) => {
-                if (formasPresentes.has(fp.key)) {
-                  acc[fp.key] = {
-                    quantidade: 1,
-                    valor: Number((quantidadeAto * (valorFinal || 0)).toFixed(2)),
-                    manual: true,
-                  };
-                } else {
-                  acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
-                }
+              // Tentar obter forma de pagamento a partir do pedido/recibo vinculado ao ato
+              let novoPagamentos = formasPagamento.reduce((acc, fp) => {
+                acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
                 return acc;
               }, {});
 
+              try {
+                const protocolo = encontrarProtocoloNoAto(ato);
+                const detalhesPedido = protocolo ? await buscarDetalhesPagamentoDoPedido(protocolo) : null;
+
+                if (detalhesPedido && Array.isArray(detalhesPedido) && detalhesPedido.length > 0) {
+                  // Converter detalhes para máscara e escolher a primeira forma encontrada
+                  const mask = converterDetalhesPagamentoParaMascara(detalhesPedido);
+                  const chaveEscolhida = Object.keys(mask).find(k => (mask[k] && Number(mask[k].valor) > 0)) || Object.keys(mask)[0];
+
+                  // Atribuir o valor total do ato (valor_unitario * quantidade) para a forma escolhida
+                  novoPagamentos = formasPagamento.reduce((acc, fp) => {
+                    if (fp.key === chaveEscolhida) {
+                      acc[fp.key] = {
+                        quantidade: quantidadeAto,
+                        valor: Number(((valorFinal || 0) * quantidadeAto).toFixed(2)),
+                        manual: true
+                      };
+                    } else {
+                      acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
+                    }
+                    return acc;
+                  }, {});
+                } else {
+                  // Fallback: usar as formas detectadas no grupo (formasPresentes)
+                  const primeiraForma = formasPresentes.values().next().value;
+                  if (primeiraForma) {
+                    novoPagamentos[primeiraForma] = {
+                      quantidade: quantidadeAto,
+                      valor: Number(((valorFinal || 0) * quantidadeAto).toFixed(2)),
+                      manual: true
+                    };
+                  } else {
+                    // Último recurso: colocar em 'dinheiro'
+                    novoPagamentos['dinheiro'] = {
+                      quantidade: quantidadeAto,
+                      valor: Number(((valorFinal || 0) * quantidadeAto).toFixed(2)),
+                      manual: true
+                    };
+                  }
+                }
+              } catch (e) {
+                // Se qualquer erro ocorrer, fallback conservador
+                const primeiraForma = formasPresentes.values().next().value;
+                if (primeiraForma) {
+                  novoPagamentos[primeiraForma] = {
+                    quantidade: quantidadeAto,
+                    valor: Number(((valorFinal || 0) * quantidadeAto).toFixed(2)),
+                    manual: true
+                  };
+                } else {
+                  novoPagamentos['dinheiro'] = {
+                    quantidade: quantidadeAto,
+                    valor: Number(((valorFinal || 0) * quantidadeAto).toFixed(2)),
+                    manual: true
+                  };
+                }
+              }
+
               ato.pagamentos = novoPagamentos;
-            });
+            }
           }
         } catch (e) {
           console.error('Erro ao ajustar grupos de selo:', e);
