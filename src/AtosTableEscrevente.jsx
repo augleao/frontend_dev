@@ -53,11 +53,93 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
             </tr>
           )}
           {atos.map((ato, idx) => {
-            const pagamentos = ato.pagamentos || {};
             const tributacaoTexto = ato.tributacao
               || (ato.tributacao_codigo
                 ? `${ato.tributacao_codigo}${ato.tributacao_descricao ? ' - ' + ato.tributacao_descricao : ''}`
                 : '-');
+
+            // Helper: tenta parsear detalhes_pagamentos (string JSON ou objeto)
+            const parseDetalhes = (det) => {
+              if (!det) return null;
+              if (typeof det === 'string') {
+                try {
+                  return JSON.parse(det);
+                } catch (e) {
+                  return det; // keep raw string
+                }
+              }
+              return det;
+            };
+
+            // Helper: render Pagamentos a partir de diferentes formatos
+            const renderPagamentos = (atoItem) => {
+              // Preferir exibir `detalhes_pagamentos` originais quando presentes (importados)
+              const detalhesRaw = parseDetalhes(atoItem.detalhes_pagamentos || atoItem.detalhes_pagamento || null);
+              const temDetalhes = (() => {
+                if (!detalhesRaw) return false;
+                if (Array.isArray(detalhesRaw)) return detalhesRaw.length > 0;
+                if (typeof detalhesRaw === 'object') return Object.keys(detalhesRaw).length > 0;
+                if (typeof detalhesRaw === 'string') return detalhesRaw.trim().length > 0;
+                return false;
+              })();
+
+              if (temDetalhes) {
+                const detalhes = detalhesRaw;
+                // Se for array de { forma, valor }
+                if (Array.isArray(detalhes) && detalhes.length > 0 && typeof detalhes[0] === 'object' && ('forma' in detalhes[0] || 'valor' in detalhes[0])) {
+                  return detalhes
+                    .map(d => {
+                      const forma = d.forma || d.forma_pagamento || d.tipo || 'Outro';
+                      const valor = d.valor ?? d.valor_pago ?? d.amount ?? 0;
+                      const valorNum = Number(valor) || 0;
+                      return `${forma}: Valor R$ ${valorNum.toFixed(2)}`;
+                    })
+                    .join(' | ');
+                }
+
+                // Se for objeto com chaves como dinheiro/cartao/pix
+                if (typeof detalhes === 'object') {
+                  const labels = formasPagamento.map(fp => ({ key: fp.key, label: fp.label }));
+                  const parts = [];
+                  labels.forEach(l => {
+                    const v = detalhes[l.key] ?? (detalhes[l.key] && detalhes[l.key].valor) ?? null;
+                    if (v !== null && v !== undefined) {
+                      const num = Number((typeof v === 'object' ? v.valor : v) ?? 0) || 0;
+                      if (num > 0) parts.push(`${l.label}: R$ ${num.toFixed(2)}`);
+                    }
+                  });
+                  if (parts.length > 0) return parts.join(' | ');
+                }
+
+                // Por fim, renderizar JSON compacto ou string
+                try {
+                  if (typeof detalhes === 'string') return detalhes;
+                  return JSON.stringify(detalhes);
+                } catch (e) {
+                  return String(detalhes);
+                }
+              }
+
+              // Caso não haja detalhes originais, usar `pagamentos` (possível máscara gerada internamente)
+              const pagamentos = atoItem.pagamentos || null;
+              if (pagamentos && Object.keys(pagamentos).length > 0) {
+                return formasPagamento
+                  .filter((fp) => {
+                    const val = pagamentos[fp.key]?.valor;
+                    return val !== undefined && val !== null && !isNaN(parseFloat(val)) && parseFloat(val) > 0;
+                  })
+                  .map((fp) => {
+                    const val = pagamentos[fp.key]?.valor;
+                    const valorNum = parseFloat(val);
+                    const valorFormatado = !isNaN(valorNum) ? valorNum.toFixed(2) : '0.00';
+                    return `${fp.label}: Qtd ${pagamentos[fp.key]?.quantidade ?? 0}, Valor R$ ${valorFormatado}`;
+                  })
+                  .join(' | ');
+              }
+
+              return '-';
+            };
+
             return (
               <tr key={ato.id || idx}>
                 <td>{formatarDataBR(ato.data)}</td>
@@ -67,20 +149,7 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.descricao}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.quantidade}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>R$ {formatarValor(ato.valor_unitario)}</td>
-                <td style={{ border: '1px solid #ddd', padding: 8 }}>
-                  {formasPagamento
-                    .filter((fp) => {
-                      const val = pagamentos[fp.key]?.valor;
-                      return val !== undefined && val !== null && !isNaN(parseFloat(val)) && parseFloat(val) > 0;
-                    })
-                    .map((fp) => {
-                      const val = pagamentos[fp.key]?.valor;
-                      const valorNum = parseFloat(val);
-                      const valorFormatado = !isNaN(valorNum) ? valorNum.toFixed(2) : '0.00';
-                      return `${fp.label}: Qtd ${pagamentos[fp.key]?.quantidade ?? 0}, Valor R$ ${valorFormatado}`;
-                    })
-                    .join(' | ')}
-                </td>
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>{renderPagamentos(ato)}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>
                   <button
                     style={{

@@ -4,7 +4,6 @@ import {
   formatarMoeda,
   formatarDataBR,
   gerarRelatorioPDFAtosPraticados,
-  converterDetalhesPagamentoParaMascara,
 } from './utils';
 import DataSelector from './DataSelector';
 import AtoSearchAtosPraticados from './AtoSearchAtosPraticados';
@@ -139,6 +138,61 @@ function AtosPraticados() {
     const numStr = valorStr.replace(/[^\d,.-]/g, '').replace(',', '.');
     const num = parseFloat(numStr);
     return isNaN(num) ? 0 : num;
+  };
+
+  // Helper: escolhe uma forma de pagamento a partir de detalhes brutos (array ou objeto), sem criar máscara
+  const escolherFormaDeDetalhes = (detalhes) => {
+    if (!detalhes) return null;
+    try {
+      // Se for string JSON, tentar parse
+      if (typeof detalhes === 'string') {
+        try { detalhes = JSON.parse(detalhes); } catch (e) { /* keep string */ }
+      }
+
+      // Array de items { forma, valor }
+      if (Array.isArray(detalhes) && detalhes.length > 0) {
+        for (const item of detalhes) {
+          const valor = Number(item.valor ?? item.valor_pago ?? item.amount ?? 0) || 0;
+          if (valor > 0) {
+            const forma = String(item.forma || item.forma_pagamento || item.tipo || '').toLowerCase();
+            if (forma.includes('pix')) return 'pix';
+            if (forma.includes('cart') || forma.includes('cartão') || forma.includes('cartao')) return 'cartao';
+            if (forma.includes('crc')) return 'crc';
+            if (forma.includes('dep') || forma.includes('deposito')) return 'depositoPrevio';
+            if (forma.includes('dinheiro') || forma === '') return 'dinheiro';
+          }
+        }
+      }
+
+      // Se for objeto com chaves diretas (dinheiro, cartao, pix...)
+      if (typeof detalhes === 'object') {
+        const keys = Object.keys(detalhes);
+        const prefer = ['dinheiro','cartao','pix','crc','depositoPrevio'];
+        for (const k of prefer) {
+          if (keys.includes(k)) {
+            const v = detalhes[k];
+            const valor = typeof v === 'object' ? Number(v.valor ?? 0) : Number(v ?? 0);
+            if (valor > 0) return k;
+          }
+        }
+        // Se objeto tem outras formas com nomes livres, tentar mapear pelo conteúdo
+        for (const k of keys) {
+          const v = detalhes[k];
+          const valor = typeof v === 'object' ? Number(v.valor ?? 0) : Number(v ?? 0);
+          if (valor > 0) {
+            const kl = k.toLowerCase();
+            if (kl.includes('pix')) return 'pix';
+            if (kl.includes('cart') || kl.includes('cartão') || kl.includes('cartao')) return 'cartao';
+            if (kl.includes('crc')) return 'crc';
+            if (kl.includes('dep') || kl.includes('deposito')) return 'depositoPrevio';
+            if (kl.includes('dinheiro')) return 'dinheiro';
+          }
+        }
+      }
+    } catch (e) {
+      // ignore and fallback
+    }
+    return null;
   };
 
   // Funções auxiliares
