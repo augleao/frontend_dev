@@ -19,6 +19,26 @@ import { DEFAULT_TOAST_DURATION } from './components/toastConfig';
 //import { gerarRelatorioPDFAtosPraticados } from './components/RelatorioPDF';
 
 function AtosPraticados() {
+  // Silencia logs enquanto o componente estiver montado (não afeta outros módulos após unmount)
+  useEffect(() => {
+    const _orig = { log: console.log, warn: console.warn, error: console.error };
+    try {
+      console.log = () => {};
+      console.warn = () => {};
+      console.error = () => {};
+    } catch (e) {
+      // noop
+    }
+    return () => {
+      try {
+        console.log = _orig.log;
+        console.warn = _orig.warn;
+        console.error = _orig.error;
+      } catch (e) {
+        // noop
+      }
+    };
+  }, []);
   // Estados
   const [dataSelecionada, setDataSelecionada] = useState(() => {
     const hoje = new Date();
