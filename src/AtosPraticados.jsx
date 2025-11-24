@@ -22,12 +22,16 @@ function AtosPraticados() {
   // Silencia logs enquanto o componente estiver montado (não afeta outros módulos após unmount)
   useEffect(() => {
     const _orig = { log: console.log, warn: console.warn, error: console.error };
-    try {
-      console.log = () => {};
-      console.warn = () => {};
-      console.error = () => {};
-    } catch (e) {
-      // noop
+    // Por padrão não silenciar logs — apenas silencia se a flag estiver explicitamente setada
+    const shouldSilence = localStorage.getItem('SILENCE_ATOS') === 'true';
+    if (shouldSilence) {
+      try {
+        console.log = () => {};
+        console.warn = () => {};
+        console.error = () => {};
+      } catch (e) {
+        // noop
+      }
     }
     return () => {
       try {
@@ -1120,11 +1124,11 @@ useEffect(() => {
           }
         }
 
-        // Log do batch pré-processado (não altera envio atual)
+        // Log do batch pré-processado (não altera envio atual) — imprimir o batch completo para inspeção
         try {
-          console.log('📦 [Preprocess] payloadBatch pronto (exemplo 5):', processedAtos.slice(0,5));
+          console.log('📦 [Preprocess] payloadBatch completo:', processedAtos);
         } catch (e) {
-          // noop
+          try { console.log('📦 [Preprocess] payloadBatch (string):', JSON.stringify(processedAtos)); } catch(_){/*noop*/}
         }
       } else {
         console.log('ℹ️ [Preprocess] Nenhum ato no preview para pré-processar');
