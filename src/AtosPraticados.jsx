@@ -401,63 +401,6 @@ function AtosPraticados() {
           console.log('👤 [AtosPraticados] Atos filtrados por usuário individual:', atosFiltrados.length);
         }
 
-        // Ajuste: quando vários atos pertencem ao mesmo selo/importação,
-        // o valor recebido representa o total de todos os atos no selo.
-        // Precisamos colocar valor unitário = 0 para todos e colocar
-        // o total apenas no último ato do grupo.
-        try {
-          const identificarChaveSelo = (ato) => {
-            return (
-              ato?.selo_consulta || ato?.selo || ato?.selo_numero || ato?.seloId || ato?.selo_id ||
-              ato?.seloConsulta || ato?.origem_importacao || ato?.lote_importacao || ato?.import_batch ||
-              ato?.batchId || ato?.referencia_selo || ato?.seloReferencia || ''
-            );
-          };
-
-          const obterValorNumerico = (ato) => {
-            const cand = ato?.valor_total ?? ato?.valor ?? ato?.valor_unitario ?? ato?.valor_final ?? ato?.valorTotal ?? ato?.emolumento ?? 0;
-            const n = Number(cand) || 0;
-            return n;
-          };
-
-          // Agrupar por chave de selo (somente chaves não vazias)
-          const grupos = atosFiltrados.reduce((acc, ato) => {
-            const chave = identificarChaveSelo(ato) || '__NO_SELO__' + Math.random();
-            if (!acc[chave]) acc[chave] = [];
-            acc[chave].push(ato);
-            return acc;
-          }, {});
-
-          // Para cada grupo com mais de 1 ato e com chave reconhecida (não vazia),
-          // zerar valor_unitario e somar o total, atribuindo-o apenas ao último ato.
-          Object.keys(grupos).forEach((chave) => {
-            const grupo = grupos[chave];
-            // detectar chaves significativas (ou seja, não geradas aleatoriamente)
-            if (!chave.startsWith('__NO_SELO__') && grupo.length > 1) {
-              const total = grupo.reduce((s, a) => s + obterValorNumerico(a), 0);
-              // Ordenar grupo pela ordem original (já está na ordem de listagem)
-              for (let i = 0; i < grupo.length; i++) {
-                const ato = grupo[i];
-                // setar valor_unitario para 0
-                ato.valor_unitario = 0;
-                // limpar campo de total para todos inicialmente
-                if (ato.hasOwnProperty('valor_total')) ato.valor_total = 0;
-                if (ato.hasOwnProperty('valorTotal')) ato.valorTotal = 0;
-                if (ato.hasOwnProperty('valor')) ato.valor = 0;
-              }
-              // Colocar o total agregado somente no último ato do grupo
-              const ultimo = grupo[grupo.length - 1];
-              // Preservar campo que exista preferencialmente 'valor_total' ou 'valor'
-              if (ultimo.hasOwnProperty('valor_total')) ultimo.valor_total = total;
-              else if (ultimo.hasOwnProperty('valorTotal')) ultimo.valorTotal = total;
-              else if (ultimo.hasOwnProperty('valor')) ultimo.valor = total;
-              else ultimo.valor_total = total;
-            }
-          });
-        } catch (e) {
-          console.warn('Erro ao ajustar valores por selo/importacao:', e);
-        }
-
         // Função para verificar se um usuário corresponde ao usuário de referência
         function usuarioCorresponde(usuarioAto, usuarioReferencia) {
           if (!usuarioAto || !usuarioReferencia) return false;
@@ -532,8 +475,89 @@ function AtosPraticados() {
           return ato;
         });
         
-        setAtos(atosComPagamentosConvertidos);
-        console.log('✅ [AtosPraticados] Estado dos atos atualizado com', atosComPagamentosConvertidos.length, 'atos (com conversão de pagamentos)');
+        // Ajuste: quando um selo/importação contém vários atos, o valor e as formas
+        // de pagamento importadas representam o total do selo — não devem ser
+        // aplicadas a cada ato individualmente. Implementamos a regra:
+        // - Para grupos com mais de 1 ato (mesmo selo), colocar `valor_unitario = 0` em todos;
+        // - Zerar a coluna `pagamentos` nos atos intermediários;
+        // - Colocar o total (e as formas de pagamento) somente no último ato do grupo.
+        try {
+          const identificarChaveSelo = (ato) => {
+            return (
+              ato?.selo_consulta || ato?.selo || ato?.selo_numero || ato?.seloId || ato?.selo_id ||
+              ato?.seloConsulta || ato?.origem_importacao || ato?.lote_importacao || ato?.import_batch ||
+              ato?.batchId || ato?.referencia_selo || ''
+            );
+          };
+
+          const sumPagamentosValor = (pagamentos) => {
+            if (!pagamentos) return 0;
+            return (pagamentos.dinheiro?.valor || 0) + (pagamentos.cartao?.valor || 0) + (pagamentos.pix?.valor || 0) + (pagamentos.crc?.valor || 0) + (pagamentos.depositoPrevio?.valor || 0);
+          };
+
+          const zeroPagamentos = converterDetalhesPagamentoParaMascara(null);
+
+          // clone array to mutate
+          const atosAjustados = atosComPagamentosConvertidos.map(a => JSON.parse(JSON.stringify(a)));
+
+          // agrupar por chave de selo
+          const grupos = atosAjustados.reduce((acc, ato, idx) => {
+            const chave = identificarChaveSelo(ato) || `__NO_SELO__${idx}`;
+            if (!acc[chave]) acc[chave] = [];
+            acc[chave].push(ato);
+            return acc;
+          }, {});
+
+          Object.keys(grupos).forEach(chave => {
+            const grupo = grupos[chave];
+            if (!chave.startsWith('__NO_SELO__') && grupo.length > 1) {
+              // calcular pagamentos totais: detectar se cada ato já trouxe o total (valores idênticos)
+              const somaPorAto = grupo.map(g => sumPagamentosValor(g.pagamentos));
+              const todosIguais = somaPorAto.every(v => v === somaPorAto[0]);
+
+              let pagamentosTotais = null;
+              if (todosIguais && somaPorAto[0] > 0) {
+                // cada ato recebeu o total duplicado — usar o objeto do primeiro como total
+                pagamentosTotais = grupo[0].pagamentos ? JSON.parse(JSON.stringify(grupo[0].pagamentos)) : JSON.parse(JSON.stringify(zeroPagamentos));
+              } else {
+                // somar por forma
+                pagamentosTotais = JSON.parse(JSON.stringify(zeroPagamentos));
+                grupo.forEach(g => {
+                  const p = g.pagamentos || {};
+                  Object.keys(pagamentosTotais).forEach(k => {
+                    pagamentosTotais[k].valor = (pagamentosTotais[k].valor || 0) + (p[k]?.valor || 0);
+                    pagamentosTotais[k].quantidade = pagamentosTotais[k].quantidade || 0;
+                    if (p[k]?.valor) pagamentosTotais[k].quantidade = 1;
+                  });
+                });
+              }
+
+              // aplicar zeros em todos e atribuir total no último
+              for (let i = 0; i < grupo.length; i++) {
+                const ato = grupo[i];
+                ato.valor_unitario = 0;
+                ato.pagamentos = JSON.parse(JSON.stringify(zeroPagamentos));
+              }
+              const ultimo = grupo[grupo.length - 1];
+              ultimo.pagamentos = pagamentosTotais;
+
+              // também ajusta campo de total (se existir) para refletir soma dos valores
+              const totalValor = grupo.reduce((s, a) => s + (Number(a.valor_total ?? a.valor ?? a.valorTotal ?? 0) || 0), 0);
+              if (!isNaN(totalValor) && totalValor > 0) {
+                if (ultimo.hasOwnProperty('valor_total')) ultimo.valor_total = totalValor;
+                else if (ultimo.hasOwnProperty('valorTotal')) ultimo.valorTotal = totalValor;
+                else ultimo.valor = totalValor;
+              }
+            }
+          });
+
+          setAtos(atosAjustados);
+          console.log('✅ [AtosPraticados] Estado dos atos atualizado com', atosAjustados.length, 'atos (com conversão de pagamentos e ajustes por selo)');
+        } catch (err) {
+          console.warn('Erro ao ajustar pagamentos por selo:', err);
+          setAtos(atosComPagamentosConvertidos);
+          console.log('✅ [AtosPraticados] Estado dos atos atualizado com', atosComPagamentosConvertidos.length, 'atos (fallback)');
+        }
       } else {
         const errorText = await resAtos.text();
         console.error('❌ [AtosPraticados] Erro na resposta:', resAtos.status, errorText);
