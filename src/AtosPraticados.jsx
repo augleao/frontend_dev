@@ -453,19 +453,15 @@ function AtosPraticados() {
         }
         
         // Converter detalhes de pagamento para a máscara esperada
-        const atosComPagamentosConvertidos = atosFiltrados.map(ato => {
+        let atosComPagamentosConvertidos = atosFiltrados.map(ato => {
           if (ato.detalhes_pagamentos || ato.detalhes_pagamento) {
             console.log('🔄 [AtosPraticados] Convertendo detalhes de pagamento para ato:', ato.codigo);
-            
             // Preferir detalhes_pagamentos, depois detalhes_pagamento
             const detalhesOriginais = ato.detalhes_pagamentos || ato.detalhes_pagamento;
-            
             // Converter para a máscara de pagamentos
             const pagamentosConvertidos = converterDetalhesPagamentoParaMascara(detalhesOriginais);
-            
             console.log('📦 [AtosPraticados] Detalhes originais:', detalhesOriginais);
             console.log('✅ [AtosPraticados] Pagamentos convertidos:', pagamentosConvertidos);
-            
             return {
               ...ato,
               pagamentos: pagamentosConvertidos
@@ -473,9 +469,98 @@ function AtosPraticados() {
           }
           return ato;
         });
-        
+
+        // Se houver grupos de selo com múltiplos atos, garantir valor_unitario via lookup
+        try {
+          // Agrupar por chave de selo possível
+          const grupoPorSelo = {};
+          const chaveSelo = (ato) => (
+            ato.selo_consulta || ato.selo || ato.selo_id || ato.import_batch || ato.origem_importacao || ato.selo_numero || null
+          );
+
+          atosComPagamentosConvertidos.forEach(ato => {
+            const k = chaveSelo(ato) || `sem_selo_${ato.usuario || 'x'}`;
+            if (!grupoPorSelo[k]) grupoPorSelo[k] = [];
+            grupoPorSelo[k].push(ato);
+          });
+
+          // Cache para evitar buscas repetidas
+          const cacheValorFinal = {};
+
+          // Função para buscar valor_final por codigo (usa rota /atos?search=)
+          const buscarValorFinal = async (codigo) => {
+            if (!codigo) return null;
+            if (cacheValorFinal[codigo] !== undefined) return cacheValorFinal[codigo];
+            try {
+              const res = await fetch(`${apiURL}/atos?search=${encodeURIComponent(codigo)}`);
+              if (!res.ok) {
+                console.warn('⚠️ [AtosPraticados] Busca valor_final não ok para', codigo, res.status);
+                cacheValorFinal[codigo] = null;
+                return null;
+              }
+              const body = await res.json();
+              // body pode ser array ou objeto
+              let found = null;
+              if (Array.isArray(body) && body.length) found = body[0];
+              else if (body && Array.isArray(body.atos) && body.atos.length) found = body.atos[0];
+              else if (body && body.valor_final !== undefined) found = body;
+              const valor = found ? (found.valor_final ?? found.valor ?? null) : null;
+              cacheValorFinal[codigo] = valor;
+              return valor;
+            } catch (e) {
+              console.error('Erro ao buscar valor_final para codigo', codigo, e);
+              cacheValorFinal[codigo] = null;
+              return null;
+            }
+          };
+
+          // Para cada grupo com mais de 1 ato, buscar valores e ajustar pagamentos
+          for (const k of Object.keys(grupoPorSelo)) {
+            const grupo = grupoPorSelo[k];
+            if (!grupo || grupo.length <= 0) continue;
+
+            // Determinar formas presentes no grupo (union)
+            const formasPresentes = new Set();
+            grupo.forEach(ato => {
+              const formas = ato.pagamentos ? Object.keys(ato.pagamentos) : [];
+              formas.forEach(f => formasPresentes.add(f));
+            });
+
+            // Buscar valores finais para códigos distintos no grupo
+            const codigosUnicos = [...new Set(grupo.map(a => a.codigo))].filter(Boolean);
+            await Promise.all(codigosUnicos.map(c => buscarValorFinal(c)));
+
+            // Ajustar cada ato: set valor_unitario e pagamentos por forma = quantidade * valor_unitario
+            grupo.forEach(ato => {
+              const codigo = ato.codigo;
+              const valorFinal = cacheValorFinal[codigo] ?? ato.valor_unitario ?? ato.valor_final ?? 0;
+              const quantidadeAto = Number(ato.quantidade) || 1;
+              // Atualizar valor_unitario no ato
+              ato.valor_unitario = valorFinal;
+
+              // Construir máscara de pagamentos respeitando somente as formas detectadas
+              const novoPagamentos = formasPagamento.reduce((acc, fp) => {
+                if (formasPresentes.has(fp.key)) {
+                  acc[fp.key] = {
+                    quantidade: 1,
+                    valor: Number((quantidadeAto * (valorFinal || 0)).toFixed(2)),
+                    manual: true,
+                  };
+                } else {
+                  acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
+                }
+                return acc;
+              }, {});
+
+              ato.pagamentos = novoPagamentos;
+            });
+          }
+        } catch (e) {
+          console.error('Erro ao ajustar grupos de selo:', e);
+        }
+
         setAtos(atosComPagamentosConvertidos);
-        console.log('✅ [AtosPraticados] Estado dos atos atualizado com', atosComPagamentosConvertidos.length, 'atos (com conversão de pagamentos)');
+        console.log('✅ [AtosPraticados] Estado dos atos atualizado com', atosComPagamentosConvertidos.length, 'atos (com conversão de pagamentos e ajustes)');
       } else {
         const errorText = await resAtos.text();
         console.error('❌ [AtosPraticados] Erro na resposta:', resAtos.status, errorText);
