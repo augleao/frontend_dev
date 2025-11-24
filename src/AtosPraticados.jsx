@@ -482,23 +482,11 @@ function AtosPraticados() {
           console.log('🎯 [AtosPraticados] Filtro aplicado:', caixaUnificado ? 'Caixa Unificado (serventia)' : 'Usuário Individual');
         }
         
-        // Converter detalhes de pagamento para a máscara esperada
-        let atosComPagamentosConvertidos = atosFiltrados.map(ato => {
-          if (ato.detalhes_pagamentos || ato.detalhes_pagamento) {
-            console.log('🔄 [AtosPraticados] Convertendo detalhes de pagamento para ato:', ato.codigo);
-            // Preferir detalhes_pagamentos, depois detalhes_pagamento
-            const detalhesOriginais = ato.detalhes_pagamentos || ato.detalhes_pagamento;
-            // Converter para a máscara de pagamentos
-            const pagamentosConvertidos = converterDetalhesPagamentoParaMascara(detalhesOriginais);
-            console.log('📦 [AtosPraticados] Detalhes originais:', detalhesOriginais);
-            console.log('✅ [AtosPraticados] Pagamentos convertidos:', pagamentosConvertidos);
-            return {
-              ...ato,
-              pagamentos: pagamentosConvertidos
-            };
-          }
-          return ato;
-        });
+        // Não aplicar a máscara de exibição aqui — manter os detalhes originais
+        // para que a tabela mostre os dados sem transformação.
+        // A lógica posterior (lookup e ajuste de pagamentos por grupo) continuará
+        // responsável por preencher `ato.pagamentos` quando necessário.
+        let atosComPagamentosConvertidos = atosFiltrados;
 
         // Se houver grupos de selo com múltiplos atos, garantir valor_unitario via lookup
         try {
