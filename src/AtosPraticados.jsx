@@ -19,23 +19,31 @@ import { DEFAULT_TOAST_DURATION } from './components/toastConfig';
 //import { gerarRelatorioPDFAtosPraticados } from './components/RelatorioPDF';
 
 function AtosPraticados() {
-  // Silencia logs enquanto o componente estiver montado (não afeta outros módulos após unmount)
+  // Conditionally silence logs while the component is mounted.
+  // By default logs are active; to silence set localStorage.setItem('SILENCE_ATOS','true')
   useEffect(() => {
+    const shouldSilence = localStorage.getItem('SILENCE_ATOS') === 'true';
     const _orig = { log: console.log, warn: console.warn, error: console.error };
-    try {
-      console.log = () => {};
-      console.warn = () => {};
-      console.error = () => {};
-    } catch (e) {
-      // noop
-    }
-    return () => {
+    if (shouldSilence) {
       try {
-        console.log = _orig.log;
-        console.warn = _orig.warn;
-        console.error = _orig.error;
+        console.log = () => {};
+        console.warn = () => {};
+        console.error = () => {};
       } catch (e) {
         // noop
+      }
+    } else {
+      try { console.info('[AtosPraticados] Logs ativos (SILENCE_ATOS not set)'); } catch(e){}
+    }
+    return () => {
+      if (shouldSilence) {
+        try {
+          console.log = _orig.log;
+          console.warn = _orig.warn;
+          console.error = _orig.error;
+        } catch (e) {
+          // noop
+        }
       }
     };
   }, []);
@@ -1131,7 +1139,28 @@ useEffect(() => {
               console.log('📤 [ImportarAtos] salvando ato preprocessado:', { payloadAto, token: masked });
             } catch (e) {}
             // Evitar duplicatas: se o ato já tiver um id no preview, atualize via PUT
-            const possibleId = ato.id || ato._id || ato.atoId || ato.ato_id || null;
+            let possibleId = ato.id || ato._id || ato.atoId || ato.ato_id || null;
+            // Se não temos id, tentar localizar um registro existente no server por codigo/data/usuario
+            if (!possibleId) {
+              try {
+                const queryUrl = `${apiURL}/atos-praticados?data=${encodeURIComponent(ato.data || dataSelecionada)}&codigo=${encodeURIComponent(codigo)}&usuario=${encodeURIComponent(nomeLogado)}`;
+                const resExist = await fetch(queryUrl, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+                if (resExist.ok) {
+                  const bodyExist = await resExist.json().catch(() => null);
+                  let candidates = [];
+                  if (Array.isArray(bodyExist)) candidates = bodyExist;
+                  else if (bodyExist && Array.isArray(bodyExist.atos)) candidates = bodyExist.atos;
+                  else if (bodyExist && Array.isArray(bodyExist.CaixaDiario)) candidates = bodyExist.CaixaDiario;
+                  if (candidates.length) {
+                    // tentar encontrar correspondência por quantidade e hora
+                    const match = candidates.find(c => (Number(c.quantidade || 1) === quantidadeAto) && (String(c.hora || '') === String(ato.hora || ato.horaReg || '')));
+                    if (match) possibleId = match.id || match._id || match.atoId || match.ato_id || null;
+                  }
+                }
+              } catch (e) {
+                console.warn('[ImportarAtos] erro ao checar existência de ato antes de POST:', e);
+              }
+            }
             let resSave;
             if (possibleId) {
               try {
