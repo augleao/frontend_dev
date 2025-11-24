@@ -69,7 +69,7 @@ function ImportarAtos() {
     try {
       const token = localStorage.getItem('token');
       // Log do payload enviado (mascarando token)
-      try { console.log('➡️ [ImportarAtos] PUT', `${apiURL}/atos/${editAto.id}`, { payload: editAto, tokenPresent: !!token }); } catch(e){}
+      console.log('➡️ [ImportarAtos] PUT', `${apiURL}/atos/${editAto.id}`, { payload: editAto, tokenPresent: !!token });
       const res = await fetch(`${apiURL}/atos/${editAto.id}`, {
         method: 'PUT',
         headers: {
@@ -102,7 +102,7 @@ function ImportarAtos() {
       const token = localStorage.getItem('token');
       for (const ato of atos) {
         // Log do payload por ato
-        try { console.log('➡️ [ImportarAtos] PUT (batch)', `${apiURL}/atos/${ato.id}`, { payload: ato, tokenPresent: !!token }); } catch(e){}
+        console.log('➡️ [ImportarAtos] PUT (batch)', `${apiURL}/atos/${ato.id}`, { payload: ato, tokenPresent: !!token });
         const res = await fetch(`${apiURL}/atos/${ato.id}`, {
           method: 'PUT',
           headers: {
@@ -137,7 +137,7 @@ function ImportarAtos() {
     try {
       const token = localStorage.getItem('token');
       // Log do payload de criação
-      try { console.log('➡️ [ImportarAtos] POST', `${apiURL}/atos`, { payload: novoAto, tokenPresent: !!token }); } catch(e){}
+      console.log('➡️ [ImportarAtos] POST', `${apiURL}/atos`, { payload: novoAto, tokenPresent: !!token });
       const res = await fetch(`${apiURL}/atos`, {
         method: 'POST',
         headers: {

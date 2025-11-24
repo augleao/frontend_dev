@@ -987,7 +987,7 @@ useEffect(() => {
       };
 
       // Log do payload enviado ao backend para importação (não imprime token)
-      try { console.log('➡️ [AtosPraticados] POST /atos-praticados/importar-servicos payload', payloadImport, 'tokenPresent:', !!token); } catch (e) {}
+      console.log('➡️ [AtosPraticados] POST /atos-praticados/importar-servicos payload', payloadImport, 'tokenPresent:', !!token);
 
       const resImportar = await fetch(`${apiURL}/atos-praticados/importar-servicos`, {
         method: 'POST',
@@ -1125,11 +1125,7 @@ useEffect(() => {
         }
 
         // Log do batch pré-processado (não altera envio atual) — imprimir o batch completo para inspeção
-        try {
-          console.log('📦 [Preprocess] payloadBatch completo:', processedAtos);
-        } catch (e) {
-          try { console.log('📦 [Preprocess] payloadBatch (string):', JSON.stringify(processedAtos)); } catch(_){/*noop*/}
-        }
+        console.log('📦 [Preprocess] payloadBatch completo:', processedAtos);
       } else {
         console.log('ℹ️ [Preprocess] Nenhum ato no preview para pré-processar');
       }
@@ -1187,7 +1183,7 @@ useEffect(() => {
         });
         if (resSaved.ok) {
           const savedBody = await resSaved.json().catch(() => null);
-          try { console.log('📥 [AtosPraticados] Registros salvos após importação (consulta direta):', savedBody); } catch (e) {}
+          console.log('📥 [AtosPraticados] Registros salvos após importação (consulta direta):', savedBody);
         } else {
           try { console.warn('⚠️ [AtosPraticados] Falha ao buscar registros salvos após importação:', resSaved.status); } catch (e) {}
         }
