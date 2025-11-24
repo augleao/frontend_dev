@@ -642,13 +642,20 @@ function AtosPraticados() {
               if (cachePedidoDetalhes[protocolo] !== undefined) return cachePedidoDetalhes[protocolo];
               try {
                 const tokenLocal = localStorage.getItem('token');
+                const debugOn = localStorage.getItem('DEBUG_CONSOLE') === 'true';
                 // Primeiro tentar endpoint /recibo/:protocolo que retorna objeto { pedido }
                 try {
                   const resRecibo = await fetch(`${apiURL}/recibo/${encodeURIComponent(protocolo)}`, {
                     headers: tokenLocal ? { Authorization: `Bearer ${tokenLocal}` } : {}
                   });
+                  if (debugOn) {
+                    try { console.log('[DEBUG-ATOS] /recibo status', protocolo, resRecibo.status); } catch(_){}
+                  }
                   if (resRecibo.ok) {
                     const body = await resRecibo.json().catch(() => null);
+                    if (debugOn) {
+                      try { console.log('[DEBUG-ATOS] /recibo body keys', protocolo, body && Object.keys(body).slice(0,6)); } catch(_){}
+                    }
                     const pedido = body && (body.pedido || body);
                     if (pedido) {
                       const detalhes = pedido.valorAdiantadoDetalhes || pedido.valor_adiantado_detalhes || pedido.valorAdiantado || null;
@@ -660,6 +667,7 @@ function AtosPraticados() {
                   }
                 } catch (e) {
                   // ignore and fallback
+                  if (debugOn) try { console.warn('[DEBUG-ATOS] /recibo fetch failed for', protocolo, e); } catch(_){}
                 }
 
                 // Em seguida tentar /pedido_pagamento/:protocolo
@@ -667,8 +675,14 @@ function AtosPraticados() {
                   const resPag = await fetch(`${apiURL}/pedido_pagamento/${encodeURIComponent(protocolo)}`, {
                     headers: tokenLocal ? { Authorization: `Bearer ${tokenLocal}` } : {}
                   });
+                  if (debugOn) {
+                    try { console.log('[DEBUG-ATOS] /pedido_pagamento status', protocolo, resPag.status); } catch(_){}
+                  }
                   if (resPag.ok) {
                     const dataPag = await resPag.json().catch(() => null);
+                    if (debugOn) {
+                      try { console.log('[DEBUG-ATOS] /pedido_pagamento body keys', protocolo, dataPag && Object.keys(dataPag).slice(0,6)); } catch(_){}
+                    }
                     // detectar formatos possíveis
                     let detalhes = null;
                     if (Array.isArray(dataPag.detalhes_pagamento) && dataPag.detalhes_pagamento.length > 0) detalhes = dataPag.detalhes_pagamento;
@@ -682,7 +696,7 @@ function AtosPraticados() {
                     }
                   }
                 } catch (e) {
-                  // ignore
+                  if (debugOn) try { console.warn('[DEBUG-ATOS] /pedido_pagamento fetch failed for', protocolo, e); } catch(_){}
                 }
 
                 cachePedidoDetalhes[protocolo] = null;
@@ -716,6 +730,12 @@ function AtosPraticados() {
                   // Converter detalhes para máscara e escolher a primeira forma encontrada
                   const mask = converterDetalhesPagamentoParaMascara(detalhesPedido);
                   chaveEscolhida = Object.keys(mask).find(k => (mask[k] && Number(mask[k].valor) > 0)) || Object.keys(mask)[0];
+
+                  // Debug log: show mask summary and chosen key
+                  try {
+                    const debugOn = localStorage.getItem('DEBUG_CONSOLE') === 'true';
+                    if (debugOn) console.log('[DEBUG-ATOS] protocolo=', protocolo, 'mask=', Object.keys(mask).reduce((acc,k)=>{ acc[k]=Number((mask[k] && mask[k].valor)||0); return acc; },{}), 'chosen=', chaveEscolhida);
+                  } catch(_) {}
 
                   // Atribuir o valor total do ato (valor_unitario * quantidade) para a forma escolhida
                   novoPagamentos = formasPagamento.reduce((acc, fp) => {
@@ -773,6 +793,10 @@ function AtosPraticados() {
               }
 
               ato.pagamentos = novoPagamentos;
+              try {
+                const debugOn = localStorage.getItem('DEBUG_CONSOLE') === 'true';
+                if (debugOn) console.log('[DEBUG-ATOS] ato pagamentos assigned', { codigo: ato.codigo, protocolo: ato.__detectedPagamento?.protocolo || null, chosen: ato.__detectedPagamento?.chosenForm, pagamentos: ato.pagamentos });
+              } catch(_) {}
               // Ensure quantidade in pagamentos reflects ato.quantidade for consistency
               Object.keys(ato.pagamentos || {}).forEach(k => {
                 if (ato.pagamentos[k] && ato.pagamentos[k].quantidade === 0 && ato.__detectedPagamento && ato.__detectedPagamento.chosenForm === k) {
