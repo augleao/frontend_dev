@@ -976,17 +976,22 @@ useEffect(() => {
         apiURL: apiURL
       });
       
+      const payloadImport = {
+        data: dataSelecionada,
+        usuarios: [nomeLogado], // Apenas o usuário logado
+        serventia: serventiaUsuario
+      };
+
+      // Log do payload enviado ao backend para importação (não imprime token)
+      try { console.log('➡️ [AtosPraticados] POST /atos-praticados/importar-servicos payload', payloadImport, 'tokenPresent:', !!token); } catch (e) {}
+
       const resImportar = await fetch(`${apiURL}/atos-praticados/importar-servicos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({
-          data: dataSelecionada,
-          usuarios: [nomeLogado], // Apenas o usuário logado
-          serventia: serventiaUsuario
-        })
+        body: JSON.stringify(payloadImport)
       });
 
       console.log('📡 Response status:', resImportar.status);
@@ -1169,6 +1174,22 @@ useEffect(() => {
   // E também acionar o trigger para manter consistência com os efeitos
   setRefreshTrigger(prev => prev + 1);
   console.log('✅ [Importação] Trigger de refresh acionado');
+
+      // Após acionar refresh, buscar diretamente os atos salvos para inspeção
+      try {
+        const resSaved = await fetch(`${apiURL}/atos-praticados?data=${encodeURIComponent(dataSelecionada)}&usuario=${encodeURIComponent(nomeLogado)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: 'no-store'
+        });
+        if (resSaved.ok) {
+          const savedBody = await resSaved.json().catch(() => null);
+          try { console.log('📥 [AtosPraticados] Registros salvos após importação (consulta direta):', savedBody); } catch (e) {}
+        } else {
+          try { console.warn('⚠️ [AtosPraticados] Falha ao buscar registros salvos após importação:', resSaved.status); } catch (e) {}
+        }
+      } catch (e) {
+        console.error('❌ [AtosPraticados] Erro ao buscar registros salvos após importação:', e);
+      }
 
     } catch (error) {
       console.error('💥 Erro ao importar atos praticados:', error);
