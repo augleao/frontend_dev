@@ -1119,6 +1119,8 @@ useEffect(() => {
               descricao: ato.descricao || ato.nome || '',
               quantidade: quantidadeAto,
               valor_unitario: ato.valor_unitario,
+              // enviar também valor_final para compatibilidade com backends que usam esse campo
+              valor_final: ato.valor_unitario,
               pagamentos: ato.pagamentos,
               usuario: nomeLogado,
               origem_importacao: ato.origem_importacao || 'importado-frontend'
@@ -1128,20 +1130,41 @@ useEffect(() => {
               const masked = token ? `len=${token.length} starts=${String(token).slice(0,6)}...` : '<no token>';
               console.log('📤 [ImportarAtos] salvando ato preprocessado:', { payloadAto, token: masked });
             } catch (e) {}
+            // Evitar duplicatas: se o ato já tiver um id no preview, atualize via PUT
+            const possibleId = ato.id || ato._id || ato.atoId || ato.ato_id || null;
+            let resSave;
+            if (possibleId) {
+              try {
+                resSave = await fetch(`${apiURL}/atos-praticados/${encodeURIComponent(possibleId)}`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                  },
+                  body: JSON.stringify(payloadAto)
+                });
+              } catch (e) {
+                resSave = { ok: false, status: 0, text: async () => String(e) };
+              }
+            } else {
+              try {
+                resSave = await fetch(`${apiURL}/atos-praticados`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                  },
+                  body: JSON.stringify(payloadAto)
+                });
+              } catch (e) {
+                resSave = { ok: false, status: 0, text: async () => String(e) };
+              }
+            }
 
-            const resSave = await fetch(`${apiURL}/atos-praticados`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
-              },
-              body: JSON.stringify(payloadAto)
-            });
-
-            if (resSave.ok) salvos += 1;
+            if (resSave && resSave.ok) salvos += 1;
             else {
-              const txt = await resSave.text().catch(() => '');
-              console.warn('[ImportarAtos] falha ao salvar ato preprocessado:', resSave.status, txt);
+              const txt = resSave ? await resSave.text().catch(() => '') : 'no-response';
+              console.warn('[ImportarAtos] falha ao salvar/atualizar ato preprocessado:', resSave ? resSave.status : 'no-status', txt);
             }
           } catch (e) {
             console.error('[ImportarAtos] erro ao processar ato:', e);
