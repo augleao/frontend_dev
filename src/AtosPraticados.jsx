@@ -520,6 +520,20 @@ function AtosPraticados() {
             }
           };
 
+          // Primeiro: garantir que TODOS os atos tenham `valor_unitario` baseado no `codigo` (valor_final)
+          try {
+            const codigosTodos = [...new Set(atosComPagamentosConvertidos.map(a => a.codigo).filter(Boolean))];
+            await Promise.all(codigosTodos.map(c => buscarValorFinal(c)));
+            atosComPagamentosConvertidos.forEach(ato => {
+              const codigo = ato.codigo;
+              const valorFinal = cacheValorFinal[codigo] ?? ato.valor_unitario ?? ato.valor_final ?? 0;
+              ato.valor_unitario = valorFinal;
+            });
+            console.log('🔎 [AtosPraticados] Valor unitario preenchido via lookup para códigos:', codigosTodos);
+          } catch (e) {
+            console.warn('⚠️ [AtosPraticados] Erro ao popular valor_unitario globalmente:', e);
+          }
+
           // Para cada grupo com mais de 1 ato, buscar valores e ajustar pagamentos
           for (const k of Object.keys(grupoPorSelo)) {
             const grupo = grupoPorSelo[k];
