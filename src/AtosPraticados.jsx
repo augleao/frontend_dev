@@ -541,8 +541,21 @@ function AtosPraticados() {
               const ultimo = grupo[grupo.length - 1];
               ultimo.pagamentos = pagamentosTotais;
 
-              // também ajusta campo de total (se existir) para refletir soma dos valores
-              const totalValor = grupo.reduce((s, a) => s + (Number(a.valor_total ?? a.valor ?? a.valorTotal ?? 0) || 0), 0);
+              // também ajusta campo de total (se existir).
+              // Se os pagamentos estavam duplicados em cada ato (todosIguais),
+              // o campo de valor também costuma estar duplicado — nesse caso
+              // NÃO devemos multiplicar por quantidade: usamos o valor do primeiro ato.
+              let totalValor = 0;
+              if (todosIguais && somaPorAto[0] > 0) {
+                totalValor = Number(grupo[0].valor_total ?? grupo[0].valor ?? grupo[0].valorTotal ?? 0) || 0;
+                // se não houver campo de valor, recair sobre soma dos pagamentos calculados
+                if (!totalValor) {
+                  totalValor = Object.values(pagamentosTotais || {}).reduce((s, p) => s + (p?.valor || 0), 0);
+                }
+              } else {
+                totalValor = grupo.reduce((s, a) => s + (Number(a.valor_total ?? a.valor ?? a.valorTotal ?? 0) || 0), 0);
+              }
+
               if (!isNaN(totalValor) && totalValor > 0) {
                 if (ultimo.hasOwnProperty('valor_total')) ultimo.valor_total = totalValor;
                 else if (ultimo.hasOwnProperty('valorTotal')) ultimo.valorTotal = totalValor;
