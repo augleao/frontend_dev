@@ -711,10 +711,11 @@ function AtosPraticados() {
                 const protocolo = encontrarProtocoloNoAto(ato);
                 const detalhesPedido = protocolo ? await buscarDetalhesPagamentoDoPedido(protocolo) : null;
 
+                let chaveEscolhida = null;
                 if (detalhesPedido && Array.isArray(detalhesPedido) && detalhesPedido.length > 0) {
                   // Converter detalhes para máscara e escolher a primeira forma encontrada
                   const mask = converterDetalhesPagamentoParaMascara(detalhesPedido);
-                  const chaveEscolhida = Object.keys(mask).find(k => (mask[k] && Number(mask[k].valor) > 0)) || Object.keys(mask)[0];
+                  chaveEscolhida = Object.keys(mask).find(k => (mask[k] && Number(mask[k].valor) > 0)) || Object.keys(mask)[0];
 
                   // Atribuir o valor total do ato (valor_unitario * quantidade) para a forma escolhida
                   novoPagamentos = formasPagamento.reduce((acc, fp) => {
@@ -729,6 +730,8 @@ function AtosPraticados() {
                     }
                     return acc;
                   }, {});
+                  // mark diagnostics for this ato
+                  ato.__detectedPagamento = { protocolo: protocolo || null, source: 'pedido', chosenForm: chaveEscolhida || null };
                 } else {
                   // Fallback: usar as formas detectadas no grupo (formasPresentes)
                   const primeiraForma = formasPresentes.values().next().value;
@@ -738,6 +741,7 @@ function AtosPraticados() {
                       valor: Number(((valorFinal || 0) * quantidadeAto).toFixed(2)),
                       manual: true
                     };
+                    ato.__detectedPagamento = { protocolo: null, source: 'group', chosenForm: primeiraForma };
                   } else {
                     // Último recurso: colocar em 'dinheiro'
                     novoPagamentos['dinheiro'] = {
@@ -745,6 +749,7 @@ function AtosPraticados() {
                       valor: Number(((valorFinal || 0) * quantidadeAto).toFixed(2)),
                       manual: true
                     };
+                    ato.__detectedPagamento = { protocolo: null, source: 'fallback', chosenForm: 'dinheiro' };
                   }
                 }
               } catch (e) {
@@ -756,16 +761,24 @@ function AtosPraticados() {
                     valor: Number(((valorFinal || 0) * quantidadeAto).toFixed(2)),
                     manual: true
                   };
+                  ato.__detectedPagamento = { protocolo: null, source: 'error-fallback', chosenForm: primeiraForma };
                 } else {
                   novoPagamentos['dinheiro'] = {
                     quantidade: quantidadeAto,
                     valor: Number(((valorFinal || 0) * quantidadeAto).toFixed(2)),
                     manual: true
                   };
+                  ato.__detectedPagamento = { protocolo: null, source: 'error-fallback', chosenForm: 'dinheiro' };
                 }
               }
 
               ato.pagamentos = novoPagamentos;
+              // Ensure quantidade in pagamentos reflects ato.quantidade for consistency
+              Object.keys(ato.pagamentos || {}).forEach(k => {
+                if (ato.pagamentos[k] && ato.pagamentos[k].quantidade === 0 && ato.__detectedPagamento && ato.__detectedPagamento.chosenForm === k) {
+                  ato.pagamentos[k].quantidade = quantidadeAto;
+                }
+              });
             }
           }
         } catch (e) {
