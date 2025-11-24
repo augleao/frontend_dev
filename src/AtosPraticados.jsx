@@ -70,6 +70,9 @@ function AtosPraticados() {
   const toastTimerRef = useRef(null);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
+  // Debug entries for UI panel (visible even if console is silenced)
+  const [debugEntries, setDebugEntries] = useState([]);
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
 
   // Nome do usuário logado (precisa estar antes de qualquer uso)
   const [nomeUsuario, setNomeUsuario] = useState(() => {
@@ -708,6 +711,7 @@ function AtosPraticados() {
             };
 
             // Ajustar cada ato: set valor_unitario e pagamentos por forma = quantidade * valor_unitario
+            const novosDebug = [];
             for (const ato of grupo) {
               const codigo = ato.codigo;
               const valorFinal = cacheValorFinal[codigo] ?? ato.valor_unitario ?? ato.valor_final ?? 0;
@@ -793,6 +797,19 @@ function AtosPraticados() {
               }
 
               ato.pagamentos = novoPagamentos;
+              // collect debug entry for UI panel
+              try {
+                novosDebug.push({
+                  codigo: ato.codigo,
+                  descricao: ato.descricao,
+                  protocolo: ato.__detectedPagamento?.protocolo || null,
+                  source: ato.__detectedPagamento?.source || null,
+                  chosenForm: ato.__detectedPagamento?.chosenForm || null,
+                  quantidade: quantidadeAto,
+                  valor_unitario: ato.valor_unitario,
+                  pagamentos: ato.pagamentos
+                });
+              } catch (_) {}
               try {
                 const debugOn = localStorage.getItem('DEBUG_CONSOLE') === 'true';
                 if (debugOn) console.log('[DEBUG-ATOS] ato pagamentos assigned', { codigo: ato.codigo, protocolo: ato.__detectedPagamento?.protocolo || null, chosen: ato.__detectedPagamento?.chosenForm, pagamentos: ato.pagamentos });
@@ -803,6 +820,10 @@ function AtosPraticados() {
                   ato.pagamentos[k].quantidade = quantidadeAto;
                 }
               });
+            }
+            if (novosDebug.length > 0) {
+              // append to global debugEntries for inspection
+              setDebugEntries((prev) => [...novosDebug, ...prev].slice(0, 200));
             }
           }
         } catch (e) {
@@ -1259,11 +1280,52 @@ useEffect(() => {
               }}>
                 📋 Atos praticados por {nomeUsuario} em {formatarDataBR(dataSelecionada)}
               </h3>
+              {/* Debug toggle button (small) */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button
+                  onClick={() => setShowDebugPanel(v => !v)}
+                  style={{
+                    background: showDebugPanel ? '#e53e3e' : '#2d3748',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '6px 8px',
+                    fontSize: 12,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {showDebugPanel ? 'Fechar Debug' : 'Mostrar Debug'}
+                </button>
+              </div>
             </div>
             <AtosTable atos={atosDoUsuario} onRemover={removerAto} />
           </div>
         </div>
       </div>
+      {/* Debug Panel (visible when toggled) */}
+      {showDebugPanel && (
+        <div style={{ position: 'fixed', right: 12, bottom: 12, width: 520, maxHeight: '60vh', overflow: 'auto', background: 'rgba(0,0,0,0.85)', color: '#fff', padding: 12, borderRadius: 8, zIndex: 9999 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <strong>Debug - Atos Pagamentos (últimos)</strong>
+            <button onClick={() => setDebugEntries([])} style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '4px 6px' }}>Limpar</button>
+          </div>
+          <div style={{ fontSize: 12 }}>
+            {debugEntries.length === 0 ? <div style={{ opacity: 0.7 }}>Nenhuma entrada de debug registrada.</div> : debugEntries.map((d, i) => (
+              <div key={i} style={{ borderBottom: '1px dashed rgba(255,255,255,0.06)', padding: '6px 0' }}>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ minWidth: 64, fontFamily: 'monospace' }}>{d.codigo}</div>
+                  <div style={{ flex: 1 }}>{d.descricao || ''}</div>
+                  <div style={{ minWidth: 110, textAlign: 'right' }}>{d.chosenForm || '—'}</div>
+                </div>
+                <div style={{ marginTop: 4, fontSize: 11, opacity: 0.85 }}>
+                  <div>protocolo: {d.protocolo || '—'} | source: {d.source || '—'}</div>
+                  <div>qtd: {d.quantidade} • unit: R$ {Number(d.valor_unitario || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} • total: R$ {((d.valor_unitario||0)*d.quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {/* Toast de feedback de exclusão */}
       <Toast
         message={toastMessage}
