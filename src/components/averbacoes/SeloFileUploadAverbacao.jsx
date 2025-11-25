@@ -26,6 +26,8 @@ export default function SeloFileUploadAverbacao({ averbacaoId, onUpload }) {
       }
       const formData = new FormData();
       formData.append('imagem', file);
+      // compatibilidade com API de execução de serviço
+      formData.append('execucao_servico_id', averbacaoId);
       const token = localStorage.getItem('token');
       // Reaproveitar API de execução de serviço para salvar selos (mesma rota usada em ServicoExecucao)
       const res = await fetch(`${config.apiURL}/execucaoservico/${encodeURIComponent(averbacaoId)}/selo`, {
@@ -34,7 +36,36 @@ export default function SeloFileUploadAverbacao({ averbacaoId, onUpload }) {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const text = await res.text();
-      if (!res.ok) throw new Error(text || 'Erro ao enviar imagem.');
+      if (!res.ok) {
+        console.error('[SeloFileUploadAverbacao] upload response error:', res.status, text);
+        const shouldFallback = res.status === 500 || (text && text.toLowerCase().includes('execucao_servico')) || (text && text.toLowerCase().includes('foreign key'));
+        if (shouldFallback) {
+          try {
+            const fbForm = new FormData();
+            fbForm.append('imagem', file);
+            const fbToken = token;
+            const fbRes = await fetch(`${config.apiURL}/averbacoes-gratuitas/${encodeURIComponent(averbacaoId)}/selo`, {
+              method: 'POST',
+              body: fbForm,
+              headers: { 'Authorization': `Bearer ${fbToken}` }
+            });
+            const fbText = await fbRes.text();
+            if (!fbRes.ok) {
+              console.error('[SeloFileUploadAverbacao] fallback upload failed:', fbRes.status, fbText);
+              throw new Error(fbText || 'Erro ao enviar imagem (fallback).');
+            }
+            let fbData = {};
+            try { fbData = fbText ? JSON.parse(fbText) : {}; } catch {}
+            if (onUpload) onUpload(fbData);
+            setUploading(false);
+            return;
+          } catch (fbErr) {
+            console.error('[SeloFileUploadAverbacao] fallback error:', fbErr);
+            throw new Error(fbErr.message || 'Erro no fallback do envio da imagem.');
+          }
+        }
+        throw new Error(text || 'Erro ao enviar imagem.');
+      }
       let data = {};
       try { data = text ? JSON.parse(text) : {}; } catch {}
       if (onUpload) onUpload(data);
