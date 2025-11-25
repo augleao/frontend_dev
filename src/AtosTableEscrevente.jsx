@@ -1,5 +1,5 @@
 import React from 'react';
-import { formasPagamento, formatarValor } from './utils';
+import { formasPagamento, formatarMoeda } from './utils';
 
 export default function AtosTableEscrevente({ atos, onRemover }) {
   console.log("Atos recebidos na tabela atos-table:", atos);
@@ -36,7 +36,6 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Data</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Hora</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Código</th>
-            <th style={{ border: '1px solid #ddd', padding: 8 }}>Tributação</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Descrição</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Quantidade</th>
             <th style={{ border: '1px solid #ddd', padding: 8 }}>Valor Unitário</th>
@@ -47,16 +46,12 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
         <tbody>
           {atos.length === 0 && (
             <tr>
-              <td colSpan={9} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
+              <td colSpan={8} style={{ textAlign: 'center', padding: 16, color: '#888' }}>
                 Nenhum ato cadastrado para esta data.
               </td>
             </tr>
           )}
-          {atos.map((ato, idx) => {
-            const tributacaoTexto = ato.tributacao
-              || (ato.tributacao_codigo
-                ? `${ato.tributacao_codigo}${ato.tributacao_descricao ? ' - ' + ato.tributacao_descricao : ''}`
-                : '-');
+            {atos.map((ato, idx) => {
 
             // Helper: tenta parsear detalhes_pagamentos (string JSON ou objeto)
             const parseDetalhes = (det) => {
@@ -83,35 +78,56 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
                 return false;
               })();
 
+              const escolherFormaLabel = (formaKeyOrName) => {
+                if (!formaKeyOrName) return 'OUTRO';
+                const key = String(formaKeyOrName).toLowerCase();
+                const found = formasPagamento.find(fp => fp.key === key || fp.label.toLowerCase() === key);
+                if (found) return found.label.toUpperCase();
+                return String(formaKeyOrName).toUpperCase();
+              };
+
               if (temDetalhes) {
                 const detalhes = detalhesRaw;
-                // Se for array de { forma, valor }
-                if (Array.isArray(detalhes) && detalhes.length > 0 && typeof detalhes[0] === 'object' && ('forma' in detalhes[0] || 'valor' in detalhes[0])) {
-                  return detalhes
-                    .map(d => {
-                      const forma = d.forma || d.forma_pagamento || d.tipo || 'Outro';
-                      const valor = d.valor ?? d.valor_pago ?? d.amount ?? 0;
-                      const valorNum = Number(valor) || 0;
-                      return `${forma}: Valor R$ ${valorNum.toFixed(2)}`;
-                    })
-                    .join(' | ');
+
+                // Caso comum: objeto com `valor_total` e `formas_utilizadas` (ex: importados)
+                if (typeof detalhes === 'object' && ('valor_total' in detalhes || 'formas_utilizadas' in detalhes)) {
+                  const valor = Number(detalhes.valor_total ?? detalhes.valor ?? detalhes.amount ?? 0) || 0;
+                  let formaLabel = null;
+                  if (Array.isArray(detalhes.formas_utilizadas) && detalhes.formas_utilizadas.length > 0) {
+                    formaLabel = escolherFormaLabel(detalhes.formas_utilizadas[0]);
+                  } else if (detalhes.forma) {
+                    formaLabel = escolherFormaLabel(detalhes.forma);
+                  } else {
+                    // tentar encontrar a primeira chave com valor > 0
+                    const keys = Object.keys(detalhes);
+                    for (let k of keys) {
+                      const v = detalhes[k];
+                      const num = Number((typeof v === 'object' ? v.valor : v) ?? 0) || 0;
+                      if (num > 0) { formaLabel = escolherFormaLabel(k); break; }
+                    }
+                  }
+                  return `Valor: ${formatarMoeda(valor)}${formaLabel ? ' - ' + formaLabel : ''}`;
                 }
 
-                // Se for objeto com chaves como dinheiro/cartao/pix
+                // Se for array de { forma, valor } -> pegar primeiro registro para exibir valor/forma
+                if (Array.isArray(detalhes) && detalhes.length > 0) {
+                  const first = detalhes.find(d => d && (d.valor || d.valor_pago || d.amount || d.valor_total)) || detalhes[0];
+                  const valor = Number(first.valor ?? first.valor_pago ?? first.amount ?? first.valor_total ?? 0) || 0;
+                  const formaLabel = escolherFormaLabel(first.forma || first.forma_pagamento || first.tipo || null);
+                  return `Valor: ${formatarMoeda(valor)}${formaLabel ? ' - ' + formaLabel : ''}`;
+                }
+
+                // Objeto com chaves (dinheiro/cartao/pix) -> pegar primeira chave com valor
                 if (typeof detalhes === 'object') {
                   const labels = formasPagamento.map(fp => ({ key: fp.key, label: fp.label }));
-                  const parts = [];
-                  labels.forEach(l => {
+                  for (let l of labels) {
                     const v = detalhes[l.key] ?? (detalhes[l.key] && detalhes[l.key].valor) ?? null;
-                    if (v !== null && v !== undefined) {
-                      const num = Number((typeof v === 'object' ? v.valor : v) ?? 0) || 0;
-                      if (num > 0) parts.push(`${l.label}: R$ ${num.toFixed(2)}`);
-                    }
-                  });
-                  if (parts.length > 0) return parts.join(' | ');
+                    const num = Number((typeof v === 'object' ? v.valor : v) ?? 0) || 0;
+                    if (num > 0) return `Valor: ${formatarMoeda(num)} - ${l.label.toUpperCase()}`;
+                  }
                 }
 
-                // Por fim, renderizar JSON compacto ou string
+                // Fallback: string ou JSON compacto
                 try {
                   if (typeof detalhes === 'string') return detalhes;
                   return JSON.stringify(detalhes);
@@ -122,19 +138,23 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
 
               // Caso não haja detalhes originais, usar `pagamentos` (possível máscara gerada internamente)
               const pagamentos = atoItem.pagamentos || null;
-              if (pagamentos && Object.keys(pagamentos).length > 0) {
-                return formasPagamento
-                  .filter((fp) => {
-                    const val = pagamentos[fp.key]?.valor;
-                    return val !== undefined && val !== null && !isNaN(parseFloat(val)) && parseFloat(val) > 0;
-                  })
-                  .map((fp) => {
-                    const val = pagamentos[fp.key]?.valor;
-                    const valorNum = parseFloat(val);
-                    const valorFormatado = !isNaN(valorNum) ? valorNum.toFixed(2) : '0.00';
-                    return `${fp.label}: Qtd ${pagamentos[fp.key]?.quantidade ?? 0}, Valor R$ ${valorFormatado}`;
-                  })
-                  .join(' | ');
+              if (pagamentos) {
+                // pagamentos como array -> usar primeiro
+                if (Array.isArray(pagamentos) && pagamentos.length > 0) {
+                  const p = pagamentos[0];
+                  const valor = Number(p.valor ?? p.valor_pago ?? p.amount ?? p.valor_total ?? 0) || 0;
+                  const formaLabel = escolherFormaLabel(p.forma || p.forma_pagamento || p.tipo || null);
+                  return `Valor: ${formatarMoeda(valor)}${formaLabel ? ' - ' + formaLabel : ''}`;
+                }
+
+                // pagamentos como objeto por formas
+                if (typeof pagamentos === 'object') {
+                  for (let fp of formasPagamento) {
+                    const entry = pagamentos[fp.key];
+                    const num = Number(entry?.valor ?? entry ?? 0) || 0;
+                    if (num > 0) return `Valor: ${formatarMoeda(num)} - ${fp.label.toUpperCase()}`;
+                  }
+                }
               }
 
               return '-';
@@ -145,10 +165,9 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
                 <td>{formatarDataBR(ato.data)}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.hora}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
-                <td style={{ border: '1px solid #ddd', padding: 8 }}>{tributacaoTexto}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.descricao}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.quantidade}</td>
-                <td style={{ border: '1px solid #ddd', padding: 8 }}>R$ {formatarValor(ato.valor_unitario)}</td>
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>{formatarMoeda(ato.valor_unitario)}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{renderPagamentos(ato)}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>
                   <button
