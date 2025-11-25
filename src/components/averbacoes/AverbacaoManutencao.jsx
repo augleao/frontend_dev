@@ -244,6 +244,7 @@ export default function AverbacaoManutencao() {
         folha: form.folha,
         termo: form.termo,
       };
+      console.log('[AverbacaoManutencao] salvar: payload', payload);
       const url = isEdicao
         ? `${config.apiURL}/averbacoes-gratuitas/${encodeURIComponent(id)}`
         : `${config.apiURL}/averbacoes-gratuitas`;
@@ -666,12 +667,14 @@ export default function AverbacaoManutencao() {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, margin: '8px 0' }}>
                   <ClipboardImageUploadAverbacao
                     execucaoId={form.execucao_id || (id ? `AV${id}` : null)}
-                    onUpload={async () => {
+                    onUpload={async (data) => {
+                      console.log('[AverbacaoManutencao] onUpload (clipboard) callback invoked', { id, data });
                       try {
                         const existentes = await listarSelosAverbacao(id).catch(() => []);
                         setSelos(Array.isArray(existentes) ? existentes : []);
                         if (Array.isArray(existentes) && existentes.length > 0) {
                           const s = existentes[0];
+                          console.log('[AverbacaoManutencao] onUpload (clipboard) server selo found', s);
                           setForm(f => ({
                             ...f,
                             selo_consulta: s.selo_consulta || s.seloConsulta || f.selo_consulta,
@@ -683,12 +686,14 @@ export default function AverbacaoManutencao() {
                   />
                   <SeloFileUploadAverbacao
                     execucaoId={form.execucao_id || (id ? `AV${id}` : null)}
-                    onUpload={async () => {
+                    onUpload={async (data) => {
+                      console.log('[AverbacaoManutencao] onUpload (file) callback invoked', { id, data });
                       try {
                         const existentes = await listarSelosAverbacao(id).catch(() => []);
                         setSelos(Array.isArray(existentes) ? existentes : []);
                         if (Array.isArray(existentes) && existentes.length > 0) {
                           const s = existentes[0];
+                          console.log('[AverbacaoManutencao] onUpload (file) server selo found', s);
                           setForm(f => ({
                             ...f,
                             selo_consulta: s.selo_consulta || s.seloConsulta || f.selo_consulta,
@@ -761,12 +766,15 @@ export default function AverbacaoManutencao() {
                                         style={{ background: '#388e3c', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
                                         title="Salvar"
                                         onClick={async () => {
+                                          console.log('[AverbacaoManutencao] editar selo: salvar solicitacao', { seloId: selo.id, payload: editSelo });
                                           try {
-                                            await atualizarSeloAverbacao(id, selo.id, editSelo);
+                                            const result = await atualizarSeloAverbacao(id, selo.id, editSelo);
+                                            console.log('[AverbacaoManutencao] editar selo: resultado update', result);
                                             await refreshSelos(id);
                                             setEditingSeloId(null);
                                             setEditSelo({});
                                           } catch (error) {
+                                            console.error('[AverbacaoManutencao] editar selo: erro ao salvar', error);
                                             showToast('error', 'Erro ao salvar selo: ' + (error.message || error));
                                           }
                                         }}
@@ -789,10 +797,13 @@ export default function AverbacaoManutencao() {
                                         title="Excluir selo"
                                         onClick={async () => {
                                           if (!window.confirm('Tem certeza que deseja excluir este selo?')) return;
+                                          console.log('[AverbacaoManutencao] excluir selo: solicitacao', { seloId: selo.id });
                                           try {
-                                            await excluirSeloAverbacao(id, selo.id);
+                                            const r = await excluirSeloAverbacao(id, selo.id);
+                                            console.log('[AverbacaoManutencao] excluir selo: resultado', r);
                                             await refreshSelos(id);
                                           } catch (e) {
+                                            console.error('[AverbacaoManutencao] excluir selo: erro', e);
                                             showToast('error', 'Erro ao excluir selo.');
                                           }
                                         }}

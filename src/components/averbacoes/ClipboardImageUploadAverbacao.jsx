@@ -35,6 +35,7 @@ export default function ClipboardImageUploadAverbacao({ averbacaoId, execucaoId,
 
     try {
       const effectiveExecucaoId = execucaoId || (averbacaoId ? `AV${String(averbacaoId)}` : null);
+      console.log('[ClipboardImageUploadAverbacao] handleSeloUpload: effectiveExecucaoId=', effectiveExecucaoId);
       if (!effectiveExecucaoId) {
         setError('Salve a averbação antes de importar o selo.');
         setUploading(false);
@@ -63,6 +64,10 @@ export default function ClipboardImageUploadAverbacao({ averbacaoId, execucaoId,
       formData.append('conteudo_selo', conteudoSelo);
       // compatibilidade com API de execução de serviço: enviar execucaoServiço id (prefira o valor vindo do backend)
       formData.append('execucao_servico_id', effectiveExecucaoId);
+      // log FormData entries for debugging (note: blob contents won't be fully printed)
+      for (const pair of formData.entries()) {
+        try { console.log('[ClipboardImageUploadAverbacao] formData entry', pair[0], pair[1]); } catch (e) { console.log('[ClipboardImageUploadAverbacao] formData entry', pair[0]); }
+      }
 
       const token = localStorage.getItem('token');
       // Envia para API de execução de serviço usando execucaoId (pode ser string com prefixo)
@@ -79,9 +84,11 @@ export default function ClipboardImageUploadAverbacao({ averbacaoId, execucaoId,
       }
 
       let data = {};
-      try { data = text ? JSON.parse(text) : {}; } catch {}
+      try { data = text ? JSON.parse(text) : {}; } catch (e) { console.warn('[ClipboardImageUploadAverbacao] parse response failed', e); }
+      console.log('[ClipboardImageUploadAverbacao] upload successful, response:', data);
       if (onUpload) onUpload(data);
     } catch (err) {
+      console.error('[ClipboardImageUploadAverbacao] upload error', err);
       setError('Falha ao enviar dados do selo: ' + (err.message || err));
     }
 

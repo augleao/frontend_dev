@@ -25,6 +25,7 @@ export default function SeloFileUploadAverbacao({ averbacaoId, execucaoId, onUpl
         return;
       }
       const effectiveExecucaoId = execucaoId || (averbacaoId ? `AV${String(averbacaoId)}` : null);
+      console.log('[SeloFileUploadAverbacao] handleImageUpload: effectiveExecucaoId=', effectiveExecucaoId, 'file=', { name: file.name, size: file.size, type: file.type });
       if (!effectiveExecucaoId) {
         setError('Salve a averbação antes de enviar o selo.');
         setUploading(false);
@@ -51,6 +52,10 @@ export default function SeloFileUploadAverbacao({ averbacaoId, execucaoId, onUpl
       formData.append('imagem', file);
       // compatibilidade com API de execução de serviço: enviar execucaoId com prefixo 'AV'
       formData.append('execucao_servico_id', effectiveExecucaoId);
+      // log FormData entries for debugging (blob/file objects will be shown as File/Blob)
+      for (const pair of formData.entries()) {
+        try { console.log('[SeloFileUploadAverbacao] formData entry', pair[0], pair[1]); } catch (e) { console.log('[SeloFileUploadAverbacao] formData entry', pair[0]); }
+      }
       const token = localStorage.getItem('token');
       // Reaproveitar API de execução de serviço para salvar selos (mesma rota usada em ServicoExecucao)
       const res = await fetch(`${config.apiURL}/execucaoservico/${encodeURIComponent(effectiveExecucaoId)}/selo`, {
@@ -65,9 +70,11 @@ export default function SeloFileUploadAverbacao({ averbacaoId, execucaoId, onUpl
         throw new Error(text || 'Erro ao enviar imagem.');
       }
       let data = {};
-      try { data = text ? JSON.parse(text) : {}; } catch {}
+      try { data = text ? JSON.parse(text) : {}; } catch (e) { console.warn('[SeloFileUploadAverbacao] parse response failed', e); }
+      console.log('[SeloFileUploadAverbacao] upload successful, response:', data);
       if (onUpload) onUpload(data);
     } catch (err) {
+      console.error('[SeloFileUploadAverbacao] upload error', err);
       setError('Falha ao enviar imagem: ' + (err.message || err));
     }
     setUploading(false);
