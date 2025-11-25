@@ -37,9 +37,32 @@ export default function SeloFileUploadAverbacao({ averbacaoId, execucaoId, onUpl
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         if (!checkRes.ok) {
-          setError('Execução não encontrada para este ID; salve/registre a execução antes de importar selos via API de execução.');
-          setUploading(false);
-          return;
+          // Tenta criar execução automaticamente quando não existir
+          console.warn('[SeloFileUploadAverbacao] execução não encontrada, tentando criar automaticamente', effectiveExecucaoId);
+          try {
+            const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+            const usuarioNome = usuario.nome || usuario.email || 'Sistema';
+            const body = { protocolo: effectiveExecucaoId, usuario: usuarioNome };
+            console.log('[SeloFileUploadAverbacao] criando execucao via POST /execucao-servico', body);
+            const createRes = await fetch(`${config.apiURL}/execucao-servico`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+              body: JSON.stringify(body)
+            });
+            const createText = await createRes.text();
+            if (!createRes.ok) {
+              console.error('[SeloFileUploadAverbacao] falha ao criar execução automaticamente', { status: createRes.status, body: createText });
+              setError('Execução não encontrada para este ID; salve/registre a execução antes de importar selos via API de execução.');
+              setUploading(false);
+              return;
+            }
+            console.log('[SeloFileUploadAverbacao] execução criada automaticamente', createText);
+          } catch (e2) {
+            console.error('[SeloFileUploadAverbacao] erro ao criar execução automaticamente:', e2);
+            setError('Erro ao verificar/registrar execução.');
+            setUploading(false);
+            return;
+          }
         }
       } catch (e) {
         console.error('[SeloFileUploadAverbacao] erro ao verificar execução:', e);
