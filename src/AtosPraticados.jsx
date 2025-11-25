@@ -759,25 +759,29 @@ function AtosPraticados() {
 
                 let chaveEscolhida = null;
                 if (detalhesPedido && Array.isArray(detalhesPedido) && detalhesPedido.length > 0) {
-                  // Converter detalhes para máscara e escolher a primeira forma encontrada
-                  const mask = converterDetalhesPagamentoParaMascara(detalhesPedido);
-                  chaveEscolhida = Object.keys(mask).find(k => (mask[k] && Number(mask[k].valor) > 0)) || Object.keys(mask)[0];
-
-                  // Atribuir o valor total do ato (valor_unitario * quantidade) para a forma escolhida
-                  novoPagamentos = formasPagamento.reduce((acc, fp) => {
-                    if (fp.key === chaveEscolhida) {
-                      acc[fp.key] = {
-                        quantidade: quantidadeAto,
-                        valor: Number(((valorFinal || 0) * quantidadeAto).toFixed(2)),
-                        manual: true
-                      };
-                    } else {
-                      acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
+                  // Escolher forma a partir dos detalhes brutos (sem máscara)
+                  try {
+                    const tentativa = escolherFormaDeDetalhes(detalhesPedido);
+                    if (tentativa) {
+                      chaveEscolhida = tentativa;
+                      // Atribuir o valor total do ato (valor_unitario * quantidade) para a forma escolhida
+                      novoPagamentos = formasPagamento.reduce((acc, fp) => {
+                        if (fp.key === chaveEscolhida) {
+                          acc[fp.key] = {
+                            quantidade: quantidadeAto,
+                            valor: Number(((valorFinal || 0) * quantidadeAto).toFixed(2)),
+                            manual: true
+                          };
+                        } else {
+                          acc[fp.key] = { quantidade: 0, valor: 0, manual: false };
+                        }
+                        return acc;
+                      }, {});
+                      ato.__detectedPagamento = { protocolo: protocolo || null, source: 'pedido', chosenForm: chaveEscolhida || null };
                     }
-                    return acc;
-                  }, {});
-                  // mark diagnostics for this ato
-                  ato.__detectedPagamento = { protocolo: protocolo || null, source: 'pedido', chosenForm: chaveEscolhida || null };
+                  } catch (e) {
+                    // ignore and fallback
+                  }
                 } else {
                   // Fallback: usar as formas detectadas no grupo (formasPresentes)
                   const primeiraForma = formasPresentes.values().next().value;
@@ -1133,8 +1137,8 @@ useEffect(() => {
             try {
               const detalhes = atoRaw.detalhes_pagamentos || atoRaw.detalhes_pagamento || null;
               if (detalhes) {
-                const mask = converterDetalhesPagamentoParaMascara(detalhes);
-                escolhido = Object.keys(mask).find(k => mask[k] && Number(mask[k].valor) > 0) || Object.keys(mask)[0];
+                const tentativa = escolherFormaDeDetalhes(detalhes);
+                if (tentativa) escolhido = tentativa;
               }
             } catch (e) {
               // ignore
