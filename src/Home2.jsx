@@ -146,7 +146,7 @@ function Home() {
           fontWeight: '600',
           letterSpacing: '0.5px'
         }}>
-          Sistema Auxiliar do RCPN v1.7
+          Sistema Auxiliar do RCPN v1.8
         </h1>
       </header>
 
