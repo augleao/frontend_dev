@@ -40,15 +40,33 @@ export default function ClipboardImageUploadAverbacao({ averbacaoId, onUpload })
         return;
       }
 
+      // Antes de enviar, verificar se existe uma execução com este id
+      try {
+        const checkRes = await fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(averbacaoId)}`, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (!checkRes.ok) {
+          setError('Execução não encontrada para este ID; salve/registre a execução antes de importar selos via API de execução.');
+          setUploading(false);
+          return;
+        }
+      } catch (e) {
+        console.error('[ClipboardImageUploadAverbacao] erro ao verificar execução:', e);
+        setError('Erro ao verificar existência da execução.');
+        setUploading(false);
+        return;
+      }
+
       const formData = new FormData();
       const blob = new Blob([conteudoSelo], { type: 'text/plain' });
       formData.append('imagem', blob, 'selo.txt');
       formData.append('conteudo_selo', conteudoSelo);
-        // compatibilidade com API de execução de serviço
-        formData.append('execucao_servico_id', averbacaoId);
+      // compatibilidade com API de execução de serviço
+      formData.append('execucao_servico_id', averbacaoId);
 
       const token = localStorage.getItem('token');
-      // Reaproveitar API de execução de serviço para salvar selos (mesma rota usada em ServicoExecucao)
+      // Envia para API de execução de serviço
       const res = await fetch(`${config.apiURL}/execucaoservico/${encodeURIComponent(averbacaoId)}/selo`, {
         method: 'POST',
         body: formData,
@@ -58,33 +76,6 @@ export default function ClipboardImageUploadAverbacao({ averbacaoId, onUpload })
       const text = await res.text();
       if (!res.ok) {
         console.error('[ClipboardImageUploadAverbacao] upload response error:', res.status, text);
-        // Se o backend recusou por FK (execucao_servico_id não existe), tentar fallback para a API de averbacoes
-        const shouldFallback = res.status === 500 || (text && text.toLowerCase().includes('execucao_servico')) || (text && text.toLowerCase().includes('foreign key'));
-        if (shouldFallback) {
-          try {
-            const fbForm = new FormData();
-            fbForm.append('imagem', blob, 'selo.txt');
-            fbForm.append('conteudo_selo', conteudoSelo);
-            const fbRes = await fetch(`${config.apiURL}/averbacoes-gratuitas/${encodeURIComponent(averbacaoId)}/selo`, {
-              method: 'POST',
-              body: fbForm,
-              headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const fbText = await fbRes.text();
-            if (!fbRes.ok) {
-              console.error('[ClipboardImageUploadAverbacao] fallback upload failed:', fbRes.status, fbText);
-              throw new Error(fbText || 'Erro ao enviar dados do selo (fallback).');
-            }
-            let fbData = {};
-            try { fbData = fbText ? JSON.parse(fbText) : {}; } catch {}
-            if (onUpload) onUpload(fbData);
-            setUploading(false);
-            return;
-          } catch (fbErr) {
-            console.error('[ClipboardImageUploadAverbacao] fallback error:', fbErr);
-            throw new Error(fbErr.message || 'Erro no fallback do envio do selo.');
-          }
-        }
         throw new Error(text || 'Erro ao enviar dados do selo.');
       }
 
