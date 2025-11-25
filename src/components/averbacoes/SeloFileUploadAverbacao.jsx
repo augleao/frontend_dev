@@ -27,7 +27,8 @@ export default function SeloFileUploadAverbacao({ averbacaoId, onUpload }) {
       const formData = new FormData();
       formData.append('imagem', file);
       const token = localStorage.getItem('token');
-      const res = await fetch(`${config.apiURL}/averbacoes-gratuitas/${encodeURIComponent(averbacaoId)}/selo`, {
+      // Reaproveitar API de execução de serviço para salvar selos (mesma rota usada em ServicoExecucao)
+      const res = await fetch(`${config.apiURL}/execucaoservico/${encodeURIComponent(averbacaoId)}/selo`, {
         method: 'POST',
         body: formData,
         headers: { 'Authorization': `Bearer ${token}` }
