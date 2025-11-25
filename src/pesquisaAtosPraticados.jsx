@@ -135,6 +135,16 @@ export default function PesquisaAtosPraticados() {
           total = atos.length;
         }
 
+        // Aplicar filtro de tributação 'Pago' ou 'Gratuito' client-side quando necessário
+        if (tipoTributacao === 'Pago') {
+          // Backend pode já ter retornado apenas os '01' se suportou o param; garantir
+          atos = atos.filter(ato => String(ato.tributacao) === '01');
+          total = atos.length;
+        } else if (tipoTributacao === 'Gratuito') {
+          atos = atos.filter(ato => String(ato.tributacao) !== '01');
+          total = atos.length;
+        }
+
         // Se for Substituto e nenhum escrevente foi selecionado, filtra só os atos da sua serventia
         if (
           usuarioLogado &&
@@ -665,11 +675,9 @@ export default function PesquisaAtosPraticados() {
               }}>
                 🏛️ Tipo de Tributação:
               </label>
-              <input
-                type="text"
+              <select
                 value={tipoTributacao}
                 onChange={(e) => setTipoTributacao(e.target.value)}
-                placeholder="Digite o código da tributação"
                 style={{
                   width: '100%',
                   padding: '8px',
@@ -677,11 +685,16 @@ export default function PesquisaAtosPraticados() {
                   border: '2px solid #e3f2fd',
                   fontSize: '16px',
                   boxSizing: 'border-box',
-                  transition: 'border-color 0.2s ease'
+                  transition: 'border-color 0.2s ease',
+                  background: '#fff'
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#2196f3'}
                 onBlur={(e) => e.target.style.borderColor = '#e3f2fd'}
-              />
+              >
+                <option value="">Todos</option>
+                <option value="Pago">Pago (tributação 01)</option>
+                <option value="Gratuito">Gratuito (outras tributações)</option>
+              </select>
             </div>
 
             <div>
