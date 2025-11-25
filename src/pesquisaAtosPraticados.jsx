@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiURL } from './config';
+import { formasPagamento, formatarMoeda } from './utils';
 
 export default function PesquisaAtosPraticados() {
   // Estados para os filtros de busca
@@ -224,22 +225,82 @@ export default function PesquisaAtosPraticados() {
     return `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`;
   };
 
+  const escolherFormaLabel = (formaKeyOrName) => {
+    if (!formaKeyOrName) return null;
+    const key = String(formaKeyOrName).toLowerCase();
+    const found = formasPagamento.find(fp => fp.key === key || fp.label.toLowerCase() === key);
+    if (found) return found.label.toUpperCase();
+    return String(formaKeyOrName).toUpperCase();
+  };
+
+  const parseDetalhesPossiveis = (det) => {
+    if (!det) return null;
+    if (typeof det === 'string') {
+      try { return JSON.parse(det); } catch { return det; }
+    }
+    return det;
+  };
+
   const formatarPagamentos = (pagamentos, detalhes_pagamentos) => {
-    if (!pagamentos || Object.keys(pagamentos).length === 0) {
-      return 'ISENTO';
+    const detalhes = parseDetalhesPossiveis(detalhes_pagamentos);
+
+    // Se não houver pagamentos nem detalhes
+    if ((!pagamentos || Object.keys(pagamentos).length === 0) && !detalhes) return 'ISENTO';
+
+    // Priorizar detalhes_pagamentos quando disponíveis
+    if (detalhes) {
+      // Caso comum: objeto com valor_total e formas_utilizadas
+      if (typeof detalhes === 'object' && (detalhes.valor_total || detalhes.valor || detalhes.amount)) {
+        const valor = Number(detalhes.valor_total ?? detalhes.valor ?? detalhes.amount ?? 0) || 0;
+        let forma = null;
+        if (Array.isArray(detalhes.formas_utilizadas) && detalhes.formas_utilizadas.length > 0) {
+          forma = detalhes.formas_utilizadas[0];
+        } else if (detalhes.forma) {
+          forma = detalhes.forma;
+        } else {
+          // procurar primeira chave com valor
+          for (const k of Object.keys(detalhes)) {
+            const v = detalhes[k];
+            const num = Number((typeof v === 'object' ? v.valor : v) ?? 0) || 0;
+            if (num > 0) { forma = k; break; }
+          }
+        }
+        const formaLabel = escolherFormaLabel(forma);
+        return `Valor: ${formatarMoeda(valor)}${formaLabel ? ' - ' + formaLabel : ''}`;
+      }
+
+      // Se for array de pagamentos importados -> pegar primeiro
+      if (Array.isArray(detalhes) && detalhes.length > 0) {
+        const first = detalhes.find(d => d && (d.valor || d.valor_pago || d.amount || d.valor_total)) || detalhes[0];
+        const valor = Number(first.valor ?? first.valor_pago ?? first.amount ?? first.valor_total ?? 0) || 0;
+        const formaLabel = escolherFormaLabel(first.forma || first.forma_pagamento || first.tipo || null);
+        return `Valor: ${formatarMoeda(valor)}${formaLabel ? ' - ' + formaLabel : ''}`;
+      }
     }
-    
-    // Se tem detalhes_pagamentos, usar o valor_total
-    if (detalhes_pagamentos && detalhes_pagamentos.valor_total) {
-      return formatarValor(detalhes_pagamentos.valor_total);
+
+    // Fallback para `pagamentos` (objeto por formas ou array)
+    if (pagamentos) {
+      if (Array.isArray(pagamentos) && pagamentos.length > 0) {
+        const p = pagamentos[0];
+        const valor = Number(p.valor ?? p.valor_pago ?? p.amount ?? 0) || 0;
+        const formaLabel = escolherFormaLabel(p.forma || p.forma_pagamento || p.tipo || null);
+        return `Valor: ${formatarMoeda(valor)}${formaLabel ? ' - ' + formaLabel : ''}`;
+      }
+
+      if (typeof pagamentos === 'object') {
+        for (const fp of formasPagamento) {
+          const entry = pagamentos[fp.key];
+          const num = Number(entry?.valor ?? entry ?? 0) || 0;
+          if (num > 0) return `Valor: ${formatarMoeda(num)} - ${fp.label.toUpperCase()}`;
+        }
+
+        // Somar tudo como fallback
+        const total = Object.values(pagamentos).reduce((acc, pagamento) => acc + (parseFloat(pagamento?.valor ?? pagamento) || 0), 0);
+        if (total > 0) return `Valor: ${formatarMoeda(total)}`;
+      }
     }
-    
-    // Senão, somar os valores dos pagamentos
-    const total = Object.values(pagamentos).reduce((acc, pagamento) => {
-      return acc + (parseFloat(pagamento.valor) || 0);
-    }, 0);
-    
-    return formatarValor(total);
+
+    return 'ISENTO';
   };
 
   return (
