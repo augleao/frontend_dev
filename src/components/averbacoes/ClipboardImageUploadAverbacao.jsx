@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import config from '../../config';
 
-export default function ClipboardImageUploadAverbacao({ averbacaoId, onUpload }) {
+export default function ClipboardImageUploadAverbacao({ averbacaoId, execucaoId, onUpload }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const buttonRef = useRef();
@@ -34,16 +34,14 @@ export default function ClipboardImageUploadAverbacao({ averbacaoId, onUpload })
     setError('');
 
     try {
-      if (!averbacaoId) {
+      const effectiveExecucaoId = execucaoId || (averbacaoId ? `AV${String(averbacaoId)}` : null);
+      if (!effectiveExecucaoId) {
         setError('Salve a averbação antes de importar o selo.');
         setUploading(false);
         return;
       }
-
-      // Construir execucaoId com prefixo AV (ex.: 'AV123') e verificar existência
-      const execucaoId = `AV${String(averbacaoId)}`;
       try {
-        const checkRes = await fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(execucaoId)}`, {
+        const checkRes = await fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(effectiveExecucaoId)}`, {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
@@ -63,12 +61,12 @@ export default function ClipboardImageUploadAverbacao({ averbacaoId, onUpload })
       const blob = new Blob([conteudoSelo], { type: 'text/plain' });
       formData.append('imagem', blob, 'selo.txt');
       formData.append('conteudo_selo', conteudoSelo);
-      // compatibilidade com API de execução de serviço: enviar execucaoId com prefixo 'AV'
-      formData.append('execucao_servico_id', execucaoId);
+      // compatibilidade com API de execução de serviço: enviar execucaoServiço id (prefira o valor vindo do backend)
+      formData.append('execucao_servico_id', effectiveExecucaoId);
 
       const token = localStorage.getItem('token');
       // Envia para API de execução de serviço usando execucaoId (pode ser string com prefixo)
-      const res = await fetch(`${config.apiURL}/execucaoservico/${encodeURIComponent(execucaoId)}/selo`, {
+      const res = await fetch(`${config.apiURL}/execucaoservico/${encodeURIComponent(effectiveExecucaoId)}/selo`, {
         method: 'POST',
         body: formData,
         headers: { 'Authorization': `Bearer ${token}` }

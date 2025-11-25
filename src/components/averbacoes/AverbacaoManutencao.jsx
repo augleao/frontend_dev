@@ -172,40 +172,18 @@ export default function AverbacaoManutencao() {
   }, [modalAberto, uploading]);
 
 
-    const fetchUploadsList = async (averbacaoId) => {
+  const fetchUploadsList = async (averbacaoId) => {
+    try {
+      const token = localStorage.getItem('token');
+      // Try new API first (atoId + tipo). If it returns no uploads, fall back to legacy param for compatibility.
       try {
-        const token = localStorage.getItem('token');
-        // First try new API: query by atoId + tipo to avoid collisions between domains
-        try {
-          const qs = `atoId=${encodeURIComponent(averbacaoId)}&tipo=averbacao`;
-          const res = await fetch(`${config.apiURL}/uploads?${qs}`, { headers: { Authorization: `Bearer ${token}` } });
-          let j = {};
-          if (res.ok) {
-            try { j = await res.json(); } catch (_) { j = {}; }
-            if (j && Array.isArray(j.uploads) && j.uploads.length > 0) {
-              return setPdfList(j.uploads.map(u => ({
-                id: u.id,
-                storedName: u.stored_name || u.storedName,
-                originalName: u.original_name || (u.metadata && (u.metadata.originalName || u.metadata.filename)) || '',
-                url: u.url || '',
-                size: u.size || null,
-                contentType: u.content_type || u.contentType || '',
-                createdAt: u.created_at || u.createdAt || null
-              })));
-            }
-          }
-        } catch (e) {
-          // ignore and fallback to legacy param
-          console.warn('[AverbacaoManutencao] fetchUploadsList new query failed, falling back', e && e.message ? e.message : e);
-        }
-
-        // Fallback to legacy API param (compatibility)
-        try {
-          const res2 = await fetch(`${config.apiURL}/uploads?averbacaoId=${encodeURIComponent(averbacaoId)}`, { headers: { Authorization: `Bearer ${token}` } });
-          if (!res2.ok) return setPdfList([]);
-          const j2 = await res2.json();
-          if (j2 && Array.isArray(j2.uploads)) {
-            setPdfList(j2.uploads.map(u => ({
+        const qs = `atoId=${encodeURIComponent(averbacaoId)}&tipo=averbacao`;
+        const res = await fetch(`${config.apiURL}/uploads?${qs}`, { headers: { Authorization: `Bearer ${token}` } });
+        let j = {};
+        if (res.ok) {
+          try { j = await res.json(); } catch (_) { j = {}; }
+          if (j && Array.isArray(j.uploads) && j.uploads.length > 0) {
+            return setPdfList(j.uploads.map(u => ({
               id: u.id,
               storedName: u.stored_name || u.storedName,
               originalName: u.original_name || (u.metadata && (u.metadata.originalName || u.metadata.filename)) || '',
@@ -215,15 +193,36 @@ export default function AverbacaoManutencao() {
               createdAt: u.created_at || u.createdAt || null
             })));
           }
-        } catch (e) {
-          console.warn('[AverbacaoManutencao] fetchUploadsList fallback failed', e && e.message ? e.message : e);
-          setPdfList([]);
         }
       } catch (e) {
-        console.warn('[AverbacaoManutencao] fetchUploadsList failed', e && e.message ? e.message : e);
+        console.warn('[AverbacaoManutencao] fetchUploadsList new query failed, falling back', e && e.message ? e.message : e);
+      }
+
+      // Fallback to legacy API
+      try {
+        const res2 = await fetch(`${config.apiURL}/uploads?averbacaoId=${encodeURIComponent(averbacaoId)}`, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res2.ok) return setPdfList([]);
+        const j2 = await res2.json();
+        if (j2 && Array.isArray(j2.uploads)) {
+          setPdfList(j2.uploads.map(u => ({
+            id: u.id,
+            storedName: u.stored_name || u.storedName,
+            originalName: u.original_name || (u.metadata && (u.metadata.originalName || u.metadata.filename)) || '',
+            url: u.url || '',
+            size: u.size || null,
+            contentType: u.content_type || u.contentType || '',
+            createdAt: u.created_at || u.createdAt || null
+          })));
+        }
+      } catch (e) {
+        console.warn('[AverbacaoManutencao] fetchUploadsList fallback failed', e && e.message ? e.message : e);
         setPdfList([]);
       }
-    };
+    } catch (e) {
+      console.warn('[AverbacaoManutencao] fetchUploadsList failed', e && e.message ? e.message : e);
+      setPdfList([]);
+    }
+  };
   const salvar = async () => {
     try {
       // Validações mínimas (agora apenas os campos solicitados)
@@ -265,6 +264,11 @@ export default function AverbacaoManutencao() {
       let dataResp = {};
       try { dataResp = text ? JSON.parse(text) : {}; } catch {}
       const averbacaoId = dataResp?.id || dataResp?.averbacao?.id || id; // no PUT pode usar o id da URL
+        // Se o backend retornou execucao_id (novo campo), atualiza o form para que os componentes de upload o usem
+        const returnedExecucaoId = dataResp?.execucao_id || dataResp?.execucaoId || dataResp?.averbacao?.execucao_id || dataResp?.averbacao?.execucaoId || null;
+        if (returnedExecucaoId) {
+          setForm(prev => ({ ...prev, execucao_id: returnedExecucaoId }));
+        }
       showToast('success', 'Averbação salva com sucesso!');
       // Após salvar, abre a tela de edição para liberar a seção de Selo Eletrônico
       if (!isEdicao && averbacaoId) {
@@ -661,7 +665,7 @@ export default function AverbacaoManutencao() {
                 {/* Mesma UX de importação usada no componente de execução */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, margin: '8px 0' }}>
                   <ClipboardImageUploadAverbacao
-                    averbacaoId={id}
+                    execucaoId={form.execucao_id || (id ? `AV${id}` : null)}
                     onUpload={async () => {
                       try {
                         const existentes = await listarSelosAverbacao(id).catch(() => []);
@@ -678,7 +682,7 @@ export default function AverbacaoManutencao() {
                     }}
                   />
                   <SeloFileUploadAverbacao
-                    averbacaoId={id}
+                    execucaoId={form.execucao_id || (id ? `AV${id}` : null)}
                     onUpload={async () => {
                       try {
                         const existentes = await listarSelosAverbacao(id).catch(() => []);

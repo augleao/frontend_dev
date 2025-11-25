@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import config from '../../config';
 
-export default function SeloFileUploadAverbacao({ averbacaoId, onUpload }) {
+export default function SeloFileUploadAverbacao({ averbacaoId, execucaoId, onUpload }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef();
@@ -24,10 +24,14 @@ export default function SeloFileUploadAverbacao({ averbacaoId, onUpload }) {
         setUploading(false);
         return;
       }
-      // Construir execucaoId com prefixo AV (ex.: 'AV123') e verificar existência
-      const execucaoId = `AV${String(averbacaoId)}`;
+      const effectiveExecucaoId = execucaoId || (averbacaoId ? `AV${String(averbacaoId)}` : null);
+      if (!effectiveExecucaoId) {
+        setError('Salve a averbação antes de enviar o selo.');
+        setUploading(false);
+        return;
+      }
       try {
-        const checkRes = await fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(execucaoId)}`, {
+        const checkRes = await fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(effectiveExecucaoId)}`, {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
@@ -46,10 +50,10 @@ export default function SeloFileUploadAverbacao({ averbacaoId, onUpload }) {
       const formData = new FormData();
       formData.append('imagem', file);
       // compatibilidade com API de execução de serviço: enviar execucaoId com prefixo 'AV'
-      formData.append('execucao_servico_id', execucaoId);
+      formData.append('execucao_servico_id', effectiveExecucaoId);
       const token = localStorage.getItem('token');
       // Reaproveitar API de execução de serviço para salvar selos (mesma rota usada em ServicoExecucao)
-      const res = await fetch(`${config.apiURL}/execucaoservico/${encodeURIComponent(execucaoId)}/selo`, {
+      const res = await fetch(`${config.apiURL}/execucaoservico/${encodeURIComponent(effectiveExecucaoId)}/selo`, {
         method: 'POST',
         body: formData,
         headers: { 'Authorization': `Bearer ${token}` }
