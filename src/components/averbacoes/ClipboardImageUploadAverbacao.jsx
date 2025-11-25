@@ -40,9 +40,10 @@ export default function ClipboardImageUploadAverbacao({ averbacaoId, onUpload })
         return;
       }
 
-      // Antes de enviar, verificar se existe uma execução com este id
+      // Construir execucaoId com prefixo AV (ex.: 'AV123') e verificar existência
+      const execucaoId = `AV${String(averbacaoId)}`;
       try {
-        const checkRes = await fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(averbacaoId)}`, {
+        const checkRes = await fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(execucaoId)}`, {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
@@ -62,12 +63,12 @@ export default function ClipboardImageUploadAverbacao({ averbacaoId, onUpload })
       const blob = new Blob([conteudoSelo], { type: 'text/plain' });
       formData.append('imagem', blob, 'selo.txt');
       formData.append('conteudo_selo', conteudoSelo);
-      // compatibilidade com API de execução de serviço
-      formData.append('execucao_servico_id', averbacaoId);
+      // compatibilidade com API de execução de serviço: enviar execucaoId com prefixo 'AV'
+      formData.append('execucao_servico_id', execucaoId);
 
       const token = localStorage.getItem('token');
-      // Envia para API de execução de serviço
-      const res = await fetch(`${config.apiURL}/execucaoservico/${encodeURIComponent(averbacaoId)}/selo`, {
+      // Envia para API de execução de serviço usando execucaoId (pode ser string com prefixo)
+      const res = await fetch(`${config.apiURL}/execucaoservico/${encodeURIComponent(execucaoId)}/selo`, {
         method: 'POST',
         body: formData,
         headers: { 'Authorization': `Bearer ${token}` }

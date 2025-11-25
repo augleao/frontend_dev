@@ -24,20 +24,10 @@ export default function SeloFileUploadAverbacao({ averbacaoId, onUpload }) {
         setUploading(false);
         return;
       }
-      const formData = new FormData();
-      formData.append('imagem', file);
-      // compatibilidade com API de execução de serviço
-      formData.append('execucao_servico_id', averbacaoId);
-      const token = localStorage.getItem('token');
-      // Reaproveitar API de execução de serviço para salvar selos (mesma rota usada em ServicoExecucao)
-      const res = await fetch(`${config.apiURL}/execucaoservico/${encodeURIComponent(averbacaoId)}/selo`, {
-        method: 'POST',
-        body: formData,
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      // Antes de enviar, verificar se existe uma execução com este id
+      // Construir execucaoId com prefixo AV (ex.: 'AV123') e verificar existência
+      const execucaoId = `AV${String(averbacaoId)}`;
       try {
-        const checkRes = await fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(averbacaoId)}`, {
+        const checkRes = await fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(execucaoId)}`, {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
@@ -52,6 +42,18 @@ export default function SeloFileUploadAverbacao({ averbacaoId, onUpload }) {
         setUploading(false);
         return;
       }
+
+      const formData = new FormData();
+      formData.append('imagem', file);
+      // compatibilidade com API de execução de serviço: enviar execucaoId com prefixo 'AV'
+      formData.append('execucao_servico_id', execucaoId);
+      const token = localStorage.getItem('token');
+      // Reaproveitar API de execução de serviço para salvar selos (mesma rota usada em ServicoExecucao)
+      const res = await fetch(`${config.apiURL}/execucaoservico/${encodeURIComponent(execucaoId)}/selo`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
       const text = await res.text();
       if (!res.ok) {
