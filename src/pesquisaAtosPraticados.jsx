@@ -9,6 +9,7 @@ export default function PesquisaAtosPraticados() {
   const [nomeEscrevente, setNomeEscrevente] = useState('');
   const [codigoAto, setCodigoAto] = useState('');
   const [tipoTributacao, setTipoTributacao] = useState('');
+  const [formaPagamentoFiltro, setFormaPagamentoFiltro] = useState('');
   
   // Estados para os dados e controle
   const [atosPraticados, setAtosPraticados] = useState([]);
@@ -109,6 +110,7 @@ export default function PesquisaAtosPraticados() {
       if (nomeEscrevente.trim()) params.append('usuario', nomeEscrevente.trim());
       if (codigoAto.trim()) params.append('codigo', codigoAto.trim());
       if (tipoTributacao.trim()) params.append('tributacao', tipoTributacao.trim());
+      if (formaPagamentoFiltro) params.append('formaPagamento', formaPagamentoFiltro);
       
       console.log('🔍 Buscando atos com parâmetros:', params.toString());
       
@@ -125,6 +127,13 @@ export default function PesquisaAtosPraticados() {
       if (res.ok) {
         let atos = data.atos || [];
         let total = data.total || 0;
+
+        // Se backend não suportou o filtro por forma, aplicamos client-side
+        if (formaPagamentoFiltro) {
+          const fk = String(formaPagamentoFiltro).toLowerCase();
+          atos = atos.filter(ato => atoContemForma(ato, fk));
+          total = atos.length;
+        }
 
         // Se for Substituto e nenhum escrevente foi selecionado, filtra só os atos da sua serventia
         if (
@@ -172,6 +181,7 @@ export default function PesquisaAtosPraticados() {
     setNomeEscrevente('');
     setCodigoAto('');
     setTipoTributacao('');
+    setFormaPagamentoFiltro('');
     setAtosPraticados([]);
     setTotalRegistros(0);
     setMensagem('');
@@ -239,6 +249,58 @@ export default function PesquisaAtosPraticados() {
       try { return JSON.parse(det); } catch { return det; }
     }
     return det;
+  };
+
+  const atoContemForma = (ato, formaKey) => {
+    if (!formaKey) return true;
+    const fk = String(formaKey).toLowerCase();
+    const detalhes = parseDetalhesPossiveis(ato.detalhes_pagamentos);
+    const detectarFormaEmDetalhes = (det) => {
+      if (!det) return false;
+      if (typeof det === 'string') {
+        try { return detectarFormaEmDetalhes(JSON.parse(det)); } catch { return det.toLowerCase().includes(fk); }
+      }
+      if (Array.isArray(det)) {
+        return det.some(d => {
+          const f = String(d?.forma || d?.forma_pagamento || d?.tipo || (d?.formas_utilizadas && d.formas_utilizadas[0]) || '').toLowerCase();
+          if (f && f.includes(fk)) return true;
+          return false;
+        });
+      }
+      if (typeof det === 'object') {
+        if (Array.isArray(det.formas_utilizadas) && det.formas_utilizadas.length > 0) {
+          return det.formas_utilizadas.some(f => String(f).toLowerCase() === fk);
+        }
+        if (det.forma && String(det.forma).toLowerCase() === fk) return true;
+        // chaves como dinheiro/cartao/pix
+        if (det[fk] !== undefined) {
+          const v = det[fk];
+          const num = Number((typeof v === 'object' ? v.valor : v) ?? 0) || 0;
+          return num > 0;
+        }
+        return Object.keys(det).some(k => String(k).toLowerCase() === fk);
+      }
+      return false;
+    };
+
+    if (detectarFormaEmDetalhes(detalhes)) return true;
+
+    const pagamentos = ato.pagamentos;
+    if (!pagamentos) return false;
+    if (Array.isArray(pagamentos)) {
+      return pagamentos.some(p => String(p?.forma || p?.forma_pagamento || p?.tipo || '').toLowerCase().includes(fk));
+    }
+    // objeto por formas
+    if (pagamentos[fk] !== undefined) {
+      const entry = pagamentos[fk];
+      const num = Number(entry?.valor ?? entry ?? 0) || 0;
+      return num > 0;
+    }
+    return Object.values(pagamentos).some(v => {
+      if (!v) return false;
+      if (typeof v === 'object') return String(v.forma || v.forma_pagamento || v.tipo || '').toLowerCase().includes(fk);
+      return false;
+    });
   };
 
   const formatarPagamentos = (pagamentos, detalhes_pagamentos) => {
@@ -620,6 +682,39 @@ export default function PesquisaAtosPraticados() {
                 onFocus={(e) => e.target.style.borderColor = '#2196f3'}
                 onBlur={(e) => e.target.style.borderColor = '#e3f2fd'}
               />
+            </div>
+
+            <div>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '4px', 
+                fontWeight: '500',
+                color: '#2c3e50',
+                fontSize: '14px'
+              }}>
+                💳 Forma de Pagamento:
+              </label>
+              <select
+                value={formaPagamentoFiltro}
+                onChange={e => setFormaPagamentoFiltro(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '6px',
+                  border: '2px solid #e3f2fd',
+                  fontSize: '16px',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.2s ease',
+                  background: '#fff'
+                }}
+                onFocus={e => e.target.style.borderColor = '#2196f3'}
+                onBlur={e => e.target.style.borderColor = '#e3f2fd'}
+              >
+                <option value="">Todas as formas</option>
+                {formasPagamento.map(fp => (
+                  <option key={fp.key} value={fp.key}>{fp.label}</option>
+                ))}
+              </select>
             </div>
           </div>
 
