@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import config from '../../config';
 import Toast from '../Toast';
 import { DEFAULT_TOAST_DURATION } from '../toastConfig';
-import { listarSelosAverbacao, criarSeloAverbacao, atualizarSeloAverbacao } from './SeloAverbacaoService';
+import { listarSelosAverbacao, criarSeloAverbacao, atualizarSeloAverbacao, excluirSeloAverbacao } from './SeloAverbacaoService';
 import ClipboardImageUploadAverbacao from './ClipboardImageUploadAverbacao';
 import SeloFileUploadAverbacao from './SeloFileUploadAverbacao';
 import AnexarPdfModal from './AnexarPdfModal';
@@ -36,6 +36,9 @@ export default function AverbacaoManutencao() {
   const [pdfInfo, setPdfInfo] = useState({ originalName: '', storedName: '', url: '', id: null });
   const [pdfList, setPdfList] = useState([]);
   const [deletingUploadId, setDeletingUploadId] = useState(null);
+  const [selos, setSelos] = useState([]);
+  const [editingSeloId, setEditingSeloId] = useState(null);
+  const [editSelo, setEditSelo] = useState({});
   const [codigoSugestoes, setCodigoSugestoes] = useState([]);
   const [codigoLoading, setCodigoLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -142,8 +145,24 @@ export default function AverbacaoManutencao() {
       await fetchItem();
       // refresh uploads list for this averbacao only if server didn't provide embedded uploads
       if (!hadEmbeddedUploads && isEdicao && id) fetchUploadsList(id);
+      // sempre carregar selos associados à averbação em edição
+      if (isEdicao && id) {
+        try {
+          const s = await listarSelosAverbacao(id).catch(() => []);
+          setSelos(Array.isArray(s) ? s : []);
+        } catch (e) { setSelos([]); }
+      }
     })();
   }, [id, isEdicao]);
+
+  // função de utilidade para recarregar selos a qualquer momento
+  const refreshSelos = async (averbacaoId) => {
+    if (!averbacaoId) return;
+    try {
+      const s = await listarSelosAverbacao(averbacaoId).catch(() => []);
+      setSelos(Array.isArray(s) ? s : []);
+    } catch (e) { setSelos([]); }
+  };
 
   useEffect(() => {
     console.log('[AverbacaoManutencao] Estado do modal atualizado', {
@@ -646,6 +665,7 @@ export default function AverbacaoManutencao() {
                     onUpload={async () => {
                       try {
                         const existentes = await listarSelosAverbacao(id).catch(() => []);
+                        setSelos(Array.isArray(existentes) ? existentes : []);
                         if (Array.isArray(existentes) && existentes.length > 0) {
                           const s = existentes[0];
                           setForm(f => ({
@@ -654,7 +674,7 @@ export default function AverbacaoManutencao() {
                             codigo_seguranca: s.codigo_seguranca || s.codigoSeguranca || f.codigo_seguranca,
                           }));
                         }
-                      } catch {}
+                      } catch (e) { console.warn('Erro ao processar upload de selo (clipboard)', e); }
                     }}
                   />
                   <SeloFileUploadAverbacao
@@ -662,6 +682,7 @@ export default function AverbacaoManutencao() {
                     onUpload={async () => {
                       try {
                         const existentes = await listarSelosAverbacao(id).catch(() => []);
+                        setSelos(Array.isArray(existentes) ? existentes : []);
                         if (Array.isArray(existentes) && existentes.length > 0) {
                           const s = existentes[0];
                           setForm(f => ({
@@ -670,10 +691,119 @@ export default function AverbacaoManutencao() {
                             codigo_seguranca: s.codigo_seguranca || s.codigoSeguranca || f.codigo_seguranca,
                           }));
                         }
-                      } catch {}
+                      } catch (e) { console.warn('Erro ao processar upload de selo (file)', e); }
                     }}
                   />
                 </div>
+                {/* Tabela de selos (mesma lógica/visual do ServicoExecucao) */}
+                {selos && selos.length > 0 && (
+                  <div style={{ marginTop: 12 }}>
+                    <h4 style={{ color: '#6c3483', marginBottom: 6 }}>Selos Importados</h4>
+                    <div className="servico-table-container">
+                      <table className="servico-table" style={{ background: '#fff' }}>
+                        <thead>
+                          <tr style={{ background: '#ede1f7' }}>
+                            <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Selo Consulta</th>
+                            <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Código de Segurança</th>
+                            <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Qtd. Atos</th>
+                            <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Atos praticados por</th>
+                            <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Valores</th>
+                            <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Data/Hora</th>
+                            <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selos.map((selo, idx) => {
+                            const isEditing = editingSeloId === selo.id;
+                            return (
+                              <tr key={selo.id || idx} style={{ background: idx % 2 === 0 ? '#f8f4fc' : '#fff' }}>
+                                <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
+                                  {isEditing ? (
+                                    <input value={editSelo.selo_consulta || ''} onChange={e => setEditSelo({ ...editSelo, selo_consulta: e.target.value })} style={{ width: 80, fontSize: 9, padding: '1px 2px' }} placeholder="Selo" />
+                                  ) : (<span style={{ fontSize: 11 }}>{selo.selo_consulta || selo.seloConsulta || ''}</span>)}
+                                </td>
+                                <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
+                                  {isEditing ? (
+                                    <input value={editSelo.codigo_seguranca || ''} onChange={e => setEditSelo({ ...editSelo, codigo_seguranca: e.target.value })} style={{ width: 120, fontSize: 9, padding: '1px 2px' }} placeholder="Código" />
+                                  ) : (<span style={{ fontSize: 11 }}>{selo.codigo_seguranca || selo.codigoSeguranca || ''}</span>)}
+                                </td>
+                                <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
+                                  {isEditing ? (
+                                    <input value={editSelo.qtd_atos || ''} onChange={e => setEditSelo({ ...editSelo, qtd_atos: e.target.value })} style={{ width: 40, fontSize: 9, padding: '1px 2px' }} placeholder="Qtd" />
+                                  ) : (<span style={{ fontSize: 11 }}>{selo.qtd_atos || selo.qtdAtos || ''}</span>)}
+                                </td>
+                                <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
+                                  {isEditing ? (
+                                    <input value={editSelo.atos_praticados_por || ''} onChange={e => setEditSelo({ ...editSelo, atos_praticados_por: e.target.value })} style={{ width: 100, fontSize: 9, padding: '1px 2px' }} placeholder="Praticado por" />
+                                  ) : (<span style={{ fontSize: 11 }}>{selo.atos_praticados_por || selo.atosPraticadosPor || ''}</span>)}
+                                </td>
+                                <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
+                                  {isEditing ? (
+                                    <input
+                                      value={editSelo.valores || ''}
+                                      onChange={e => setEditSelo({ ...editSelo, valores: e.target.value })}
+                                      style={{ width: 320, fontSize: 9, padding: '1px 2px' }}
+                                      placeholder="Valores"
+                                    />
+                                  ) : (
+                                    <span style={{ fontSize: 11 }}>{selo.valores || ''}</span>
+                                  )}
+                                </td>
+                                <td style={{ padding: 2, fontSize: 12 }}>{selo.criado_em ? new Date(selo.criado_em).toLocaleString() : ''}</td>
+                                <td style={{ padding: 2, fontSize: 12, display: 'flex', gap: 6 }}>
+                                  {isEditing ? (
+                                    <>
+                                      <button
+                                        style={{ background: '#388e3c', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                                        title="Salvar"
+                                        onClick={async () => {
+                                          try {
+                                            await atualizarSeloAverbacao(id, selo.id, editSelo);
+                                            await refreshSelos(id);
+                                            setEditingSeloId(null);
+                                            setEditSelo({});
+                                          } catch (error) {
+                                            showToast('error', 'Erro ao salvar selo: ' + (error.message || error));
+                                          }
+                                        }}
+                                      >Salvar</button>
+                                      <button
+                                        style={{ background: '#aaa', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                                        title="Cancelar"
+                                        onClick={() => { setEditingSeloId(null); setEditSelo({}); }}
+                                      >Cancelar</button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button
+                                        style={{ background: '#1976d2', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                                        title="Editar selo"
+                                        onClick={() => { setEditingSeloId(selo.id); setEditSelo({ ...selo }); }}
+                                      >Editar</button>
+                                      <button
+                                        style={{ background: '#e74c3c', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                                        title="Excluir selo"
+                                        onClick={async () => {
+                                          if (!window.confirm('Tem certeza que deseja excluir este selo?')) return;
+                                          try {
+                                            await excluirSeloAverbacao(id, selo.id);
+                                            await refreshSelos(id);
+                                          } catch (e) {
+                                            showToast('error', 'Erro ao excluir selo.');
+                                          }
+                                        }}
+                                      >Excluir</button>
+                                    </>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <small style={{ color: '#777', display: 'block', marginTop: 12 }}>
