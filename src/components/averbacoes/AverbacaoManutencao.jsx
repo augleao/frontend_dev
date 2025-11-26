@@ -655,46 +655,52 @@ export default function AverbacaoManutencao() {
                   )}
                 </div>
                 {/* Mesma UX de importação usada no componente de execução */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, margin: '8px 0' }}>
-                  <ClipboardImageUploadAverbacao
-                    execucaoId={form.execucao_id || (id ? `AV${id}` : null)}
-                    onUpload={async (data) => {
-                      console.log('[AverbacaoManutencao] onUpload (clipboard) callback invoked', { id, data });
-                      try {
-                        const existentes = await listarSelosAverbacao(id).catch(() => []);
-                        setSelos(Array.isArray(existentes) ? existentes : []);
-                        if (Array.isArray(existentes) && existentes.length > 0) {
-                          const s = existentes[0];
-                          console.log('[AverbacaoManutencao] onUpload (clipboard) server selo found', s);
-                          setForm(f => ({
-                            ...f,
-                            selo_consulta: s.selo_consulta || s.seloConsulta || f.selo_consulta,
-                            codigo_seguranca: s.codigo_seguranca || s.codigoSeguranca || f.codigo_seguranca,
-                          }));
-                        }
-                      } catch (e) { console.warn('Erro ao processar upload de selo (clipboard)', e); }
-                    }}
-                  />
-                  <SeloFileUploadAverbacao
-                    execucaoId={form.execucao_id || (id ? `AV${id}` : null)}
-                    onUpload={async (data) => {
-                      console.log('[AverbacaoManutencao] onUpload (file) callback invoked', { id, data });
-                      try {
-                        const existentes = await listarSelosAverbacao(id).catch(() => []);
-                        setSelos(Array.isArray(existentes) ? existentes : []);
-                        if (Array.isArray(existentes) && existentes.length > 0) {
-                          const s = existentes[0];
-                          console.log('[AverbacaoManutencao] onUpload (file) server selo found', s);
-                          setForm(f => ({
-                            ...f,
-                            selo_consulta: s.selo_consulta || s.seloConsulta || f.selo_consulta,
-                            codigo_seguranca: s.codigo_seguranca || s.codigoSeguranca || f.codigo_seguranca,
-                          }));
-                        }
-                      } catch (e) { console.warn('Erro ao processar upload de selo (file)', e); }
-                    }}
-                  />
-                </div>
+                {form.codigoTributario ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, margin: '8px 0' }}>
+                    <ClipboardImageUploadAverbacao
+                      execucaoId={form.execucao_id || (id ? `AV${id}` : null)}
+                      onUpload={async (data) => {
+                        console.log('[AverbacaoManutencao] onUpload (clipboard) callback invoked', { id, data });
+                        try {
+                          const existentes = await listarSelosAverbacao(id).catch(() => []);
+                          setSelos(Array.isArray(existentes) ? existentes : []);
+                          if (Array.isArray(existentes) && existentes.length > 0) {
+                            const s = existentes[0];
+                            console.log('[AverbacaoManutencao] onUpload (clipboard) server selo found', s);
+                            setForm(f => ({
+                              ...f,
+                              selo_consulta: s.selo_consulta || s.seloConsulta || f.selo_consulta,
+                              codigo_seguranca: s.codigo_seguranca || s.codigoSeguranca || f.codigo_seguranca,
+                            }));
+                          }
+                        } catch (e) { console.warn('Erro ao processar upload de selo (clipboard)', e); }
+                      }}
+                    />
+                    <SeloFileUploadAverbacao
+                      execucaoId={form.execucao_id || (id ? `AV${id}` : null)}
+                      onUpload={async (data) => {
+                        console.log('[AverbacaoManutencao] onUpload (file) callback invoked', { id, data });
+                        try {
+                          const existentes = await listarSelosAverbacao(id).catch(() => []);
+                          setSelos(Array.isArray(existentes) ? existentes : []);
+                          if (Array.isArray(existentes) && existentes.length > 0) {
+                            const s = existentes[0];
+                            console.log('[AverbacaoManutencao] onUpload (file) server selo found', s);
+                            setForm(f => ({
+                              ...f,
+                              selo_consulta: s.selo_consulta || s.seloConsulta || f.selo_consulta,
+                              codigo_seguranca: s.codigo_seguranca || s.codigoSeguranca || f.codigo_seguranca,
+                            }));
+                          }
+                        } catch (e) { console.warn('Erro ao processar upload de selo (file)', e); }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div style={{ margin: '8px 0', color: '#666', fontSize: 13 }}>
+                    Selecione um <strong style={{ color: '#333' }}>Código Tributário da Gratuidade</strong> para habilitar os botões de importação de selo.
+                  </div>
+                )}
                 {/* Tabela de selos (mesma lógica/visual do ServicoExecucao) */}
                 {selos && selos.length > 0 && (
                   <div style={{ marginTop: 12 }}>
