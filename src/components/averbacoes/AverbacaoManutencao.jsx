@@ -571,6 +571,7 @@ export default function AverbacaoManutencao() {
               uploading={uploading}
               deletingUploadId={deletingUploadId}
               selectAndUploadFiles={selectAndUploadFiles}
+              canSelectPDF={isEdicao}
               handleViewUpload={handleViewUpload}
               handleDeleteUpload={handleDeleteUpload}
               onSave={salvar}

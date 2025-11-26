@@ -10,28 +10,41 @@ export default function AverbacaoPdfManager({
   handleDeleteUpload,
   onSave,
   getMesReferencia
+  , canSelectPDF
 }) {
   return (
     <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px dashed #cfdbe6', background: '#fbfdff' }}>
       
       <div className="servico-row" style={{ alignItems: 'center', gap: 12, display: 'flex', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={selectAndUploadFiles}
-            disabled={uploading}
-            style={{ minWidth: 140 }}
-          >
-            Selecionar PDF
-          </button>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            {canSelectPDF ? (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={selectAndUploadFiles}
+                disabled={uploading}
+                style={{ minWidth: 140 }}
+              >
+                Selecionar PDF
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled
+                title="Salve a averbação para habilitar seleção de PDF"
+                style={{ minWidth: 140, opacity: 0.6, cursor: 'not-allowed' }}
+              >
+                Selecionar PDF
+              </button>
+            )}
 
-          <button type="button" className="btn btn-success" onClick={onSave} disabled={uploading} style={{ minWidth: 140 }}>
-            Salvar Averbação
-          </button>
+            <button type="button" className="btn btn-success" onClick={onSave} disabled={uploading} style={{ minWidth: 140 }}>
+              Salvar Averbação
+            </button>
 
-          {uploading && <span style={{ color: '#888' }}>Enviando...</span>}
-        </div>
+            {uploading && <span style={{ color: '#888' }}>Enviando...</span>}
+          </div>
 
         {pdfList && pdfList.length > 0 ? (
           <div style={{ marginTop: 8, background: '#f6f9fc', borderRadius: 12, boxShadow: '0 6px 24px rgba(2,6,23,0.08)', overflow: 'hidden' }}>
