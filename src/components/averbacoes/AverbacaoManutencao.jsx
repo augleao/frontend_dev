@@ -625,44 +625,13 @@ export default function AverbacaoManutencao() {
               )}
             </div>
 
-            {/* Código Tributário */}
-            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6, position: 'relative' }}>
-              <label className="servico-label">Código Tributário da Gratuidade</label>
-              <input
-                className="servico-input"
-                type="text"
-                value={form.codigoTributario}
-                onChange={async e => { const v = e.target.value; setForm(f => ({ ...f, codigoTributario: v })); await buscarCodigosTributarios(v); }}
-                placeholder="Digite para buscar..."
-                autoComplete="off"
-              />
-              {codigoLoading && <span style={{ fontSize: 12, color: '#888' }}>Buscando...</span>}
-              {codigoSugestoes.length > 0 && (
-                <ul style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ccc', borderRadius: 6, margin: 0, padding: '4px 0', listStyle: 'none', zIndex: 9999, maxHeight: 220, overflowY: 'auto' }}>
-                  {codigoSugestoes.map(sug => (
-                    <li key={sug.codigo} style={{ padding: '6px 10px', cursor: 'pointer' }} onClick={() => { setForm(f => ({ ...f, codigoTributario: sug.codigo })); setCodigoSugestoes([]); }} onMouseEnter={e => e.currentTarget.style.background = '#f7f7f7'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                      {sug.codigo} - {sug.descricao}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            {/* Código Tributário será exibido abaixo da seção 'Selo de Fiscalização' */}
 
             {/* Selo de Fiscalização - disponível após salvar (modo edição) */}
             {isEdicao ? (
               <div style={{ marginTop: 16 }}>
                 <h3 className="servico-title" style={{ margin: '0 0 8px 0', fontSize: 16 }}>Selo de Fiscalização</h3>
-                {/* Campos manuais (opcional) */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <label className="servico-label">Selo (consulta)</label>
-                    <input className="servico-input" type="text" value={form.selo_consulta} onChange={e => setForm(f => ({ ...f, selo_consulta: e.target.value }))} placeholder="Selo de consulta" />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <label className="servico-label">Código de Segurança</label>
-                    <input className="servico-input" type="text" value={form.codigo_seguranca} onChange={e => setForm(f => ({ ...f, codigo_seguranca: e.target.value }))} placeholder="Código de segurança" />
-                  </div>
-                </div>
+                {/* Campos manuais removidos (Selo e Código de Segurança) */}
                 {/* Mesma UX de importação usada no componente de execução */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, margin: '8px 0' }}>
                   <ClipboardImageUploadAverbacao
@@ -825,6 +794,29 @@ export default function AverbacaoManutencao() {
                 Para adicionar o selo eletrônico, salve a averbação primeiro.
               </small>
             )}
+
+            {/* Código Tributário da Gratuidade: movido para logo abaixo do Selo de Fiscalização */}
+            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6, position: 'relative' }}>
+              <label className="servico-label">Código Tributário da Gratuidade</label>
+              <input
+                className="servico-input"
+                type="text"
+                value={form.codigoTributario}
+                onChange={async e => { const v = e.target.value; setForm(f => ({ ...f, codigoTributario: v })); await buscarCodigosTributarios(v); }}
+                placeholder="Digite para buscar..."
+                autoComplete="off"
+              />
+              {codigoLoading && <span style={{ fontSize: 12, color: '#888' }}>Buscando...</span>}
+              {codigoSugestoes.length > 0 && (
+                <ul style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ccc', borderRadius: 6, margin: 0, padding: '4px 0', listStyle: 'none', zIndex: 9999, maxHeight: 220, overflowY: 'auto' }}>
+                  {codigoSugestoes.map(sug => (
+                    <li key={sug.codigo} style={{ padding: '6px 10px', cursor: 'pointer' }} onClick={() => { setForm(f => ({ ...f, codigoTributario: sug.codigo })); setCodigoSugestoes([]); }} onMouseEnter={e => e.currentTarget.style.background = '#f7f7f7'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      {sug.codigo} - {sug.descricao}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
 
             {/* Descrição e Observações */}
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
