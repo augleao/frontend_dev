@@ -37,6 +37,7 @@ export default function AverbacaoManutencao() {
   const [pdfList, setPdfList] = useState([]);
   const [deletingUploadId, setDeletingUploadId] = useState(null);
   const [selos, setSelos] = useState([]);
+  const [seloCodigoMap, setSeloCodigoMap] = useState({});
   const [editingSeloId, setEditingSeloId] = useState(null);
   const [editSelo, setEditSelo] = useState({});
   const [codigoSugestoes, setCodigoSugestoes] = useState([]);
@@ -664,6 +665,35 @@ export default function AverbacaoManutencao() {
                         try {
                           const existentes = await listarSelosAverbacao(id).catch(() => []);
                           setSelos(Array.isArray(existentes) ? existentes : []);
+
+                          // Determine ID of newly added selo from response when possible
+                          let newId = null;
+                          try {
+                            if (data) {
+                              if (data.selo && data.selo.id) newId = data.selo.id;
+                              else if (data.id) newId = data.id;
+                              else if (data.seloId) newId = data.seloId;
+                            }
+                          } catch (e) { /* ignore */ }
+
+                          // Fallback: assume first item in existentes is the newly added selo
+                          if (!newId && Array.isArray(existentes) && existentes.length > 0) {
+                            newId = existentes[0].id;
+                          }
+
+                          if (newId) {
+                            setSeloCodigoMap(prev => ({ ...prev, [newId]: form.codigoTributario }));
+                          } else {
+                            // if we couldn't determine a single new id, mark any missing mappings with current code
+                            setSeloCodigoMap(prev => {
+                              const next = { ...prev };
+                              (Array.isArray(existentes) ? existentes : []).forEach(s => {
+                                if (!next[s.id]) next[s.id] = form.codigoTributario;
+                              });
+                              return next;
+                            });
+                          }
+
                           if (Array.isArray(existentes) && existentes.length > 0) {
                             const s = existentes[0];
                             console.log('[AverbacaoManutencao] onUpload (clipboard) server selo found', s);
@@ -683,6 +713,33 @@ export default function AverbacaoManutencao() {
                         try {
                           const existentes = await listarSelosAverbacao(id).catch(() => []);
                           setSelos(Array.isArray(existentes) ? existentes : []);
+
+                          // Determine ID of newly added selo from response when possible
+                          let newId = null;
+                          try {
+                            if (data) {
+                              if (data.selo && data.selo.id) newId = data.selo.id;
+                              else if (data.id) newId = data.id;
+                              else if (data.seloId) newId = data.seloId;
+                            }
+                          } catch (e) { /* ignore */ }
+
+                          if (!newId && Array.isArray(existentes) && existentes.length > 0) {
+                            newId = existentes[0].id;
+                          }
+
+                          if (newId) {
+                            setSeloCodigoMap(prev => ({ ...prev, [newId]: form.codigoTributario }));
+                          } else {
+                            setSeloCodigoMap(prev => {
+                              const next = { ...prev };
+                              (Array.isArray(existentes) ? existentes : []).forEach(s => {
+                                if (!next[s.id]) next[s.id] = form.codigoTributario;
+                              });
+                              return next;
+                            });
+                          }
+
                           if (Array.isArray(existentes) && existentes.length > 0) {
                             const s = existentes[0];
                             console.log('[AverbacaoManutencao] onUpload (file) server selo found', s);
@@ -715,6 +772,7 @@ export default function AverbacaoManutencao() {
                             <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Atos praticados por</th>
                             <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Valores</th>
                             <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Data/Hora</th>
+                            <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Código Tributário</th>
                             <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Ações</th>
                           </tr>
                         </thead>
@@ -756,6 +814,7 @@ export default function AverbacaoManutencao() {
                                   )}
                                 </td>
                                 <td style={{ padding: 2, fontSize: 12 }}>{selo.criado_em ? new Date(selo.criado_em).toLocaleString() : ''}</td>
+                                <td style={{ padding: 2, fontSize: 12 }}>{selo.codigo_tributario || selo.codigoTributario || seloCodigoMap[selo.id] || ''}</td>
                                 <td style={{ padding: 2, fontSize: 12, display: 'flex', gap: 6 }}>
                                   {isEditing ? (
                                     <>
@@ -799,6 +858,7 @@ export default function AverbacaoManutencao() {
                                             const r = await excluirSeloAverbacao(id, selo.id);
                                             console.log('[AverbacaoManutencao] excluir selo: resultado', r);
                                             await refreshSelos(id);
+                                            setSeloCodigoMap(prev => { const next = { ...prev }; delete next[selo.id]; return next; });
                                           } catch (e) {
                                             console.error('[AverbacaoManutencao] excluir selo: erro', e);
                                             showToast('error', 'Erro ao excluir selo.');
