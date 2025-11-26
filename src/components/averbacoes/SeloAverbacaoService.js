@@ -28,10 +28,14 @@ export async function criarSeloAverbacao(averbacaoId, payload) {
   console.log('[SeloAverbacaoService] criarSeloAverbacao: execId, payload', { execId, payload });
   // reuse same upload endpoint used by ServicoExecucao (multipart/form-data expected there)
   // if payload is JSON fields (non-file), we send JSON to the execucaoservico/:execId/selo endpoint
+  // normalize payload to backend expected keys
+  const jsonPayload = { ...payload };
+  if (payload && payload.codigoTributario && !jsonPayload.codigo_tributario) jsonPayload.codigo_tributario = payload.codigoTributario;
+
   const res = await fetch(`${config.apiURL}/execucaoservico/${encodeURIComponent(execId)}/selo`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(jsonPayload),
   });
   const text = await res.text();
   let data = {};

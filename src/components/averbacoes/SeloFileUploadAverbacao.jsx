@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import config from '../../config';
 
-export default function SeloFileUploadAverbacao({ averbacaoId, execucaoId, onUpload }) {
+export default function SeloFileUploadAverbacao({ averbacaoId, execucaoId, onUpload, codigoTributario }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef();
@@ -75,6 +75,7 @@ export default function SeloFileUploadAverbacao({ averbacaoId, execucaoId, onUpl
       formData.append('imagem', file);
       // compatibilidade com API de execução de serviço: enviar execucaoId com prefixo 'AV'
       formData.append('execucao_servico_id', effectiveExecucaoId);
+      if (codigoTributario) formData.append('codigo_tributario', codigoTributario);
       // log FormData entries for debugging (blob/file objects will be shown as File/Blob)
       for (const pair of formData.entries()) {
         try { console.log('[SeloFileUploadAverbacao] formData entry', pair[0], pair[1]); } catch (e) { console.log('[SeloFileUploadAverbacao] formData entry', pair[0]); }

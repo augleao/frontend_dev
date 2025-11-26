@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import config from '../../config';
 
-export default function ClipboardImageUploadAverbacao({ averbacaoId, execucaoId, onUpload }) {
+export default function ClipboardImageUploadAverbacao({ averbacaoId, execucaoId, onUpload, codigoTributario }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const buttonRef = useRef();
@@ -87,6 +87,7 @@ export default function ClipboardImageUploadAverbacao({ averbacaoId, execucaoId,
       formData.append('conteudo_selo', conteudoSelo);
       // compatibilidade com API de execução de serviço: enviar execucaoServiço id (prefira o valor vindo do backend)
       formData.append('execucao_servico_id', effectiveExecucaoId);
+      if (codigoTributario) formData.append('codigo_tributario', codigoTributario);
       // log FormData entries for debugging (note: blob contents won't be fully printed)
       for (const pair of formData.entries()) {
         try { console.log('[ClipboardImageUploadAverbacao] formData entry', pair[0], pair[1]); } catch (e) { console.log('[ClipboardImageUploadAverbacao] formData entry', pair[0]); }

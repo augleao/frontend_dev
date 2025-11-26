@@ -658,8 +658,9 @@ export default function AverbacaoManutencao() {
                 {/* Mesma UX de importação usada no componente de execução */}
                 {form.codigoTributario ? (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, margin: '8px 0' }}>
-                    <ClipboardImageUploadAverbacao
-                      execucaoId={form.execucao_id || (id ? `AV${id}` : null)}
+                      <ClipboardImageUploadAverbacao
+                        execucaoId={form.execucao_id || (id ? `AV${id}` : null)}
+                        codigoTributario={form.codigoTributario}
                       onUpload={async (data) => {
                         console.log('[AverbacaoManutencao] onUpload (clipboard) callback invoked', { id, data });
                         try {
@@ -708,6 +709,7 @@ export default function AverbacaoManutencao() {
                     />
                     <SeloFileUploadAverbacao
                       execucaoId={form.execucao_id || (id ? `AV${id}` : null)}
+                      codigoTributario={form.codigoTributario}
                       onUpload={async (data) => {
                         console.log('[AverbacaoManutencao] onUpload (file) callback invoked', { id, data });
                         try {
