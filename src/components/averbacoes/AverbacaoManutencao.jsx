@@ -161,7 +161,19 @@ export default function AverbacaoManutencao() {
     if (!averbacaoId) return;
     try {
       const s = await listarSelosAverbacao(averbacaoId).catch(() => []);
-      setSelos(Array.isArray(s) ? s : []);
+      const selosArr = Array.isArray(s) ? s : [];
+      setSelos(selosArr);
+      // rebuild seloCodigoMap from server-provided values when available
+      try {
+        const map = {};
+        selosArr.forEach(sl => {
+          if (sl.codigoTributario) map[sl.id] = sl.codigoTributario;
+          else if (sl.codigo_tributario) map[sl.id] = sl.codigo_tributario;
+        });
+        setSeloCodigoMap(map);
+      } catch (e) {
+        // ignore mapping errors
+      }
     } catch (e) { setSelos([]); }
   };
 
