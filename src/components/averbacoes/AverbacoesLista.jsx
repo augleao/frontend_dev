@@ -293,8 +293,8 @@ export default function AverbacoesLista() {
           <thead>
             <tr style={{ background: '#e9ecef' }}>
               <th style={{ padding: 8 }}>Data</th>
-              <th style={{ padding: 8 }}>Tipo</th>
               <th style={{ padding: 8 }}>Ato</th>
+              <th style={{ padding: 8 }}>Tipo</th>
               <th style={{ padding: 8 }}>Descrição</th>
               <th style={{ padding: 8 }}>Ressarcível</th>
               <th style={{ padding: 8 }}>Anexo</th>
@@ -310,8 +310,8 @@ export default function AverbacoesLista() {
               itens.map(item => (
                 <tr key={item.id} style={{ background: '#fff' }}>
                   <td style={{ padding: 8 }}>{formatDate(item.data || item.criado_em)}</td>
-                  <td style={{ padding: 8 }}>{item.tipo || '-'}</td>
                   <td style={{ padding: 8 }}>{item.tipo_outro || item.tipoOutro || item.tipoAto || '-'}</td>
+                  <td style={{ padding: 8 }}>{item.tipo || '-'}</td>
                   <td style={{ padding: 8 }}>{item.descricao || '-'}</td>
                   <td style={{ padding: 8 }}>{item.ressarcivel ? 'Sim' : 'Não'}</td>
                   <td style={{ padding: 8 }}>
