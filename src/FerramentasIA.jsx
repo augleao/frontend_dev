@@ -38,6 +38,16 @@ function FerramentasIA() {
     }
   ];
 
+  // Adiciona cartão para Análise da DAP (integração com AnaliseDAP.jsx)
+  featureCards.splice(2, 0, {
+    id: 'analise-dap',
+    title: 'ANÁLISE DE DAP',
+    description: 'Análises inteligentes das DAPs da sua serventia',
+    icon: '📊',
+    color: '#9b59b6',
+    route: '/ferramentas-ia/analise-dap'
+  });
+
   const futureFeatures = [
     {
       title: 'RESUMOS AUTOMÁTICOS',

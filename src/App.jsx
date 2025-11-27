@@ -337,6 +337,14 @@ function App() {
           }
         />
         <Route
+          path="/ferramentas-ia/analise-dap"
+          element={
+            <PrivateRoute>
+              <AnaliseDAP />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/certidoes-gratuitas"
           element={
             <PrivateRoute>

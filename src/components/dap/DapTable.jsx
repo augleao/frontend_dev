@@ -1,12 +1,13 @@
 import React from 'react';
 
-function DapTable({ items = [], onSelect, onDelete, loading }) {
+function DapTable({ items = [], onSelect, onDelete, loading, showSelection = false, selectedIds = [], onToggleSelect }) {
   return (
     <div style={containerStyle}>
       <div style={tableWrapperStyle}>
         <table style={tableStyle}>
           <thead>
             <tr>
+              {showSelection && <th style={thStyle}></th>}
               <th style={thStyle}>Ano</th>
               <th style={thStyle}>Mês</th>
               <th style={thStyle}>Retificadora</th>
@@ -18,14 +19,14 @@ function DapTable({ items = [], onSelect, onDelete, loading }) {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={6} style={loadingCellStyle}>
+                <td colSpan={showSelection ? 7 : 6} style={loadingCellStyle}>
                   Carregando declarações...
                 </td>
               </tr>
             )}
             {!loading && items.length === 0 && (
               <tr>
-                <td colSpan={6} style={emptyCellStyle}>
+                <td colSpan={showSelection ? 7 : 6} style={emptyCellStyle}>
                   Nenhuma DAP cadastrada ainda. Utilize o botão "Nova DAP" para iniciar o histórico mensal.
                 </td>
               </tr>
@@ -35,6 +36,16 @@ function DapTable({ items = [], onSelect, onDelete, loading }) {
                 <tr key={dap.id}
                   style={{ background: dap.retificadora ? '#fef3c7' : 'transparent' }}
                 >
+                  {showSelection && (
+                    <td style={tdStyle}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds && selectedIds.includes(dap.id)}
+                        onChange={() => onToggleSelect && onToggleSelect(dap)}
+                        aria-label={`Selecionar DAP ${dap.id}`}
+                      />
+                    </td>
+                  )}
                   <td style={tdStyle}>{dap.anoReferencia ?? dap.ano ?? '—'}</td>
                   <td style={tdStyle}>{dap.mesReferencia ?? dap.mes ?? '—'}</td>
                   <td style={tdStyle}>

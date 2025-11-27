@@ -7,7 +7,7 @@ function Relatorios() {
   const featureCards = [
     {
       id: 'analise-dap',
-      title: 'ANÁLISE DA DAP',
+      title: 'CADASTRO DAS DAPs',
       description: 'Gerencie DAP mensais, versões retificadoras e atos detalhados',
       icon: '🧾',
       color: '#1d4ed8',

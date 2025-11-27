@@ -4,6 +4,7 @@ import { listDaps, getDapById, deleteDap, uploadDap } from './services/dapServic
 import DapTable from './components/dap/DapTable';
 import DapDetailsDrawer from './components/dap/DapDetailsDrawer';
 import { apiURL } from './config';
+import { extrairTexto, identificarTipo, analisarExigencia, gerarTextoAverbacao } from './servicos/IAWorkflowService';
 
 const currentYear = new Date().getFullYear();
 
@@ -20,6 +21,7 @@ function AnaliseDAP() {
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputRef = useRef(null);
   const [selectedDap, setSelectedDap] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [loadingDetalhe, setLoadingDetalhe] = useState(false);
   const [feedback, setFeedback] = useState({ tipo: '', mensagem: '' });
 
@@ -176,6 +178,80 @@ function AnaliseDAP() {
     }
   };
 
+  const handleToggleSelect = (dap) => {
+    if (!dap || !dap.id) return;
+    setSelectedIds((prev) => {
+      const has = prev.includes(dap.id);
+      if (has) return prev.filter((id) => id !== dap.id);
+      return [...prev, dap.id];
+    });
+  };
+
+  // Run analysis for one or more DAPs. If ids array length === 1, treat as single.
+  const runAnalyses = async (ids) => {
+    if (!Array.isArray(ids) || ids.length === 0) return;
+    setFeedback({ tipo: '', mensagem: '' });
+    try {
+      // simple UI feedback
+      setLoading(true);
+      // For each id, fetch DAP detail and run a compact analysis flow using IA services
+      for (const id of ids) {
+        try {
+          const detail = await getDapById(id);
+          // Build a text payload from DAP detail (reuse logic: extract periodos/atos)
+          const periodos = detail.periodos ?? detail.dap_periodos ?? [];
+          let combinedText = '';
+          periodos.forEach((p, idx) => {
+            const atos = p.atos ?? p.dap_atos ?? [];
+            combinedText += `----- PERIODO ${idx + 1} -----\n`;
+            atos.forEach((a) => {
+              combinedText += `ATO ${a.codigo ?? a.codigo_ato ?? a.ato_codigo} | Qtd: ${a.quantidade ?? a.qtde ?? a.qtd || 0} | Emol: ${a.emolumentos ?? a.emol || 0}\n`;
+            });
+          });
+
+          // Use IA endpoints similar to AssistenteMandadosAverbacao but adapted to DAP
+          // Identify type (optional)
+          let tipoIdent = null;
+          try {
+            const tipoResp = await identificarTipo(combinedText);
+            tipoIdent = tipoResp.tipo || null;
+          } catch (e) {
+            // non-fatal
+          }
+
+          // Analyze exigencia
+          let analiseResp = null;
+          try {
+            analiseResp = await analisarExigencia({ text: combinedText, legislacao: [], tipo: tipoIdent });
+          } catch (e) {
+            analiseResp = { error: e.message || 'Erro na análise' };
+          }
+
+          // Optionally generate a suggested text
+          let textoGerado = null;
+          try {
+            const gen = await gerarTextoAverbacao({ text: combinedText, legislacao: [], tipo: tipoIdent });
+            textoGerado = gen.textoAverbacao || gen.texto || null;
+          } catch (e) {
+            // ignore
+          }
+
+          // Append a brief feedback message per DAP
+          setFeedback({ tipo: 'sucesso', mensagem: `Análise concluída para DAP ${id}.` });
+          // Optionally show result in console or open a drawer with results — for now, console.debug
+          // eslint-disable-next-line no-console
+          console.debug('[AnaliseDAP] resultado', { id, tipoIdent, analiseResp, textoGerado });
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error('Falha ao analisar DAP', id, err);
+          setFeedback({ tipo: 'erro', mensagem: `Falha ao analisar DAP ${id}: ${err?.message || err}` });
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleExcluir = async (dap) => {
     if (!dap?.id) return;
     const confirmado = window.confirm('Confirma a exclusão (soft delete) desta DAP?');
@@ -313,8 +389,30 @@ function AnaliseDAP() {
         items={daps}
         loading={loading}
         onSelect={handleSelecionarDap}
+        showSelection={true}
+        selectedIds={selectedIds}
+        onToggleSelect={handleToggleSelect}
         onDelete={handleExcluir}
       />
+
+      <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
+        <button
+          type="button"
+          onClick={() => runAnalyses(selectedIds)}
+          disabled={selectedIds.length === 0 || loading}
+          style={{ padding: '10px 16px', borderRadius: 8, background: '#2563eb', color: 'white', border: 'none', cursor: 'pointer' }}
+        >
+          Analisar selecionadas ({selectedIds.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => selectedDap?.id && runAnalyses([selectedDap.id])}
+          disabled={!selectedDap?.id || loading}
+          style={{ padding: '10px 16px', borderRadius: 8, background: '#16a34a', color: 'white', border: 'none', cursor: 'pointer' }}
+        >
+          Analisar DAP aberta
+        </button>
+      </div>
 
       {/* Modal removed from the primary flow (direct upload). If you need the modal elsewhere,
           re-add it and control `isOpen` accordingly. */}
