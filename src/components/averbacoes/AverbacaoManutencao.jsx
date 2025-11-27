@@ -88,6 +88,7 @@ export default function AverbacaoManutencao() {
           console.log('[AverbacaoManutencao] fetchItem: dados recebidos', { item });
           setForm({
             data: (item.data || new Date().toISOString().slice(0, 10)).slice(0,10),
+            tipoAto: item.tipoAto || item.tipoOutro || item.tipo_outro || '',
             tipo: item.tipo || '',
             tipoOutro: item.tipoOutro || '',
             descricao: item.descricao || '',
@@ -255,6 +256,7 @@ export default function AverbacaoManutencao() {
       // Envia apenas os campos mínimos solicitados para evitar incompatibilidades no backend
       const payload = {
         data: form.data,
+        tipoAto: form.tipoAto,
         tipo: form.tipo === 'Outras' ? (form.tipoOutro || 'Outras') : form.tipo,
         ressarcivel: !!form.ressarcivel,
         livro: form.livro,
@@ -443,14 +445,15 @@ export default function AverbacaoManutencao() {
 
     // Update local state with returned info when available
     // If backend returned the updated averbacao, merge it into local state
-    if (completeJson && completeJson.averbacao) {
+      if (completeJson && completeJson.averbacao) {
       const a = completeJson.averbacao;
       // merge form fields (keep existing when not provided)
       setForm(prev => ({
         ...prev,
         data: a.data ? String(a.data).slice(0,10) : prev.data,
-        tipo: a.tipo || prev.tipo,
-        tipoOutro: a.tipoOutro || a.tipo_outro || prev.tipoOutro,
+          tipoAto: a.tipoAto || a.tipoOutro || a.tipo_outro || prev.tipoAto,
+          tipo: a.tipo || prev.tipo,
+          tipoOutro: a.tipoOutro || a.tipo_outro || prev.tipoOutro,
         descricao: a.descricao || prev.descricao,
         ressarcivel: typeof a.ressarcivel !== 'undefined' ? Boolean(a.ressarcivel) : prev.ressarcivel,
         observacoes: a.observacoes || prev.observacoes,
