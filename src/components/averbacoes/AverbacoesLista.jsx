@@ -1,4 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+  // Função para abrir PDF igual ao handleViewUpload do AverbacaoManutencao
+  const handleAbrirPdf = (url) => {
+    if (!url) return;
+    window.open(url, '_blank', 'noopener');
+  };
 import { useLocation, useNavigate } from 'react-router-dom';
 import config from '../../config';
 import Toast from '../Toast';
@@ -317,15 +322,14 @@ export default function AverbacoesLista() {
                   <td style={{ padding: 8 }}>{item.ressarcivel ? 'Sim' : 'Não'}</td>
                   <td style={{ padding: 8 }}>
                     {item.pdf_url ? (
-                      <a
-                        href={item.pdf_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: '#2563eb', textDecoration: 'none' }}
+                      <button
+                        type="button"
+                        style={{ color: '#2563eb', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit' }}
                         title={item.pdf_url.split('/').pop()}
+                        onClick={() => handleAbrirPdf(item.pdf_url)}
                       >
                         {item.pdf_url}
-                      </a>
+                      </button>
                     ) : '—'}
                   </td>
                   <td style={{ padding: 8 }}>
