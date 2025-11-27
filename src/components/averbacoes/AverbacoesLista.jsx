@@ -316,6 +316,9 @@ export default function AverbacoesLista() {
                   <td style={{ padding: 8 }}>{item.ressarcivel ? 'Sim' : 'Não'}</td>
                   <td style={{ padding: 8 }}>
                     {(() => {
+                      // DEBUG: logar o objeto item para inspecionar uploads/anexos
+                      // eslint-disable-next-line no-console
+                      console.log('[AverbacoesLista] item para coluna Anexo:', item);
                       // 1. uploads array (novo padrão)
                       if (Array.isArray(item.uploads) && item.uploads.length > 0) {
                         const u = item.uploads[0];
