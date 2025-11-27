@@ -205,7 +205,7 @@ function AnaliseDAP() {
             const atos = p.atos ?? p.dap_atos ?? [];
             combinedText += `----- PERIODO ${idx + 1} -----\n`;
             atos.forEach((a) => {
-              combinedText += `ATO ${a.codigo ?? a.codigo_ato ?? a.ato_codigo} | Qtd: ${a.quantidade ?? a.qtde ?? a.qtd || 0} | Emol: ${a.emolumentos ?? a.emol || 0}\n`;
+              combinedText += `ATO ${a.codigo ?? a.codigo_ato ?? a.ato_codigo} | Qtd: ${(a.quantidade ?? a.qtde ?? a.qtd) || 0} | Emol: ${(a.emolumentos ?? a.emol) || 0}\n`;
             });
           });
 
