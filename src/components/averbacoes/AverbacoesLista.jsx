@@ -315,7 +315,19 @@ export default function AverbacoesLista() {
                   <td style={{ padding: 8 }}>{item.tipo || '-'}</td>
                   {/* <td style={{ padding: 8 }}>{item.descricao || '-'} </td> */}
                   <td style={{ padding: 8 }}>{item.ressarcivel ? 'Sim' : 'Não'}</td>
-                  <td style={{ padding: 8 }}>{item.pdf_url || '—'}</td>
+                  <td style={{ padding: 8 }}>
+                    {item.pdf_url ? (
+                      <a
+                        href={item.pdf_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#2563eb', textDecoration: 'none' }}
+                        title={item.pdf_url.split('/').pop()}
+                      >
+                        {item.pdf_url}
+                      </a>
+                    ) : '—'}
+                  </td>
                   <td style={{ padding: 8 }}>
                     {(() => {
                       // DEBUG: logar o objeto item para inspecionar uploads/anexos
