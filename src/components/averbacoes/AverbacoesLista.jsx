@@ -226,7 +226,7 @@ export default function AverbacoesLista() {
               boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
             }}
           >
-            + NOVA AVERBAÇÃO GRATUITA
+            + NOVO ATO GRATUITO
           </button>
           {/* Exportar CSV removido */}
         </div>

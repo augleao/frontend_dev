@@ -21,19 +21,11 @@ function AtosGratuitos() {
     },
     {
       id: 'averbacoes-gratuitas',
-      title: 'AVERBAÇÕES GRATUITAS',
-      description: 'Registre e gerencie averbações gratuitas',
+      title: 'ATOS GRATUITOS PRATICADOS',
+      description: 'Registre e gerencie os atos gratuitos praticados',
       icon: '⚖️',
       color: '#16a085',
       route: '/averbacoes-gratuitas'
-    },
-    {
-      id: 'procedimentos-gratuitos',
-      title: 'PROCEDIMENTOS GRATUITOS',
-      description: 'Registre e gerencie procedimentos gratuitos',
-      icon: '📑',
-      color: '#1abc9c',
-      route: '/procedimentos-gratuitos'
     },
     {
       id: 'consultar-atos-gratuitos',
