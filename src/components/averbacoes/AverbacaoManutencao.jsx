@@ -248,10 +248,7 @@ export default function AverbacaoManutencao() {
           return;
         }
       }
-      if (!form.livro || !form.folha || !form.termo) {
-        showToast('error', 'Preencha Livro, Folha e Termo do registro.');
-        return;
-      }
+      // Allow saving without Livro/Folha/Termo to support atos that don't use registry fields
       const token = localStorage.getItem('token');
       // Envia apenas os campos mínimos solicitados para evitar incompatibilidades no backend
       const payload = {
