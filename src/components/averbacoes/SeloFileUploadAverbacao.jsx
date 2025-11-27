@@ -20,14 +20,14 @@ export default function SeloFileUploadAverbacao({ averbacaoId, execucaoId, onUpl
     setError('');
     try {
       if (!averbacaoId) {
-        setError('Salve a averbação antes de enviar o selo.');
+        setError('Salve o ato antes de enviar o selo.');
         setUploading(false);
         return;
       }
       const effectiveExecucaoId = execucaoId || (averbacaoId ? `AV${String(averbacaoId)}` : null);
       console.log('[SeloFileUploadAverbacao] handleImageUpload: effectiveExecucaoId=', effectiveExecucaoId, 'file=', { name: file.name, size: file.size, type: file.type });
       if (!effectiveExecucaoId) {
-        setError('Salve a averbação antes de enviar o selo.');
+        setError('Salve o ato antes de enviar o selo.');
         setUploading(false);
         return;
       }

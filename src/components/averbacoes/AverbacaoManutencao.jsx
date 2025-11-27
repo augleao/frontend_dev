@@ -240,9 +240,12 @@ export default function AverbacaoManutencao() {
   const salvar = async () => {
     try {
       // Validações mínimas (agora apenas os campos solicitados)
-      if (!form.tipo || (form.tipo === 'Outras' && !form.tipoOutro)) {
-        showToast('error', 'Informe o tipo de averbação.');
-        return;
+      // Only require `tipo` when the selected Tipo de Ato is 'Averbação'
+      if (form.tipoAto === 'Averbação') {
+        if (!form.tipo || (form.tipo === 'Outras' && !form.tipoOutro)) {
+          showToast('error', 'Informe o tipo de averbação.');
+          return;
+        }
       }
       if (!form.livro || !form.folha || !form.termo) {
         showToast('error', 'Preencha Livro, Folha e Termo do registro.');
@@ -284,11 +287,11 @@ export default function AverbacaoManutencao() {
         if (returnedExecucaoId) {
           setForm(prev => ({ ...prev, execucao_id: returnedExecucaoId }));
         }
-      showToast('success', 'Averbação salva com sucesso!');
+      showToast('success', 'Ato salvo com sucesso!');
       // Após salvar, abre a tela de edição para liberar a seção de Selo Eletrônico
       if (!isEdicao && averbacaoId) {
         setTimeout(() => navigate(`/averbacoes-gratuitas/${encodeURIComponent(averbacaoId)}/editar`, {
-          state: { message: 'Averbação salva. Agora adicione o selo eletrônico.', type: 'success' }
+          state: { message: 'Ato salvo. Agora adicione o selo eletrônico.', type: 'success' }
         }), 400);
       }
     } catch (e) {
@@ -594,23 +597,28 @@ export default function AverbacaoManutencao() {
                   <option value="Registro Livro E">Registro Livro E</option>
                   <option value="Casamento">Casamento</option>
                   <option value="Restauração ou Suprimento">Restauração ou Suprimento</option>
+                  <option value="Outros">Outros...</option>
                 </select>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label className="servico-label">Tipo de Averbação</label>
-                <select className="servico-select" value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}>
-                  <option value="">Selecione...</option>
-                  <option value="Divórcio">Divórcio</option>
-                  <option value="Reconhecimento de Paternidade">Reconhecimento de Paternidade</option>
-                  <option value="Adoção Unilateral">Adoção Unilateral</option>
-                  <option value="Outras">Outras</option>
-                </select>
-              </div>
-              {form.tipo === 'Outras' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label className="servico-label">Informar Tipo</label>
-                  <input className="servico-input" type="text" value={form.tipoOutro} onChange={e => setForm(f => ({ ...f, tipoOutro: e.target.value }))} placeholder="Descreva o tipo de averbação" />
-                </div>
+              {form.tipoAto === 'Averbação' && (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label className="servico-label">Tipo de Averbação</label>
+                    <select className="servico-select" value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}>
+                      <option value="">Selecione...</option>
+                      <option value="Divórcio">Divórcio</option>
+                      <option value="Reconhecimento de Paternidade">Reconhecimento de Paternidade</option>
+                      <option value="Adoção Unilateral">Adoção Unilateral</option>
+                      <option value="Outras">Outras</option>
+                    </select>
+                  </div>
+                  {form.tipo === 'Outras' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <label className="servico-label">Informar Tipo</label>
+                      <input className="servico-input" type="text" value={form.tipoOutro} onChange={e => setForm(f => ({ ...f, tipoOutro: e.target.value }))} placeholder="Descreva o tipo de averbação" />
+                    </div>
+                  )}
+                </>
               )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label className="servico-label">Ressarcível?</label>
@@ -906,8 +914,8 @@ export default function AverbacaoManutencao() {
               </div>
             ) : (
               <small style={{ color: '#777', display: 'block', marginTop: 12 }}>
-                Para adicionar o selo eletrônico, salve a averbação primeiro.
-              </small>
+                  Para adicionar o selo eletrônico, salve o ato primeiro.
+                </small>
             )}
 
             {/* Código Tributário posicionado acima; bloco removido daqui. */}

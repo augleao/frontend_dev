@@ -32,7 +32,7 @@ export default function AverbacaoPdfManager({
                 type="button"
                 className="btn btn-primary"
                 disabled
-                title="Salve a averbação para habilitar seleção de PDF"
+                title="Salve o ato para habilitar seleção de PDF"
                 style={{ minWidth: 140, opacity: 0.6, cursor: 'not-allowed' }}
               >
                 Selecionar PDF
@@ -40,7 +40,7 @@ export default function AverbacaoPdfManager({
             )}
 
             <button type="button" className="btn btn-success" onClick={onSave} disabled={uploading} style={{ minWidth: 140 }}>
-              Salvar Averbação
+              Salvar Ato
             </button>
 
             {uploading && <span style={{ color: '#888' }}>Enviando...</span>}

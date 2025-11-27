@@ -37,7 +37,7 @@ export default function ClipboardImageUploadAverbacao({ averbacaoId, execucaoId,
       const effectiveExecucaoId = execucaoId || (averbacaoId ? `AV${String(averbacaoId)}` : null);
       console.log('[ClipboardImageUploadAverbacao] handleSeloUpload: effectiveExecucaoId=', effectiveExecucaoId);
       if (!effectiveExecucaoId) {
-        setError('Salve a averbação antes de importar o selo.');
+        setError('Salve o ato antes de importar o selo.');
         setUploading(false);
         return;
       }
