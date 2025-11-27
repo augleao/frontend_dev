@@ -1,10 +1,10 @@
+/* eslint-disable no-console */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listDaps, getDapById, deleteDap, uploadDap } from './services/dapService';
 import DapTable from './components/dap/DapTable';
 import DapDetailsDrawer from './components/dap/DapDetailsDrawer';
-import { apiURL } from './config';
-import { extrairTexto, identificarTipo, analisarExigencia, gerarTextoAverbacao } from './servicos/IAWorkflowService';
+import { identificarTipo, analisarExigencia, gerarTextoAverbacao } from './servicos/IAWorkflowService';
 
 const currentYear = new Date().getFullYear();
 
@@ -23,7 +23,7 @@ function AnaliseDAP() {
   const [selectedDap, setSelectedDap] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
   const [loadingDetalhe, setLoadingDetalhe] = useState(false);
-  const [feedback, setFeedback] = useState({ tipo: '', mensagem: '' });
+  const [, setFeedback] = useState({ tipo: '', mensagem: '' });
 
   useEffect(() => {
     carregarDaps();
