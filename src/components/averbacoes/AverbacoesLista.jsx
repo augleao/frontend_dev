@@ -321,16 +321,26 @@ export default function AverbacoesLista() {
                   {/* <td style={{ padding: 8 }}>{item.descricao || '-'} </td> */}
                   <td style={{ padding: 8 }}>{item.ressarcivel ? 'Sim' : 'Não'}</td>
                   <td style={{ padding: 8 }}>
-                    {item.pdf_url ? (
-                      <button
-                        type="button"
-                        style={{ color: '#2563eb', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit' }}
-                        title={item.pdf_url.split('/').pop()}
-                        onClick={() => handleAbrirPdf(item.pdf_url)}
-                      >
-                        {item.pdf_url}
-                      </button>
-                    ) : '—'}
+                    {(() => {
+                      const linkUrl = item.pdf_url || (item.pdf && (item.pdf.url || item.pdf.storedName || item.pdf.filename)) || (Array.isArray(item.uploads) && item.uploads[0] && item.uploads[0].url) || item.anexo_url || item.anexoUrl || null;
+                      const linkLabel = linkUrl ? String(linkUrl).split('/').pop() : null;
+                      if (!linkUrl) return '—';
+                      return (
+                        <button
+                          type="button"
+                          style={{ color: '#2563eb', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit' }}
+                          title={linkLabel || linkUrl}
+                          onClick={() => {
+                            // debug
+                            // eslint-disable-next-line no-console
+                            console.log('[AverbacoesLista] abrir PDF solicitado', { id: item.id, linkUrl, item });
+                            handleAbrirPdf(linkUrl);
+                          }}
+                        >
+                          {linkLabel || linkUrl}
+                        </button>
+                      );
+                    })()}
                   </td>
                   <td style={{ padding: 8 }}>
                     {(() => {
