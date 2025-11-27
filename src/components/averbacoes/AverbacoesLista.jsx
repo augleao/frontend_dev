@@ -315,8 +315,9 @@ export default function AverbacoesLista() {
                   <td style={{ padding: 8 }}>{item.descricao || '-'}</td>
                   <td style={{ padding: 8 }}>{item.ressarcivel ? 'Sim' : 'Não'}</td>
                   <td style={{ padding: 8 }}>
-                    {Array.isArray(item.uploads) && item.uploads.length > 0 ? (
-                      (() => {
+                    {(() => {
+                      // 1. uploads array (novo padrão)
+                      if (Array.isArray(item.uploads) && item.uploads.length > 0) {
                         const u = item.uploads[0];
                         const nome = u.original_name || u.originalName || u.stored_name || u.storedName || (u.url ? decodeURIComponent(u.url.split('/').pop()) : '');
                         return u.url ? (
@@ -324,14 +325,39 @@ export default function AverbacoesLista() {
                         ) : (
                           <span style={{ color: '#94a3b8' }}>{nome || '—'}</span>
                         );
-                      })()
-                    ) : item.anexoUrl || item.anexo_url ? (
-                      <a href={(item.anexoUrl || item.anexo_url)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>
-                        {(item.anexo_metadata && (item.anexo_metadata.originalName || item.anexo_metadata.filename)) || (item.anexoUrl || item.anexo_url).split('/').pop() || 'Abrir PDF'}
-                      </a>
-                    ) : (
-                      <span style={{ color: '#94a3b8' }}>—</span>
-                    )}
+                      }
+                      // 2. pdf (objeto)
+                      if (item.pdf && (item.pdf.url || item.pdf.storedName || item.pdf.originalName || item.pdf.filename)) {
+                        const nome = item.pdf.originalName || item.pdf.storedName || item.pdf.filename || (item.pdf.url ? decodeURIComponent(item.pdf.url.split('/').pop()) : '');
+                        return item.pdf.url ? (
+                          <a href={item.pdf.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
+                        ) : (
+                          <span style={{ color: '#94a3b8' }}>{nome || '—'}</span>
+                        );
+                      }
+                      // 3. pdf_filename + pdf_url (legado)
+                      if (item.pdf_filename && item.pdf_url) {
+                        return (
+                          <a href={item.pdf_url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={item.pdf_filename}>{item.pdf_filename}</a>
+                        );
+                      }
+                      // 4. anexo_url + anexo_metadata (legado)
+                      if (item.anexo_url) {
+                        const nome = (item.anexo_metadata && (item.anexo_metadata.originalName || item.anexo_metadata.filename)) || (item.anexo_url.split('/').pop()) || 'Abrir PDF';
+                        return (
+                          <a href={item.anexo_url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
+                        );
+                      }
+                      // 5. anexoUrl camelCase (legado)
+                      if (item.anexoUrl) {
+                        const nome = (item.anexo_metadata && (item.anexo_metadata.originalName || item.anexo_metadata.filename)) || (item.anexoUrl.split('/').pop()) || 'Abrir PDF';
+                        return (
+                          <a href={item.anexoUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
+                        );
+                      }
+                      // Nada encontrado
+                      return <span style={{ color: '#94a3b8' }}>—</span>;
+                    })()}
                   </td>
                   <td style={{ padding: 8, display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center' }}>
                     <button
