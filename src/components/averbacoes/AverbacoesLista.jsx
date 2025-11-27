@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-  // Função para abrir PDF igual ao handleViewUpload do AverbacaoManutencao
-  const handleAbrirPdf = (url) => {
-    if (!url) return;
-    window.open(url, '_blank', 'noopener');
-  };
 import { useLocation, useNavigate } from 'react-router-dom';
 import config from '../../config';
 import Toast from '../Toast';
 import AnexarPdfModal from './AnexarPdfModal';
 import AverbacoesService from '../../services/AverbacoesService';
 import { DEFAULT_TOAST_DURATION } from '../toastConfig';
+// Função para abrir PDF igual ao handleViewUpload do AverbacaoManutencao
+const handleAbrirPdf = (url) => {
+  if (!url) return;
+  window.open(url, '_blank', 'noopener');
+};
 
 function formatDate(dateStr) {
   if (!dateStr) return '-';
