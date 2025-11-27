@@ -218,9 +218,9 @@ export default function AverbacoesLista() {
               background: '#27ae60',
               color: 'white',
               border: 'none',
-              borderRadius: 8,
-              padding: '10px 20px',
-              fontSize: 15,
+              borderRadius: 6,
+              padding: '8px 12px',
+              fontSize: 13,
               fontWeight: 600,
               cursor: 'pointer',
               boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
