@@ -5,10 +5,22 @@ import Toast from '../Toast';
 import AnexarPdfModal from './AnexarPdfModal';
 import AverbacoesService from '../../services/AverbacoesService';
 import { DEFAULT_TOAST_DURATION } from '../toastConfig';
+// Normalizar URL: transforma caminhos relativos em absolutos usando config.apiURL
+const normalizeUrl = (url) => {
+  if (!url) return null;
+  const s = String(url);
+  if (/^https?:\/\//i.test(s)) return s;
+  const base = (config.apiURL || '').replace(/\/$/, '');
+  if (!base) return s;
+  if (s.startsWith('/')) return base + s;
+  return base + '/' + s;
+};
+
 // Função para abrir PDF igual ao handleViewUpload do AverbacaoManutencao
 const handleAbrirPdf = (url) => {
-  if (!url) return;
-  window.open(url, '_blank', 'noopener');
+  const final = normalizeUrl(url);
+  if (!final) return;
+  window.open(final, '_blank', 'noopener');
 };
 
 function formatDate(dateStr) {
@@ -352,7 +364,7 @@ export default function AverbacoesLista() {
                         const u = item.uploads[0];
                         const nome = u.original_name || u.originalName || u.stored_name || u.storedName || (u.url ? decodeURIComponent(u.url.split('/').pop()) : '');
                         return u.url ? (
-                          <a href={u.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
+                          <a href={normalizeUrl(u.url)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
                         ) : (
                           <span style={{ color: '#94a3b8' }}>{nome || '—'}</span>
                         );
@@ -361,7 +373,7 @@ export default function AverbacoesLista() {
                       if (item.pdf && (item.pdf.url || item.pdf.storedName || item.pdf.originalName || item.pdf.filename)) {
                         const nome = item.pdf.originalName || item.pdf.storedName || item.pdf.filename || (item.pdf.url ? decodeURIComponent(item.pdf.url.split('/').pop()) : '');
                         return item.pdf.url ? (
-                          <a href={item.pdf.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
+                          <a href={normalizeUrl(item.pdf.url)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
                         ) : (
                           <span style={{ color: '#94a3b8' }}>{nome || '—'}</span>
                         );
@@ -369,21 +381,21 @@ export default function AverbacoesLista() {
                       // 3. pdf_filename + pdf_url (legado)
                       if (item.pdf_filename && item.pdf_url) {
                         return (
-                          <a href={item.pdf_url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={item.pdf_filename}>{item.pdf_filename}</a>
+                          <a href={normalizeUrl(item.pdf_url)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={item.pdf_filename}>{item.pdf_filename}</a>
                         );
                       }
                       // 4. anexo_url + anexo_metadata (legado)
                       if (item.anexo_url) {
                         const nome = (item.anexo_metadata && (item.anexo_metadata.originalName || item.anexo_metadata.filename)) || (item.anexo_url.split('/').pop()) || 'Abrir PDF';
                         return (
-                          <a href={item.anexo_url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
+                          <a href={normalizeUrl(item.anexo_url)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
                         );
                       }
                       // 5. anexoUrl camelCase (legado)
                       if (item.anexoUrl) {
                         const nome = (item.anexo_metadata && (item.anexo_metadata.originalName || item.anexo_metadata.filename)) || (item.anexoUrl.split('/').pop()) || 'Abrir PDF';
                         return (
-                          <a href={item.anexoUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
+                          <a href={normalizeUrl(item.anexoUrl)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
                         );
                       }
                       // Nada encontrado
