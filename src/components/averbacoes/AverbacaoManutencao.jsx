@@ -17,6 +17,7 @@ export default function AverbacaoManutencao() {
 
   const [form, setForm] = useState({
     data: new Date().toISOString().slice(0, 10),
+    tipoAto: '',
     tipo: '',
     tipoOutro: '',
     descricao: '',
@@ -583,6 +584,17 @@ export default function AverbacaoManutencao() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label className="servico-label">Data</label>
                 <input className="servico-input" type="date" value={form.data} onChange={e => setForm(f => ({ ...f, data: e.target.value }))} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label className="servico-label">Tipo de Ato</label>
+                <select className="servico-select" value={form.tipoAto} onChange={e => setForm(f => ({ ...f, tipoAto: e.target.value }))}>
+                  <option value="">Selecione...</option>
+                  <option value="Averbação">Averbação</option>
+                  <option value="Procedimento">Procedimento</option>
+                  <option value="Registro Livro E">Registro Livro E</option>
+                  <option value="Casamento">Casamento</option>
+                  <option value="Restauração ou Suprimento">Restauração ou Suprimento</option>
+                </select>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label className="servico-label">Tipo de Averbação</label>
