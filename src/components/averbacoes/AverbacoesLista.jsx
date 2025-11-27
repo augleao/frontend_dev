@@ -340,16 +340,15 @@ export default function AverbacoesLista() {
               <th style={{ padding: 8 }}>Tipo</th>
               {/* <th style={{ padding: 8 }}>Descrição</th> */}
               <th style={{ padding: 8 }}>Ressarcível</th>
-              <th style={{ padding: 8 }}>Caminho</th>
-              <th style={{ padding: 8 }}>PDF</th>
+              <th style={{ padding: 8 }}>Arquivo Anexado</th>
               <th style={{ padding: 8 }}>Ações</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={7} style={{ textAlign: 'center', padding: 16, color: '#888' }}>Carregando...</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 16, color: '#888' }}>Carregando...</td></tr>
             ) : itens.length === 0 ? (
-              <tr><td colSpan={7} style={{ textAlign: 'center', padding: 16, color: '#888' }}>Nenhuma averbação encontrada.</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 16, color: '#888' }}>Nenhuma averbação encontrada.</td></tr>
             ) : (
               itens.map(item => (
                 <tr key={item.id} style={{ background: '#fff' }}>
@@ -394,54 +393,7 @@ export default function AverbacoesLista() {
                       );
                     })()}
                   </td>
-                  <td style={{ padding: 8 }}>
-                    {(() => {
-                      // DEBUG: logar o objeto item para inspecionar uploads/anexos
-                      // eslint-disable-next-line no-console
-                      console.log('[AverbacoesLista] item para coluna Anexo:', item);
-                      // 1. uploads array (novo padrão)
-                      if (Array.isArray(item.uploads) && item.uploads.length > 0) {
-                        const u = item.uploads[0];
-                        const nome = u.original_name || u.originalName || u.stored_name || u.storedName || (u.url ? decodeURIComponent(u.url.split('/').pop()) : '');
-                        return u.url ? (
-                          <a href={normalizeUrl(u.url)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
-                        ) : (
-                          <span style={{ color: '#94a3b8' }}>{nome || '—'}</span>
-                        );
-                      }
-                      // 2. pdf (objeto)
-                      if (item.pdf && (item.pdf.url || item.pdf.storedName || item.pdf.originalName || item.pdf.filename)) {
-                        const nome = item.pdf.originalName || item.pdf.storedName || item.pdf.filename || (item.pdf.url ? decodeURIComponent(item.pdf.url.split('/').pop()) : '');
-                        return item.pdf.url ? (
-                          <a href={normalizeUrl(item.pdf.url)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
-                        ) : (
-                          <span style={{ color: '#94a3b8' }}>{nome || '—'}</span>
-                        );
-                      }
-                      // 3. pdf_filename + pdf_url (legado)
-                      if (item.pdf_filename && item.pdf_url) {
-                        return (
-                          <a href={normalizeUrl(item.pdf_url)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={item.pdf_filename}>{item.pdf_filename}</a>
-                        );
-                      }
-                      // 4. anexo_url + anexo_metadata (legado)
-                      if (item.anexo_url) {
-                        const nome = (item.anexo_metadata && (item.anexo_metadata.originalName || item.anexo_metadata.filename)) || (item.anexo_url.split('/').pop()) || 'Abrir PDF';
-                        return (
-                          <a href={normalizeUrl(item.anexo_url)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
-                        );
-                      }
-                      // 5. anexoUrl camelCase (legado)
-                      if (item.anexoUrl) {
-                        const nome = (item.anexo_metadata && (item.anexo_metadata.originalName || item.anexo_metadata.filename)) || (item.anexoUrl.split('/').pop()) || 'Abrir PDF';
-                        return (
-                          <a href={normalizeUrl(item.anexoUrl)} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }} title={nome}>{nome}</a>
-                        );
-                      }
-                      // Nada encontrado
-                      return <span style={{ color: '#94a3b8' }}>—</span>;
-                    })()}
-                  </td>
+                  {/* coluna 'PDF' removida */}
                   <td style={{ padding: 8, display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center' }}>
                     <button
                       style={{ background: '#3498db', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}
