@@ -23,6 +23,32 @@ const handleAbrirPdf = (url) => {
   window.open(final, '_blank', 'noopener');
 };
 
+// Tenta recuperar uploads associados à averbacao via API e retorna a primeira URL disponível
+const fetchFirstUploadUrlForAverbacao = async (averbacaoId) => {
+  if (!averbacaoId) return null;
+  try {
+    const token = localStorage.getItem('token');
+    const tryUrls = [
+      `${config.apiURL.replace(/\/$/, '')}/uploads?atoId=${encodeURIComponent(averbacaoId)}&tipo=averbacao`,
+      `${config.apiURL.replace(/\/$/, '')}/uploads?averbacaoId=${encodeURIComponent(averbacaoId)}`
+    ];
+    for (const u of tryUrls) {
+      try {
+        const res = await fetch(u, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) continue;
+        let j = {};
+        try { j = await res.json(); } catch (_) { j = {}; }
+        const uploads = Array.isArray(j.uploads) ? j.uploads : (Array.isArray(j) ? j : []);
+        if (uploads && uploads.length > 0) {
+          const first = uploads[0];
+          return first.url || first.shareLink || first.webUrl || null;
+        }
+      } catch (e) { /* ignore and try next */ }
+    }
+  } catch (e) { /* ignore */ }
+  return null;
+};
+
 function formatDate(dateStr) {
   if (!dateStr) return '-';
   const d = new Date(dateStr);
@@ -342,12 +368,26 @@ export default function AverbacoesLista() {
                           type="button"
                           style={{ color: '#2563eb', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit' }}
                           title={linkLabel || linkUrl}
-                          onClick={() => {
-                            // debug
-                            // eslint-disable-next-line no-console
-                            console.log('[AverbacoesLista] abrir PDF solicitado', { id: item.id, linkUrl, item });
-                            handleAbrirPdf(linkUrl);
-                          }}
+                          onClick={async () => {
+                                // debug
+                                // eslint-disable-next-line no-console
+                                console.log('[AverbacoesLista] abrir PDF solicitado', { id: item.id, linkUrl, item });
+                                // Se linkUrl for absoluto, abre direto
+                                if (linkUrl && /^https?:\/\//i.test(String(linkUrl))) {
+                                  handleAbrirPdf(linkUrl);
+                                  return;
+                                }
+                                // Tentativa de fallback: consultar uploads da averbacao para obter URL pública
+                                const fetched = await fetchFirstUploadUrlForAverbacao(item.id).catch(() => null);
+                                if (fetched) {
+                                  // eslint-disable-next-line no-console
+                                  console.log('[AverbacoesLista] abrir PDF: URL obtida via /uploads', { fetched });
+                                  handleAbrirPdf(fetched);
+                                  return;
+                                }
+                                // última tentativa: abrir linkUrl mesmo (normalize fará prefixo se possível)
+                                handleAbrirPdf(linkUrl);
+                              }}
                         >
                           {linkLabel || linkUrl}
                         </button>
