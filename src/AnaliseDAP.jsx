@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { listDaps, getDapById, deleteDap, uploadDap } from './services/dapService';
 import DapTable from './components/dap/DapTable';
 import DapDetailsDrawer from './components/dap/DapDetailsDrawer';
-import { identificarTipo, analisarExigencia, gerarTextoAverbacao } from './servicos/IAWorkflowService';
+import { identificarTipo, analisarExigencia, gerarTextoAverbacao } from './components/servicos/IAWorkflowService';
 
 const currentYear = new Date().getFullYear();
 
