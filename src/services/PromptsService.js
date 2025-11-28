@@ -26,9 +26,28 @@ function indexBy(items, key = 'indexador') {
 }
 
 async function getByIndexador(indexador) {
-  const all = await listPrompts();
-  const map = indexBy(all);
-  return map.get(String(indexador).toLowerCase()) || null;
+  if (!indexador) return null;
+  try {
+    const res = await fetch(`${config.apiURL}/ia/prompts/${encodeURIComponent(String(indexador || '').toLowerCase())}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() }
+    });
+    if (!res.ok) {
+      if (res.status === 404) return null;
+      throw new Error(`Falha ao carregar prompt (${res.status})`);
+    }
+    const data = await res.json();
+    return data || null;
+  } catch (e) {
+    // Fallback to listing all if single lookup fails
+    try {
+      const all = await listPrompts();
+      const map = indexBy(all);
+      return map.get(String(indexador).toLowerCase()) || null;
+    } catch (_) {
+      return null;
+    }
+  }
 }
 
 async function getManyByIndexadores(indexadores = []) {

@@ -27,7 +27,7 @@ function AnaliseDAP() {
   const [loadingDetalhe, setLoadingDetalhe] = useState(false);
   const [, setFeedback] = useState({ tipo: '', mensagem: '' });
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalIndexador] = useState('DAP_impacto_financeiro');
+  const [modalIndexador, setModalIndexador] = useState('');
   const selectedDaps = useMemo(() => (Array.isArray(daps) && Array.isArray(selectedIds) ? daps.filter((x) => selectedIds.includes(x.id)) : []), [daps, selectedIds]);
 
   useEffect(() => {
@@ -427,6 +427,8 @@ function AnaliseDAP() {
               alert('Selecione ao menos uma DAP antes de executar esta ação.');
               return;
             }
+            // set the indexador in lowercase so the modal will load the correct prompt
+            setModalIndexador('dap_impacto_financeiro');
             setModalOpen(true);
           }}
           style={iaButtonStyle}

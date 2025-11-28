@@ -258,8 +258,15 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   // Get prompt by indexador
   app.get('/api/ia/prompts/:indexador', async (req, res) => {
     const idx = String(req.params.indexador || '').toLowerCase();
-    const row = await getPromptByIndexador(idx);
-    if (!row) return res.status(404).json({ error: 'Prompt não encontrado' });
+    const rawIndexador = String(req.params.indexador || '');
+    const indexador = rawIndexador.toLowerCase();
+    console.log(`[ia] GET /api/ia/prompts/${rawIndexador} -> lookup indexador=${indexador}`);
+    const row = await getPromptByIndexador(indexador);
+    if (!row) {
+      console.log(`[ia] prompt not found for indexador=${indexador}`);
+      return res.status(404).json({ error: 'Prompt não encontrado' });
+    }
+    console.log(`[ia] prompt found for indexador=${indexador} preview=${String(row.prompt || '').slice(0,120).replace(/\n/g,' ')}...`);
     return res.json(row);
   });
 
