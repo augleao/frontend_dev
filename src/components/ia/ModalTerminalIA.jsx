@@ -17,10 +17,12 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
       setLoading(true);
       try {
         const p = await PromptsService.getByIndexador(indexador);
+        console.log('[ModalTerminalIA] prompt fetched', p);
         setPromptRow(p);
         pushConsole(`[title]Prompt carregado: ${indexador}[/title]`);
         if (p && p.prompt) pushConsole(p.prompt);
         // Execute automatically when prompt is loaded
+        console.log('[ModalTerminalIA] onRun present?', !!onRun, 'items.length=', (items || []).length);
         if (p && p.prompt && onRun) {
           console.log('[ModalTerminalIA] starting automatic run');
           pushConsole('[info]Iniciando execução automática do prompt...[/info]');
@@ -34,6 +36,7 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
           }
         }
       } catch (e) {
+        console.error('[ModalTerminalIA] error loading prompt', e);
         pushConsole(`[error]Erro ao carregar prompt: ${e.message || e}[/error]`);
       } finally {
         setLoading(false);
