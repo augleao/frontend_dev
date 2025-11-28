@@ -245,6 +245,10 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
     try {
       await ensurePromptsTable();
       const { rows } = await pool.query('SELECT indexador, prompt, updated_at FROM public.ia_prompts ORDER BY indexador ASC');
+      try {
+        const preview = (rows || []).map(r => ({ indexador: r.indexador, promptPreview: String(r.prompt || '').slice(0, 160) }));
+        console.log('[IA][prompts] returning', { count: (rows || []).length, preview });
+      } catch (_) {}
       return res.json(rows || []);
     } catch (e) {
       return res.status(500).json({ error: 'Falha ao listar prompts.' });

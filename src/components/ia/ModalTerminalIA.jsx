@@ -19,8 +19,12 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
         const p = await PromptsService.getByIndexador(indexador);
         console.log('[ModalTerminalIA] prompt fetched', p);
         setPromptRow(p);
-        pushConsole(`[title]Prompt carregado: ${indexador}[/title]`);
-        if (p && p.prompt) pushConsole(p.prompt);
+        if (!p) {
+          pushConsole(`[warning]Prompt não encontrado no DB para indexador '${indexador}'. Crie um prompt com PUT /api/ia/prompts/${indexador} ou verifique o indexador existente.[/warning]`);
+        } else {
+          pushConsole(`[title]Prompt carregado: ${indexador}[/title]`);
+          if (p && p.prompt) pushConsole(p.prompt);
+        }
         // Execute automatically when prompt is loaded
         console.log('[ModalTerminalIA] onRun present?', !!onRun, 'items.length=', (items || []).length);
         if (p && p.prompt && onRun) {
