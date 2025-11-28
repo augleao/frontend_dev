@@ -10,6 +10,7 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
 
   useEffect(() => {
     if (!open) return;
+    console.log(`[ModalTerminalIA] opened indexador=${indexador} items=${(items || []).length}`);
     setConsoleLines([]);
     setPromptRow(null);
     (async () => {
@@ -19,6 +20,19 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
         setPromptRow(p);
         pushConsole(`[title]Prompt carregado: ${indexador}[/title]`);
         if (p && p.prompt) pushConsole(p.prompt);
+        // Execute automatically when prompt is loaded
+        if (p && p.prompt && onRun) {
+          console.log('[ModalTerminalIA] starting automatic run');
+          pushConsole('[info]Iniciando execução automática do prompt...[/info]');
+          try {
+            await onRun({ indexador, prompt: p.prompt, items, pushConsole });
+            console.log('[ModalTerminalIA] automatic run completed');
+            pushConsole('[success]Execução automática concluída.[/success]');
+          } catch (autoErr) {
+            console.error('[ModalTerminalIA] automatic run failed', autoErr);
+            pushConsole(`[error]Falha na execução automática: ${autoErr?.message || autoErr}[/error]`);
+          }
+        }
       } catch (e) {
         pushConsole(`[error]Erro ao carregar prompt: ${e.message || e}[/error]`);
       } finally {
@@ -38,6 +52,7 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
 
   const handleRun = async () => {
     if (!onRun) return;
+    console.log('[ModalTerminalIA] manual run triggered');
     pushConsole('[info]Executando agente de IA com o prompt selecionado...[/info]');
     try {
       await onRun({ indexador, prompt: promptRow?.prompt || '', items, pushConsole });
@@ -56,7 +71,6 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
           <h3 style={{ margin: 0 }}>Terminal IA — {indexador}</h3>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={onClose} style={simpleButtonStyle}>Fechar</button>
-            <button onClick={handleRun} style={primaryButtonStyle} disabled={loading || !promptRow}>Executar</button>
           </div>
         </div>
         <div style={{ marginTop: 12, display: 'flex', gap: 12 }}>

@@ -609,11 +609,13 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
     try {
       if (!pool) return res.status(501).json({ error: 'Pool/DB indisponível.' });
       const { indexador, dapIds } = req.body || {};
+      console.log('[IA][run-prompt] incoming request', { userId: req.user && req.user.id ? req.user.id : null, indexador: String(indexador || ''), dapIdsCount: Array.isArray(dapIds) ? dapIds.length : 0 });
       if (!indexador || !Array.isArray(dapIds) || dapIds.length === 0) {
         return res.status(400).json({ error: 'Informe indexador e dapIds (array) no corpo.' });
       }
 
       const promptRow = await getPromptByIndexador(String(indexador || '').toLowerCase());
+      console.log('[IA][run-prompt] prompt lookup', { found: !!promptRow, indexador: String(indexador || '').toLowerCase() });
       if (!promptRow) return res.status(404).json({ error: 'Prompt não encontrado.' });
 
       // Helper: load a single DAP with its periodos and atos (re-using dap route SQL)
@@ -702,11 +704,15 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
           continue;
         }
         try {
+          const dapStart = Date.now();
+          console.log(`[IA][run-prompt] processing dap ${id}`);
           const loaded = await loadDap(id, codigoServentia);
           if (!loaded) {
+            console.warn(`[IA][run-prompt] dap ${id} not found or access denied`);
             results.push({ dapId: id, error: 'DAP não encontrada ou acesso negado.' });
             continue;
           }
+          console.log(`[IA][run-prompt] dap ${id} loaded header`, { id: loaded.header && loaded.header.id ? loaded.header.id : null, serventia: loaded.header && (loaded.header.serventiaNome || loaded.header.codigoServentia) });
 
           // Build a concise text context from DAP
           const hdr = loaded.header || {};
@@ -722,9 +728,11 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
           });
 
           const promptText = renderTemplate(promptRow.prompt || '', { dap_text: clampForPrompt(combined), dap_id: id, serventia: hdr.serventiaNome || hdr.codigoServentia });
+          console.log(`[IA][run-prompt] dap ${id} prompt length=${String(promptText || '').length}`);
 
           if (process.env.IA_STUB === 'true' || !GoogleGenerativeAI) {
             // Provide a safe stubbed response
+            console.log(`[IA][run-prompt] dap ${id} using stub or provider unavailable`);
             results.push({ dapId: id, indexador: indexador, prompt: promptText, output: `[STUB] Execução simulada para DAP ${id}` });
             continue;
           }
@@ -732,24 +740,33 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
           try {
             const apiKey = process.env.GEMINI_API_KEY;
             if (!apiKey) {
+              console.error('[IA][run-prompt] missing GEMINI_API_KEY');
               results.push({ dapId: id, error: 'GEMINI_API_KEY não configurada.' });
               continue;
             }
             const rawName = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
             const modelName = resolveIaModel(rawName);
+            console.log(`[IA][run-prompt] dap ${id} calling provider model=${modelName}`);
             const genAI = new GoogleGenerativeAI(apiKey);
             const model = genAI.getGenerativeModel({ model: modelName });
+            const t0 = Date.now();
             const resp = await model.generateContent(promptText);
             const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
+            console.log(`[IA][run-prompt] dap ${id} provider returned len=${String(out ? out.length : 0)} ms=${Date.now() - t0}`);
             results.push({ dapId: id, indexador: indexador, prompt: promptText, output: String(out || '').trim() });
           } catch (provErr) {
+            console.error(`[IA][run-prompt] dap ${id} provider error`, describeError(provErr));
             results.push({ dapId: id, error: 'Falha ao chamar provedor de IA', detail: describeError(provErr) });
           }
+          const dapElapsed = Date.now() - dapStart;
+          console.log(`[IA][run-prompt] dap ${id} completed in ${dapElapsed}ms`);
         } catch (e) {
+          console.error('[IA][run-prompt] unexpected error for dap', rawId, e && e.message ? e.message : e);
           results.push({ dapId: rawId, error: e && e.message ? e.message : String(e) });
         }
       }
 
+      console.log('[IA][run-prompt] all daps processed', { total: results.length });
       return res.json({ results });
     } catch (err) {
       return res.status(500).json({ error: 'Erro ao executar prompt.' });
