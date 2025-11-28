@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import React, { useEffect, useRef, useState } from 'react';
+import { jsPDF } from 'jspdf';
 import PromptsService from '../../services/PromptsService';
 
 export default function ModalTerminalIA({ open, onClose, indexador, items = [], onRun }) {
@@ -115,12 +116,107 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
 
   if (!open) return null;
 
+  const hasIaResults = Array.isArray(consoleLines) && consoleLines.some((l) => l && l.type === 'ia_result');
+
+  async function gerarRelatorioPdf() {
+    const results = (consoleLines || []).filter((l) => l && l.type === 'ia_result');
+    if (!results || results.length === 0) {
+      pushConsole('[warning]Nenhum resultado de IA disponível para gerar relatório.[/warning]');
+      return;
+    }
+
+    const doc = new jsPDF('p', 'pt', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 40;
+    let y = margin;
+
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text(`Relatório IA — ${indexador || ''}`, margin, y);
+    y += 24;
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Gerado em: ${new Date().toLocaleString()}`, margin, y);
+    y += 18;
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 14;
+
+    const maxWidth = pageWidth - margin * 2;
+    const lineHeight = 14;
+
+    for (const r of results) {
+      if (y > pageHeight - margin - 100) {
+        doc.addPage();
+        y = margin;
+      }
+
+      doc.setFontSize(13);
+      doc.setFont(undefined, 'bold');
+      doc.text(`DAP ${r.dapId}`, margin, y);
+      y += 16;
+
+      if (r.indexador) {
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(100, 120, 140);
+        doc.text(`indexador: ${r.indexador}`, margin, y);
+        y += 14;
+      }
+
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'normal');
+      doc.setTextColor(20, 30, 40);
+
+      let content = r.output || '';
+      // If JSON string, pretty print
+      try {
+        if (typeof content === 'string') {
+          const parsed = JSON.parse(content);
+          content = JSON.stringify(parsed, null, 2);
+        }
+      } catch (_) { /* not JSON */ }
+
+      const lines = doc.splitTextToSize(String(content || '[sem conteúdo]'), maxWidth);
+      // Add lines, with page breaks if needed
+      for (let i = 0; i < lines.length; i++) {
+        if (y > pageHeight - margin - lineHeight) {
+          doc.addPage();
+          y = margin;
+        }
+        doc.text(lines[i], margin, y);
+        y += lineHeight;
+      }
+
+      y += 12;
+      // separator
+      doc.setDrawColor(240, 240, 240);
+      doc.setLineWidth(0.5);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 12;
+    }
+
+    const filename = `relatorio_ia_${String(indexador || 'relatorio')}_${Date.now()}.pdf`;
+    try {
+      doc.save(filename);
+      pushConsole(`[success]Relatório gerado: ${filename}[/success]`);
+    } catch (e) {
+      pushConsole(`[error]Falha ao gerar PDF: ${e?.message || e}[/error]`);
+    }
+  }
+
   return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
           <h3 style={{ margin: 0 }}>Terminal IA — {indexador}</h3>
           <div style={{ display: 'flex', gap: 8 }}>
+            {hasIaResults ? (
+              <button onClick={gerarRelatorioPdf} style={{ ...simpleButtonStyle, background: '#0f172a', color: 'white' }}>Gerar Relatorio</button>
+            ) : null}
             <button onClick={onClose} style={simpleButtonStyle}>Fechar</button>
           </div>
         </div>
