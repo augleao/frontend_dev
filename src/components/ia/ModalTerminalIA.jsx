@@ -134,7 +134,7 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
     // Header
     doc.setFontSize(18);
     doc.setFont(undefined, 'bold');
-    doc.text(`Relatório IA — ${indexador || ''}`, margin, y);
+    doc.text(`Analise da DAP`, margin, y);
     y += 24;
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
