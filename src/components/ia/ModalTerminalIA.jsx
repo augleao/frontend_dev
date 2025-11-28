@@ -125,19 +125,11 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
             <button onClick={onClose} style={simpleButtonStyle}>Fechar</button>
           </div>
         </div>
-        <div style={{ marginTop: 12, display: 'flex', gap: 12 }}>
+        <div style={{ marginTop: 12 }}>
           <div ref={consoleRef} style={consoleStyle}>
               {consoleLines.map((l, i) => (
                 <div key={i} style={{ marginBottom: 8, fontFamily: 'Courier New, monospace', fontSize: 13 }}>{renderFormattedText(String(l))}</div>
               ))}
-          </div>
-          <div style={{ flex: '0 0 320px', maxWidth: 320 }}>
-            <div style={{ fontSize: 13, color: '#333' }}>
-              <strong>Prompt preview</strong>
-              <div style={{ marginTop: 8, background: '#fafafa', padding: 10, borderRadius: 8, minHeight: 160, overflow: 'auto', whiteSpace: 'pre-wrap' }}>
-                {promptRow?.prompt || 'Prompt não encontrado.'}
-              </div>
-            </div>
           </div>
         </div>
       </div>
