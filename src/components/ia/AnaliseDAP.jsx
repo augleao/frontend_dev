@@ -6,6 +6,7 @@ import { listDaps, getDapById, deleteDap, uploadDap } from '../../services/dapSe
 import DapTable from '../dap/DapTable';
 import DapDetailsDrawer from '../dap/DapDetailsDrawer';
 import { identificarTipo, analisarExigencia, gerarTextoAverbacao } from '../servicos/IAWorkflowService';
+import ModalTerminalIA from './ModalTerminalIA';
 
 const currentYear = new Date().getFullYear();
 
@@ -25,6 +26,9 @@ function AnaliseDAP() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [loadingDetalhe, setLoadingDetalhe] = useState(false);
   const [, setFeedback] = useState({ tipo: '', mensagem: '' });
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalIndexador] = useState('DAP_impacto_financeiro');
+  const selectedDaps = useMemo(() => (Array.isArray(daps) && Array.isArray(selectedIds) ? daps.filter((x) => selectedIds.includes(x.id)) : []), [daps, selectedIds]);
 
   useEffect(() => {
     carregarDaps();
@@ -231,6 +235,25 @@ function AnaliseDAP() {
     }
   };
 
+  const handleRunWithPrompt = async ({ indexador, prompt, items, pushConsole }) => {
+    // Minimal starter: display prompt and run existing analyses for items (ids)
+    try {
+      if (pushConsole) pushConsole(`[title]Usando prompt: ${indexador}[/title]`);
+      if (pushConsole && prompt) pushConsole(prompt);
+      const idsToRun = Array.isArray(items) && items.length > 0 ? items.map((d) => d.id).filter(Boolean) : selectedIds;
+      if (!Array.isArray(idsToRun) || idsToRun.length === 0) {
+        if (pushConsole) pushConsole('[warning]Nenhuma DAP selecionada para análise.[/warning]');
+        return;
+      }
+      if (pushConsole) pushConsole(`[info]Iniciando análises para ${idsToRun.length} DAP(s)...[/info]`);
+      await runAnalyses(idsToRun);
+      if (pushConsole) pushConsole('[success]Análises finalizadas (fluxo padrão).[/success]');
+    } catch (e) {
+      if (pushConsole) pushConsole(`[error]Erro ao executar análises: ${e?.message || e}[/error]`);
+      throw e;
+    }
+  };
+
   const handleExcluir = async (dap) => {
     if (!dap?.id) return;
     const confirmado = window.confirm('Confirma a exclusão (soft delete) desta DAP?');
@@ -264,7 +287,7 @@ function AnaliseDAP() {
           ← Voltar
         </button>
         <div>
-            <h1 style={titleStyle}>Análise da DAP</h1>
+            <h1 style={titleStyle}>Análise das DAPs</h1>
             <p style={subtitleStyle}>Utilize ferramentas de IA para analisar o desempenho da serventia.</p>
           </div>
         <button
@@ -359,6 +382,23 @@ function AnaliseDAP() {
         </button>
       </section>
 
+      {/* IA buttons container */}
+      <div style={iaButtonsContainerStyle}>
+        <button
+          type="button"
+          onClick={() => {
+            if (!selectedIds || selectedIds.length === 0) {
+              alert('Selecione ao menos uma DAP antes de executar esta ação.');
+              return;
+            }
+            setModalOpen(true);
+          }}
+          style={iaButtonStyle}
+        >
+          Impactos Financeiros
+        </button>
+      </div>
+
       <DapTable
         items={daps}
         loading={loading}
@@ -387,6 +427,14 @@ function AnaliseDAP() {
           Analisar DAP aberta
         </button>
       </div>
+
+      <ModalTerminalIA
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        indexador={modalIndexador}
+        items={selectedDaps}
+        onRun={handleRunWithPrompt}
+      />
 
       <DapDetailsDrawer
         dap={selectedDap}
@@ -493,6 +541,24 @@ const refreshButtonStyle = {
   padding: '8px 12px',
   cursor: 'pointer',
   fontWeight: 600,
+};
+
+const iaButtonsContainerStyle = {
+  display: 'flex',
+  gap: 10,
+  marginTop: 8,
+  marginBottom: 12,
+  alignItems: 'center'
+};
+
+const iaButtonStyle = {
+  padding: '8px 12px',
+  borderRadius: 8,
+  background: 'linear-gradient(135deg,#f97316,#fb923c)',
+  color: 'white',
+  border: 'none',
+  cursor: 'pointer',
+  fontWeight: 700
 };
 
 const feedbackStyle = (tipo) => ({
