@@ -604,6 +604,158 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
     }
   });
 
+  // 5) Run arbitrary stored prompt against one or more DAPs (by id)
+  app.post('/api/ia/run-prompt', middlewares.ensureAuth ? middlewares.ensureAuth : (req, _res, next) => next(), async (req, res) => {
+    try {
+      if (!pool) return res.status(501).json({ error: 'Pool/DB indisponível.' });
+      const { indexador, dapIds } = req.body || {};
+      if (!indexador || !Array.isArray(dapIds) || dapIds.length === 0) {
+        return res.status(400).json({ error: 'Informe indexador e dapIds (array) no corpo.' });
+      }
+
+      const promptRow = await getPromptByIndexador(String(indexador || '').toLowerCase());
+      if (!promptRow) return res.status(404).json({ error: 'Prompt não encontrado.' });
+
+      // Helper: load a single DAP with its periodos and atos (re-using dap route SQL)
+      async function loadDap(id, codigoServentia) {
+        const headerSql = `
+          SELECT id, mes_referencia AS "mesReferencia", ano_referencia AS "anoReferencia",
+                 retificadora, retificadora_de_id AS "retificadoraDeId", retificada_por_id AS "retificadaPorId",
+                 serventia_nome AS "serventiaNome", codigo_serventia AS "codigoServentia", cnpj,
+                 data_transmissao AS "dataTransmissao", codigo_recibo AS "codigoRecibo", observacoes,
+                 emolumento_apurado AS "emolumentoApurado",
+                 taxa_fiscalizacao_judiciaria_apurada AS "taxaFiscalizacaoJudiciariaApurada",
+                 taxa_fiscalizacao_judiciaria_paga AS "taxaFiscalizacaoJudiciariaPaga",
+                 recompe_apurado AS "recompeApurado",
+                 recompe_depositado AS "recompeDepositado",
+                 data_deposito_recompe AS "dataDepositoRecompe",
+                 valores_recebidos_recompe AS "valoresRecebidosRecompe",
+                 valores_recebidos_ferrfis AS "valoresRecebidosFerrfis",
+                 issqn_recebido_usuarios AS "issqnRecebidoUsuarios",
+                 repasses_responsaveis_anteriores AS "repassesResponsaveisAnteriores",
+                 saldo_deposito_previo AS "saldoDepositoPrevio",
+                 total_despesas_mes AS "totalDespesasMes",
+                 estoque_selos_eletronicos_transmissao AS "estoqueSelosEletronicosTransmissao"
+          FROM public.dap
+          WHERE id = $1 AND codigo_serventia = $2
+        `;
+        const headerResult = await pool.query(headerSql, [id, codigoServentia]);
+        if (!headerResult.rowCount) return null;
+
+        const periodosSql = `
+          SELECT id, ordem, quantidade_total AS "quantidadeTotal", tfj_total AS "tfjTotal"
+          FROM public.dap_periodo
+          WHERE dap_id = $1
+          ORDER BY ordem
+        `;
+        const periodosResult = await pool.query(periodosSql, [id]);
+        const periodoIds = periodosResult.rows.map((row) => row.id);
+
+        let atos = [];
+        if (periodoIds.length) {
+          // Join with `atos` to get official ato descriptions and with `codigos_gratuitos`
+          // to get tributacao/codigo descriptions when available. Left joins used
+          // so snapshots without a matching catalog entry still surface.
+          const atosSql = `
+            SELECT a.periodo_id AS "periodoId",
+                   a.codigo,
+                   a.tributacao,
+                   a.quantidade,
+                   a.tfj_valor AS "tfjValor",
+                   at.descricao AS "atoDescricao",
+                   cg.descricao AS "tributacaoDescricao"
+            FROM public.dap_periodo_ato_snapshot a
+            LEFT JOIN public.atos at ON at.codigo = a.codigo
+            LEFT JOIN public.codigos_gratuitos cg ON cg.codigo = a.tributacao
+            WHERE periodo_id = ANY($1)
+            ORDER BY a.codigo, a.tributacao
+          `;
+          const atosResult = await pool.query(atosSql, [periodoIds]);
+          atos = atosResult.rows;
+        }
+
+        const periodoMap = periodosResult.rows.map((periodo) => ({
+          ...periodo,
+          atos: atos.filter((ato) => ato.periodoId === periodo.id),
+        }));
+
+        return { header: headerResult.rows[0], periodos: periodoMap };
+      }
+
+      const usuario = req.user || {};
+      const codigoServentia = usuario.codigo_serventia || usuario.codigoServentia || null;
+      if (!codigoServentia) return res.status(403).json({ error: 'Usuário sem serventia associada.' });
+
+      // Prepare provider
+      let GoogleGenerativeAI = null;
+      try {
+        ({ GoogleGenerativeAI } = await import('@google/generative-ai'));
+      } catch (impErr) {
+        // continue; we'll handle stub or error later
+      }
+
+      const results = [];
+      for (const rawId of dapIds) {
+        const id = Number(rawId);
+        if (!Number.isInteger(id)) {
+          results.push({ dapId: rawId, error: 'ID inválido' });
+          continue;
+        }
+        try {
+          const loaded = await loadDap(id, codigoServentia);
+          if (!loaded) {
+            results.push({ dapId: id, error: 'DAP não encontrada ou acesso negado.' });
+            continue;
+          }
+
+          // Build a concise text context from DAP
+          const hdr = loaded.header || {};
+          let combined = `DAP ${id} • Serventia: ${hdr.serventiaNome || hdr.codigoServentia || ''} • Referência: ${hdr.mesReferencia || ''}/${hdr.anoReferencia || ''}\n`;
+          (loaded.periodos || []).forEach((p, idx) => {
+            combined += `----- PERIODO ${p.ordem} -----\n`;
+            (p.atos || []).forEach((a) => {
+              const atoDesc = a.atoDescricao || a.descricao || '';
+              const tribDesc = a.tributacaoDescricao || '';
+              const tribLabel = a.tributacao ? `${a.tributacao}${tribDesc ? ' - ' + tribDesc : ''}` : '';
+              combined += `ATO ${a.codigo} ${atoDesc ? ' - ' + atoDesc : ''} | Trib: ${tribLabel} | Qtd: ${a.quantidade} | Emol: ${a.tfjValor} \n`;
+            });
+          });
+
+          const promptText = renderTemplate(promptRow.prompt || '', { dap_text: clampForPrompt(combined), dap_id: id, serventia: hdr.serventiaNome || hdr.codigoServentia });
+
+          if (process.env.IA_STUB === 'true' || !GoogleGenerativeAI) {
+            // Provide a safe stubbed response
+            results.push({ dapId: id, indexador: indexador, prompt: promptText, output: `[STUB] Execução simulada para DAP ${id}` });
+            continue;
+          }
+
+          try {
+            const apiKey = process.env.GEMINI_API_KEY;
+            if (!apiKey) {
+              results.push({ dapId: id, error: 'GEMINI_API_KEY não configurada.' });
+              continue;
+            }
+            const rawName = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
+            const modelName = resolveIaModel(rawName);
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const resp = await model.generateContent(promptText);
+            const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
+            results.push({ dapId: id, indexador: indexador, prompt: promptText, output: String(out || '').trim() });
+          } catch (provErr) {
+            results.push({ dapId: id, error: 'Falha ao chamar provedor de IA', detail: describeError(provErr) });
+          }
+        } catch (e) {
+          results.push({ dapId: rawId, error: e && e.message ? e.message : String(e) });
+        }
+      }
+
+      return res.json({ results });
+    } catch (err) {
+      return res.status(500).json({ error: 'Erro ao executar prompt.' });
+    }
+  });
+
   // Async flow: create job and process in background
   function newJob(initial = {}) {
     const id = Math.random().toString(36).slice(2) + Date.now().toString(36);

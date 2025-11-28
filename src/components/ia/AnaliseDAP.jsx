@@ -236,20 +236,56 @@ function AnaliseDAP() {
   };
 
   const handleRunWithPrompt = async ({ indexador, prompt, items, pushConsole }) => {
-    // Minimal starter: display prompt and run existing analyses for items (ids)
+    // New behavior: call backend endpoint to run stored prompt with selected DAP ids
     try {
-      if (pushConsole) pushConsole(`[title]Usando prompt: ${indexador}[/title]`);
-      if (pushConsole && prompt) pushConsole(prompt);
+      if (pushConsole) pushConsole(`[title]Executando prompt DB: ${indexador}[/title]`);
       const idsToRun = Array.isArray(items) && items.length > 0 ? items.map((d) => d.id).filter(Boolean) : selectedIds;
       if (!Array.isArray(idsToRun) || idsToRun.length === 0) {
         if (pushConsole) pushConsole('[warning]Nenhuma DAP selecionada para análise.[/warning]');
         return;
       }
-      if (pushConsole) pushConsole(`[info]Iniciando análises para ${idsToRun.length} DAP(s)...[/info]`);
-      await runAnalyses(idsToRun);
-      if (pushConsole) pushConsole('[success]Análises finalizadas (fluxo padrão).[/success]');
+      if (pushConsole) pushConsole(`[info]Enviando ${idsToRun.length} DAP(s) ao backend para execução do prompt '${indexador}'...[/info]`);
+
+      const token = localStorage.getItem('token');
+      const resp = await fetch(`${apiURL}/ia/run-prompt`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ indexador, dapIds: idsToRun }),
+      });
+
+      if (!resp.ok) {
+        const text = await resp.text();
+        const parsed = (() => { try { return JSON.parse(text); } catch { return null; } })();
+        const errMsg = parsed?.error || parsed?.mensagem || text || `HTTP ${resp.status}`;
+        if (pushConsole) pushConsole(`[error]Falha do backend: ${errMsg}[/error]`);
+        throw new Error(errMsg);
+      }
+
+      const data = await resp.json();
+      const results = data?.results || [];
+      if (results.length === 0) {
+        if (pushConsole) pushConsole('[warning]Nenhum resultado retornado pelo backend.[/warning]');
+        return;
+      }
+
+      for (const r of results) {
+        if (r.error) {
+          if (pushConsole) pushConsole(`[error]DAP ${r.dapId}: ${r.error} ${r.detail ? JSON.stringify(r.detail) : ''}[/error]`);
+          continue;
+        }
+        if (pushConsole) {
+          pushConsole(`[title]Resultado DAP ${r.dapId}:[/title]`);
+          if (r.output) pushConsole(r.output);
+          else pushConsole('[info]Resposta vazia do provedor.[/info]');
+        }
+      }
+
+      if (pushConsole) pushConsole('[success]Execução do prompt concluída para todas as DAPs.[/success]');
     } catch (e) {
-      if (pushConsole) pushConsole(`[error]Erro ao executar análises: ${e?.message || e}[/error]`);
+      if (pushConsole) pushConsole(`[error]Erro ao executar prompt: ${e?.message || e}[/error]`);
       throw e;
     }
   };
