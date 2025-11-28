@@ -23,7 +23,6 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
           pushConsole(`[warning]Prompt não encontrado no DB para indexador '${indexador}'. Crie um prompt com PUT /api/ia/prompts/${indexador} ou verifique o indexador existente.[/warning]`);
         } else {
           pushConsole(`[title]Prompt carregado: ${indexador}[/title]`);
-          if (p && p.prompt) pushConsole(p.prompt);
         }
         // Execute automatically when prompt is loaded
         console.log('[ModalTerminalIA] onRun present?', !!onRun, 'items.length=', (items || []).length);
@@ -54,7 +53,7 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
   }, [consoleLines]);
 
   function pushConsole(line) {
-    setConsoleLines((prev) => [...prev, typeof line === 'string' ? line : JSON.stringify(line)]);
+    setConsoleLines((prev) => [...prev, line]);
   }
 
   // Render formatted text with simple tag markup like [success]text[/success]
@@ -127,9 +126,59 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
         </div>
         <div style={{ marginTop: 12 }}>
           <div ref={consoleRef} style={consoleStyle}>
-              {consoleLines.map((l, i) => (
-                <div key={i} style={{ marginBottom: 8, fontFamily: 'Courier New, monospace', fontSize: 13 }}>{renderFormattedText(String(l))}</div>
-              ))}
+              {consoleLines.map((l, i) => {
+                const key = `line-${i}`;
+                // Plain string -> formatted tag renderer
+                if (typeof l === 'string') {
+                  return (
+                    <div key={key} style={{ marginBottom: 8, fontFamily: 'Courier New, monospace', fontSize: 13 }}>
+                      {renderFormattedText(String(l))}
+                    </div>
+                  );
+                }
+
+                // Structured IA result
+                if (l && l.type === 'ia_result') {
+                  // Try to pretty-print JSON output if possible
+                  let content = l.output || '';
+                  let pretty = null;
+                  try {
+                    const parsed = typeof content === 'string' ? JSON.parse(content) : content;
+                    pretty = JSON.stringify(parsed, null, 2);
+                  } catch (_) {
+                    pretty = null;
+                  }
+                  return (
+                    <div key={key} style={{ marginBottom: 12 }}>
+                      <div style={{ fontWeight: '700', marginBottom: 6, color: '#9ae6b4' }}>Resultado DAP {String(l.dapId)}</div>
+                      {l.indexador ? <div style={{ fontSize: 12, color: '#93c5fd', marginBottom: 6 }}>indexador: {l.indexador}</div> : null}
+                      <div style={{ background: '#071226', padding: 10, borderRadius: 8, whiteSpace: 'pre-wrap', fontFamily: 'Courier New, monospace', fontSize: 13, color: '#e6eef8' }}>
+                        {pretty ? <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{pretty}</pre> : (content || '[sem conteúdo]')}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // Structured IA error
+                if (l && l.type === 'ia_error') {
+                  return (
+                    <div key={key} style={{ marginBottom: 8 }}>
+                      <div style={{ fontWeight: '700', color: '#ff9b9b' }}>Erro DAP {String(l.dapId)}</div>
+                      <div style={{ background: '#2b0b0b', padding: 10, borderRadius: 8, color: '#ffd6d6', fontFamily: 'Courier New, monospace', fontSize: 13 }}>
+                        {String(l.message || 'Erro desconhecido')}
+                        {l.detail ? (<pre style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>{JSON.stringify(l.detail, null, 2)}</pre>) : null}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // Fallback: show JSON for unknown objects
+                return (
+                  <div key={key} style={{ marginBottom: 8, fontFamily: 'Courier New, monospace', fontSize: 13 }}>
+                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{JSON.stringify(l, null, 2)}</pre>
+                  </div>
+                );
+              })}
           </div>
         </div>
       </div>

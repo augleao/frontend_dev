@@ -282,13 +282,11 @@ function AnaliseDAP() {
 
       for (const r of results) {
         if (r.error) {
-          if (pushConsole) pushConsole(`[error]DAP ${r.dapId}: ${r.error} ${r.detail ? JSON.stringify(r.detail) : ''}[/error]`);
+          if (pushConsole) pushConsole({ type: 'ia_error', dapId: r.dapId, message: r.error, detail: r.detail || null });
           continue;
         }
         if (pushConsole) {
-          pushConsole(`[title]Resultado DAP ${r.dapId}:[/title]`);
-          if (r.output) pushConsole(r.output);
-          else pushConsole('[info]Resposta vazia do provedor.[/info]');
+          pushConsole({ type: 'ia_result', dapId: r.dapId, indexador: r.indexador || indexador, output: r.output || null });
         }
       }
 
