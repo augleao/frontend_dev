@@ -44,35 +44,35 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
 
   // Função para buscar códigos tributários
   const buscarCodigosTributarios = async (term) => {
-    console.log('[DEBUG] buscarCodigosTributarios called with term:', term);
+    console.debug('[DEBUG] buscarCodigosTributarios called with term:', term);
     if (term.trim() === '') {
       setCodigoTributarioSuggestions([]);
-      console.log('[DEBUG] term vazio, suggestions limpadas');
+      console.debug('[DEBUG] term vazio, suggestions limpadas');
       return;
     }
     setLoadingCodigoTributario(true);
     try {
       const token = localStorage.getItem('token');
       const url = `${config.apiURL}/codigos-tributarios?s=${encodeURIComponent(term)}`;
-      console.log('[DEBUG] Fetching:', url);
+      console.debug('[DEBUG] Fetching:', url);
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      console.log('[DEBUG] codigos-tributarios response:', data);
+      console.debug('[DEBUG] codigos-tributarios response:', data);
       if (res.ok) {
         setCodigoTributarioSuggestions(data.sugestoes || []);
-        console.log('[DEBUG] setCodigoTributarioSuggestions:', data.sugestoes || []);
+        console.debug('[DEBUG] setCodigoTributarioSuggestions:', data.sugestoes || []);
       } else {
         setCodigoTributarioSuggestions([]);
-        console.log('[DEBUG] setCodigoTributarioSuggestions: [] (response not ok)');
+        console.debug('[DEBUG] setCodigoTributarioSuggestions: [] (response not ok)');
       }
     } catch (error) {
       console.error('Erro ao buscar códigos tributários:', error);
       setCodigoTributarioSuggestions([]);
     }
     setLoadingCodigoTributario(false);
-    console.log('[DEBUG] setLoadingCodigoTributario(false)');
+    console.debug('[DEBUG] setLoadingCodigoTributario(false)');
   };
 
   // Função para selecionar código tributário
@@ -391,7 +391,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
 
   // useEffect para buscar códigos tributários com debounce
   useEffect(() => {
-    console.log('[DEBUG] useEffect codigoTributarioTerm:', codigoTributarioTerm);
+    console.debug('[DEBUG] useEffect codigoTributarioTerm:', codigoTributarioTerm);
     if (codigoTributarioDebounceTimeout.current) {
       clearTimeout(codigoTributarioDebounceTimeout.current);
     }

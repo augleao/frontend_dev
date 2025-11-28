@@ -11,10 +11,10 @@ const statusPagamento = [
 ];
 
 export default function ServicoPagamento({ form, onChange, valorTotal = 0, valorAdiantadoDetalhes: valorAdiantadoDetalhesProp = [], onAvancarEtapa, onVoltarEtapa }) {
-  console.log('[DEBUG-RECIBO] COMPONENTE RENDERIZADO. Props recebidas:');
-  console.log('[DEBUG-RECIBO] - form.protocolo:', form.protocolo);
-  console.log('[DEBUG-RECIBO] - valorTotal:', valorTotal);
-  console.log('[DEBUG-RECIBO] - valorAdiantadoDetalhesProp:', valorAdiantadoDetalhesProp);
+  console.debug('[DEBUG-RECIBO] COMPONENTE RENDERIZADO. Props recebidas:');
+  console.debug('[DEBUG-RECIBO] - form.protocolo:', form.protocolo);
+  console.debug('[DEBUG-RECIBO] - valorTotal:', valorTotal);
+  console.debug('[DEBUG-RECIBO] - valorAdiantadoDetalhesProp:', valorAdiantadoDetalhesProp);
   
   // Estado para valor adicional (deve vir antes do useMemo)
   const [valorAdicional, setValorAdicional] = useState(0);
@@ -312,9 +312,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   // Buscar pagamento salvo ao montar
   React.useEffect(() => {
     // Loga sempre que o protocolo mudar
-    console.log('[DEBUG-RECIBO] useEffect fetchPagamentoSalvo executado. Protocolo:', form.protocolo);
+    console.debug('[DEBUG-RECIBO] useEffect fetchPagamentoSalvo executado. Protocolo:', form.protocolo);
     if (!form.protocolo) {
-      console.log('[DEBUG-RECIBO] Sem protocolo, setPagamentoSalvo(false)');
+      console.debug('[DEBUG-RECIBO] Sem protocolo, setPagamentoSalvo(false)');
       setPagamentoSalvo(false);
       return;
     }
@@ -327,12 +327,12 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         });
         if (res.ok) {
           const data = await res.json();
-          console.log('[DEBUG-RECIBO] Dados recebidos do backend:', data);
+          console.debug('[DEBUG-RECIBO] Dados recebidos do backend:', data);
           if (data && data.id) {
-            console.log('[DEBUG-RECIBO] Pagamento encontrado, setPagamentoSalvo(true)');
+            console.debug('[DEBUG-RECIBO] Pagamento encontrado, setPagamentoSalvo(true)');
             setPagamentoSalvo(true);
           } else {
-            console.log('[DEBUG-RECIBO] Nenhum pagamento encontrado, setPagamentoSalvo(false)');
+            console.debug('[DEBUG-RECIBO] Nenhum pagamento encontrado, setPagamentoSalvo(false)');
             setPagamentoSalvo(false);
           }
           // Aceita tanto snake_case quanto camelCase por compatibilidade
@@ -371,17 +371,17 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               detalhesBackend = [];
             }
           }
-          console.log('[DEBUG-RECIBO] detalhesBackend processados:', detalhesBackend);
+          console.debug('[DEBUG-RECIBO] detalhesBackend processados:', detalhesBackend);
           
           // CORREÇÃO: NÃO sobrescrever valorAdiantadoDetalhes com dados do backend
           // Os valores adiantados originais devem ser preservados para calcular o excesso corretamente
           // O backend retorna os dados da "distribuição final" que não são os mesmos que os "valores adiantados"
-          console.log('[DEBUG-RECIBO] Preservando valorAdiantadoDetalhes originais para manter cálculo de excesso');
+          console.debug('[DEBUG-RECIBO] Preservando valorAdiantadoDetalhes originais para manter cálculo de excesso');
 
           // NOVO: Atualiza pagamentoFinal com os dados salvos do backend
           // Atualiza pagamentoFinal sempre que há dados do backend
           if (Array.isArray(detalhesBackend) && detalhesBackend.length > 0) {
-            console.log('[DEBUG-RECIBO] Atualizando pagamentoFinal com detalhesBackend');
+            console.debug('[DEBUG-RECIBO] Atualizando pagamentoFinal com detalhesBackend');
             setPagamentoFinal(
               detalhesBackend.map(item => ({
                 valor: item.valor,
@@ -404,9 +404,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   const calcularTotalAdiantado = () => {
     const detalhesValidos = valorAdiantadoDetalhes.filter(item => item.valor && item.forma);
     const total = detalhesValidos.reduce((total, item) => total + parseFloat(item.valor || 0), 0);
-    console.log('[DEBUG-RECIBO] calcularTotalAdiantado - valorAdiantadoDetalhes:', valorAdiantadoDetalhes);
-    console.log('[DEBUG-RECIBO] calcularTotalAdiantado - detalhesValidos:', detalhesValidos);
-    console.log('[DEBUG-RECIBO] calcularTotalAdiantado - total:', total);
+    console.debug('[DEBUG-RECIBO] calcularTotalAdiantado - valorAdiantadoDetalhes:', valorAdiantadoDetalhes);
+    console.debug('[DEBUG-RECIBO] calcularTotalAdiantado - detalhesValidos:', detalhesValidos);
+    console.debug('[DEBUG-RECIBO] calcularTotalAdiantado - total:', total);
     return total;
   };
 
@@ -428,7 +428,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}');
       const usuario = usuarioLogado.nome || usuarioLogado.email || 'Sistema';
       
-      console.log(`[DEBUG] Tentando atualizar status para: ${novoStatus}`);
+      console.debug(`[DEBUG] Tentando atualizar status para: ${novoStatus}`);
       
       try {
         // Usa a mesma API do ServicoConferencia
@@ -451,7 +451,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             onChange({ ...form, status: novoStatus });
           }
           
-          console.log('[DEBUG] Status atualizado com sucesso via POST status');
+          console.debug('[DEBUG] Status atualizado com sucesso via POST status');
           return { status: novoStatus, success: true };
         }
 
@@ -464,7 +464,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
              networkError.message.includes('NetworkError') ||
              networkError.message.includes('CORS'))) {
           
-          console.warn('[DEBUG] Erro de rede/CORS detectado, aplicando fallback local');
+          console.debug('[DEBUG] Erro de rede/CORS detectado, aplicando fallback local');
           
           // Fallback: atualiza apenas localmente
           setStatusPedido(novoStatus);
@@ -489,7 +489,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           error.message.includes('CORS') ||
           error.name === 'TypeError') {
         
-        console.warn('[DEBUG] Aplicando fallback devido a erro de conectividade');
+        console.debug('[DEBUG] Aplicando fallback devido a erro de conectividade');
         
         // Fallback final: atualiza apenas localmente
         setStatusPedido(novoStatus);
@@ -701,7 +701,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
     if (window.confirm('Tem certeza que deseja cancelar este pagamento? O status voltará para "Aguardando Conferência".')) {
       try {
         setProcessando(true);
-        console.log('[DEBUG] Iniciando cancelamento de pagamento...');
+        console.debug('[DEBUG] Iniciando cancelamento de pagamento...');
 
         // Tenta excluir o pagamento salvo no backend
         try {

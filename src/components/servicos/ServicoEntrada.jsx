@@ -59,7 +59,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         id = usuarioLogado.serventia || usuarioLogado.serventiaId || usuarioLogado.serventia_id || null;
       }
       if (!id) {
-        console.warn('[DEBUG] Nenhum id de serventia encontrado no form nem no usuario. form completo:', JSON.stringify(form, null, 2));
+        console.debug('[DEBUG] Nenhum id de serventia encontrado no form nem no usuario. form completo:', JSON.stringify(form, null, 2));
         return;
       }
       try {
@@ -73,7 +73,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
         try {
           data = text ? JSON.parse(text) : {};
         } catch (jsonErr) {
-          console.error('[DEBUG] Erro ao fazer parse do JSON da resposta:', jsonErr);
+          console.debug('[DEBUG] Erro ao fazer parse do JSON da resposta:', jsonErr);
         }
         if (res.ok) {
           setServentiaInfo(data.serventia || data);
@@ -252,7 +252,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
     // Se foi selecionado um ato individual
     if (modalAtoSelecionado && !modalComboSelecionado) {
       const ato = modalAtoSelecionadoObj;
-      console.log('[DEBUG] handleAdicionarComboModal', { ato, modalAtoSelecionado, atosSuggestions });
+      console.debug('[DEBUG] handleAdicionarComboModal', { ato, modalAtoSelecionado, atosSuggestions });
       if (!ato) {
         console.warn('[ADICIONAR ATO] Nenhum ato encontrado para o id selecionado:', modalAtoSelecionado);
         return;

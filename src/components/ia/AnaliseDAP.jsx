@@ -251,9 +251,9 @@ function AnaliseDAP() {
         try {
           const has = !!token;
           const preview = has ? (`${String(token).slice(0,8)}…`) : 'nenhum';
-          pushConsole(`[debug] token presente? ${has} preview=${preview}`);
+          console.debug('[AnaliseDAP] token presente?', has, 'preview=', preview);
         } catch (_) {
-          pushConsole('[debug] token check failed');
+          console.debug('[AnaliseDAP] token check failed');
         }
       }
       const resp = await fetch(`${apiURL}/ia/run-prompt`, {

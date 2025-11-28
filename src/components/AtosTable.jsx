@@ -230,7 +230,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       // Agrupa por código
       const agrupados = {};
       atosPagos.forEach(ato => {
-        console.log('[DEBUG ato agrupamento]', ato); // ADICIONE ESTA LINHA
+        console.debug('[DEBUG ato agrupamento]', ato); // ADICIONE ESTA LINHA
 
         if (!agrupados[ato.codigo]) {
           agrupados[ato.codigo] = {
