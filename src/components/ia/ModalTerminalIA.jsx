@@ -57,6 +57,51 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
     setConsoleLines((prev) => [...prev, typeof line === 'string' ? line : JSON.stringify(line)]);
   }
 
+  // Render formatted text with simple tag markup like [success]text[/success]
+  function renderFormattedText(text) {
+    if (!text) return null;
+    const parts = [];
+    let lastIndex = 0;
+    const tagRegex = /\[(success|error|warning|info|highlight|title)\](.*?)\[\/\1\]/gs;
+    let match;
+    while ((match = tagRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push({ type: 'normal', text: text.substring(lastIndex, match.index) });
+      }
+      parts.push({ type: match[1], text: match[2] });
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) parts.push({ type: 'normal', text: text.substring(lastIndex) });
+
+    if (parts.length === 0) return text;
+
+    const colorMap = {
+      success: '#2ecc71',
+      error: '#e74c3c',
+      warning: '#f39c12',
+      info: '#3498db',
+      highlight: '#9b59b6',
+      title: '#1abc9c'
+    };
+
+    return (
+      <>
+        {parts.map((part, idx) => {
+          if (part.type === 'normal') return <span key={idx}>{part.text}</span>;
+          return (
+            <span key={idx} style={{
+              color: colorMap[part.type],
+              fontWeight: part.type === 'title' ? 'bold' : 'normal',
+              textDecoration: part.type === 'highlight' ? 'underline' : 'none'
+            }}>
+              {part.text}
+            </span>
+          );
+        })}
+      </>
+    );
+  }
+
   const handleRun = async () => {
     if (!onRun) return;
     console.log('[ModalTerminalIA] manual run triggered');
@@ -82,9 +127,9 @@ export default function ModalTerminalIA({ open, onClose, indexador, items = [], 
         </div>
         <div style={{ marginTop: 12, display: 'flex', gap: 12 }}>
           <div ref={consoleRef} style={consoleStyle}>
-            {consoleLines.map((l, i) => (
-              <div key={i} style={{ marginBottom: 8, fontFamily: 'Courier New, monospace', fontSize: 13 }}>{l}</div>
-            ))}
+              {consoleLines.map((l, i) => (
+                <div key={i} style={{ marginBottom: 8, fontFamily: 'Courier New, monospace', fontSize: 13 }}>{renderFormattedText(String(l))}</div>
+              ))}
           </div>
           <div style={{ flex: '0 0 320px', maxWidth: 320 }}>
             <div style={{ fontSize: 13, color: '#333' }}>

@@ -692,7 +692,15 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
       }
 
       const usuario = req.user || {};
-      const codigoServentia = usuario.codigo_serventia || usuario.codigoServentia || null;
+      let codigoServentia = usuario.codigo_serventia || usuario.codigoServentia || usuario.serventia || null;
+      // Dev-only fallback: allow specifying serventia via header for local testing
+      if (!codigoServentia && process.env.NODE_ENV !== 'production') {
+        const debugHeader = req.get('X-Debug-Codigo-Serventia') || req.get('x-debug-codigo-serventia') || null;
+        if (debugHeader) {
+          codigoServentia = String(debugHeader).trim();
+          console.log('[IA][run-prompt] using X-Debug-Codigo-Serventia fallback:', codigoServentia);
+        }
+      }
       if (!codigoServentia) return res.status(403).json({ error: 'Usuário sem serventia associada.' });
 
       // Prepare provider
