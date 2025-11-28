@@ -399,7 +399,7 @@ function AnaliseDAP() {
 
 function FilterItem({ label, children }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <span style={filterLabelStyle}>{label}</span>
       {children}
     </div>
@@ -409,7 +409,7 @@ function FilterItem({ label, children }) {
 const pageWrapperStyle = {
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)',
-  padding: '48px 32px',
+  padding: '32px 24px',
   fontFamily: 'Arial, sans-serif',
 };
 
@@ -417,8 +417,8 @@ const headerStyle = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  marginBottom: '32px',
-  gap: '24px',
+  marginBottom: '16px',
+  gap: '16px',
 };
 
 const backButtonStyle = {
@@ -426,21 +426,22 @@ const backButtonStyle = {
   border: '1px solid rgba(148, 163, 184, 0.35)',
   color: 'white',
   borderRadius: '999px',
-  padding: '10px 20px',
+  padding: '8px 14px',
   cursor: 'pointer',
   fontWeight: 600,
 };
 
 const titleStyle = {
   color: 'white',
-  fontSize: '32px',
+  fontSize: '24px',
   margin: 0,
   letterSpacing: '0.4px',
 };
 
 const subtitleStyle = {
   color: 'rgba(255, 255, 255, 0.85)',
-  margin: '8px 0 0 0',
+  margin: '4px 0 0 0',
+  fontSize: '13px',
 };
 
 const primaryButtonStyle = {
@@ -448,38 +449,38 @@ const primaryButtonStyle = {
   color: '#0f172a',
   border: 'none',
   borderRadius: '999px',
-  padding: '14px 28px',
+  padding: '10px 20px',
   fontWeight: 700,
-  fontSize: '14px',
+  fontSize: '13px',
   cursor: 'pointer',
-  boxShadow: '0 18px 40px rgba(59, 130, 246, 0.45)',
+  boxShadow: '0 12px 30px rgba(59, 130, 246, 0.35)',
 };
 
 const filtersSectionStyle = {
   display: 'flex',
-  gap: '16px',
+  gap: '12px',
   background: 'rgba(15, 23, 42, 0.25)',
-  borderRadius: '20px',
-  padding: '20px',
+  borderRadius: '16px',
+  padding: '12px',
   alignItems: 'flex-end',
   flexWrap: 'wrap',
-  marginBottom: '24px',
+  marginBottom: '16px',
 };
 
 const filterLabelStyle = {
-  fontSize: '11px',
+  fontSize: '10px',
   color: 'rgba(226, 232, 240, 0.85)',
   letterSpacing: '0.4px',
   textTransform: 'uppercase',
-  fontWeight: 600,
+  fontWeight: 700,
 };
 
 const selectStyle = {
-  minWidth: '140px',
-  padding: '12px 16px',
-  borderRadius: '12px',
+  minWidth: '120px',
+  padding: '8px 10px',
+  borderRadius: '10px',
   border: '1px solid rgba(148, 163, 184, 0.35)',
-  fontSize: '14px',
+  fontSize: '13px',
   background: 'rgba(15, 23, 42, 0.9)',
   color: 'white',
 };
@@ -488,8 +489,8 @@ const refreshButtonStyle = {
   background: 'rgba(148, 163, 184, 0.2)',
   border: '1px solid rgba(203, 213, 225, 0.4)',
   color: 'white',
-  borderRadius: '12px',
-  padding: '12px 20px',
+  borderRadius: '10px',
+  padding: '8px 12px',
   cursor: 'pointer',
   fontWeight: 600,
 };
