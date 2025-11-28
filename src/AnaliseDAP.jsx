@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { apiURL } from './config';
 import { useNavigate } from 'react-router-dom';
 import { listDaps, getDapById, deleteDap, uploadDap } from './services/dapService';
 import DapTable from './components/dap/DapTable';
