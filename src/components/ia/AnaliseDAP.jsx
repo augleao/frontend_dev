@@ -264,9 +264,9 @@ function AnaliseDAP() {
           ← Voltar
         </button>
         <div>
-          <h1 style={titleStyle}>Análise da DAP</h1>
-          <p style={subtitleStyle}>Gerencie as declarações mensais de atos praticados, incluindo retificadoras.</p>
-        </div>
+            <h1 style={titleStyle}>Análise da DAP</h1>
+            <p style={subtitleStyle}>Utilize ferramentas de IA para analisar o desempenho da serventia.</p>
+          </div>
         <button
           type="button"
           style={primaryButtonStyle}
