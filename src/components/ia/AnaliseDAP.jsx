@@ -247,6 +247,15 @@ function AnaliseDAP() {
       if (pushConsole) pushConsole(`[info]Enviando ${idsToRun.length} DAP(s) ao backend para execução do prompt '${indexador}'...[/info]`);
 
       const token = localStorage.getItem('token');
+      if (pushConsole) {
+        try {
+          const has = !!token;
+          const preview = has ? (`${String(token).slice(0,8)}…`) : 'nenhum';
+          pushConsole(`[debug] token presente? ${has} preview=${preview}`);
+        } catch (_) {
+          pushConsole('[debug] token check failed');
+        }
+      }
       const resp = await fetch(`${apiURL}/ia/run-prompt`, {
         method: 'POST',
         headers: {
