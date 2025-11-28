@@ -46,7 +46,7 @@ import CertidoesGratuitasLista from './components/certidoes/CertidoesGratuitasLi
 import CertidaoGratuitaForm from './components/certidoes/CertidaoGratuitaForm';
 import RelatoriosObrigatorios from './components/RelatoriosObrigatorios';
 import Relatorios from './Relatorios';
-import AnaliseDAP from './AnaliseDAP';
+import AnaliseDAP from './components/ia/AnaliseDAP';
 
 
 
