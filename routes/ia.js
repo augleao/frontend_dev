@@ -15,6 +15,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: max
 
 module.exports = function initIARoutes(app, pool, middlewares = {}) {
   const jobs = new Map(); // in-memory job store { id: { state, step, message, progress, textPreview, result, error } }
+  const ensureAuth = middlewares && middlewares.ensureAuth ? middlewares.ensureAuth : null;
 
   // --- IA Prompts: table helpers -------------------------------------------------
   async function ensurePromptsTable() {
@@ -605,7 +606,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   });
 
   // 5) Run arbitrary stored prompt against one or more DAPs (by id)
-  app.post('/api/ia/run-prompt', middlewares.ensureAuth ? middlewares.ensureAuth : (req, _res, next) => next(), async (req, res) => {
+  app.post('/api/ia/run-prompt', ensureAuth, async (req, res) => {
     try {
       if (!pool) return res.status(501).json({ error: 'Pool/DB indisponível.' });
       const { indexador, dapIds } = req.body || {};
