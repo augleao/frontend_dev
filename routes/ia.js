@@ -16,30 +16,6 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: max
 module.exports = function initIARoutes(app, pool, middlewares = {}) {
   const jobs = new Map(); // in-memory job store { id: { state, step, message, progress, textPreview, result, error } }
 
-  // CORS middleware for IA routes: allow requests from configured origins
-  // Set IA_ALLOWED_ORIGINS env to a comma-separated list (e.g. "https://frontend.example.com")
-  const allowedOriginsEnv = String(process.env.IA_ALLOWED_ORIGINS || '').trim();
-  const allowedOrigins = allowedOriginsEnv ? allowedOriginsEnv.split(',').map(s => s.trim()).filter(Boolean) : null;
-  app.use('/api/ia', (req, res, next) => {
-    try {
-      const origin = req.get('Origin') || req.get('origin') || '';
-      if (!allowedOrigins || allowedOrigins.length === 0) {
-        // permissive fallback — try to be helpful in dev, but prefer configuring IA_ALLOWED_ORIGINS in production
-        res.setHeader('Access-Control-Allow-Origin', '*');
-      } else if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-      }
-      res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-      // Allow credentials only if explicit origin matched
-      if (allowedOrigins && allowedOrigins.includes(origin)) res.setHeader('Access-Control-Allow-Credentials', 'true');
-      if (req.method === 'OPTIONS') return res.status(204).send('');
-    } catch (e) {
-      // ignore and continue
-    }
-    return next();
-  });
-
   // --- IA Prompts: table helpers -------------------------------------------------
   async function ensurePromptsTable() {
     if (!pool) return;
@@ -269,10 +245,6 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
     try {
       await ensurePromptsTable();
       const { rows } = await pool.query('SELECT indexador, prompt, updated_at FROM public.ia_prompts ORDER BY indexador ASC');
-///////////////////////56      try {
-        const preview = (rows || []).map(r => ({ indexador: r.indexador, promptPreview: String(r.prompt || '').slice(0, 160) }));
-        console.log('[IA][prompts] returning', { count: (rows || []).length, preview });
-      } catch (_) {}
       return res.json(rows || []);
     } catch (e) {
       return res.status(500).json({ error: 'Falha ao listar prompts.' });
@@ -282,15 +254,8 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   // Get prompt by indexador
   app.get('/api/ia/prompts/:indexador', async (req, res) => {
     const idx = String(req.params.indexador || '').toLowerCase();
-    const rawIndexador = String(req.params.indexador || '');
-    const indexador = rawIndexador.toLowerCase();
-    console.log(`[ia] GET /api/ia/prompts/${rawIndexador} -> lookup indexador=${indexador}`);
-    const row = await getPromptByIndexador(indexador);
-    if (!row) {
-      console.log(`[ia] prompt not found for indexador=${indexador}`);
-      return res.status(404).json({ error: 'Prompt não encontrado' });
-    }
-    console.log(`[ia] prompt found for indexador=${indexador} preview=${String(row.prompt || '').slice(0,120).replace(/\n/g,' ')}...`);
+    const row = await getPromptByIndexador(idx);
+    if (!row) return res.status(404).json({ error: 'Prompt não encontrado' });
     return res.json(row);
   });
 
@@ -645,6 +610,12 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
       if (!pool) return res.status(501).json({ error: 'Pool/DB indisponível.' });
       const { indexador, dapIds } = req.body || {};
       console.log('[IA][run-prompt] incoming request', { userId: req.user && req.user.id ? req.user.id : null, indexador: String(indexador || ''), dapIdsCount: Array.isArray(dapIds) ? dapIds.length : 0 });
+      try {
+        console.log('[IA][run-prompt] req.user snapshot:', JSON.stringify(req.user || {}));
+      } catch (jsonErr) {
+        console.log('[IA][run-prompt] req.user (raw):', req.user);
+      }
+      console.log('[IA][run-prompt] req.user.codigo_serventia:', req.user && (req.user.codigo_serventia || req.user.codigoServentia || null));
       if (!indexador || !Array.isArray(dapIds) || dapIds.length === 0) {
         return res.status(400).json({ error: 'Informe indexador e dapIds (array) no corpo.' });
       }
