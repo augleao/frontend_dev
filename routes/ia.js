@@ -16,6 +16,30 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: max
 module.exports = function initIARoutes(app, pool, middlewares = {}) {
   const jobs = new Map(); // in-memory job store { id: { state, step, message, progress, textPreview, result, error } }
 
+  // CORS middleware for IA routes: allow requests from configured origins
+  // Set IA_ALLOWED_ORIGINS env to a comma-separated list (e.g. "https://frontend.example.com")
+  const allowedOriginsEnv = String(process.env.IA_ALLOWED_ORIGINS || '').trim();
+  const allowedOrigins = allowedOriginsEnv ? allowedOriginsEnv.split(',').map(s => s.trim()).filter(Boolean) : null;
+  app.use('/api/ia', (req, res, next) => {
+    try {
+      const origin = req.get('Origin') || req.get('origin') || '';
+      if (!allowedOrigins || allowedOrigins.length === 0) {
+        // permissive fallback — try to be helpful in dev, but prefer configuring IA_ALLOWED_ORIGINS in production
+        res.setHeader('Access-Control-Allow-Origin', '*');
+      } else if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+      }
+      res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+      // Allow credentials only if explicit origin matched
+      if (allowedOrigins && allowedOrigins.includes(origin)) res.setHeader('Access-Control-Allow-Credentials', 'true');
+      if (req.method === 'OPTIONS') return res.status(204).send('');
+    } catch (e) {
+      // ignore and continue
+    }
+    return next();
+  });
+
   // --- IA Prompts: table helpers -------------------------------------------------
   async function ensurePromptsTable() {
     if (!pool) return;
@@ -245,7 +269,7 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
     try {
       await ensurePromptsTable();
       const { rows } = await pool.query('SELECT indexador, prompt, updated_at FROM public.ia_prompts ORDER BY indexador ASC');
-      try {
+///////////////////////56      try {
         const preview = (rows || []).map(r => ({ indexador: r.indexador, promptPreview: String(r.prompt || '').slice(0, 160) }));
         console.log('[IA][prompts] returning', { count: (rows || []).length, preview });
       } catch (_) {}
