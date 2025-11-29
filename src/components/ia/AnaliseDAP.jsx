@@ -442,6 +442,22 @@ function AnaliseDAP() {
         >
           Impactos Financeiros
         </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (!selectedIds || selectedIds.length < 2) {
+              alert('Selecione ao menos duas DAPs para executar o comparativo.');
+              return;
+            }
+            // set indexador for comparison
+            setModalIndexador('dap_comparacao');
+            setModalOpen(true);
+          }}
+          style={{ ...iaButtonStyle, background: 'linear-gradient(135deg,#6d28d9,#7c3aed)' }}
+        >
+          Comparativo de DAPs
+        </button>
       </div>
 
       <DapTable
