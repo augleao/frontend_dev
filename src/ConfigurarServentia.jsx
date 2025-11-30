@@ -115,7 +115,7 @@ export default function ConfigurarServentia({ onClose }) {
     setLoadingAgents(true);
     try {
       const token = localStorage.getItem('token');
-      const resp = await fetch(`${config.apiURL}/ia/diagnostics`, {
+      const resp = await fetch(`${config.apiURL}/ia/agents`, {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {})
