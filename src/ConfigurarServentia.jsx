@@ -6,6 +6,9 @@ import config from './config';
 export default function ConfigurarServentia({ onClose }) {
   const { user } = useContext(AuthContext);
   const [caixaUnificado, setCaixaUnificado] = useState(false);
+  const [iaAgent, setIaAgent] = useState('');
+  const [iaAgentFallback1, setIaAgentFallback1] = useState('');
+  const [iaAgentFallback2, setIaAgentFallback2] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -40,6 +43,15 @@ export default function ConfigurarServentia({ onClose }) {
         if (data && typeof data.caixa_unificado !== 'undefined') {
           setCaixaUnificado(!!data.caixa_unificado);
         }
+        if (data && typeof data.ia_agent !== 'undefined') {
+          setIaAgent(data.ia_agent || '');
+        }
+        if (data && typeof data.ia_agent_fallback1 !== 'undefined') {
+          setIaAgentFallback1(data.ia_agent_fallback1 || '');
+        }
+        if (data && typeof data.ia_agent_fallback2 !== 'undefined') {
+          setIaAgentFallback2(data.ia_agent_fallback2 || '');
+        }
         setLoading(false);
       })
       .catch(err => {
@@ -62,6 +74,10 @@ export default function ConfigurarServentia({ onClose }) {
       caixa_unificado: caixaUnificado,
       serventia: user.serventia
     };
+    // include IA agent config
+    if (typeof iaAgent !== 'undefined') body.ia_agent = iaAgent;
+    if (typeof iaAgentFallback1 !== 'undefined') body.ia_agent_fallback1 = iaAgentFallback1;
+    if (typeof iaAgentFallback2 !== 'undefined') body.ia_agent_fallback2 = iaAgentFallback2;
     console.log('[ConfigurarServentia] Salvando config:', body);
     fetch(`${config.apiURL}/configuracoes-serventia`, {
       method: 'POST',
@@ -124,6 +140,40 @@ export default function ConfigurarServentia({ onClose }) {
               checked={caixaUnificado}
               onChange={e => setCaixaUnificado(e.target.checked)}
               style={{ marginLeft: 12, width: 20, height: 20 }}
+              disabled={saving}
+            />
+          </div>
+          <div style={{ marginBottom: 18 }}>
+            <label style={{ fontWeight: 700, display: 'block', marginBottom: 6 }}>IA Agent (primário)</label>
+            <textarea
+              value={iaAgent}
+              onChange={e => setIaAgent(e.target.value)}
+              placeholder="ID ou configuração do agente IA (ex.: 'google-gemini')"
+              rows={3}
+              style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #ccc', resize: 'vertical' }}
+              disabled={saving}
+            />
+            <small style={{ color: '#666' }}>Valor salvo em `ia_agent` na tabela `serventia`.</small>
+          </div>
+          <div style={{ marginBottom: 18 }}>
+            <label style={{ fontWeight: 700, display: 'block', marginBottom: 6 }}>IA Agent Fallback 1</label>
+            <textarea
+              value={iaAgentFallback1}
+              onChange={e => setIaAgentFallback1(e.target.value)}
+              placeholder="Fallback 1 para IA (ex.: 'openai-gpt')"
+              rows={2}
+              style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #ccc', resize: 'vertical' }}
+              disabled={saving}
+            />
+          </div>
+          <div style={{ marginBottom: 18 }}>
+            <label style={{ fontWeight: 700, display: 'block', marginBottom: 6 }}>IA Agent Fallback 2</label>
+            <textarea
+              value={iaAgentFallback2}
+              onChange={e => setIaAgentFallback2(e.target.value)}
+              placeholder="Fallback 2 para IA"
+              rows={2}
+              style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #ccc', resize: 'vertical' }}
               disabled={saving}
             />
           </div>
