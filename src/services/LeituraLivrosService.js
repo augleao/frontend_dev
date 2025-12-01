@@ -63,11 +63,18 @@ export default {
       method: 'POST',
       body: fd
     });
-    if (!res.ok) throw new Error('Falha ao extrair payloads de .p7s');
+    if (!res.ok) {
+      let text = null;
+      try { text = await res.text(); } catch (_) {}
+      throw new Error(`Falha ao extrair payloads de .p7s (${res.status} ${res.statusText}): ${text ? text.slice(0,500) : ''}`);
+    }
     const ct = res.headers.get('content-type') || '';
     if (ct.includes('application/json')) return res.json();
-    // fallback: return blob for binary responses
-    return { blob: await res.blob(), contentType: ct };
+    // fallback: return blob for binary responses plus debug text (first KB)
+    const blob = await res.blob();
+    let debugText = null;
+    try { debugText = await blob.slice(0, 2048).text(); } catch (_) { debugText = null; }
+    return { blob, contentType: ct, debugText };
   },
   async getStatus(jobId) {
     const res = await withAuthFetch(`${config.apiURL}/leitura-livros/status/${encodeURIComponent(jobId)}`);

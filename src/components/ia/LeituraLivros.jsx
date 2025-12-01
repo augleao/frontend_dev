@@ -148,7 +148,12 @@ export default function LeituraLivros() {
         setShowExtractModal(true);
         logSuccess(`Extraídos ${filesToShow.length} arquivo(s). Escolha o destino para salvar.`);
       } else {
-        logWarning('Resposta de extração não continha payloads reconhecíveis.');
+        // Se o serviço retornou debugText (blob->text), logue para diagnóstico
+        if (resp && resp.debugText) {
+          logWarning('Resposta de extração não continha payloads reconhecíveis. Debug: ' + String(resp.debugText).slice(0,1000));
+        } else {
+          logWarning('Resposta de extração não continha payloads reconhecíveis.');
+        }
       }
     } catch (e) {
       logError('Falha ao extrair .p7s: ' + (e.message || e));
