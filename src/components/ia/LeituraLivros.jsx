@@ -32,6 +32,8 @@ export default function LeituraLivros() {
   const [folderPath, setFolderPath] = useState('');
   const [files, setFiles] = useState([]);
   const extractInputRef = useRef(null);
+  const [extractedFiles, setExtractedFiles] = useState([]); // { filename, blob, contentType }
+  const [showExtractModal, setShowExtractModal] = useState(false);
   const [consoleLines, setConsoleLines] = useState([]);
   const consoleRef = useRef(null);
   const consoleBlockRef = useRef(null);
@@ -100,66 +102,92 @@ export default function LeituraLivros() {
       logInfo(`Enviando ${arr.length} arquivo(s) para extração...`);
       const resp = await LeituraLivrosService.extractP7s(arr);
       // resposta pode ser { blob } ou JSON
+      const filesToShow = [];
       if (resp && resp.blob) {
-        const url = window.URL.createObjectURL(resp.blob);
-        window.open(url, '_blank');
-        logSuccess('Conteúdo extraído (binário) aberto em nova aba.');
-        return;
-      }
-      // Se for JSON: suporta array ou objeto único
-      if (resp && Array.isArray(resp)) {
+        // único blob retornado (assume payload único)
+        const ct = resp.contentType || 'application/octet-stream';
+        const filename = 'payload' + extFromContentType(ct);
+        filesToShow.push({ filename, blob: resp.blob, contentType: ct });
+      } else if (resp && Array.isArray(resp)) {
         for (let i = 0; i < resp.length; i++) {
           const it = resp[i];
-          // Buffer serializado: { buffer: { type: 'Buffer', data: [...] } }
           if (it && it.buffer && it.buffer.data) {
             const u8 = new Uint8Array(it.buffer.data);
-            const blob = new Blob([u8]);
-            const url = window.URL.createObjectURL(blob);
-            window.open(url, '_blank');
-            logSuccess(`Arquivo extraído: ${it.filename || ('payload_' + (i+1))}`);
+            const blob = new Blob([u8], { type: it.contentType || '' });
+            filesToShow.push({ filename: it.filename || `payload_${i + 1}` + extFromContentType(it.contentType), blob, contentType: it.contentType || '' });
             continue;
           }
-          // base64
           if (it && it.base64) {
             const bin = atob(it.base64);
             const len = bin.length;
             const u8 = new Uint8Array(len);
             for (let j = 0; j < len; j++) u8[j] = bin.charCodeAt(j);
-            const blob = new Blob([u8]);
-            const url = window.URL.createObjectURL(blob);
-            window.open(url, '_blank');
-            logSuccess(`Arquivo extraído: ${it.filename || ('payload_' + (i+1))}`);
+            const blob = new Blob([u8], { type: it.contentType || '' });
+            filesToShow.push({ filename: it.filename || `payload_${i + 1}` + extFromContentType(it.contentType), blob, contentType: it.contentType || '' });
             continue;
           }
           logWarning(`Resposta inesperada para item ${i}: ${JSON.stringify(it).slice(0,200)}`);
         }
-        return;
-      }
-      if (resp && typeof resp === 'object') {
-        // single object with buffer/base64
+      } else if (resp && typeof resp === 'object') {
         const it = resp;
         if (it.buffer && it.buffer.data) {
           const u8 = new Uint8Array(it.buffer.data);
-          const blob = new Blob([u8]);
-          window.open(window.URL.createObjectURL(blob), '_blank');
-          logSuccess(`Arquivo extraído: ${it.filename || 'payload'}`);
-          return;
-        }
-        if (it.base64) {
+          const blob = new Blob([u8], { type: it.contentType || '' });
+          filesToShow.push({ filename: it.filename || 'payload' + extFromContentType(it.contentType), blob, contentType: it.contentType || '' });
+        } else if (it.base64) {
           const bin = atob(it.base64);
           const len = bin.length;
           const u8 = new Uint8Array(len);
           for (let j = 0; j < len; j++) u8[j] = bin.charCodeAt(j);
-          const blob = new Blob([u8]);
-          window.open(window.URL.createObjectURL(blob), '_blank');
-          logSuccess(`Arquivo extraído: ${it.filename || 'payload'}`);
-          return;
+          const blob = new Blob([u8], { type: it.contentType || '' });
+          filesToShow.push({ filename: it.filename || 'payload' + extFromContentType(it.contentType), blob, contentType: it.contentType || '' });
         }
       }
-      logWarning('Resposta de extração não continha payloads reconhecíveis.');
+      if (filesToShow.length) {
+        setExtractedFiles(filesToShow);
+        setShowExtractModal(true);
+        logSuccess(`Extraídos ${filesToShow.length} arquivo(s). Escolha o destino para salvar.`);
+      } else {
+        logWarning('Resposta de extração não continha payloads reconhecíveis.');
+      }
     } catch (e) {
       logError('Falha ao extrair .p7s: ' + (e.message || e));
     }
+  }
+
+  function extFromContentType(ct) {
+    if (!ct) return '';
+    if (ct.includes('jpeg') || ct.includes('jpg')) return '.jpg';
+    if (ct.includes('png')) return '.png';
+    if (ct.includes('tiff') || ct.includes('tif')) return '.tif';
+    if (ct.includes('pdf')) return '.pdf';
+    return '';
+  }
+
+  function downloadBlobAs(blob, filename) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'download';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  }
+
+  function handleDownloadSingle(idx) {
+    const it = extractedFiles[idx];
+    if (!it) return;
+    downloadBlobAs(it.blob, it.filename);
+    logSuccess(`Iniciado download: ${it.filename}`);
+  }
+
+  async function handleDownloadAll() {
+    for (let i = 0; i < extractedFiles.length; i++) {
+      handleDownloadSingle(i);
+      await sleep(200); // pequeno espaçamento para não travar alguns navegadores
+    }
+    setShowExtractModal(false);
   }
 
   // Utils para controle de tempo
@@ -479,6 +507,35 @@ export default function LeituraLivros() {
         </div>
   {/* Subtítulo removido a pedido do usuário */}
       </div>
+
+      {/* Modal: escolher destino para arquivos extraídos */}
+      {showExtractModal && (
+        <div style={{ position: 'fixed', left: 0, top: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200 }}>
+          <div style={{ width: '720px', maxWidth: '95%', background: '#fff', borderRadius: 12, padding: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontWeight: 800 }}>Salvar arquivos extraídos</div>
+              <button onClick={() => setShowExtractModal(false)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 18 }}>✕</button>
+            </div>
+            <div style={{ maxHeight: '50vh', overflow: 'auto', marginBottom: 12 }}>
+              {extractedFiles.map((f, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', borderBottom: '1px solid #f1f5f9' }}>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <div style={{ width: 40, height: 28, background: '#f8fafc', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#64748b' }}>{f.contentType ? f.contentType.split('/')[1] : 'bin'}</div>
+                    <div style={{ fontSize: 14, color: '#0f172a' }}>{f.filename}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => handleDownloadSingle(i)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#10b981,#059669)', color: '#fff', cursor: 'pointer' }}>Salvar</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button onClick={() => setShowExtractModal(false)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff' }}>Fechar</button>
+              <button onClick={handleDownloadAll} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', color: '#fff' }}>Download todos</button>
+            </div>
+          </div>
+        </div>
+      )}
 
   {/* Parâmetros + Modo agora ocupam 50% da página cada, acima das colunas */}
   <div style={{ display: 'flex', gap: headerRowGap, alignItems: 'stretch', flexWrap: 'wrap', marginBottom: 14 }}>
