@@ -132,6 +132,7 @@ export default function LeituraLivros() {
     (async () => {
       try {
         logTitle('Checando disponibilidade do agente de IA');
+        let detectedAgent = null;
         const maxTentativas = 2;
         let ok = false;
         for (let i = 1; i <= maxTentativas; i++) {
@@ -145,8 +146,9 @@ export default function LeituraLivros() {
             if (resp && typeof resp === 'object') {
               // tenta extrair nome/identificador do agente retornado pelo backend
               const agent = resp.agent || resp.agente || resp.agentName || resp.provider || resp.name || resp.model || resp.service || resp.client || null;
-              if (agent) setAgentInfo(String(agent));
-              else setAgentInfo(JSON.stringify(Object.keys(resp || {}).length ? resp : 'desconhecido'));
+              const label = agent ? String(agent) : (Object.keys(resp || {}).length ? JSON.stringify(resp) : 'desconhecido');
+              detectedAgent = label;
+              setAgentInfo(label);
               ok = true;
               break;
             }
@@ -158,7 +160,7 @@ export default function LeituraLivros() {
         }
         if (ok) {
           logSuccess('✓ Agente online');
-          if (agentInfo) logInfo(`Agente IA: ${agentInfo}`);
+          if (detectedAgent) logInfo(`Agente IA: ${detectedAgent}`);
         } else {
           logWarning('⚠ Agente possivelmente indisponível. Tente reenviar ou verificar conexão.');
         }
