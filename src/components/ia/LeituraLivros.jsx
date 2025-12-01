@@ -217,6 +217,74 @@ export default function LeituraLivros() {
     return record.filiacao2 || record.filiacao_2 || record.mae || record.pai || '';
   }
 
+  // Busca restrita para campos que não devem ter fallback (Livro, Folha, Termo)
+  function getExactField(record, keys) {
+    if (!record) return '';
+    for (const k of keys) {
+      if (!k) continue;
+      // check root
+      if (record[k] !== undefined && record[k] !== null && String(record[k]).trim() !== '') return record[k];
+      // check uppercase variant on root
+      if (typeof k === 'string' && record[String(k).toUpperCase()] !== undefined && record[String(k).toUpperCase()] !== null && String(record[String(k).toUpperCase()]).trim() !== '') return record[String(k).toUpperCase()];
+      // check record.campos exact key and uppercase
+      if (record.campos) {
+        if (record.campos[k] !== undefined && record.campos[k] !== null && String(record.campos[k]).trim() !== '') return record.campos[k];
+        if (typeof k === 'string' && record.campos[String(k).toUpperCase()] !== undefined && record.campos[String(k).toUpperCase()] !== null && String(record.campos[String(k).toUpperCase()]).trim() !== '') return record.campos[String(k).toUpperCase()];
+      }
+    }
+    return '';
+  }
+
+  // Atualiza um campo editável do registro em results
+  function updateRecordField(idx, fieldId, value) {
+    setResults(prev => {
+      const copy = Array.isArray(prev) ? [...prev] : [];
+      const rec = Object.assign({}, copy[idx] || {});
+      // normalize campos object
+      if (!rec.campos || typeof rec.campos !== 'object') rec.campos = rec.campos || {};
+      switch (fieldId) {
+        case 'livro':
+          // prefer guardar em rec.campos em maiúscula
+          rec.campos['LIVRO'] = value;
+          break;
+        case 'folha':
+          rec.campos['FOLHA'] = value;
+          break;
+        case 'termo':
+          rec.campos['TERMO'] = value;
+          break;
+        case 'dataRegistro':
+          rec.campos['DATAREGISTRO'] = value;
+          break;
+        case 'nome':
+          rec.campos['NOMEREGISTRADO'] = value;
+          break;
+        case 'sexo':
+          rec.campos['SEXO'] = value;
+          break;
+        case 'dataNascimento':
+          rec.campos['DATANASCIMENTO'] = value;
+          break;
+        case 'filiacao1':
+          if (!Array.isArray(rec.filiacao)) rec.filiacao = [{ NOME: '' }, { NOME: '' }];
+          if (!rec.filiacao[0]) rec.filiacao[0] = { NOME: '' };
+          if (typeof rec.filiacao[0] === 'string') rec.filiacao[0] = { NOME: rec.filiacao[0] };
+          rec.filiacao[0].NOME = value;
+          break;
+        case 'filiacao2':
+          if (!Array.isArray(rec.filiacao)) rec.filiacao = [{ NOME: '' }, { NOME: '' }];
+          if (!rec.filiacao[1]) rec.filiacao[1] = { NOME: '' };
+          if (typeof rec.filiacao[1] === 'string') rec.filiacao[1] = { NOME: rec.filiacao[1] };
+          rec.filiacao[1].NOME = value;
+          break;
+        default:
+          // noop
+      }
+      copy[idx] = rec;
+      return copy;
+    });
+  }
+
   function downloadBlobAs(blob, filename) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -791,15 +859,49 @@ export default function LeituraLivros() {
                   <tbody>
                     {results.map((r, i) => (
                       <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['numeroLivro', 'numero_livro', 'livro', 'bookNumber', 'book'])}</td>
-                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['numeroFolha', 'folha', 'page', 'folha_numero'])}</td>
-                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['numeroTermo', 'termo', 'term', 'ato'])}</td>
-                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['dataRegistro', 'data', 'registroData', 'date'])}</td>
-                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['nome', 'name', 'registrado'])}</td>
-                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['sexo', 'sex', 'genero'])}</td>
-                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['dataNascimento', 'nascimento', 'birthDate', 'datanascimento'])}</td>
-                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getFiliacao(r, 0)}</td>
-                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getFiliacao(r, 1)}</td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
+                          <input value={getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']) || ''}
+                            onChange={e => updateRecordField(i, 'livro', e.target.value)}
+                            style={{ width: 120, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                        </td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
+                          <input value={getExactField(r, ['numeroFolha', 'folha', 'page', 'FOLHA', 'NRO_FOLHA', 'NUM_FOLHA']) || ''}
+                            onChange={e => updateRecordField(i, 'folha', e.target.value)}
+                            style={{ width: 100, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                        </td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
+                          <input value={getExactField(r, ['numeroTermo', 'termo', 'term', 'TERMO', 'NRO_TERMO', 'NUM_TERMO', 'ATO']) || ''}
+                            onChange={e => updateRecordField(i, 'termo', e.target.value)}
+                            style={{ width: 100, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                        </td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
+                          <input value={getField(r, ['dataRegistro', 'data', 'registroData', 'date']) || ''}
+                            onChange={e => updateRecordField(i, 'dataRegistro', e.target.value)}
+                            style={{ width: 140, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                        </td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
+                          <input value={getField(r, ['nome', 'name', 'registrado']) || ''}
+                            onChange={e => updateRecordField(i, 'nome', e.target.value)}
+                            style={{ width: 220, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                        </td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
+                          <select value={getField(r, ['sexo', 'sex', 'genero']) || ''} onChange={e => updateRecordField(i, 'sexo', e.target.value)} style={{ padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }}>
+                            <option value="">-</option>
+                            <option value="M">M</option>
+                            <option value="F">F</option>
+                          </select>
+                        </td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
+                          <input value={getField(r, ['dataNascimento', 'nascimento', 'birthDate', 'datanascimento']) || ''}
+                            onChange={e => updateRecordField(i, 'dataNascimento', e.target.value)}
+                            style={{ width: 140, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                        </td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
+                          <input value={getFiliacao(r, 0) || ''} onChange={e => updateRecordField(i, 'filiacao1', e.target.value)} style={{ width: 220, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                        </td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
+                          <input value={getFiliacao(r, 1) || ''} onChange={e => updateRecordField(i, 'filiacao2', e.target.value)} style={{ width: 220, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                        </td>
                       </tr>
                     ))}
                   </tbody>
