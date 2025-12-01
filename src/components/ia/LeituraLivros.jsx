@@ -173,22 +173,46 @@ export default function LeituraLivros() {
   // Helpers para mapear campos dos registros extraídos para colunas da tabela
   function getField(record, keys) {
     if (!record) return '';
+    // procura nas chaves fornecidas no objeto raiz e também em record.campos (caso o backend retorne assim)
     for (const k of keys) {
       if (!k) continue;
-      const v = record[k];
+      // 1) direto no registro
+      let v = record[k];
+      // 2) procurar em record.campos (com chaves originais e em maiúsculas)
+      if ((v === undefined || v === null || String(v).toString().trim() === '') && record.campos) {
+        v = record.campos[k] ?? record.campos[String(k).toUpperCase()];
+      }
+      // 3) tentar chave maiúscula no objeto raiz (alguns registros vêm com chaves em MAIÚSCULAS)
+      if ((v === undefined || v === null || String(v).toString().trim() === '') && typeof k === 'string') {
+        v = record[String(k).toUpperCase()];
+      }
       if (v !== undefined && v !== null && String(v).toString().trim() !== '') return v;
+    }
+    // como fallback, se record.campos existir, tente algumas chaves comuns em MAIÚSCULAS
+    if (record.campos && typeof record.campos === 'object') {
+      const common = ['NOMEREGISTRADO', 'DATAREGISTRO', 'DATANASCIMENTO', 'SEXO'];
+      for (const c of common) {
+        if (record.campos[c]) return record.campos[c];
+      }
     }
     return '';
   }
 
   function getFiliacao(record, idx) {
     if (!record) return '';
-    if (Array.isArray(record.filiacoes) && record.filiacoes[idx]) {
-      const f = record.filiacoes[idx];
+    // 1) array 'filiacao' ou 'filiacoes'
+    const arr = record.filiacao || record.filiacoes;
+    if (Array.isArray(arr) && arr[idx]) {
+      const f = arr[idx];
       if (typeof f === 'string') return f;
-      if (f && (f.nome || f.name)) return f.nome || f.name;
+      if (f && (f.NOME || f.nome || f.name)) return f.NOME || f.nome || f.name;
     }
-    // possíveis nomes alternativos
+    // 2) campos dentro de record.campos (ex.: PAI, MAE, FILIACAO1)
+    if (record.campos && typeof record.campos === 'object') {
+      if (idx === 0) return record.campos['PAI'] || record.campos['FILIACAO1'] || record.campos['FILIACAO_1'] || '';
+      return record.campos['MAE'] || record.campos['FILIACAO2'] || record.campos['FILIACAO_2'] || '';
+    }
+    // 3) alternativas no topo do objeto
     if (idx === 0) return record.filiacao1 || record.filiacao_1 || record.pai || record.mae || '';
     return record.filiacao2 || record.filiacao_2 || record.mae || record.pai || '';
   }
