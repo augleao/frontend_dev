@@ -285,6 +285,63 @@ export default function LeituraLivros() {
     });
   }
 
+  function escapeXml(s) {
+    if (s === undefined || s === null) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  }
+
+  function serializeResultsToXml(arr) {
+    const lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<REGISTROS>'];
+    (arr || []).forEach((r) => {
+      lines.push('  <REGISTRO>');
+      lines.push(`    <TIPO>${escapeXml(r.tipo || '')}</TIPO>`);
+      const livro = getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']);
+      const folha = getExactField(r, ['numeroFolha', 'folha', 'page', 'FOLHA', 'NRO_FOLHA', 'NUM_FOLHA']);
+      const termo = getExactField(r, ['numeroTermo', 'termo', 'term', 'TERMO', 'NRO_TERMO', 'NUM_TERMO', 'ATO']);
+      lines.push(`    <LIVRO>${escapeXml(livro)}</LIVRO>`);
+      lines.push(`    <FOLHA>${escapeXml(folha)}</FOLHA>`);
+      lines.push(`    <TERMO>${escapeXml(termo)}</TERMO>`);
+      const dataReg = getField(r, ['dataRegistro', 'data', 'registroData', 'date']);
+      lines.push(`    <DATAREGISTRO>${escapeXml(dataReg)}</DATAREGISTRO>`);
+      const nome = getField(r, ['nome', 'name', 'registrado']);
+      lines.push(`    <NOMEREGISTRADO>${escapeXml(nome)}</NOMEREGISTRADO>`);
+      const sexo = getField(r, ['sexo', 'sex', 'genero']);
+      lines.push(`    <SEXO>${escapeXml(sexo)}</SEXO>`);
+      const nasc = getField(r, ['dataNascimento', 'nascimento', 'birthDate', 'datanascimento']);
+      lines.push(`    <DATANASCIMENTO>${escapeXml(nasc)}</DATANASCIMENTO>`);
+      const f1 = getFiliacao(r, 0);
+      const f2 = getFiliacao(r, 1);
+      lines.push(`    <FILIACAO1>${escapeXml(f1)}</FILIACAO1>`);
+      lines.push(`    <FILIACAO2>${escapeXml(f2)}</FILIACAO2>`);
+      // include origens if present
+      if (Array.isArray(r.origens) && r.origens.length) {
+        lines.push('    <ORIGENS>');
+        r.origens.forEach(o => lines.push(`      <ORIGEM>${escapeXml(o)}</ORIGEM>`));
+        lines.push('    </ORIGENS>');
+      }
+      lines.push('  </REGISTRO>');
+    });
+    lines.push('</REGISTROS>');
+    return lines.join('\n');
+  }
+
+  async function handleSaveChangesAsXml() {
+    try {
+      const xml = serializeResultsToXml(results || []);
+      const blob = new Blob([xml], { type: 'application/xml' });
+      const filename = `crc_alterado_${jobId || 'manual'}_${Date.now()}.xml`;
+      downloadBlobAs(blob, filename);
+      logSuccess('XML gerado e download iniciado.');
+    } catch (e) {
+      logError('Falha ao gerar XML: ' + (e.message || e));
+    }
+  }
+
   function downloadBlobAs(blob, filename) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -830,6 +887,9 @@ export default function LeituraLivros() {
                 }}>Baixar XML</button>
                 <button onClick={() => setShowRawResults(s => !s)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer' }}>
                   {showRawResults ? 'Ocultar JSON' : 'Mostrar JSON'}
+                </button>
+                <button onClick={handleSaveChangesAsXml} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff', cursor: 'pointer' }}>
+                  Salvar alterações
                 </button>
               </div>
             </div>
