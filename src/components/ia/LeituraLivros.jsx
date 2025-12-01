@@ -666,60 +666,54 @@ export default function LeituraLivros() {
     </div>
   </div>
 
-  <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }} ref={rowRef}>
-        {/* Left column */}
-        <div style={{ flex: '1 1 60%', minHeight: 300, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          
-
-          {/* Console (ocupa metade da tela) */}
-          <div style={{ background: '#0b1220', borderRadius: 16, boxShadow: '0 16px 36px rgba(2,6,23,0.5)', overflow: 'hidden', width: 'calc(50vw - 12px)', maxWidth: '100%', alignSelf: 'flex-start' }} ref={consoleBlockRef}>
-            <div style={{ padding: '10px 14px', color: '#cbd5e1', borderBottom: '1px solid #111827', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ fontWeight: 800, letterSpacing: 0.5 }}>Console</div>
-              <div style={{ fontSize: 12, color: '#94a3b8' }}>{consoleLines.length} linhas</div>
-            </div>
-            <div style={{ color: '#94a3b8', padding: 14, minHeight: 260, maxHeight: '60vh', overflow: 'auto' }} ref={consoleRef}>
-              {consoleLines.map((line, idx) => (
-                <div key={idx} style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace', marginBottom: 6 }}>{renderFormattedText(line)}</div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right column (Resultados) */}
-  <div style={{ width: 'calc(50vw - 12px)', maxWidth: '100%', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14, marginTop: rightColOffset }}>
-          <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)', maxHeight: '60vh', overflow: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-              <h4 style={{ marginTop: 0, color: '#1f2937' }}>Registros extraídos</h4>
-              <div>
-                <button onClick={handleDownloadXml} disabled={!jobId} style={{
-                  padding: '10px 14px', borderRadius: 10, border: 'none', fontWeight: 800, cursor: jobId ? 'pointer' : 'not-allowed',
-                  background: jobId ? 'linear-gradient(135deg,#10b981,#059669)' : '#cbd5e1', color: '#fff'
-                }}>Baixar XML</button>
-              </div>
-            </div>
-            {results.length === 0 ? (
-              <div style={{ color: '#64748b' }}>Nenhum registro extraído ainda.</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {results.map((r, i) => (
-                  <div key={i} style={{ padding: 12, border: '1px solid #eef2f7', borderRadius: 12, background: '#fff', boxShadow: '0 2px 8px rgba(32,50,73,0.05)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                      <div style={{ fontWeight: 800, color: '#0f172a' }}>{r.nome || r.titulo || `Registro ${i + 1}`}</div>
-                      {r.tipo && (
-                        <span style={{ padding: '2px 10px', borderRadius: 999, background: r.tipo === 'INCLUSAO' ? '#dbeafe' : '#fde68a', color: r.tipo === 'INCLUSAO' ? '#1d4ed8' : '#92400e', fontWeight: 800 }}>
-                          {r.tipo}
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ color: '#475569', fontSize: 13 }}>{r.data || r.pagina || ''}</div>
-                    <pre style={{ margin: '8px 0 0 0', whiteSpace: 'pre-wrap', fontSize: 12, color: '#334155' }}>{r.summary || JSON.stringify(r, null, 2)}</pre>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+  <div>
+    {/* Console full-width */}
+    <div style={{ background: '#0b1220', borderRadius: 16, boxShadow: '0 16px 36px rgba(2,6,23,0.5)', overflow: 'hidden', width: '100%', maxWidth: '100%', alignSelf: 'stretch' }} ref={consoleBlockRef}>
+      <div style={{ padding: '10px 14px', color: '#cbd5e1', borderBottom: '1px solid #111827', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontWeight: 800, letterSpacing: 0.5 }}>Console</div>
+        <div style={{ fontSize: 12, color: '#94a3b8' }}>{consoleLines.length} linhas</div>
+      </div>
+      <div style={{ color: '#94a3b8', padding: 14, minHeight: 260, maxHeight: '60vh', overflow: 'auto' }} ref={consoleRef}>
+        {consoleLines.map((line, idx) => (
+          <div key={idx} style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace', marginBottom: 6 }}>{renderFormattedText(line)}</div>
+        ))}
       </div>
     </div>
+
+    {/* Resultados full-width (abaixo do console) */}
+    <div style={{ marginTop: 18 }}>
+      <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)', width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <h4 style={{ marginTop: 0, color: '#1f2937' }}>Registros extraídos</h4>
+          <div>
+            <button onClick={handleDownloadXml} disabled={!jobId} style={{
+              padding: '10px 14px', borderRadius: 10, border: 'none', fontWeight: 800, cursor: jobId ? 'pointer' : 'not-allowed',
+              background: jobId ? 'linear-gradient(135deg,#10b981,#059669)' : '#cbd5e1', color: '#fff'
+            }}>Baixar XML</button>
+          </div>
+        </div>
+        {results.length === 0 ? (
+          <div style={{ color: '#64748b' }}>Nenhum registro extraído ainda.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {results.map((r, i) => (
+              <div key={i} style={{ padding: 12, border: '1px solid #eef2f7', borderRadius: 12, background: '#fff', boxShadow: '0 2px 8px rgba(32,50,73,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <div style={{ fontWeight: 800, color: '#0f172a' }}>{r.nome || r.titulo || `Registro ${i + 1}`}</div>
+                  {r.tipo && (
+                    <span style={{ padding: '2px 10px', borderRadius: 999, background: r.tipo === 'INCLUSAO' ? '#dbeafe' : '#fde68a', color: r.tipo === 'INCLUSAO' ? '#1d4ed8' : '#92400e', fontWeight: 800 }}>
+                      {r.tipo}
+                    </span>
+                  )}
+                </div>
+                <div style={{ color: '#475569', fontSize: 13 }}>{r.data || r.pagina || ''}</div>
+                <pre style={{ margin: '8px 0 0 0', whiteSpace: 'pre-wrap', fontSize: 12, color: '#334155' }}>{r.summary || JSON.stringify(r, null, 2)}</pre>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
   );
 }
