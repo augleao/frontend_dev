@@ -740,21 +740,65 @@ export default function LeituraLivros() {
             {results.length === 0 ? (
               <div style={{ color: '#64748b' }}>Nenhum registro extraído ainda.</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {results.map((r, i) => (
-                  <div key={i} style={{ padding: 12, border: '1px solid #eef2f7', borderRadius: 12, background: '#fff', boxShadow: '0 2px 8px rgba(32,50,73,0.05)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                      <div style={{ fontWeight: 800, color: '#0f172a' }}>{r.nome || r.titulo || `Registro ${i + 1}`}</div>
-                      {r.tipo && (
-                        <span style={{ padding: '2px 10px', borderRadius: 999, background: r.tipo === 'INCLUSAO' ? '#dbeafe' : '#fde68a', color: r.tipo === 'INCLUSAO' ? '#1d4ed8' : '#92400e', fontWeight: 800 }}>
-                          {r.tipo}
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ color: '#475569', fontSize: 13 }}>{r.data || r.pagina || ''}</div>
-                    <pre style={{ margin: '8px 0 0 0', whiteSpace: 'pre-wrap', fontSize: 12, color: '#334155' }}>{r.summary || JSON.stringify(r, null, 2)}</pre>
-                  </div>
-                ))}
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ textAlign: 'left', borderBottom: '2px solid #eef2f7' }}>
+                      <th style={{ padding: '8px 10px' }}>Número do livro</th>
+                      <th style={{ padding: '8px 10px' }}>Número da folha</th>
+                      <th style={{ padding: '8px 10px' }}>Número do termo</th>
+                      <th style={{ padding: '8px 10px' }}>Data do registro</th>
+                      <th style={{ padding: '8px 10px' }}>Nome do registrado</th>
+                      <th style={{ padding: '8px 10px' }}>Sexo</th>
+                      <th style={{ padding: '8px 10px' }}>Data de nascimento</th>
+                      <th style={{ padding: '8px 10px' }}>Filiação 1</th>
+                      <th style={{ padding: '8px 10px' }}>Filiação 2</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.map((r, i) => {
+                      const get = (obj, ...keys) => {
+                        for (const k of keys) {
+                          if (!obj) continue;
+                          if (k in obj && obj[k] != null && String(obj[k]).trim() !== '') return obj[k];
+                        }
+                        return '';
+                      };
+                      const livro = get(r, 'livro', 'numeroLivro', 'NUMEROLIVRO', 'numero_livro', 'book');
+                      const folha = get(r, 'folha', 'numeroFolha', 'NUMEROFOLHA', 'numero_folha', 'page');
+                      const termo = get(r, 'termo', 'numeroTermo', 'NUMEROTERMO', 'numero_termo', 'term');
+                      const dataRegistro = get(r, 'DATAREGISTRO', 'dataRegistro', 'data_registro', 'data');
+                      const nome = get(r, 'NOMEREGISTRADO', 'nome', 'nomeRegistrado', 'titulo');
+                      const sexo = get(r, 'SEXO', 'sexo', 'genero');
+                      const dataNasc = get(r, 'DATANASCIMENTO', 'dataNascimento', 'data_nascimento');
+                      const filiacaoArray = (() => {
+                        if (!r) return [];
+                        if (Array.isArray(r.filiacao)) return r.filiacao;
+                        if (Array.isArray(r.FILIACAO)) return r.FILIACAO;
+                        if (Array.isArray(r.filiacoes)) return r.filiacoes;
+                        if (r.FILIACAO && typeof r.FILIACAO === 'string') return [{ nome: r.FILIACAO }];
+                        if (r.filiacao && typeof r.filiacao === 'string') return [{ nome: r.filiacao }];
+                        if (Array.isArray(r.parents)) return r.parents;
+                        return [];
+                      })();
+                      const f1 = (filiacaoArray[0] && (filiacaoArray[0].nome || filiacaoArray[0].NOME || filiacaoArray[0].name)) || '';
+                      const f2 = (filiacaoArray[1] && (filiacaoArray[1].nome || filiacaoArray[1].NOME || filiacaoArray[1].name)) || '';
+                      return (
+                        <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                          <td style={{ padding: '8px 10px' }}>{livro}</td>
+                          <td style={{ padding: '8px 10px' }}>{folha}</td>
+                          <td style={{ padding: '8px 10px' }}>{termo}</td>
+                          <td style={{ padding: '8px 10px' }}>{dataRegistro}</td>
+                          <td style={{ padding: '8px 10px' }}>{nome}</td>
+                          <td style={{ padding: '8px 10px' }}>{sexo}</td>
+                          <td style={{ padding: '8px 10px' }}>{dataNasc}</td>
+                          <td style={{ padding: '8px 10px' }}>{f1}</td>
+                          <td style={{ padding: '8px 10px' }}>{f2}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
