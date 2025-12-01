@@ -38,7 +38,6 @@ export default function LeituraLivros() {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState([]);
-  const [agentInfo, setAgentInfo] = useState(null);
   const pollRef = useRef(null);
   const didMountTestRef = useRef(false);
   const lastProgressRef = useRef(0);
@@ -132,7 +131,6 @@ export default function LeituraLivros() {
     (async () => {
       try {
         logTitle('Checando disponibilidade do agente de IA');
-        let detectedAgent = null;
         const maxTentativas = 2;
         let ok = false;
         for (let i = 1; i <= maxTentativas; i++) {
@@ -144,11 +142,6 @@ export default function LeituraLivros() {
               'teste on-mount'
             );
             if (resp && typeof resp === 'object') {
-              // tenta extrair nome/identificador do agente retornado pelo backend
-              const agent = resp.agent || resp.agente || resp.agentName || resp.provider || resp.name || resp.model || resp.service || resp.client || null;
-              const label = agent ? String(agent) : (Object.keys(resp || {}).length ? JSON.stringify(resp) : 'desconhecido');
-              detectedAgent = label;
-              setAgentInfo(label);
               ok = true;
               break;
             }
@@ -160,7 +153,6 @@ export default function LeituraLivros() {
         }
         if (ok) {
           logSuccess('✓ Agente online');
-          if (detectedAgent) logInfo(`Agente IA: ${detectedAgent}`);
         } else {
           logWarning('⚠ Agente possivelmente indisponível. Tente reenviar ou verificar conexão.');
         }
@@ -412,11 +404,6 @@ export default function LeituraLivros() {
             ← Voltar
           </button>
           <h2 style={{ margin: 0, fontSize: 20, color: '#2c3e50' }}>Leitura de Livros de Registro</h2>
-          {agentInfo && (
-            <div style={{ marginLeft: 8, marginTop: 6, fontSize: 12, color: '#475569' }}>
-              <strong style={{ fontWeight: 800, color: '#0f172a' }}>Agente IA:</strong>{' '}{agentInfo}
-            </div>
-          )}
         </div>
   {/* Subtítulo removido a pedido do usuário */}
       </div>
