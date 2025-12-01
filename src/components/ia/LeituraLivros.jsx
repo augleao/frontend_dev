@@ -686,13 +686,10 @@ export default function LeituraLivros() {
     </div>
   </div>
 
-  <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }} ref={rowRef}>
-        {/* Left column */}
-        <div style={{ flex: '1 1 60%', minHeight: 300, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          
-
-          {/* Console (ocupa metade da tela) */}
-          <div style={{ background: '#0b1220', borderRadius: 16, boxShadow: '0 16px 36px rgba(2,6,23,0.5)', overflow: 'hidden', width: 'calc(50vw - 12px)', maxWidth: '100%', alignSelf: 'flex-start' }} ref={consoleBlockRef}>
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        {/* Console (full width) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ background: '#0b1220', borderRadius: 16, boxShadow: '0 16px 36px rgba(2,6,23,0.5)', overflow: 'hidden', width: '100%', maxWidth: '100%' }} ref={consoleBlockRef}>
             <div style={{ padding: '10px 14px', color: '#cbd5e1', borderBottom: '1px solid #111827', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontWeight: 800, letterSpacing: 0.5 }}>Console</div>
               <div style={{ fontSize: 12, color: '#94a3b8' }}>{consoleLines.length} linhas</div>
@@ -705,9 +702,9 @@ export default function LeituraLivros() {
           </div>
         </div>
 
-        {/* Right column (Resumo + Resultados) */}
-  <div style={{ width: 'calc(50vw - 12px)', maxWidth: '100%', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14, marginTop: rightColOffset }}>
-          <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)', maxHeight: '60vh', overflow: 'auto' }}>
+        {/* Resultados (abaixo do console, full width) */}
+        <div style={{ width: '100%' }}>
+          <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)', width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <h4 style={{ marginTop: 0, color: '#1f2937', marginBottom: 0 }}>Registros extraídos</h4>
               <div>
