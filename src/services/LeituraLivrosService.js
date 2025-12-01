@@ -56,6 +56,19 @@ export default {
     if (!res.ok) throw new Error('Falha ao enviar arquivos');
     return res.json();
   },
+  async extractP7s(files) {
+    const fd = new FormData();
+    files.forEach((f, i) => fd.append('files', f, f.name || `file${i}`));
+    const res = await withAuthFetch(`${config.apiURL}/leitura-livros/extract-p7s`, {
+      method: 'POST',
+      body: fd
+    });
+    if (!res.ok) throw new Error('Falha ao extrair payloads de .p7s');
+    const ct = res.headers.get('content-type') || '';
+    if (ct.includes('application/json')) return res.json();
+    // fallback: return blob for binary responses
+    return { blob: await res.blob(), contentType: ct };
+  },
   async getStatus(jobId) {
     const res = await withAuthFetch(`${config.apiURL}/leitura-livros/status/${encodeURIComponent(jobId)}`);
     if (!res.ok) throw new Error('Falha ao consultar status');

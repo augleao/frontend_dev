@@ -31,6 +31,7 @@ export default function LeituraLivros() {
   const [mode, setMode] = useState('upload'); // 'folder' or 'upload', padrão: upload
   const [folderPath, setFolderPath] = useState('');
   const [files, setFiles] = useState([]);
+  const extractInputRef = useRef(null);
   const [consoleLines, setConsoleLines] = useState([]);
   const consoleRef = useRef(null);
   const consoleBlockRef = useRef(null);
@@ -88,6 +89,77 @@ export default function LeituraLivros() {
 
   function clearConsole() {
     setConsoleLines([]);
+  }
+
+  // Handler para extrair imagens de arquivos .p7s via backend
+  async function handleExtractP7s(filesList) {
+    try {
+      const arr = Array.from(filesList || []);
+      if (!arr.length) return;
+      logTitle('Extrair Imagens (.p7s)');
+      logInfo(`Enviando ${arr.length} arquivo(s) para extração...`);
+      const resp = await LeituraLivrosService.extractP7s(arr);
+      // resposta pode ser { blob } ou JSON
+      if (resp && resp.blob) {
+        const url = window.URL.createObjectURL(resp.blob);
+        window.open(url, '_blank');
+        logSuccess('Conteúdo extraído (binário) aberto em nova aba.');
+        return;
+      }
+      // Se for JSON: suporta array ou objeto único
+      if (resp && Array.isArray(resp)) {
+        for (let i = 0; i < resp.length; i++) {
+          const it = resp[i];
+          // Buffer serializado: { buffer: { type: 'Buffer', data: [...] } }
+          if (it && it.buffer && it.buffer.data) {
+            const u8 = new Uint8Array(it.buffer.data);
+            const blob = new Blob([u8]);
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            logSuccess(`Arquivo extraído: ${it.filename || ('payload_' + (i+1))}`);
+            continue;
+          }
+          // base64
+          if (it && it.base64) {
+            const bin = atob(it.base64);
+            const len = bin.length;
+            const u8 = new Uint8Array(len);
+            for (let j = 0; j < len; j++) u8[j] = bin.charCodeAt(j);
+            const blob = new Blob([u8]);
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            logSuccess(`Arquivo extraído: ${it.filename || ('payload_' + (i+1))}`);
+            continue;
+          }
+          logWarning(`Resposta inesperada para item ${i}: ${JSON.stringify(it).slice(0,200)}`);
+        }
+        return;
+      }
+      if (resp && typeof resp === 'object') {
+        // single object with buffer/base64
+        const it = resp;
+        if (it.buffer && it.buffer.data) {
+          const u8 = new Uint8Array(it.buffer.data);
+          const blob = new Blob([u8]);
+          window.open(window.URL.createObjectURL(blob), '_blank');
+          logSuccess(`Arquivo extraído: ${it.filename || 'payload'}`);
+          return;
+        }
+        if (it.base64) {
+          const bin = atob(it.base64);
+          const len = bin.length;
+          const u8 = new Uint8Array(len);
+          for (let j = 0; j < len; j++) u8[j] = bin.charCodeAt(j);
+          const blob = new Blob([u8]);
+          window.open(window.URL.createObjectURL(blob), '_blank');
+          logSuccess(`Arquivo extraído: ${it.filename || 'payload'}`);
+          return;
+        }
+      }
+      logWarning('Resposta de extração não continha payloads reconhecíveis.');
+    } catch (e) {
+      logError('Falha ao extrair .p7s: ' + (e.message || e));
+    }
   }
 
   // Utils para controle de tempo
@@ -483,6 +555,9 @@ export default function LeituraLivros() {
       <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={clearConsole}
           style={{ background: '#fff', border: '1px solid #e5e7eb', color: '#374151', padding: '8px 12px', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>Limpar console</button>
+        <button onClick={() => extractInputRef.current && extractInputRef.current.click()} disabled={running}
+          style={{ background: '#fff', border: '1px solid #e5e7eb', color: '#374151', padding: '8px 12px', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>Extrair Imagem</button>
+        <input ref={extractInputRef} type="file" accept=".p7s" multiple style={{ display: 'none' }} onChange={e => handleExtractP7s(e.target.files)} />
         <button onClick={startProcessing} disabled={running || (mode === 'upload' && files.length === 0)}
           style={{ background: running ? '#94a3b8' : 'linear-gradient(135deg,#2563eb,#1d4ed8)', color: '#fff',
             border: 'none', padding: '10px 16px', borderRadius: 10, fontWeight: 800, cursor: running ? 'not-allowed' : 'pointer' }}>
