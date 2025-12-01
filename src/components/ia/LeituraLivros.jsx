@@ -47,8 +47,7 @@ export default function LeituraLivros() {
   const lastStatusRef = useRef('');
   const jobStartTimeRef = useRef(null);
   const lastMsgIndexRef = useRef(0);
-  const rowRef = useRef(null);
-  const [rightColOffset, setRightColOffset] = useState(0);
+  
   // Gap entre os dois cards superiores (Parâmetros e Modo)
   const headerRowGap = 14; // ajuste único: widths calculadas usam este valor para somar 100%
   // Parâmetros CRC Nacional
@@ -64,26 +63,7 @@ export default function LeituraLivros() {
     }
   }, [consoleLines]);
 
-  // Mantém a coluna direita (Resumo/Registros) alinhada pelo topo do Console
-  useEffect(() => {
-    const recompute = () => {
-      try {
-        const row = rowRef.current;
-        const block = consoleBlockRef.current;
-        if (!row || !block) return;
-        const rowTop = row.getBoundingClientRect().top + window.pageYOffset;
-        const consoleTop = block.getBoundingClientRect().top + window.pageYOffset;
-        const delta = Math.max(0, Math.round(consoleTop - rowTop));
-        setRightColOffset(delta);
-      } catch (_) {}
-    };
-    const raf = requestAnimationFrame(recompute);
-    window.addEventListener('resize', recompute);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', recompute);
-    };
-  }, [mode, versao, acao, tipoRegistro, maxPorArquivo, folderPath, files.length]);
+  // rightColOffset / rowRef removed — layout is now single-column full-width
 
   function pushConsole(line) {
     setConsoleLines(prev => [...prev, typeof line === 'string' ? line : JSON.stringify(line)]);
@@ -705,38 +685,18 @@ export default function LeituraLivros() {
           </div>
         </div>
 
-        {/* Right column (Resumo + Resultados) */}
+        {/* Right column (Resultados) */}
   <div style={{ width: 'calc(50vw - 12px)', maxWidth: '100%', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14, marginTop: rightColOffset }}>
-          <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)' }}>
-            <h3 style={{ marginTop: 0, marginBottom: 10, color: '#1f2937' }}>Resumo</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, fontSize: 14, color: '#334155' }}>
-              <div><strong>Job:</strong> {jobId || '-'}</div>
-              <div><strong>Status:</strong>{' '}
-                <span style={{
-                  padding: '4px 10px', borderRadius: 999,
-                  background: running ? '#dbeafe' : (jobId ? '#dcfce7' : '#e2e8f0'),
-                  color: running ? '#1d4ed8' : (jobId ? '#166534' : '#334155'), fontWeight: 800,
-                }}>
-                  {running ? 'Em andamento' : (jobId ? 'Concluído / Pronto' : 'Inativo')}
-                </span>
-              </div>
-              <div>
-                <strong>Progresso:</strong> {progress}%
-                <div style={{ marginTop: 6, height: 10, borderRadius: 999, background: '#e2e8f0', overflow: 'hidden' }}>
-                  <div style={{ width: `${Math.max(0, Math.min(100, progress))}%`, height: '100%', background: 'linear-gradient(90deg,#22c55e,#16a34a)' }} />
-                </div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-              <button onClick={handleDownloadXml} disabled={!jobId} style={{
-                padding: '10px 14px', borderRadius: 10, border: 'none', fontWeight: 800, cursor: jobId ? 'pointer' : 'not-allowed',
-                background: jobId ? 'linear-gradient(135deg,#10b981,#059669)' : '#cbd5e1', color: '#fff'
-              }}>Baixar XML</button>
-            </div>
-          </div>
-
           <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)', maxHeight: '60vh', overflow: 'auto' }}>
-            <h4 style={{ marginTop: 0, color: '#1f2937' }}>Registros extraídos</h4>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <h4 style={{ marginTop: 0, color: '#1f2937' }}>Registros extraídos</h4>
+              <div>
+                <button onClick={handleDownloadXml} disabled={!jobId} style={{
+                  padding: '10px 14px', borderRadius: 10, border: 'none', fontWeight: 800, cursor: jobId ? 'pointer' : 'not-allowed',
+                  background: jobId ? 'linear-gradient(135deg,#10b981,#059669)' : '#cbd5e1', color: '#fff'
+                }}>Baixar XML</button>
+              </div>
+            </div>
             {results.length === 0 ? (
               <div style={{ color: '#64748b' }}>Nenhum registro extraído ainda.</div>
             ) : (
