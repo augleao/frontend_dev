@@ -41,6 +41,7 @@ export default function LeituraLivros() {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState([]);
+  const [showRawResults, setShowRawResults] = useState(false);
   const pollRef = useRef(null);
   const didMountTestRef = useRef(false);
   const lastProgressRef = useRef(0);
@@ -730,17 +731,25 @@ export default function LeituraLivros() {
           <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)', width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <h4 style={{ marginTop: 0, color: '#1f2937', marginBottom: 0 }}>Registros extraídos</h4>
-              <div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <button onClick={handleDownloadXml} disabled={!jobId} style={{
                   padding: '8px 12px', borderRadius: 10, border: 'none', fontWeight: 800, cursor: jobId ? 'pointer' : 'not-allowed',
                   background: jobId ? 'linear-gradient(135deg,#10b981,#059669)' : '#cbd5e1', color: '#fff'
                 }}>Baixar XML</button>
+                <button onClick={() => setShowRawResults(s => !s)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer' }}>
+                  {showRawResults ? 'Ocultar JSON' : 'Mostrar JSON'}
+                </button>
               </div>
             </div>
             {results.length === 0 ? (
               <div style={{ color: '#64748b' }}>Nenhum registro extraído ainda.</div>
             ) : (
               <div style={{ overflowX: 'auto' }}>
+                {showRawResults && (
+                  <div style={{ marginBottom: 12 }}>
+                    <pre style={{ maxHeight: 240, overflow: 'auto', background: '#0f172a', color: '#e6eef6', padding: 12, borderRadius: 8 }}>{JSON.stringify(results.slice(0, 5), null, 2)}</pre>
+                  </div>
+                )}
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
                   <thead>
                     <tr>
