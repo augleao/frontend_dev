@@ -169,6 +169,29 @@ export default function LeituraLivros() {
     return '';
   }
 
+  // Helpers para mapear campos dos registros extraídos para colunas da tabela
+  function getField(record, keys) {
+    if (!record) return '';
+    for (const k of keys) {
+      if (!k) continue;
+      const v = record[k];
+      if (v !== undefined && v !== null && String(v).toString().trim() !== '') return v;
+    }
+    return '';
+  }
+
+  function getFiliacao(record, idx) {
+    if (!record) return '';
+    if (Array.isArray(record.filiacoes) && record.filiacoes[idx]) {
+      const f = record.filiacoes[idx];
+      if (typeof f === 'string') return f;
+      if (f && (f.nome || f.name)) return f.nome || f.name;
+    }
+    // possíveis nomes alternativos
+    if (idx === 0) return record.filiacao1 || record.filiacao_1 || record.pai || record.mae || '';
+    return record.filiacao2 || record.filiacao_2 || record.mae || record.pai || '';
+  }
+
   function downloadBlobAs(blob, filename) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -717,21 +740,37 @@ export default function LeituraLivros() {
             {results.length === 0 ? (
               <div style={{ color: '#64748b' }}>Nenhum registro extraído ainda.</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {results.map((r, i) => (
-                  <div key={i} style={{ padding: 12, border: '1px solid #eef2f7', borderRadius: 12, background: '#fff', boxShadow: '0 2px 8px rgba(32,50,73,0.05)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                      <div style={{ fontWeight: 800, color: '#0f172a' }}>{r.nome || r.titulo || `Registro ${i + 1}`}</div>
-                      {r.tipo && (
-                        <span style={{ padding: '2px 10px', borderRadius: 999, background: r.tipo === 'INCLUSAO' ? '#dbeafe' : '#fde68a', color: r.tipo === 'INCLUSAO' ? '#1d4ed8' : '#92400e', fontWeight: 800 }}>
-                          {r.tipo}
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ color: '#475569', fontSize: 13 }}>{r.data || r.pagina || ''}</div>
-                    <pre style={{ margin: '8px 0 0 0', whiteSpace: 'pre-wrap', fontSize: 12, color: '#334155' }}>{r.summary || JSON.stringify(r, null, 2)}</pre>
-                  </div>
-                ))}
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Número do livro</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Número da folha</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Número do termo</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Data do registro</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Nome do registrado</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Sexo</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Data de nascimento</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Filiação 1</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Filiação 2</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.map((r, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['numeroLivro', 'numero_livro', 'livro', 'bookNumber', 'book'])}</td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['numeroFolha', 'folha', 'page', 'folha_numero'])}</td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['numeroTermo', 'termo', 'term', 'ato'])}</td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['dataRegistro', 'data', 'registroData', 'date'])}</td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['nome', 'name', 'registrado'])}</td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['sexo', 'sex', 'genero'])}</td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getField(r, ['dataNascimento', 'nascimento', 'birthDate', 'datanascimento'])}</td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getFiliacao(r, 0)}</td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>{getFiliacao(r, 1)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
