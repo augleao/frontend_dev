@@ -31,7 +31,7 @@ export default function LeituraLivros() {
   const [mode, setMode] = useState('upload'); // 'folder' or 'upload', padrão: upload
   const [folderPath, setFolderPath] = useState('');
   const [files, setFiles] = useState([]);
-  const extractInputRef = useRef(null);
+  // const extractInputRef = useRef(null);
   const [extractedFiles, setExtractedFiles] = useState([]); // { filename, blob, contentType }
   const [showExtractModal, setShowExtractModal] = useState(false);
   const [consoleLines, setConsoleLines] = useState([]);
@@ -188,6 +188,36 @@ export default function LeituraLivros() {
       await sleep(200); // pequeno espaçamento para não travar alguns navegadores
     }
     setShowExtractModal(false);
+  }
+
+  // Escolher pasta local (File System Access API) e salvar arquivos lá. Fallback: downloads individuais.
+  async function handleChooseFolderAndSave() {
+    if (!extractedFiles.length) return;
+    if (window.showDirectoryPicker) {
+      try {
+        const dirHandle = await window.showDirectoryPicker();
+        for (const f of extractedFiles) {
+          try {
+            const fileHandle = await dirHandle.getFileHandle(f.filename, { create: true });
+            const writable = await fileHandle.createWritable();
+            // write as ArrayBuffer
+            const arrayBuf = await f.blob.arrayBuffer();
+            await writable.write(arrayBuf);
+            await writable.close();
+            logSuccess(`Salvo: ${f.filename}`);
+          } catch (e) {
+            logWarning(`Falha ao salvar ${f.filename}: ${e.message || e}`);
+          }
+        }
+        setShowExtractModal(false);
+      } catch (e) {
+        logWarning('Operação de escolha de pasta cancelada ou não permitida.');
+      }
+    } else {
+      // fallback para navegadores sem File System Access API
+      logWarning('API de pastas não suportada pelo navegador; iniciando downloads individuais.');
+      await handleDownloadAll();
+    }
   }
 
   // Utils para controle de tempo
@@ -531,6 +561,7 @@ export default function LeituraLivros() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button onClick={() => setShowExtractModal(false)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff' }}>Fechar</button>
+              <button onClick={handleChooseFolderAndSave} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#059669,#10b981)', color: '#fff' }}>Escolher pasta e salvar</button>
               <button onClick={handleDownloadAll} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', color: '#fff' }}>Download todos</button>
             </div>
           </div>
@@ -609,12 +640,12 @@ export default function LeituraLivros() {
             }}>Upload de arquivos</button>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={clearConsole}
-          style={{ background: '#fff', border: '1px solid #e5e7eb', color: '#374151', padding: '8px 12px', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>Limpar console</button>
-        <button onClick={() => extractInputRef.current && extractInputRef.current.click()} disabled={running}
-          style={{ background: '#fff', border: '1px solid #e5e7eb', color: '#374151', padding: '8px 12px', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>Extrair Imagem</button>
-        <input ref={extractInputRef} type="file" accept=".p7s" multiple style={{ display: 'none' }} onChange={e => handleExtractP7s(e.target.files)} />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={clearConsole}
+            style={{ background: '#fff', border: '1px solid #e5e7eb', color: '#374151', padding: '8px 12px', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>Limpar console</button>
+          <button onClick={() => handleExtractP7s(files)} disabled={running || files.length === 0}
+            title={files.length === 0 ? 'Selecione arquivos primeiro' : 'Extrair imagens dos arquivos selecionados'}
+            style={{ background: '#fff', border: '1px solid #e5e7eb', color: '#374151', padding: '8px 12px', borderRadius: 10, fontWeight: 700, cursor: running || files.length === 0 ? 'not-allowed' : 'pointer' }}>Extrair Imagem</button>
         <button onClick={startProcessing} disabled={running || (mode === 'upload' && files.length === 0)}
           style={{ background: running ? '#94a3b8' : 'linear-gradient(135deg,#2563eb,#1d4ed8)', color: '#fff',
             border: 'none', padding: '10px 16px', borderRadius: 10, fontWeight: 800, cursor: running ? 'not-allowed' : 'pointer' }}>
