@@ -300,6 +300,9 @@ export default function LeituraLivros() {
     const lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<REGISTROS>'];
     (arr || []).forEach((r) => {
       lines.push('  <REGISTRO>');
+      if (r.matricula) {
+        lines.push(`    <MATRICULA>${escapeXml(r.matricula)}</MATRICULA>`);
+      }
       lines.push(`    <TIPO>${escapeXml(r.tipo || '')}</TIPO>`);
       const livro = getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']);
       const folha = getExactField(r, ['numeroFolha', 'folha', 'page', 'FOLHA', 'NRO_FOLHA', 'NUM_FOLHA']);
@@ -333,7 +336,76 @@ export default function LeituraLivros() {
 
   async function handleSaveChangesAsXml() {
     try {
-      const xml = serializeResultsToXml(results || []);
+      // Before generating XML, request matriculas from backend for each record
+      const toSend = (results || []).map((r) => {
+        const livro = getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']);
+        const folha = getExactField(r, ['numeroFolha', 'folha', 'page', 'FOLHA', 'NRO_FOLHA', 'NUM_FOLHA']);
+        const termo = getExactField(r, ['numeroTermo', 'termo', 'term', 'TERMO', 'NRO_TERMO', 'NUM_TERMO', 'ATO']);
+        // extract year from dataRegistro if possible
+        let dataReg = getField(r, ['dataRegistro', 'data', 'registroData', 'date']);
+        let ano = '';
+        try {
+          if (dataReg) {
+            const d = new Date(dataReg);
+            if (!Number.isNaN(d.getFullYear())) ano = String(d.getFullYear());
+            else {
+              const m = String(dataReg).match(/(\d{4})/);
+              if (m) ano = m[1];
+            }
+          }
+        } catch (_) { }
+
+        // map tipoRegistro textual to numeric tipoLivro code. Adjust mapping as needed.
+        const tipoMap = { 'NASCIMENTO': '01', 'CASAMENTO': '02', 'OBITO': '03' };
+        const tipoLivroCode = tipoMap[String(tipoRegistro || '').toUpperCase()] || '00';
+
+        return {
+          cns: String(cns || ''),
+          acervo: '00',
+          servico: '00',
+          ano: ano || String(new Date().getFullYear()),
+          tipoLivro: tipoLivroCode,
+          livro: livro || String(numeroLivro || ''),
+          folha: folha || '',
+          termo: termo || ''
+        };
+      });
+
+      let enriched = Array.isArray(results) ? [...results] : [];
+      if (toSend.length) {
+        try {
+          logInfo('Solicitando matrícula(s) ao backend...');
+          const resp = await fetch('/api/matriculas/generate', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: toSend })
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data && Array.isArray(data.results)) {
+              data.results.forEach((rRes, idx) => {
+                if (rRes && rRes.matricula) {
+                  if (!enriched[idx]) enriched[idx] = {};
+                  enriched[idx].matricula = rRes.matricula;
+                }
+              });
+              logSuccess(`Recebidas ${data.results.filter(it => it && it.matricula).length} matriculas do backend.`);
+            } else if (data && data.result && data.result.matricula) {
+              // single-result response
+              if (!enriched[0]) enriched[0] = {};
+              enriched[0].matricula = data.result.matricula;
+              logSuccess('Matrícula recebida do backend.');
+            } else {
+              logWarning('Resposta inesperada do backend de matriculas (sem resultados). Gerando XML sem matriculas.');
+            }
+          } else {
+            const text = await resp.text().catch(() => '');
+            logWarning('Falha ao obter matriculas: ' + resp.status + ' ' + text);
+          }
+        } catch (e) {
+          logWarning('Erro ao chamar /api/matriculas/generate: ' + (e.message || e));
+        }
+      }
+
+      const xml = serializeResultsToXml(enriched || results || []);
       const blob = new Blob([xml], { type: 'application/xml' });
       const filename = `crc_alterado_${jobId || 'manual'}_${Date.now()}.xml`;
       downloadBlobAs(blob, filename);
