@@ -58,6 +58,7 @@ export default function LeituraLivros() {
   const [cns, setCns] = useState('');
   const [tipoRegistro, setTipoRegistro] = useState('NASCIMENTO'); // NASCIMENTO | CASAMENTO | OBITO
   const [maxPorArquivo, setMaxPorArquivo] = useState(2500);
+  const [numeroLivro, setNumeroLivro] = useState('');
 
   useEffect(() => {
     if (consoleRef.current) {
@@ -695,26 +696,7 @@ export default function LeituraLivros() {
   return (
     <div style={{ minHeight: '100vh', padding: 24, fontFamily: 'Inter, Arial, sans-serif', background: 'linear-gradient(180deg,#f5f7fb 0%, #eef1f6 100%)' }}>
       {/* Header */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: '#fff', borderRadius: 16, padding: '14px 18px',
-        boxShadow: '0 8px 24px rgba(32,50,73,0.08)', marginBottom: 18
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button
-            onClick={() => navigate('/ferramentas-ia')}
-            style={{
-              background: 'linear-gradient(135deg,#e9ecef,#dee2e6)',
-              color: '#2c3e50', border: '1px solid #d0d7de',
-              padding: '8px 14px', borderRadius: 10, fontWeight: 700, cursor: 'pointer'
-            }}
-          >
-            ← Voltar
-          </button>
-          <h2 style={{ margin: 0, fontSize: 20, color: '#2c3e50' }}>Leitura de Livros de Registro</h2>
-        </div>
-  {/* Subtítulo removido a pedido do usuário */}
-      </div>
+      {/* Cabeçalho removido: título 'Leitura de Livros de Registro' */}
 
       {/* Modal: escolher destino para arquivos extraídos */}
       {showExtractModal && (
@@ -796,6 +778,13 @@ export default function LeituraLivros() {
       <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>MAX/ARQUIVO</label>
       <input type="number" min={1} value={maxPorArquivo}
         onChange={e => setMaxPorArquivo(Number(e.target.value || 2500))}
+        style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }} />
+    </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>Nº do LIVRO</label>
+      <input type="text" inputMode="numeric" pattern="[0-9]*" value={numeroLivro}
+        onChange={e => setNumeroLivro(String(e.target.value || '').replace(/\D/g, ''))}
+        placeholder="somente números"
         style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }} />
     </div>
     </div>
