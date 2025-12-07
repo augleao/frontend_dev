@@ -870,25 +870,20 @@ async function runJob(jobId, inputs, params) {
 
   const records = await ocrAndExtractRecords(filePaths, params, status, cancelFlag, ctx);
 
-    pushMessage(status, 'info', 'Normalizando e gerando XML...');
+    pushMessage(status, 'info', 'Normalizando e produzindo resultado (JSON) — sem geração automática de XML.');
     await writeJSON(paths.status, status);
-    // First try IA-based XML if prompt xml_* is configured; fallback to code-based builder
-    let xmlPaths = await buildXmlFilesViaIa(records, params, paths.dir, status, ctx);
-    if (!xmlPaths || !xmlPaths.length) {
-      xmlPaths = buildXmlFiles(records, params, paths.dir);
-    }
 
+    // Produce result JSON containing only extracted records and params.
     const result = {
       params,
       records,
-      filesCount: xmlPaths.length,
-      xmlFiles: xmlPaths.map((p) => path.basename(p)),
+      recordsCount: Array.isArray(records) ? records.length : 0
     };
     await writeJSON(paths.result, result);
 
     status.status = 'done';
     status.progress = 100;
-    pushMessage(status, 'success', 'Processamento concluído');
+    pushMessage(status, 'success', 'Processamento concluído (registros extraídos e gravados em JSON)');
     await writeJSON(paths.status, status);
   } catch (err) {
     status.status = 'failed';
@@ -1929,33 +1924,7 @@ function registerLeituraLivrosRoutes(app) {
     }
     });
 
-    // Download XML or ZIP
-    app.get(`${base}/leitura-livros/result/:jobId/xml`, authenticate, async (req, res) => {
-    const { jobId } = req.params;
-    const { result } = jobPaths(jobId);
-    try {
-      const data = await readJSON(result);
-      const jobDir = path.dirname(result);
-      const files = (data.xmlFiles || []).map((n) => path.join(jobDir, n));
-      if (!files.length) return res.status(404).json({ error: 'Nenhum XML gerado' });
-      const baseName = `crc_${(data.params.tipoRegistro||'').toLowerCase()}_${(data.params.acao||'').toLowerCase()}_${jobId}`;
-      if (files.length === 1) {
-        res.setHeader('Content-Type', 'application/xml');
-        res.setHeader('Content-Disposition', `attachment; filename="${baseName}.xml"`);
-        return fs.createReadStream(files[0]).pipe(res);
-      } else {
-        res.setHeader('Content-Type', 'application/zip');
-        res.setHeader('Content-Disposition', `attachment; filename="${baseName}.zip"`);
-        const archive = archiver('zip', { zlib: { level: 9 } });
-        archive.on('error', (err) => { try { res.status(500).end(); } catch(_){} });
-        archive.pipe(res);
-        files.forEach((fp) => archive.file(fp, { name: path.basename(fp) }));
-        archive.finalize();
-      }
-    } catch {
-      return res.status(404).json({ error: 'jobId não encontrado' });
-    }
-    });
+    // Note: server-side XML download endpoint removed — XML is now generated on the frontend after user review.
 
     // Optional cancel: cooperative
     app.post(`${base}/leitura-livros/cancel/:jobId`, authenticate, async (req, res) => {
