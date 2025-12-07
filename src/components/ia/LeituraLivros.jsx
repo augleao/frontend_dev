@@ -58,8 +58,8 @@ export default function LeituraLivros() {
   const [acao, setAcao] = useState('CARGA'); // por ora apenas CARGA
   const [cns, setCns] = useState('');
   const [tipoRegistro, setTipoRegistro] = useState('NASCIMENTO'); // NASCIMENTO | CASAMENTO | OBITO
-  // codigo do tipo de livro a ser usado no sistema/geração de matrícula (2 dígitos quando enviado)
-  const [tipoLivroCode, setTipoLivroCode] = useState('01');
+  // código do tipo de livro a ser usado no sistema/geração de matrícula (valor sem zero à esquerda)
+  const [tipoLivroCode, setTipoLivroCode] = useState('1');
   const [maxPorArquivo, setMaxPorArquivo] = useState(2500);
   const [numeroLivro, setNumeroLivro] = useState('');
 
@@ -369,8 +369,8 @@ export default function LeituraLivros() {
           }
         } catch (_) { }
 
-        // tipoLivroCode holds the selected numeric code (string). Use it padded to 2 digits.
-        const tipoLivroCodeToSend = String(tipoLivroCode || '01').padStart(2, '0');
+        // tipoLivroCode holds the selected numeric code (string) without leading zeros (ex: '1')
+        const tipoLivroCodeToSend = String(tipoLivroCode || '1');
 
         return {
           cns: String(cns || ''),
@@ -537,6 +537,8 @@ export default function LeituraLivros() {
               8000,
               'teste on-mount'
             );
+            // Debug: log da resposta do backend/serviço de identificação de tipo
+            try { console.debug('backend:identificarTipo response', resp); } catch (_) {}
             if (resp && typeof resp === 'object') {
               ok = true;
               break;
@@ -555,6 +557,8 @@ export default function LeituraLivros() {
               const h = await fetch(`${apiURL}/ia/health`);
               if (h.ok) {
                 const jd = await h.json();
+                // Debug: payload retornado pela rota /ia/health
+                try { console.debug('backend:ia/health', jd); } catch (_) {}
                 const modelName = jd && (jd.resolvedModel || jd.provider) ? (jd.resolvedModel || jd.provider) : null;
                 if (modelName) logInfo(`Agente IA: ${modelName}`);
               }
@@ -578,6 +582,8 @@ export default function LeituraLivros() {
       // 1) Tenta backend se disponível
       try {
         const data = await ServentiaService.getMinhaServentiaCns();
+        // Debug: payload retornado pelo backend para CNS da serventia
+        try { console.debug('backend:getMinhaServentiaCns', data); } catch (_) {}
         if (data && data.cns) {
           setCns(String(data.cns));
           logSuccess(`CNS detectado automaticamente: ${data.cns}`);
@@ -886,19 +892,19 @@ export default function LeituraLivros() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>TIPO</label>
       <select value={tipoLivroCode} onChange={e => {
-          const code = String(e.target.value || '01').padStart(2, '0');
+          const code = String(e.target.value || '1');
           setTipoLivroCode(code);
-          const labelMap = { '01': 'NASCIMENTO', '02': 'CASAMENTO', '03': 'CASAMENTO_RELIGIOSO', '04': 'OBITO', '05': 'NATIMORTO', '06': 'PROCLAMAS', '07': 'LIVRO_E' };
+          const labelMap = { '1': 'NASCIMENTO', '2': 'CASAMENTO', '3': 'CASAMENTO_RELIGIOSO', '4': 'OBITO', '5': 'NATIMORTO', '6': 'PROCLAMAS', '7': 'LIVRO_E' };
           setTipoRegistro(labelMap[code] || 'NASCIMENTO');
         }}
         style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }}>
-        <option value="01">Nascimento</option>
-        <option value="02">Casamento</option>
-        <option value="03">Casamento Religioso</option>
-        <option value="04">Óbito</option>
-        <option value="05">Natimorto</option>
-        <option value="06">Proclamas</option>
-        <option value="07">Livro E</option>
+        <option value="1">Nascimento</option>
+        <option value="2">Casamento</option>
+        <option value="3">Casamento Religioso</option>
+        <option value="4">Óbito</option>
+        <option value="5">Natimorto</option>
+        <option value="6">Proclamas</option>
+        <option value="7">Livro E</option>
       </select>
     </div>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
