@@ -742,7 +742,21 @@ export default function LeituraLivros() {
               const res = await LeituraLivrosService.getResult(resp.jobId);
               // Debug: log do resultado completo retornado pelo backend
               try { console.debug('backend:getResult', res); } catch (_) {}
-              setResults(res.records || res || []);
+              // If the user provided a global "Nº do LIVRO", populate each record's LIVRO field
+              const numeroLivroFormatted = numeroLivro ? String(Number(numeroLivro)) : '';
+              let finalResults = res.records || res || [];
+              if (numeroLivroFormatted) {
+                try {
+                  finalResults = (Array.isArray(finalResults) ? finalResults : []).map((r) => {
+                    const copy = Object.assign({}, r || {});
+                    if (!copy.campos || typeof copy.campos !== 'object') copy.campos = {};
+                    // Overwrite LIVRO for each record with the user-provided value
+                    copy.campos['LIVRO'] = numeroLivroFormatted;
+                    return copy;
+                  });
+                } catch (_) {}
+              }
+              setResults(finalResults);
               const count = (res?.records && Array.isArray(res.records)) ? res.records.length : (Array.isArray(res) ? res.length : 0);
               logTitle(`Resultados carregados (${count}).`);
             } else if (status.status === 'failed') {
