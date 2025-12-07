@@ -58,6 +58,8 @@ export default function LeituraLivros() {
   const [acao, setAcao] = useState('CARGA'); // por ora apenas CARGA
   const [cns, setCns] = useState('');
   const [tipoRegistro, setTipoRegistro] = useState('NASCIMENTO'); // NASCIMENTO | CASAMENTO | OBITO
+  // codigo do tipo de livro a ser usado no sistema/geração de matrícula (2 dígitos quando enviado)
+  const [tipoLivroCode, setTipoLivroCode] = useState('01');
   const [maxPorArquivo, setMaxPorArquivo] = useState(2500);
   const [numeroLivro, setNumeroLivro] = useState('');
 
@@ -356,17 +358,16 @@ export default function LeituraLivros() {
           }
         } catch (_) { }
 
-        // map tipoRegistro textual to numeric tipoLivro code. Adjust mapping as needed.
-        const tipoMap = { 'NASCIMENTO': '01', 'CASAMENTO': '02', 'OBITO': '03' };
-        const tipoLivroCode = tipoMap[String(tipoRegistro || '').toUpperCase()] || '00';
+        // tipoLivroCode holds the selected numeric code (string). Use it padded to 2 digits.
+        const tipoLivroCodeToSend = String(tipoLivroCode || '01').padStart(2, '0');
 
         return {
           cns: String(cns || ''),
           acervo: '00',
           servico: '00',
           ano: ano || String(new Date().getFullYear()),
-          tipoLivro: tipoLivroCode,
-          livro: livro || String(numeroLivro || ''),
+          tipoLivro: tipoLivroCodeToSend,
+          livro: livro || (numeroLivro ? String(Number(numeroLivro)) : ''),
           folha: folha || '',
           termo: termo || ''
         };
@@ -628,7 +629,9 @@ export default function LeituraLivros() {
       if (!versao.trim()) { logError('Informe a VERSAO do XML.'); setRunning(false); return; }
       if (!acao.trim()) { logError('Informe a ACAO (ex.: CARGA).'); setRunning(false); return; }
       logTitle('Preparando processamento para CRC Nacional');
-      logInfo(`Parâmetros: VERSAO=${versao}, ACAO=${acao}, CNS=${cns}, TIPO=${tipoRegistro}, Nº_LIVRO=${numeroLivro || '—'}, MAX_POR_ARQUIVO=${maxPorArquivo}`);
+      // Formata número do livro como inteiro (sem casas decimais) antes de enviar ao backend
+      const numeroLivroFormatted = numeroLivro ? String(Number(numeroLivro)) : '';
+      logInfo(`Parâmetros: VERSAO=${versao}, ACAO=${acao}, CNS=${cns}, TIPO=${tipoRegistro}, Nº_LIVRO=${numeroLivroFormatted || '—'}, MAX_POR_ARQUIVO=${maxPorArquivo}`);
       logInfo('O XML será gerado com tags em MAIÚSCULAS, Inclusões antes de Alterações, e grupos FILIACAONASCIMENTO e DOCUMENTOS agrupados.');
       let resp;
       if (mode === 'folder') {
@@ -650,7 +653,7 @@ export default function LeituraLivros() {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
           promptTipoEscritaIndexador: 'tipo_escrita',
           promptTipoEscrita: pTipo?.prompt || '',
-          numeroLivro: String(numeroLivro || '')
+          numeroLivro: numeroLivroFormatted
         });
       } else {
         if (!files || files.length === 0) { logError('Selecione arquivos para upload.'); setRunning(false); return; }
@@ -684,7 +687,7 @@ export default function LeituraLivros() {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
           promptTipoEscritaIndexador: 'tipo_escrita',
           promptTipoEscrita: pTipo?.prompt || '',
-          numeroLivro: String(numeroLivro || '')
+          numeroLivro: numeroLivroFormatted
         });
       }
       if (!resp || !resp.jobId) {
@@ -861,11 +864,20 @@ export default function LeituraLivros() {
     </div>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>TIPO</label>
-      <select value={tipoRegistro} onChange={e => setTipoRegistro(e.target.value)}
+      <select value={tipoLivroCode} onChange={e => {
+          const code = String(e.target.value || '01').padStart(2, '0');
+          setTipoLivroCode(code);
+          const labelMap = { '01': 'NASCIMENTO', '02': 'CASAMENTO', '03': 'CASAMENTO_RELIGIOSO', '04': 'OBITO', '05': 'NATIMORTO', '06': 'PROCLAMAS', '07': 'LIVRO_E' };
+          setTipoRegistro(labelMap[code] || 'NASCIMENTO');
+        }}
         style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }}>
-        <option value="NASCIMENTO">NASCIMENTO</option>
-        <option value="CASAMENTO">CASAMENTO</option>
-        <option value="OBITO">ÓBITO</option>
+        <option value="01">Nascimento</option>
+        <option value="02">Casamento</option>
+        <option value="03">Casamento Religioso</option>
+        <option value="04">Óbito</option>
+        <option value="05">Natimorto</option>
+        <option value="06">Proclamas</option>
+        <option value="07">Livro E</option>
       </select>
     </div>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
