@@ -106,6 +106,8 @@ export default function LeituraLivros() {
       logTitle('Extrair Imagens (.p7s)');
       logInfo(`Enviando ${arr.length} arquivo(s) para extração...`);
       const resp = await LeituraLivrosService.extractP7s(arr);
+      // Debug: mostrar payload retornado pelo backend no DevTools
+      try { console.debug('backend:extractP7s response', resp); } catch (_) {}
       // resposta pode ser { blob } ou JSON
       const filesToShow = [];
       if (resp && resp.blob) {
@@ -382,6 +384,8 @@ export default function LeituraLivros() {
           });
           if (resp.ok) {
             const data = await resp.json();
+            // Debug: payload de matriculas recebido do backend
+            try { console.debug('backend:matriculas response', data); } catch (_) {}
             if (data && Array.isArray(data.results)) {
               data.results.forEach((rRes, idx) => {
                 if (rRes && rRes.matricula) {
@@ -655,6 +659,8 @@ export default function LeituraLivros() {
           promptTipoEscrita: pTipo?.prompt || '',
           numeroLivro: numeroLivroFormatted
         });
+        // Debug: response do backend ao iniciar processamento (visível no DevTools)
+        try { console.debug('backend:startFolderProcessing response', resp); } catch (_) {}
       } else {
         if (!files || files.length === 0) { logError('Selecione arquivos para upload.'); setRunning(false); return; }
         logInfo(`Enviando ${files.length} arquivo(s) para processamento...`);
@@ -689,6 +695,8 @@ export default function LeituraLivros() {
           promptTipoEscrita: pTipo?.prompt || '',
           numeroLivro: numeroLivroFormatted
         });
+        // Debug: response do backend após uploadFiles
+        try { console.debug('backend:uploadFiles response', resp); } catch (_) {}
       }
       if (!resp || !resp.jobId) {
         logError('Falha ao iniciar o processamento (resposta inválida).');
@@ -701,6 +709,8 @@ export default function LeituraLivros() {
       pollRef.current = setInterval(async () => {
         try {
           const status = await LeituraLivrosService.getStatus(resp.jobId);
+          // Debug: log do payload de status retornado pelo backend (poll)
+          try { console.debug('backend:getStatus', status); } catch (_) {}
           if (status) {
             // Mensagens incrementais do backend (evita duplicar em cada poll)
             if (Array.isArray(status.messages) && status.messages.length) {
@@ -742,6 +752,8 @@ export default function LeituraLivros() {
               setRunning(false);
               logSuccess('Processamento concluído. Buscando resultados...');
               const res = await LeituraLivrosService.getResult(resp.jobId);
+              // Debug: log do resultado completo retornado pelo backend
+              try { console.debug('backend:getResult', res); } catch (_) {}
               setResults(res.records || res || []);
               const count = (res?.records && Array.isArray(res.records)) ? res.records.length : (Array.isArray(res) ? res.length : 0);
               logTitle(`Resultados carregados (${count}).`);
