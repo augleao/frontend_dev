@@ -4,6 +4,7 @@ import LeituraLivrosService from '../../services/LeituraLivrosService';
 import PromptsService from '../../services/PromptsService';
 import { useNavigate } from 'react-router-dom';
 import { identificarTipo } from '../servicos/IAWorkflowService';
+import { apiURL } from '../../config';
 
 function renderFormattedText(text) {
   if (!text) return null;
@@ -534,6 +535,19 @@ export default function LeituraLivros() {
         }
         if (ok) {
           logSuccess('✓ Agente online');
+          // Fetch provider health to show the resolved model name (agent) used
+          (async () => {
+            try {
+              const h = await fetch(`${apiURL}/ia/health`);
+              if (h.ok) {
+                const jd = await h.json();
+                const modelName = jd && (jd.resolvedModel || jd.provider) ? (jd.resolvedModel || jd.provider) : null;
+                if (modelName) logInfo(`Agente IA: ${modelName}`);
+              }
+            } catch (_) {
+              // ignore health fetch errors
+            }
+          })();
         } else {
           logWarning('⚠ Agente possivelmente indisponível. Tente reenviar ou verificar conexão.');
         }
