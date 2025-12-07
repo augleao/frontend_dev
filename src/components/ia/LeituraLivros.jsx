@@ -3,7 +3,7 @@ import ServentiaService from '../../services/ServentiaService';
 import LeituraLivrosService from '../../services/LeituraLivrosService';
 import PromptsService from '../../services/PromptsService';
 import { useNavigate } from 'react-router-dom';
-import { identificarTipo } from '../servicos/IAWorkflowService';
+// importar identificarTipo removido — não precisamos chamar /identificar-tipo a partir deste componente
 import { apiURL } from '../../config';
 
 function renderFormattedText(text) {
@@ -526,51 +526,24 @@ export default function LeituraLivros() {
 
     (async () => {
       try {
-        logTitle('Checando disponibilidade do agente de IA');
-        const maxTentativas = 2;
-        let ok = false;
-        for (let i = 1; i <= maxTentativas; i++) {
-          try {
-            logInfo(`Tentativa ${i}/${maxTentativas}...`);
-            const resp = await withTimeout(
-              identificarTipo('Ping do leitor de livros na abertura da tela.'),
-              8000,
-              'teste on-mount'
-            );
-            // Debug: log da resposta do backend/serviço de identificação de tipo
-            try { console.debug('backend:identificarTipo response', resp); } catch (_) {}
-            if (resp && typeof resp === 'object') {
-              ok = true;
-              break;
-            }
-            throw new Error('Resposta inválida no teste on-mount.');
-          } catch (err) {
-            logWarning(`⚠ Falha no teste on-mount: ${err.message}`);
-            if (i < maxTentativas) await sleep(800);
+        logTitle('Checando disponibilidade do agente de IA (health)');
+        // Chama apenas a rota de health do provedor de IA — não usamos /identificar-tipo aqui
+        try {
+          const h = await withTimeout(fetch(`${apiURL}/ia/health`), 8000, 'ia-health');
+          if (h && h.ok) {
+            const jd = await h.json().catch(() => null);
+            try { console.debug('backend:ia/health', jd); } catch (_) {}
+            const modelName = jd && (jd.resolvedModel || jd.provider) ? (jd.resolvedModel || jd.provider) : null;
+            logSuccess('✓ Agente online');
+            if (modelName) logInfo(`Agente IA: ${modelName}`);
+          } else {
+            const statusCode = h ? h.status : 'no-response';
+            logWarning(`⚠ Agente possivelmente indisponível (health status: ${statusCode}).`);
           }
-        }
-        if (ok) {
-          logSuccess('✓ Agente online');
-          // Fetch provider health to show the resolved model name (agent) used
-          (async () => {
-            try {
-              const h = await fetch(`${apiURL}/ia/health`);
-              if (h.ok) {
-                const jd = await h.json();
-                // Debug: payload retornado pela rota /ia/health
-                try { console.debug('backend:ia/health', jd); } catch (_) {}
-                const modelName = jd && (jd.resolvedModel || jd.provider) ? (jd.resolvedModel || jd.provider) : null;
-                if (modelName) logInfo(`Agente IA: ${modelName}`);
-              }
-            } catch (_) {
-              // ignore health fetch errors
-            }
-          })();
-        } else {
-          logWarning('⚠ Agente possivelmente indisponível. Tente reenviar ou verificar conexão.');
+        } catch (innerErr) {
+          logWarning(`⚠ Falha ao consultar /ia/health: ${innerErr.message || innerErr}`);
         }
       } catch (e) {
-        // Falha silenciosa: apenas informa no console visual
         logWarning(`⚠ Erro ao executar pré-teste on-mount: ${e.message}`);
       }
     })();
