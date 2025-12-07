@@ -146,10 +146,32 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   }
 
   // Healthcheck (optional)
+  // Now considers the serventia (CNS) of the logged-in user when available.
+  // Order of resolution: query param `cns` -> authenticated `req.user` fields -> debug header (non-prod).
   app.get('/api/ia/health', (req, res) => {
     const raw = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
     const resolved = resolveIaModel(raw);
-    res.json({ ok: true, provider: resolved, stub: process.env.IA_STUB === 'true' });
+
+    // Resolve serventia (CNS) context
+    let cns = null;
+    try {
+      if (req && req.query && req.query.cns) cns = String(req.query.cns).trim();
+    } catch (_) { /* ignore */ }
+    try {
+      if (!cns && req && req.user) {
+        const u = req.user || {};
+        cns = String(u.codigo_serventia || u.codigoServentia || u.serventia || u.cns || u.serventiaCns || '').trim() || null;
+      }
+    } catch (_) { /* ignore */ }
+    // Dev-only fallback via header
+    if (!cns && process.env.NODE_ENV !== 'production') {
+      const debugHeader = req.get('X-Debug-Codigo-Serventia') || req.get('x-debug-codigo-serventia') || null;
+      if (debugHeader) cns = String(debugHeader).trim();
+    }
+
+    const out = { ok: true, provider: resolved, stub: process.env.IA_STUB === 'true' };
+    if (cns) out.serventia = cns;
+    return res.json(out);
   });
 
   // Utility: describe provider error in a structured way for logs/diagnostics

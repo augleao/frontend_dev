@@ -519,64 +519,69 @@ export default function LeituraLivros() {
     pushConsole(preview);
   };
 
-  // Pré-teste simples do agente de IA na montagem da tela (não bloqueante)
-  useEffect(() => {
-    if (didMountTestRef.current) return;
-    didMountTestRef.current = true;
-
-    (async () => {
-      try {
-        logTitle('Checando disponibilidade do agente de IA (health)');
-        // Chama apenas a rota de health do provedor de IA — não usamos /identificar-tipo aqui
-        try {
-          const h = await withTimeout(fetch(`${apiURL}/ia/health`), 8000, 'ia-health');
-          if (h && h.ok) {
-            const jd = await h.json().catch(() => null);
-            try { console.debug('backend:ia/health', jd); } catch (_) {}
-            const modelName = jd && (jd.resolvedModel || jd.provider) ? (jd.resolvedModel || jd.provider) : null;
-            logSuccess('✓ Agente online');
-            if (modelName) logInfo(`Agente IA: ${modelName}`);
-          } else {
-            const statusCode = h ? h.status : 'no-response';
-            logWarning(`⚠ Agente possivelmente indisponível (health status: ${statusCode}).`);
-          }
-        } catch (innerErr) {
-          logWarning(`⚠ Falha ao consultar /ia/health: ${innerErr.message || innerErr}`);
-        }
-      } catch (e) {
-        logWarning(`⚠ Erro ao executar pré-teste on-mount: ${e.message}`);
-      }
-    })();
-  }, []);
+  // NOTE: a checagem de /ia/health será feita após tentarmos resolver o CNS
+  // (serventia) para garantirmos que a rota recebe contexto da serventia.
 
   // Prefill CNS: tenta rota backend /minha-serventia-cns, cai para localStorage se não houver
   useEffect(() => {
     (async () => {
+      let resolvedCns = '';
       // 1) Tenta backend se disponível
       try {
         const data = await ServentiaService.getMinhaServentiaCns();
         // Debug: payload retornado pelo backend para CNS da serventia
         try { console.debug('backend:getMinhaServentiaCns', data); } catch (_) {}
         if (data && data.cns) {
-          setCns(String(data.cns));
+          resolvedCns = String(data.cns);
+          setCns(resolvedCns);
           logSuccess(`CNS detectado automaticamente: ${data.cns}`);
-          return;
         }
       } catch (e) {
         // Silencioso se rota ainda não existir (404) ou sem auth
       }
-      // 2) Fallback: localStorage
-      try {
-        const usuarioLocal = JSON.parse(localStorage.getItem('usuario') || '{}');
-        const localCns = usuarioLocal?.cns || usuarioLocal?.serventiaCns || usuarioLocal?.serventia_cns;
-        if (localCns) {
-          setCns(String(localCns));
-          logSuccess(`CNS detectado do perfil local: ${localCns}`);
-        } else {
-          logInfo('CNS não presente; informe manualmente.');
+      // 2) Fallback: localStorage, somente se não resolvemos pelo backend
+      if (!resolvedCns) {
+        try {
+          const usuarioLocal = JSON.parse(localStorage.getItem('usuario') || '{}');
+          const localCns = usuarioLocal?.cns || usuarioLocal?.serventiaCns || usuarioLocal?.serventia_cns;
+          if (localCns) {
+            resolvedCns = String(localCns);
+            setCns(resolvedCns);
+            logSuccess(`CNS detectado do perfil local: ${localCns}`);
+          } else {
+            logInfo('CNS não presente; informe manualmente.');
+          }
+        } catch (_) {
+          // silencioso
         }
-      } catch (_) {
-        // silencioso
+      }
+
+      // Depois de tentarmos resolver o CNS (mesmo que vazio), realizamos a checagem de health
+      if (!didMountTestRef.current) {
+        didMountTestRef.current = true;
+        (async () => {
+          try {
+            logTitle('Checando disponibilidade do agente de IA (health)');
+            const url = resolvedCns ? `${apiURL}/ia/health?cns=${encodeURIComponent(resolvedCns)}` : `${apiURL}/ia/health`;
+            try {
+              const h = await withTimeout(fetch(url), 8000, 'ia-health');
+              if (h && h.ok) {
+                const jd = await h.json().catch(() => null);
+                try { console.debug('backend:ia/health', jd); } catch (_) {}
+                const modelName = jd && (jd.resolvedModel || jd.provider) ? (jd.resolvedModel || jd.provider) : null;
+                logSuccess('✓ Agente online');
+                if (modelName) logInfo(`Agente IA: ${modelName}`);
+              } else {
+                const statusCode = h ? h.status : 'no-response';
+                logWarning(`⚠ Agente possivelmente indisponível (health status: ${statusCode}).`);
+              }
+            } catch (innerErr) {
+              logWarning(`⚠ Falha ao consultar /ia/health: ${innerErr.message || innerErr}`);
+            }
+          } catch (e) {
+            logWarning(`⚠ Erro ao executar pré-teste on-mount: ${e.message}`);
+          }
+        })();
       }
     })();
   }, []);
