@@ -630,8 +630,7 @@ export default function LeituraLivros() {
         if (!pManu) logWarning('Prompt leitura_manuscrito não encontrado.'); else logSuccess('Prompt leitura_manuscrito OK');
         if (!pDigi) logWarning('Prompt leitura_digitado não encontrado.'); else logSuccess('Prompt leitura_digitado OK');
 
-  // Exibe somente o prompt de classificação no momento do envio (não logar leitura aqui)
-  if (pTipo?.prompt) logPromptSend('IA • Prompt (tipo_escrita) — enviado', pTipo.prompt);
+  // Note: do not show the IA prompt content in the console for privacy/security
 
         resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
@@ -664,8 +663,7 @@ export default function LeituraLivros() {
         // Deixa a classificação manuscrito/digitado a cargo do backend usando o prompt tipo_escrita.
         logInfo('Classificação manuscrito/digitado será executada no backend com base no prompt tipo_escrita.');
 
-  // Exibe somente o prompt de classificação no momento do envio (não logar leitura aqui)
-  if (pTipo?.prompt) logPromptSend('IA • Prompt (tipo_escrita) — enviado', pTipo.prompt);
+  // Note: do not show the IA prompt content in the console for privacy/security
 
         resp = await LeituraLivrosService.uploadFiles(files, {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
