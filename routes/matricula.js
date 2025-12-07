@@ -105,10 +105,19 @@ module.exports = function initMatriculaRoutes(app) {
     try {
       const body = req.body || {};
       const widths = body.widths || {};
+      // Support a top-level default numeroLivro passed in the request body.
+      // This will be used for any record that does not provide its own 'livro'.
+      const defaultNumeroLivro = onlyDigits(body.numeroLivro || body.numero_livro || body.numero_livro_default || '');
 
       const processOne = (rec) => {
         if (!rec || typeof rec !== 'object') return { error: 'invalid record' };
-        const resCore = buildCoreFromRecord(rec, widths);
+        // clone to avoid mutating caller data
+        const r = Object.assign({}, rec);
+        // If record.livro is missing/empty, try the default provided at body level
+        if ((!r.livro || String(r.livro).replace(/\D+/g, '') === '') && defaultNumeroLivro) {
+          r.livro = defaultNumeroLivro;
+        }
+        const resCore = buildCoreFromRecord(r, widths);
         if (resCore.error) return { error: resCore.error };
         const core = resCore.core;
         const dv = mod11TwoDigits(core);
