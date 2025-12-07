@@ -628,7 +628,7 @@ export default function LeituraLivros() {
       if (!versao.trim()) { logError('Informe a VERSAO do XML.'); setRunning(false); return; }
       if (!acao.trim()) { logError('Informe a ACAO (ex.: CARGA).'); setRunning(false); return; }
       logTitle('Preparando processamento para CRC Nacional');
-      logInfo(`Parâmetros: VERSAO=${versao}, ACAO=${acao}, CNS=${cns}, TIPO=${tipoRegistro}, MAX_POR_ARQUIVO=${maxPorArquivo}`);
+      logInfo(`Parâmetros: VERSAO=${versao}, ACAO=${acao}, CNS=${cns}, TIPO=${tipoRegistro}, Nº_LIVRO=${numeroLivro || '—'}, MAX_POR_ARQUIVO=${maxPorArquivo}`);
       logInfo('O XML será gerado com tags em MAIÚSCULAS, Inclusões antes de Alterações, e grupos FILIACAONASCIMENTO e DOCUMENTOS agrupados.');
       let resp;
       if (mode === 'folder') {
@@ -649,7 +649,8 @@ export default function LeituraLivros() {
         resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
           promptTipoEscritaIndexador: 'tipo_escrita',
-          promptTipoEscrita: pTipo?.prompt || ''
+          promptTipoEscrita: pTipo?.prompt || '',
+          numeroLivro: String(numeroLivro || '')
         });
       } else {
         if (!files || files.length === 0) { logError('Selecione arquivos para upload.'); setRunning(false); return; }
@@ -682,7 +683,8 @@ export default function LeituraLivros() {
         resp = await LeituraLivrosService.uploadFiles(files, {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
           promptTipoEscritaIndexador: 'tipo_escrita',
-          promptTipoEscrita: pTipo?.prompt || ''
+          promptTipoEscrita: pTipo?.prompt || '',
+          numeroLivro: String(numeroLivro || '')
         });
       }
       if (!resp || !resp.jobId) {
@@ -828,6 +830,14 @@ export default function LeituraLivros() {
         style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }}>
         <option value="CARGA">CARGA</option>
       </select>
+      {/* Moveu Nº do LIVRO para baixo de ACAO, alinhado à esquerda */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+        <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>Nº do LIVRO</label>
+        <input type="text" inputMode="numeric" pattern="[0-9]*" value={numeroLivro}
+          onChange={e => setNumeroLivro(String(e.target.value || '').replace(/\D/g, ''))}
+          placeholder="somente números"
+          style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14, width: 160 }} />
+      </div>
     </div>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>CNS</label>
@@ -864,13 +874,7 @@ export default function LeituraLivros() {
         onChange={e => setMaxPorArquivo(Number(e.target.value || 2500))}
         style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }} />
     </div>
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>Nº do LIVRO</label>
-      <input type="text" inputMode="numeric" pattern="[0-9]*" value={numeroLivro}
-        onChange={e => setNumeroLivro(String(e.target.value || '').replace(/\D/g, ''))}
-        placeholder="somente números"
-        style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }} />
-    </div>
+    
     </div>
 
     {/* Mode selector & actions */}
