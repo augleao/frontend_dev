@@ -69,6 +69,15 @@ export default function LeituraLivros() {
     }
   }, [consoleLines]);
 
+  // Debug: log no DevTools assim que o componente monta (estado inicial importante)
+  useEffect(() => {
+    try {
+      console.debug('LeituraLivros mounted', {
+        mode, versao, acao, cns, tipoRegistro, tipoLivroCode, numeroLivro, maxPorArquivo
+      });
+    } catch (_) {}
+  }, []);
+
   // Mantém a coluna direita (Resumo/Registros) alinhada pelo topo do Console
   useEffect(() => {
     const recompute = () => {
