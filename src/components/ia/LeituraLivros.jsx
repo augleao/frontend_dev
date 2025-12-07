@@ -533,9 +533,9 @@ export default function LeituraLivros() {
           if (h && h.ok) {
             const jd = await h.json().catch(() => null);
             try { console.debug('backend:ia/health', jd); } catch (_) {}
-            const modelName = jd && (jd.resolvedModel || jd.provider) ? (jd.resolvedModel || jd.provider) : null;
+            const modelName = jd && (jd.providerModel || jd.resolvedModel || jd.provider) ? (jd.providerModel || jd.resolvedModel || jd.provider) : null;
             logSuccess('✓ Agente online');
-            if (modelName) logInfo(`Agente IA: ${modelName}`);
+            if (modelName) logInfo(`Agente de IA: ${modelName}`);
           } else {
             const statusCode = h ? h.status : 'no-response';
             logWarning(`⚠ Agente possivelmente indisponível (health status: ${statusCode}).`);
