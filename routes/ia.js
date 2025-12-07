@@ -149,7 +149,9 @@ module.exports = function initIARoutes(app, pool, middlewares = {}) {
   app.get('/api/ia/health', (req, res) => {
     const raw = process.env.IA_MODEL || 'gemini-1.5-flash-latest';
     const resolved = resolveIaModel(raw);
-    res.json({ ok: true, provider: resolved, stub: process.env.IA_STUB === 'true' });
+    // Provide multiple keys for compatibility: `provider`, `resolvedModel`, and `providerModel`.
+    // `providerModel` is the preferred field for the frontend display (Agente de IA).
+    res.json({ ok: true, provider: resolved, resolvedModel: resolved, providerModel: resolved, stub: process.env.IA_STUB === 'true' });
   });
 
   // Utility: describe provider error in a structured way for logs/diagnostics
