@@ -237,14 +237,46 @@ export default function LeituraLivros() {
     if (!record) return '';
     for (const k of keys) {
       if (!k) continue;
-      // check root
-      if (record[k] !== undefined && record[k] !== null && String(record[k]).trim() !== '') return record[k];
+      // check root (and handle object-shaped values like { numero: '1' })
+      const rootVal = record[k];
+      if (rootVal !== undefined && rootVal !== null) {
+        if (typeof rootVal === 'object') {
+          const cand = rootVal.numero ?? rootVal.number ?? rootVal.value ?? rootVal.nro ?? rootVal.num ?? rootVal.text;
+          if (cand !== undefined && cand !== null && String(cand).trim() !== '') return cand;
+        }
+        if (String(rootVal).trim() !== '') return rootVal;
+      }
       // check uppercase variant on root
-      if (typeof k === 'string' && record[String(k).toUpperCase()] !== undefined && record[String(k).toUpperCase()] !== null && String(record[String(k).toUpperCase()]).trim() !== '') return record[String(k).toUpperCase()];
-      // check record.campos exact key and uppercase
+      if (typeof k === 'string') {
+        const up = record[String(k).toUpperCase()];
+        if (up !== undefined && up !== null) {
+          if (typeof up === 'object') {
+            const cand = up.numero ?? up.number ?? up.value ?? up.nro ?? up.num ?? up.text;
+            if (cand !== undefined && cand !== null && String(cand).trim() !== '') return cand;
+          }
+          if (String(up).trim() !== '') return up;
+        }
+      }
+      // check record.campos exact key and uppercase (and unwrap objects)
       if (record.campos) {
-        if (record.campos[k] !== undefined && record.campos[k] !== null && String(record.campos[k]).trim() !== '') return record.campos[k];
-        if (typeof k === 'string' && record.campos[String(k).toUpperCase()] !== undefined && record.campos[String(k).toUpperCase()] !== null && String(record.campos[String(k).toUpperCase()]).trim() !== '') return record.campos[String(k).toUpperCase()];
+        const cVal = record.campos[k];
+        if (cVal !== undefined && cVal !== null) {
+          if (typeof cVal === 'object') {
+            const cand = cVal.numero ?? cVal.number ?? cVal.value ?? cVal.nro ?? cVal.num ?? cVal.text;
+            if (cand !== undefined && cand !== null && String(cand).trim() !== '') return cand;
+          }
+          if (String(cVal).trim() !== '') return cVal;
+        }
+        if (typeof k === 'string') {
+          const cUp = record.campos[String(k).toUpperCase()];
+          if (cUp !== undefined && cUp !== null) {
+            if (typeof cUp === 'object') {
+              const cand = cUp.numero ?? cUp.number ?? cUp.value ?? cUp.nro ?? cUp.num ?? cUp.text;
+              if (cand !== undefined && cand !== null && String(cand).trim() !== '') return cand;
+            }
+            if (String(cUp).trim() !== '') return cUp;
+          }
+        }
       }
     }
     return '';
