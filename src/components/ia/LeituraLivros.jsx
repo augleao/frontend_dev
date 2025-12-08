@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ServentiaService from '../../services/ServentiaService';
 import LeituraLivrosService from '../../services/LeituraLivrosService';
-// Prompts are fetched server-side now; frontend no longer sends prompt contents
+import PromptsService from '../../services/PromptsService';
 import { useNavigate } from 'react-router-dom';
 // importar identificarTipo removido — não precisamos chamar /identificar-tipo a partir deste componente
 import { apiURL } from '../../config';
