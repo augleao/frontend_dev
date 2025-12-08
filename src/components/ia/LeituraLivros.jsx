@@ -828,17 +828,33 @@ export default function LeituraLivros() {
               // If the user provided a global "Nº do LIVRO", populate each record's LIVRO field
               const numeroLivroFormatted = numeroLivro ? String(Number(numeroLivro)) : '';
               let finalResults = res.records || res || [];
-              if (numeroLivroFormatted) {
-                try {
-                  finalResults = (Array.isArray(finalResults) ? finalResults : []).map((r) => {
-                    const copy = Object.assign({}, r || {});
-                    if (!copy.campos || typeof copy.campos !== 'object') copy.campos = {};
-                    // Overwrite LIVRO for each record with the user-provided value
-                    copy.campos['LIVRO'] = numeroLivroFormatted;
-                    return copy;
-                  });
-                } catch (_) {}
-              }
+              try {
+                finalResults = (Array.isArray(finalResults) ? finalResults : []).map((r) => {
+                  const copy = Object.assign({}, r || {});
+                  if (!copy.campos || typeof copy.campos !== 'object') copy.campos = {};
+                  // Overwrite LIVRO for each record with the user-provided value
+                  if (numeroLivroFormatted) copy.campos['LIVRO'] = numeroLivroFormatted;
+                  // Extract folha from possible shapes: r.folha:{numero: '1'} or r.folha === '1' or r.FOLHA
+                  try {
+                    const folhaRoot = r && r.folha;
+                    let folhaVal = '';
+                    if (folhaRoot !== undefined && folhaRoot !== null) {
+                      if (typeof folhaRoot === 'object') folhaVal = folhaRoot.numero ?? folhaRoot.number ?? folhaRoot.value ?? '';
+                      else folhaVal = String(folhaRoot || '');
+                    }
+                    const termoRoot = r && (r.termo ?? r.TERMO ?? r.term);
+                    let termoVal = '';
+                    if (termoRoot !== undefined && termoRoot !== null) {
+                      if (typeof termoRoot === 'object') termoVal = termoRoot.numero ?? termoRoot.number ?? termoRoot.value ?? '';
+                      else termoVal = String(termoRoot || '');
+                    }
+                    // Only set if campos doesn't already have a value
+                    if ((!copy.campos['FOLHA'] || String(copy.campos['FOLHA']).trim() === '') && folhaVal) copy.campos['FOLHA'] = String(folhaVal);
+                    if ((!copy.campos['TERMO'] || String(copy.campos['TERMO']).trim() === '') && termoVal) copy.campos['TERMO'] = String(termoVal);
+                  } catch (_) {}
+                  return copy;
+                });
+              } catch (_) {}
               setResults(finalResults);
               const count = (res?.records && Array.isArray(res.records)) ? res.records.length : (Array.isArray(res) ? res.length : 0);
               logTitle(`Resultados carregados (${count}).`);
