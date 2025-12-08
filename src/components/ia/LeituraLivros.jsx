@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ServentiaService from '../../services/ServentiaService';
 import LeituraLivrosService from '../../services/LeituraLivrosService';
-import PromptsService from '../../services/PromptsService';
+// Prompts are fetched server-side now; frontend no longer sends prompt contents
 import { useNavigate } from 'react-router-dom';
 // importar identificarTipo removido — não precisamos chamar /identificar-tipo a partir deste componente
 import { apiURL } from '../../config';
@@ -751,22 +751,9 @@ export default function LeituraLivros() {
       if (mode === 'folder') {
         if (!folderPath.trim()) { logError('Informe o caminho da pasta no servidor.'); setRunning(false); return; }
         logInfo(`Solicitando processamento da pasta: ${folderPath}`);
-        // Busca prompts (mesma lógica do Assistente, via /ia/prompts)
-        logInfo('Carregando prompts de IA: tipo_escrita, leitura_manuscrito, leitura_digitado...');
-        const pMap = await PromptsService.getManyByIndexadores(['tipo_escrita', 'leitura_manuscrito', 'leitura_digitado']);
-        const pTipo = pMap['tipo_escrita'];
-        const pManu = pMap['leitura_manuscrito'];
-        const pDigi = pMap['leitura_digitado'];
-        if (!pTipo) logWarning('Prompt tipo_escrita não encontrado.'); else logSuccess('Prompt tipo_escrita OK');
-        if (!pManu) logWarning('Prompt leitura_manuscrito não encontrado.'); else logSuccess('Prompt leitura_manuscrito OK');
-        if (!pDigi) logWarning('Prompt leitura_digitado não encontrado.'); else logSuccess('Prompt leitura_digitado OK');
-
-  // Note: do not show the IA prompt content in the console for privacy/security
-
+        // Backend will fetch and apply prompts; do not send prompt bodies from the frontend
         resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
-          promptTipoEscritaIndexador: 'tipo_escrita',
-          promptTipoEscrita: pTipo?.prompt || '',
           numeroLivro: numeroLivroFormatted
         });
         // Debug: response do backend ao iniciar processamento (visível no DevTools)
@@ -784,25 +771,9 @@ export default function LeituraLivros() {
           const mb = (totalSize / (1024 * 1024)).toFixed(2);
           logInfo(`Tamanho total do upload: ${mb}MB`);
         }
-        // Busca prompts (mesma lógica do Assistente, via /ia/prompts)
-        logInfo('Carregando prompts de IA: tipo_escrita, leitura_manuscrito, leitura_digitado...');
-        const pMap = await PromptsService.getManyByIndexadores(['tipo_escrita', 'leitura_manuscrito', 'leitura_digitado']);
-        const pTipo = pMap['tipo_escrita'];
-        const pManu = pMap['leitura_manuscrito'];
-        const pDigi = pMap['leitura_digitado'];
-        if (!pTipo) logWarning('Prompt tipo_escrita não encontrado.'); else logSuccess('Prompt tipo_escrita OK');
-        if (!pManu) logWarning('Prompt leitura_manuscrito não encontrado.'); else logSuccess('Prompt leitura_manuscrito OK');
-        if (!pDigi) logWarning('Prompt leitura_digitado não encontrado.'); else logSuccess('Prompt leitura_digitado OK');
-
-        // Deixa a classificação manuscrito/digitado a cargo do backend usando o prompt tipo_escrita.
-        logInfo('Classificação manuscrito/digitado será executada no backend com base no prompt tipo_escrita.');
-
-  // Note: do not show the IA prompt content in the console for privacy/security
-
+        // Backend will fetch and apply prompts automatically; do not send them from the frontend
         resp = await LeituraLivrosService.uploadFiles(files, {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
-          promptTipoEscritaIndexador: 'tipo_escrita',
-          promptTipoEscrita: pTipo?.prompt || '',
           numeroLivro: numeroLivroFormatted
         });
         // Debug: response do backend após uploadFiles
