@@ -86,9 +86,6 @@ export default {
     if (!res.ok) throw new Error('Falha ao obter resultado');
     return res.json();
   },
-  async getResultXml(jobId) {
-    const res = await withAuthFetch(`${config.apiURL}/leitura-livros/result/${encodeURIComponent(jobId)}/xml`);
-    if (!res.ok) throw new Error('Falha ao obter XML');
-    return res.blob();
-  }
+  // removed getResultXml: XML is now generated client-side from edited records
+  
 };

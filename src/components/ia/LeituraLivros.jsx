@@ -385,42 +385,93 @@ export default function LeituraLivros() {
       });
 
       let enriched = Array.isArray(results) ? [...results] : [];
+      // initialize matricula placeholders so UI can show pending state
+      try {
+        enriched = (Array.isArray(enriched) ? enriched : []).map(r => (r ? Object.assign({}, r) : {}));
+        setResults(enriched);
+      } catch (_) {}
+
       if (toSend.length) {
         try {
-          logInfo('Solicitando matrícula(s) ao backend...');
-          const resp = await fetch('/api/matriculas/generate', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: toSend })
-          });
-          if (resp.ok) {
-            const data = await resp.json();
-            // Debug: payload de matriculas recebido do backend
-            try { console.debug('backend:matriculas response', data); } catch (_) {}
-            if (data && Array.isArray(data.results)) {
-              data.results.forEach((rRes, idx) => {
-                if (rRes && rRes.matricula) {
-                  if (!enriched[idx]) enriched[idx] = {};
-                  enriched[idx].matricula = rRes.matricula;
-                }
+          logInfo('Solicitando matrícula(s) ao backend (uma por registro)...');
+          // Request matricula per record so we can log and map precisely and update UI as responses arrive
+          for (let i = 0; i < toSend.length; i++) {
+            const payload = toSend[i];
+            const body = Object.assign({}, payload, {});
+            // mark this row as pending in the UI
+            setResults(prev => {
+              const copy = Array.isArray(prev) ? [...prev] : [];
+              const rec = Object.assign({}, copy[i] || {});
+              rec.matricula = '...';
+              copy[i] = rec;
+              return copy;
+            });
+            try {
+              try { console.debug('backend:matricula request', { index: i, payload: body }); } catch (_) {}
+              const resp = await fetch('/api/matriculas/generate', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
               });
-              logSuccess(`Recebidas ${data.results.filter(it => it && it.matricula).length} matriculas do backend.`);
-            } else if (data && data.result && data.result.matricula) {
-              // single-result response
-              if (!enriched[0]) enriched[0] = {};
-              enriched[0].matricula = data.result.matricula;
-              logSuccess('Matrícula recebida do backend.');
-            } else {
-              logWarning('Resposta inesperada do backend de matriculas (sem resultados). Gerando XML sem matriculas.');
+              if (resp.ok) {
+                const data = await resp.json();
+                try { console.debug('backend:matricula response', { index: i, data }); } catch (_) {}
+                let m = null;
+                if (data && data.result && data.result.matricula) m = data.result.matricula;
+                else if (data && Array.isArray(data.results) && data.results[0] && data.results[0].matricula) m = data.results[0].matricula;
+                else if (data && data.matricula) m = data.matricula;
+                if (m) {
+                  // update local enriched copy
+                  if (!enriched[i]) enriched[i] = {};
+                  enriched[i].matricula = m;
+                  // push immediate update to UI so column shows matricula as it arrives
+                  setResults(prev => {
+                    const copy = Array.isArray(prev) ? [...prev] : [];
+                    const rec = Object.assign({}, copy[i] || {});
+                    rec.matricula = m;
+                    copy[i] = rec;
+                    return copy;
+                  });
+                } else {
+                  // clear pending state if no matricula returned
+                  setResults(prev => {
+                    const copy = Array.isArray(prev) ? [...prev] : [];
+                    const rec = Object.assign({}, copy[i] || {});
+                    rec.matricula = '';
+                    copy[i] = rec;
+                    return copy;
+                  });
+                  logWarning(`Registro ${i + 1}: backend não retornou matrícula.`);
+                }
+              } else {
+                const text = await resp.text().catch(() => '');
+                try { console.debug('backend:matricula error', { index: i, status: resp.status, text }); } catch (_) {}
+                setResults(prev => {
+                  const copy = Array.isArray(prev) ? [...prev] : [];
+                  const rec = Object.assign({}, copy[i] || {});
+                  rec.matricula = '';
+                  copy[i] = rec;
+                  return copy;
+                });
+                logWarning(`Falha ao obter matrícula para registro ${i + 1}: ${resp.status}`);
+              }
+            } catch (innerE) {
+              setResults(prev => {
+                const copy = Array.isArray(prev) ? [...prev] : [];
+                const rec = Object.assign({}, copy[i] || {});
+                rec.matricula = '';
+                copy[i] = rec;
+                return copy;
+              });
+              logWarning(`Erro ao chamar /api/matriculas/generate para registro ${i + 1}: ${innerE.message || innerE}`);
             }
-          } else {
-            const text = await resp.text().catch(() => '');
-            logWarning('Falha ao obter matriculas: ' + resp.status + ' ' + text);
           }
+          const received = (enriched || []).filter(it => it && it.matricula).length;
+          logSuccess(`Recebidas ${received} matriculas do backend.`);
         } catch (e) {
-          logWarning('Erro ao chamar /api/matriculas/generate: ' + (e.message || e));
+          logWarning('Erro ao processar chamadas de matricula: ' + (e.message || e));
         }
       }
 
-      const xml = serializeResultsToXml(enriched || results || []);
+      const xml = serializeResultsToXml(enriched.length ? enriched : (results || []));
       const blob = new Blob([xml], { type: 'application/xml' });
       const filename = `crc_alterado_${jobId || 'manual'}_${Date.now()}.xml`;
       downloadBlobAs(blob, filename);
@@ -776,25 +827,7 @@ export default function LeituraLivros() {
     }
   }
 
-  async function handleDownloadXml() {
-    if (!jobId) return;
-    try {
-      logInfo('Solicitando download do XML...');
-      const blob = await LeituraLivrosService.getResultXml(jobId);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const tipo = (tipoRegistro || 'REGISTRO').toLowerCase();
-      a.download = `crc_${tipo}_${acao.toLowerCase()}_${jobId}.xml`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      logSuccess('XML baixado com sucesso.');
-    } catch (e) {
-      logError('Falha ao baixar XML: ' + (e.message || e));
-    }
-  }
+  // server-side XML download removed; XML is generated client-side via "Salvar alterações"
 
   return (
     <div style={{ minHeight: '100vh', padding: 24, fontFamily: 'Inter, Arial, sans-serif', background: 'linear-gradient(180deg,#f5f7fb 0%, #eef1f6 100%)' }}>
@@ -984,10 +1017,7 @@ export default function LeituraLivros() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <h4 style={{ marginTop: 0, color: '#1f2937', marginBottom: 0 }}>Registros extraídos</h4>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <button onClick={handleDownloadXml} disabled={!jobId} style={{
-                  padding: '8px 12px', borderRadius: 10, border: 'none', fontWeight: 800, cursor: jobId ? 'pointer' : 'not-allowed',
-                  background: jobId ? 'linear-gradient(135deg,#10b981,#059669)' : '#cbd5e1', color: '#fff'
-                }}>Baixar XML</button>
+                {/* Baixar XML (server-side) removed — use "Salvar alterações" to generate client-side XML */}
                 <button onClick={() => setShowRawResults(s => !s)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer' }}>
                   {showRawResults ? 'Ocultar JSON' : 'Mostrar JSON'}
                 </button>
@@ -1009,6 +1039,7 @@ export default function LeituraLivros() {
                   <thead>
                     <tr>
                       <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Número do livro</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Matrícula</th>
                       <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Número da folha</th>
                       <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Número do termo</th>
                       <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Data do registro</th>
@@ -1026,6 +1057,10 @@ export default function LeituraLivros() {
                           <input value={getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']) || ''}
                             onChange={e => updateRecordField(i, 'livro', e.target.value)}
                             style={{ width: 120, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                        </td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
+                          <input value={r && r.matricula ? r.matricula : ''} readOnly
+                            style={{ width: 200, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace', color: '#0f172a', background: '#fafafa' }} />
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
                           <input value={getExactField(r, ['numeroFolha', 'folha', 'page', 'FOLHA', 'NRO_FOLHA', 'NUM_FOLHA']) || ''}
