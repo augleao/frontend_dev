@@ -866,9 +866,21 @@ async function runJob(jobId, inputs, params) {
     }
 
     pushMessage(status, 'info', `Lendo ${filePaths.length} arquivo(s)...`);
+    // bump progress to show work started
+    status.progress = 10;
+    await writeJSON(paths.status, status);
+
+    // indicate we're about to start extraction/IA work
+    status.progress = 15;
     await writeJSON(paths.status, status);
 
   const records = await ocrAndExtractRecords(filePaths, params, status, cancelFlag, ctx);
+
+    // after extraction, ensure progress advances (extraction may have already updated progress)
+    try {
+      status.progress = Math.max(status.progress || 0, 70);
+      await writeJSON(paths.status, status);
+    } catch (_) {}
 
     pushMessage(status, 'info', 'Normalizando e produzindo resultado (JSON) — sem geração automática de XML.');
     await writeJSON(paths.status, status);
