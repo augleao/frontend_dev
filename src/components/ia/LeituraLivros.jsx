@@ -951,6 +951,47 @@ export default function LeituraLivros() {
                   return copy;
                 });
               } catch (_) {}
+              // If IA provided raw responses (iaRawResponses) with embedded registros JSON, merge them
+              try {
+                if (res && Array.isArray(res.iaRawResponses) && res.iaRawResponses.length) {
+                  for (const ia of res.iaRawResponses) {
+                    try {
+                      const raw = ia.raw || ia.debug || ia.text || '';
+                      const parsed = extractJsonFromText(String(raw));
+                      if (parsed) {
+                        const arr = parsed.registros || parsed.records || null;
+                        if (Array.isArray(arr) && arr.length) {
+                          const normalizedParsed = normalizeRecordsArray(arr);
+                          // merge: try to match by name, otherwise append
+                          for (const pRec of normalizedParsed) {
+                            try {
+                              // attempt to find matching finalResults entry by name
+                              const parsedName = (pRec && (pRec.campos && (pRec.campos.NOMEREGISTRADO || pRec.campos.NOME))) || (pRec && pRec.dados && pRec.dados.nomeRegistrado) || '';
+                              const parsedNameNorm = String(parsedName || '').trim().toLowerCase();
+                              let foundIdx = -1;
+                              if (parsedNameNorm) {
+                                for (let j = 0; j < finalResults.length; j++) {
+                                  const fr = finalResults[j];
+                                  const frName = getField(fr, ['nome', 'NOMEREGISTRADO', 'nomeRegistrado', 'name']);
+                                  if (frName && String(frName).toLowerCase().includes(parsedNameNorm)) { foundIdx = j; break; }
+                                }
+                              }
+                              if (foundIdx >= 0) {
+                                // fill FOLHA/TERMO if missing
+                                try { if ((!finalResults[foundIdx].campos['FOLHA'] || String(finalResults[foundIdx].campos['FOLHA']).trim() === '') && pRec.campos && pRec.campos['FOLHA']) finalResults[foundIdx].campos['FOLHA'] = pRec.campos['FOLHA']; } catch (_) {}
+                                try { if ((!finalResults[foundIdx].campos['TERMO'] || String(finalResults[foundIdx].campos['TERMO']).trim() === '') && pRec.campos && pRec.campos['TERMO']) finalResults[foundIdx].campos['TERMO'] = pRec.campos['TERMO']; } catch (_) {}
+                              } else {
+                                // push as new result entry
+                                finalResults.push(pRec);
+                              }
+                            } catch (_) {}
+                          }
+                        }
+                      }
+                    } catch (_) {}
+                  }
+                }
+              } catch (_) {}
               setResults(finalResults);
               const count = (res?.records && Array.isArray(res.records)) ? res.records.length : (Array.isArray(res) ? res.length : 0);
               logTitle(`Resultados carregados (${count}).`);
