@@ -321,6 +321,47 @@ export default function LeituraLivros() {
     return '';
   }
 
+  // Normalize an array of backend records/registros into the table format (fill LIVRO/FOLHA/TERMO)
+  function normalizeRecordsArray(arr) {
+    const numeroLivroFormatted = numeroLivro ? String(Number(numeroLivro)) : '';
+    return (Array.isArray(arr) ? arr : []).map((r) => {
+      const copy = Object.assign({}, r || {});
+      if (!copy.campos || typeof copy.campos !== 'object') copy.campos = {};
+      if (numeroLivroFormatted) copy.campos['LIVRO'] = numeroLivroFormatted;
+      let folhaVal = extractValueFromRecord(r, ['folha', 'numeroFolha', 'numero_folha', 'FOLHA']);
+      if (!folhaVal && r && r.folha && typeof r.folha === 'object') folhaVal = extractValueFromRecord(r.folha, ['numero', 'number']);
+      let termoVal = extractValueFromRecord(r, ['termo', 'term', 'TERMO']);
+      if (!termoVal && r && r.dados) termoVal = extractValueFromRecord(r.dados, ['termo', 'term']);
+      if ((!copy.campos['FOLHA'] || String(copy.campos['FOLHA']).trim() === '') && folhaVal) copy.campos['FOLHA'] = String(folhaVal);
+      if ((!copy.campos['TERMO'] || String(copy.campos['TERMO']).trim() === '') && termoVal) copy.campos['TERMO'] = String(termoVal);
+      return copy;
+    });
+  }
+
+  // Attempt to find an embedded JSON object in text that contains `registros` or `records`
+  function extractJsonFromText(text) {
+    if (!text || typeof text !== 'string') return null;
+    // Try to locate a JSON object that contains "registros" or "records"
+    const patterns = [/\{[\s\S]*?"registros"\s*:\s*\[[\s\S]*?\][\s\S]*?\}/m, /\{[\s\S]*?"records"\s*:\s*\[[\s\S]*?\][\s\S]*?\}/m];
+    for (const pat of patterns) {
+      const m = text.match(pat);
+      if (m && m[0]) {
+        try {
+          return JSON.parse(m[0]);
+        } catch (e) {
+          try {
+            // attempt to be lenient by trimming trailing commas
+            const cleaned = m[0].replace(/,\s*\]/g, ']');
+            return JSON.parse(cleaned);
+          } catch (_) {
+            return null;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   // Atualiza um campo editável do registro em results
   function updateRecordField(idx, fieldId, value) {
     setResults(prev => {
@@ -826,7 +867,23 @@ export default function LeituraLivros() {
             if (Array.isArray(status.messages) && status.messages.length) {
               const startIdx = Math.max(0, lastMsgIndexRef.current);
               for (let i = startIdx; i < status.messages.length; i++) {
-                pushConsole(status.messages[i]);
+                const msg = status.messages[i];
+                pushConsole(msg);
+                // Try to parse embedded JSON from IA responses that may include `registros` or `records`
+                try {
+                  const parsed = extractJsonFromText(String(msg));
+                  if (parsed) {
+                    const arr = parsed.registros || parsed.records || null;
+                    if (Array.isArray(arr) && arr.length) {
+                      try {
+                        const normalized = normalizeRecordsArray(arr);
+                        // Replace results with parsed registros (this mirrors backend result when available)
+                        setResults(normalized);
+                        try { console.debug('backend:parsed_registros', normalized); } catch (_) {}
+                      } catch (_) {}
+                    }
+                  }
+                } catch (_) {}
               }
               lastMsgIndexRef.current = status.messages.length;
             }
