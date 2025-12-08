@@ -827,7 +827,8 @@ export default function LeituraLivros() {
               try { console.debug('backend:getResult', res); } catch (_) {}
               // If the user provided a global "Nº do LIVRO", populate each record's LIVRO field
               const numeroLivroFormatted = numeroLivro ? String(Number(numeroLivro)) : '';
-              let finalResults = res.records || res || [];
+              // support multiple result shapes: prefer res.records, then res.registros, then res (array)
+              let finalResults = res.records || res.registros || res || [];
               try {
                 finalResults = (Array.isArray(finalResults) ? finalResults : []).map((r) => {
                   const copy = Object.assign({}, r || {});
