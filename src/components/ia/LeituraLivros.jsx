@@ -282,6 +282,45 @@ export default function LeituraLivros() {
     return '';
   }
 
+  // Helper: tentativa robusta para extrair um valor de campos em várias localizações e formatos
+  function extractValueFromRecord(record, keyNames) {
+    if (!record) return '';
+    const tryUnwrap = (v) => {
+      if (v === undefined || v === null) return '';
+      if (typeof v === 'object') {
+        return v.numero ?? v.number ?? v.value ?? v.nro ?? v.num ?? v.text ?? '';
+      }
+      return String(v || '');
+    };
+
+    for (const k of keyNames) {
+      if (!k) continue;
+      // direct
+      const direct = record[k];
+      const d = tryUnwrap(direct);
+      if (d && String(d).trim() !== '') return String(d);
+      // uppercase variant
+      if (typeof k === 'string') {
+        const up = record[String(k).toUpperCase()];
+        const u = tryUnwrap(up);
+        if (u && String(u).trim() !== '') return String(u);
+      }
+      // record.campos
+      if (record.campos) {
+        const c = record.campos[k] ?? record.campos[String(k).toUpperCase()];
+        const cv = tryUnwrap(c);
+        if (cv && String(cv).trim() !== '') return String(cv);
+      }
+      // nested in dados
+      if (record.dados) {
+        const d1 = record.dados[k] ?? record.dados[String(k).toUpperCase()];
+        const dv = tryUnwrap(d1);
+        if (dv && String(dv).trim() !== '') return String(dv);
+      }
+    }
+    return '';
+  }
+
   // Atualiza um campo editável do registro em results
   function updateRecordField(idx, fieldId, value) {
     setResults(prev => {
@@ -837,18 +876,12 @@ export default function LeituraLivros() {
                   if (numeroLivroFormatted) copy.campos['LIVRO'] = numeroLivroFormatted;
                   // Extract folha from possible shapes: r.folha:{numero: '1'} or r.folha === '1' or r.FOLHA
                   try {
-                    const folhaRoot = r && r.folha;
-                    let folhaVal = '';
-                    if (folhaRoot !== undefined && folhaRoot !== null) {
-                      if (typeof folhaRoot === 'object') folhaVal = folhaRoot.numero ?? folhaRoot.number ?? folhaRoot.value ?? '';
-                      else folhaVal = String(folhaRoot || '');
-                    }
-                    const termoRoot = r && (r.termo ?? r.TERMO ?? r.term);
-                    let termoVal = '';
-                    if (termoRoot !== undefined && termoRoot !== null) {
-                      if (typeof termoRoot === 'object') termoVal = termoRoot.numero ?? termoRoot.number ?? termoRoot.value ?? '';
-                      else termoVal = String(termoRoot || '');
-                    }
+                    const folhaVal = extractValueFromRecord(r, ['folha', 'folha.numero', 'numeroFolha', 'numero_folha', 'FOLHA']);
+                    let termoVal = extractValueFromRecord(r, ['termo', 'term', 'TERMO']);
+                    // fallback: sometimes folha may be an object under r.folha.numero directly
+                    if (!folhaVal && r && r.folha && typeof r.folha === 'object') folhaVal = extractValueFromRecord(r.folha, ['numero', 'number']);
+                    // if termo is nested inside dados
+                    if (!termoVal && r && r.dados) termoVal = extractValueFromRecord(r.dados, ['termo', 'term']);
                     // Only set if campos doesn't already have a value
                     if ((!copy.campos['FOLHA'] || String(copy.campos['FOLHA']).trim() === '') && folhaVal) copy.campos['FOLHA'] = String(folhaVal);
                     if ((!copy.campos['TERMO'] || String(copy.campos['TERMO']).trim() === '') && termoVal) copy.campos['TERMO'] = String(termoVal);
