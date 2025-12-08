@@ -864,6 +864,11 @@ export default function LeituraLivros() {
               const res = await LeituraLivrosService.getResult(resp.jobId);
               // Debug: log do resultado completo retornado pelo backend
               try { console.debug('backend:getResult', res); } catch (_) {}
+              try {
+                console.debug('backend:getResult_full', JSON.stringify(res, null, 2));
+              } catch (jsonErr) {
+                try { console.debug('backend:getResult_full stringify-error', jsonErr); } catch (_) {}
+              }
               // If the user provided a global "Nº do LIVRO", populate each record's LIVRO field
               const numeroLivroFormatted = numeroLivro ? String(Number(numeroLivro)) : '';
               // support multiple result shapes: prefer res.records, then res.registros, then res (array)
