@@ -327,6 +327,15 @@ export default function LeituraLivros() {
     return (Array.isArray(arr) ? arr : []).map((r) => {
       const copy = Object.assign({}, r || {});
       if (!copy.campos || typeof copy.campos !== 'object') copy.campos = {};
+      // map common nested fields into copy.campos for consistency with backend `records` shape
+      try {
+        if (r && r.dados) {
+          if (r.dados.nomeRegistrado && !copy.campos['NOMEREGISTRADO']) copy.campos['NOMEREGISTRADO'] = r.dados.nomeRegistrado;
+          if (r.dados.sexo && !copy.campos['SEXO']) copy.campos['SEXO'] = r.dados.sexo;
+          if (r.dados.dataNascimento && !copy.campos['DATANASCIMENTO']) copy.campos['DATANASCIMENTO'] = r.dados.dataNascimento;
+          if (r.dados.localNascimento && !copy.campos['LOCALNASCIMENTO']) copy.campos['LOCALNASCIMENTO'] = r.dados.localNascimento;
+        }
+      } catch (_) {}
       if (numeroLivroFormatted) copy.campos['LIVRO'] = numeroLivroFormatted;
       let folhaVal = extractValueFromRecord(r, ['folha', 'numeroFolha', 'numero_folha', 'FOLHA']);
       if (!folhaVal && r && r.folha && typeof r.folha === 'object') folhaVal = extractValueFromRecord(r.folha, ['numero', 'number']);
@@ -962,6 +971,7 @@ export default function LeituraLivros() {
                         const arr = parsed.registros || parsed.records || null;
                         if (Array.isArray(arr) && arr.length) {
                           const normalizedParsed = normalizeRecordsArray(arr);
+                          try { console.debug('backend:normalizedParsed', normalizedParsed); } catch (_) {}
                           // merge: try to match by name, otherwise append
                           for (const pRec of normalizedParsed) {
                             try {
@@ -992,6 +1002,7 @@ export default function LeituraLivros() {
                   }
                 }
               } catch (_) {}
+              try { console.debug('backend:merged_finalResults', finalResults); } catch (_) {}
               setResults(finalResults);
               const count = (res?.records && Array.isArray(res.records)) ? res.records.length : (Array.isArray(res) ? res.length : 0);
               logTitle(`Resultados carregados (${count}).`);
