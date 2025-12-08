@@ -752,10 +752,13 @@ export default function LeituraLivros() {
         if (!folderPath.trim()) { logError('Informe o caminho da pasta no servidor.'); setRunning(false); return; }
         logInfo(`Solicitando processamento da pasta: ${folderPath}`);
         // Backend will fetch and apply prompts; do not send prompt bodies from the frontend
-        resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), {
+        const startPayload = {
+          folderPath: folderPath.trim(),
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
           numeroLivro: numeroLivroFormatted
-        });
+        };
+        try { console.debug('leitura:payload', { mode: 'folder', payload: startPayload }); } catch (_) {}
+        resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), startPayload);
         // Debug: response do backend ao iniciar processamento (visível no DevTools)
         try { console.debug('backend:startFolderProcessing response', resp); } catch (_) {}
       } else {
@@ -772,10 +775,12 @@ export default function LeituraLivros() {
           logInfo(`Tamanho total do upload: ${mb}MB`);
         }
         // Backend will fetch and apply prompts automatically; do not send them from the frontend
-        resp = await LeituraLivrosService.uploadFiles(files, {
+        const uploadPayload = {
           versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
           numeroLivro: numeroLivroFormatted
-        });
+        };
+        try { console.debug('leitura:payload', { mode: 'upload', files: files.map(f => f.name), payload: uploadPayload }); } catch (_) {}
+        resp = await LeituraLivrosService.uploadFiles(files, uploadPayload);
         // Debug: response do backend após uploadFiles
         try { console.debug('backend:uploadFiles response', resp); } catch (_) {}
       }
