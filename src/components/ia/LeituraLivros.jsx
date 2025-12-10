@@ -535,7 +535,7 @@ export default function LeituraLivros() {
         // Aplicar máscaras: CNS(6), Acervo(2)='00', RCPN/Serviço(2)='55', Ano(4), TipoLivro(2), Livro(5), Folha(3), Termo(7)
         return {
           cns: maskNumberToLength(cns || '', 6),
-          acervo: '00',
+          acervo: '01',
           servico: '55',
           ano: maskNumberToLength(ano || '', 4),
           tipoLivro: maskNumberToLength(tipoLivroCodeToSend || '', 2),
