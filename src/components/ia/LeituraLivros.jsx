@@ -999,6 +999,30 @@ export default function LeituraLivros() {
                 }
               } catch (_) {}
               try { console.debug('backend:finalResults_after_merge', JSON.parse(JSON.stringify(finalResults))); } catch (_) {}
+              // Garantir que, após merges, todo registro possua `campos` e que
+              // `FOLHA` e `TERMO` sejam extraídos de possíveis locais (folha.numero, termo, dados)
+              try {
+                for (let idx = 0; idx < finalResults.length; idx++) {
+                  const rec = finalResults[idx] || {};
+                  if (!rec.campos || typeof rec.campos !== 'object') rec.campos = {};
+                  // Folha: tente várias localizações
+                  let folhaVal = extractValueFromRecord(rec, ['folha', 'numeroFolha', 'numero_folha', 'FOLHA']);
+                  if (!folhaVal && rec && rec.folha && typeof rec.folha === 'object') {
+                    folhaVal = rec.folha.numero ?? rec.folha.number ?? rec.folha.value ?? '';
+                  }
+                  // Termo: direto no registro ou dentro de dados
+                  let termoVal = extractValueFromRecord(rec, ['termo', 'term', 'TERMO']);
+                  if (!termoVal && rec && rec.termo) termoVal = rec.termo;
+                  if (!termoVal && rec && rec.dados) termoVal = extractValueFromRecord(rec.dados, ['termo', 'term']);
+
+                  if ((!rec.campos['FOLHA'] || String(rec.campos['FOLHA']).trim() === '') && folhaVal !== undefined && folhaVal !== null && String(folhaVal).trim() !== '') {
+                    rec.campos['FOLHA'] = String(folhaVal);
+                  }
+                  if ((!rec.campos['TERMO'] || String(rec.campos['TERMO']).trim() === '') && termoVal !== undefined && termoVal !== null && String(termoVal).trim() !== '') {
+                    rec.campos['TERMO'] = String(termoVal);
+                  }
+                }
+              } catch (_) {}
               setResults(finalResults);
               const count = (res?.records && Array.isArray(res.records)) ? res.records.length : (Array.isArray(res) ? res.length : 0);
               logTitle(`Resultados carregados (${count}).`);
