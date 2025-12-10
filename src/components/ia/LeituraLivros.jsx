@@ -558,19 +558,19 @@ export default function LeituraLivros() {
               copy[i] = rec;
               return copy;
             });
-            try {
-              try { console.debug('backend:matricula request', { index: i, payload: body }); } catch (_) {}
-              const resp = await fetch('/api/matriculas/generate', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-              });
-              if (resp.ok) {
-                const data = await resp.json();
-                try { console.debug('backend:matricula response', { index: i, data }); } catch (_) {}
+              try {
+                try { console.debug('backend:matricula request', { index: i, payload: body }); } catch (_) {}
+                try { logInfo(`Enviando payload matrícula ${i + 1}: ${JSON.stringify(body)}`); } catch (_) {}
+                const resp = await fetch('/api/matriculas/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                const respText = await resp.text().catch(() => '');
+                try { console.debug('backend:matricula response text', { index: i, status: resp.status, text: String(respText).slice(0,2000) }); } catch (_) {}
+                let data = null;
+                try { data = respText ? JSON.parse(respText) : null; } catch (_) { data = null; }
                 let m = null;
                 if (data && data.result && data.result.matricula) m = data.result.matricula;
                 else if (data && Array.isArray(data.results) && data.results[0] && data.results[0].matricula) m = data.results[0].matricula;
                 else if (data && data.matricula) m = data.matricula;
-                if (m) {
+                if (resp.ok && m) {
                   // update local enriched copy
                   if (!enriched[i]) enriched[i] = {};
                   enriched[i].matricula = m;
@@ -582,7 +582,7 @@ export default function LeituraLivros() {
                     copy[i] = rec;
                     return copy;
                   });
-                } else {
+                } else if (resp.ok && !m) {
                   // clear pending state if no matricula returned
                   setResults(prev => {
                     const copy = Array.isArray(prev) ? [...prev] : [];
@@ -592,19 +592,17 @@ export default function LeituraLivros() {
                     return copy;
                   });
                   logWarning(`Registro ${i + 1}: backend não retornou matrícula.`);
+                } else {
+                  try { console.debug('backend:matricula error', { index: i, status: resp.status, text: respText.slice(0,2000) }); } catch (_) {}
+                  setResults(prev => {
+                    const copy = Array.isArray(prev) ? [...prev] : [];
+                    const rec = Object.assign({}, copy[i] || {});
+                    rec.matricula = '';
+                    copy[i] = rec;
+                    return copy;
+                  });
+                  logWarning(`Falha ao obter matrícula para registro ${i + 1}: ${resp.status} — ${String(respText).slice(0,300)}`);
                 }
-              } else {
-                const text = await resp.text().catch(() => '');
-                try { console.debug('backend:matricula error', { index: i, status: resp.status, text }); } catch (_) {}
-                setResults(prev => {
-                  const copy = Array.isArray(prev) ? [...prev] : [];
-                  const rec = Object.assign({}, copy[i] || {});
-                  rec.matricula = '';
-                  copy[i] = rec;
-                  return copy;
-                });
-                logWarning(`Falha ao obter matrícula para registro ${i + 1}: ${resp.status}`);
-              }
             } catch (innerE) {
               setResults(prev => {
                 const copy = Array.isArray(prev) ? [...prev] : [];
@@ -613,7 +611,7 @@ export default function LeituraLivros() {
                 copy[i] = rec;
                 return copy;
               });
-              logWarning(`Erro ao chamar /api/matriculas/generate para registro ${i + 1}: ${innerE.message || innerE}`);
+                logWarning(`Erro ao chamar /api/matriculas/generate para registro ${i + 1}: ${innerE.message || innerE}`);
             }
           }
           const received = (enriched || []).filter(it => it && it.matricula).length;
@@ -1152,37 +1150,27 @@ export default function LeituraLivros() {
         });
         try {
           try { console.debug('backend:matricula request', { index: i, payload }); } catch (_) {}
+          try { logInfo(`Enviando payload matrícula ${i + 1}: ${JSON.stringify(payload)}`); } catch (_) {}
           const resp = await fetch('/api/matriculas/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-          if (resp.ok) {
-            const data = await resp.json();
-            try { console.debug('backend:matricula response', { index: i, data }); } catch (_) {}
-            let m = null;
-            if (data && data.result && data.result.matricula) m = data.result.matricula;
-            else if (data && Array.isArray(data.results) && data.results[0] && data.results[0].matricula) m = data.results[0].matricula;
-            else if (data && data.matricula) m = data.matricula;
-            if (m) {
-              if (!enriched[i]) enriched[i] = {};
-              enriched[i].matricula = m;
-              setResults(prev => {
-                const copy = Array.isArray(prev) ? [...prev] : [];
-                const rec = Object.assign({}, copy[i] || {});
-                rec.matricula = m;
-                copy[i] = rec;
-                return copy;
-              });
-            } else {
-              setResults(prev => {
-                const copy = Array.isArray(prev) ? [...prev] : [];
-                const rec = Object.assign({}, copy[i] || {});
-                rec.matricula = '';
-                copy[i] = rec;
-                return copy;
-              });
-              logWarning(`Registro ${i + 1}: backend não retornou matrícula.`);
-            }
-          } else {
-            const text = await resp.text().catch(() => '');
-            try { console.debug('backend:matricula error', { index: i, status: resp.status, text }); } catch (_) {}
+          const respText = await resp.text().catch(() => '');
+          try { console.debug('backend:matricula response text', { index: i, status: resp.status, text: String(respText).slice(0,2000) }); } catch (_) {}
+          let data = null;
+          try { data = respText ? JSON.parse(respText) : null; } catch (_) { data = null; }
+          let m = null;
+          if (data && data.result && data.result.matricula) m = data.result.matricula;
+          else if (data && Array.isArray(data.results) && data.results[0] && data.results[0].matricula) m = data.results[0].matricula;
+          else if (data && data.matricula) m = data.matricula;
+          if (resp.ok && m) {
+            if (!enriched[i]) enriched[i] = {};
+            enriched[i].matricula = m;
+            setResults(prev => {
+              const copy = Array.isArray(prev) ? [...prev] : [];
+              const rec = Object.assign({}, copy[i] || {});
+              rec.matricula = m;
+              copy[i] = rec;
+              return copy;
+            });
+          } else if (resp.ok && !m) {
             setResults(prev => {
               const copy = Array.isArray(prev) ? [...prev] : [];
               const rec = Object.assign({}, copy[i] || {});
@@ -1190,7 +1178,17 @@ export default function LeituraLivros() {
               copy[i] = rec;
               return copy;
             });
-            logWarning(`Falha ao obter matrícula para registro ${i + 1}: ${resp.status}`);
+            logWarning(`Registro ${i + 1}: backend não retornou matrícula.`);
+          } else {
+            try { console.debug('backend:matricula error', { index: i, status: resp.status, text: respText.slice(0,2000) }); } catch (_) {}
+            setResults(prev => {
+              const copy = Array.isArray(prev) ? [...prev] : [];
+              const rec = Object.assign({}, copy[i] || {});
+              rec.matricula = '';
+              copy[i] = rec;
+              return copy;
+            });
+            logWarning(`Falha ao obter matrícula para registro ${i + 1}: ${resp.status} — ${String(respText).slice(0,300)}`);
           }
         } catch (innerE) {
           setResults(prev => {
