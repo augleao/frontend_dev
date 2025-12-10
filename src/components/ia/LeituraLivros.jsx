@@ -402,9 +402,23 @@ export default function LeituraLivros() {
           break;
         case 'folha':
           rec.campos['FOLHA'] = value;
+          try {
+            // também mantenha a propriedade de topo `folha` sincronizada para formatos variados
+            // se já for um objeto, preserve outros campos
+            if (rec.folha && typeof rec.folha === 'object') {
+              rec.folha = Object.assign({}, rec.folha, { numero: value });
+            } else {
+              rec.folha = { numero: value };
+            }
+          } catch (_) {}
           break;
         case 'termo':
           rec.campos['TERMO'] = value;
+          try {
+            // sincroniza propriedade de topo `termo` para evitar discrepância entre
+            // exibição (getExactField) e o valor editado em rec.campos
+            rec.termo = value;
+          } catch (_) {}
           break;
         case 'dataRegistro':
           rec.campos['DATAREGISTRO'] = value;
