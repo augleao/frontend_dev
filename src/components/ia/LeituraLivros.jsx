@@ -76,6 +76,27 @@ export default function LeituraLivros() {
         mode, versao, acao, cns, tipoRegistro, tipoLivroCode, numeroLivro, maxPorArquivo
       });
     } catch (_) {}
+
+    // Log adicional: mostrar usuário logado, serventia e CNS (local e backend) ao montar
+    (async () => {
+      try {
+        let usuarioLocal = {};
+        try { usuarioLocal = JSON.parse(localStorage.getItem('usuario') || '{}'); } catch (_) { usuarioLocal = {}; }
+        const usuarioLogado = usuarioLocal?.login || usuarioLocal?.nome || usuarioLocal?.username || usuarioLocal?.email || null;
+        let serventia = usuarioLocal?.serventia || usuarioLocal?.serventiaNome || usuarioLocal?.nomeServentia || null;
+        const localCns = usuarioLocal?.cns || usuarioLocal?.serventiaCns || usuarioLocal?.serventia_cns || null;
+        let backendCns = null;
+        try {
+          const data = await ServentiaService.getMinhaServentiaCns();
+          try { console.debug('backend:getMinhaServentiaCns on mount', data); } catch (_) {}
+          if (data && data.cns) backendCns = data.cns;
+          if (data && data.serventia) serventia = serventia || data.serventia;
+        } catch (e) {
+          try { console.debug('getMinhaServentiaCns failed on mount', e); } catch (_) {}
+        }
+        try { console.info(`Usuário: ${usuarioLogado || '—'} | Serventia: ${serventia || '—'} | CNS(local/backend): ${localCns || '—'}/${backendCns || '—'}`); } catch (_) {}
+      } catch (_) {}
+    })();
   }, []);
 
   // Mantém a coluna direita (Resumo/Registros) alinhada pelo topo do Console
@@ -332,6 +353,11 @@ export default function LeituraLivros() {
       if (!folhaVal && r && r.folha && typeof r.folha === 'object') folhaVal = extractValueFromRecord(r.folha, ['numero', 'number']);
       let termoVal = extractValueFromRecord(r, ['termo', 'term', 'TERMO']);
       if (!termoVal && r && r.dados) termoVal = extractValueFromRecord(r.dados, ['termo', 'term']);
+      try {
+        // Debug: log detected folha/termo para cada registro ao normalizar
+        try { console.debug('normalizeRecordsArray: detected', { folhaVal, termoVal, record: r }); } catch (_) {}
+        try { logInfo(`Detectado: FOLHA=${String(folhaVal || '')}, TERMO=${String(termoVal || '')}`); } catch (_) {}
+      } catch (_) {}
       if ((!copy.campos['FOLHA'] || String(copy.campos['FOLHA']).trim() === '') && folhaVal) copy.campos['FOLHA'] = String(folhaVal);
       if ((!copy.campos['TERMO'] || String(copy.campos['TERMO']).trim() === '') && termoVal) copy.campos['TERMO'] = String(termoVal);
       return copy;
@@ -873,14 +899,21 @@ export default function LeituraLivros() {
                 try {
                   const parsed = extractJsonFromText(String(msg));
                   if (parsed) {
+                    try { console.debug('parsed message JSON', parsed); } catch (_) {}
+                    try { logInfo('JSON com registros detectado na mensagem do backend.'); } catch (_) {}
                     const arr = parsed.registros || parsed.records || null;
                     if (Array.isArray(arr) && arr.length) {
                       try {
+                        try { console.debug('backend:parsed_registros_raw', arr); } catch (_) {}
                         const normalized = normalizeRecordsArray(arr);
+                        // Debug UI + DevTools
+                        try { logInfo(`Registros normalizados detectados: ${normalized.length}`); } catch (_) {}
+                        try { console.debug('backend:parsed_registros', normalized); } catch (_) {}
                         // Replace results with parsed registros (this mirrors backend result when available)
                         setResults(normalized);
-                        try { console.debug('backend:parsed_registros', normalized); } catch (_) {}
-                      } catch (_) {}
+                      } catch (e) {
+                        try { console.debug('normalizeRecordsArray failed', e); } catch (_) {}
+                      }
                     }
                   }
                 } catch (_) {}
@@ -967,7 +1000,8 @@ export default function LeituraLivros() {
                         if (Array.isArray(arr) && arr.length) {
                           const normalizedParsed = normalizeRecordsArray(arr);
                           try { console.debug('backend:normalizedParsed', JSON.parse(JSON.stringify(normalizedParsed))); } catch (_) {}
-                          // merge: try to match by name, otherwise append
+                            try { logInfo(`IA retornou ${normalizedParsed.length} registros (${ia.label || 'sem-label'})`); } catch (_) {}
+                            // merge: try to match by name, otherwise append
                           for (const pRec of normalizedParsed) {
                             try {
                               // attempt to find matching finalResults entry by name
@@ -985,9 +1019,11 @@ export default function LeituraLivros() {
                                 // fill FOLHA/TERMO if missing
                                 try { if ((!finalResults[foundIdx].campos['FOLHA'] || String(finalResults[foundIdx].campos['FOLHA']).trim() === '') && pRec.campos && pRec.campos['FOLHA']) finalResults[foundIdx].campos['FOLHA'] = pRec.campos['FOLHA']; } catch (_) {}
                                 try { if ((!finalResults[foundIdx].campos['TERMO'] || String(finalResults[foundIdx].campos['TERMO']).trim() === '') && pRec.campos && pRec.campos['TERMO']) finalResults[foundIdx].campos['TERMO'] = pRec.campos['TERMO']; } catch (_) {}
+                                try { console.debug('merged into finalResults idx', foundIdx, { folha: pRec.campos && pRec.campos['FOLHA'], termo: pRec.campos && pRec.campos['TERMO'] }); } catch (_) {}
                               } else {
                                 // push as new result entry
                                 finalResults.push(pRec);
+                                try { console.debug('appended parsed record to finalResults', pRec); } catch (_) {}
                               }
                             } catch (_) {}
                           }
@@ -1014,7 +1050,10 @@ export default function LeituraLivros() {
                   let termoVal = extractValueFromRecord(rec, ['termo', 'term', 'TERMO']);
                   if (!termoVal && rec && rec.termo) termoVal = rec.termo;
                   if (!termoVal && rec && rec.dados) termoVal = extractValueFromRecord(rec.dados, ['termo', 'term']);
-
+                  try {
+                    try { console.debug('final normalization: idx', idx, { folhaVal, termoVal, recPreview: { nome: getField(rec, ['nome', 'NOMEREGISTRADO']) } }); } catch (_) {}
+                    try { logInfo(`Registro ${idx + 1}: FOLHA=${String(folhaVal || '')}, TERMO=${String(termoVal || '')}`); } catch (_) {}
+                  } catch (_) {}
                   if ((!rec.campos['FOLHA'] || String(rec.campos['FOLHA']).trim() === '') && folhaVal !== undefined && folhaVal !== null && String(folhaVal).trim() !== '') {
                     rec.campos['FOLHA'] = String(folhaVal);
                   }
