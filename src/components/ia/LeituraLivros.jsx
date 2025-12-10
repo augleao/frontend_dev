@@ -532,11 +532,11 @@ export default function LeituraLivros() {
         // tipoLivroCode holds the selected numeric code (string) without leading zeros (ex: '1')
         const tipoLivroCodeToSend = String(tipoLivroCode || '1');
 
-        // Aplicar máscaras: CNS(6), Acervo(2)='00', RCPN/Serviço(2)='55', Ano(4), TipoLivro(2), Livro(5), Folha(3), Termo(7)
+        // Aplicar máscaras: CNS(6), Acervo(2)='00', RCPN/Serviço(2)='00', Ano(4), TipoLivro(1), Livro(5), Folha(3), Termo(7)
         return {
           cns: maskNumberToLength(cns || '', 6),
           acervo: '01',
-          servico: '55',
+          servico: '00',
           ano: maskNumberToLength(ano || '', 4),
           tipoLivro: maskNumberToLength(tipoLivroCodeToSend || '', 1),
           livro: maskNumberToLength(livro || (numeroLivro ? String(Number(numeroLivro)) : ''), 5),
@@ -1130,13 +1130,13 @@ export default function LeituraLivros() {
           }
         } catch (_) {}
         const tipoLivroCodeToSend = String(tipoLivroCode || '1');
-        // Aplicar máscaras: CNS(6), Acervo(2)='00', RCPN/Serviço(2)='55', Ano(4), TipoLivro(2), Livro(5), Folha(3), Termo(7)
+        // Aplicar máscaras: CNS(6), Acervo(2)='01', RCPN/Serviço(2)='00', Ano(4), TipoLivro(1), Livro(5), Folha(3), Termo(7)
         return {
           cns: maskNumberToLength(cns || '', 6),
-          acervo: '00',
-          servico: '55',
+          acervo: '01',
+          servico: '00',
           ano: maskNumberToLength(ano || '', 4),
-          tipoLivro: maskNumberToLength(tipoLivroCodeToSend || '', 2),
+          tipoLivro: maskNumberToLength(tipoLivroCodeToSend || '', 1),
           livro: maskNumberToLength(livro || (numeroLivro ? String(Number(numeroLivro)) : ''), 5),
           folha: maskNumberToLength(folha || '', 3),
           termo: maskNumberToLength(termo || '', 7)
