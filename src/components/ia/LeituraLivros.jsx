@@ -1098,6 +1098,118 @@ export default function LeituraLivros() {
 
   // server-side XML download removed; XML is generated client-side via "Salvar alterações"
 
+  // Gera matrículas para todos os registros atualmente carregados na UI
+  async function handleGenerateMatriculas() {
+    try {
+      if (!Array.isArray(results) || results.length === 0) {
+        logWarning('Nenhum registro disponível para gerar matrícula.');
+        return;
+      }
+      logInfo('Solicitando geração de matrícula(s) ao backend...');
+      const toSend = (results || []).map((r) => {
+        const livro = getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']);
+        const folha = getExactField(r, ['numeroFolha', 'folha', 'page', 'FOLHA', 'NRO_FOLHA', 'NUM_FOLHA']);
+        const termo = getExactField(r, ['numeroTermo', 'termo', 'term', 'TERMO', 'NRO_TERMO', 'NUM_TERMO', 'ATO']);
+        let dataReg = getField(r, ['dataRegistro', 'data', 'registroData', 'date']);
+        let ano = '';
+        try {
+          if (dataReg) {
+            const d = new Date(dataReg);
+            if (!Number.isNaN(d.getFullYear())) ano = String(d.getFullYear());
+            else {
+              const m = String(dataReg).match(/(\d{4})/);
+              if (m) ano = m[1];
+            }
+          }
+        } catch (_) {}
+        const tipoLivroCodeToSend = String(tipoLivroCode || '1');
+        return {
+          cns: String(cns || ''),
+          acervo: '00',
+          servico: '00',
+          ano: ano || String(new Date().getFullYear()),
+          tipoLivro: tipoLivroCodeToSend,
+          livro: livro || (numeroLivro ? String(Number(numeroLivro)) : ''),
+          folha: folha || '',
+          termo: termo || ''
+        };
+      });
+
+      let enriched = Array.isArray(results) ? [...results] : [];
+      // initialize placeholders
+      enriched = (Array.isArray(enriched) ? enriched : []).map(r => (r ? Object.assign({}, r) : {}));
+      setResults(enriched);
+
+      for (let i = 0; i < toSend.length; i++) {
+        const payload = toSend[i];
+        // mark pending
+        setResults(prev => {
+          const copy = Array.isArray(prev) ? [...prev] : [];
+          const rec = Object.assign({}, copy[i] || {});
+          rec.matricula = '...';
+          copy[i] = rec;
+          return copy;
+        });
+        try {
+          try { console.debug('backend:matricula request', { index: i, payload }); } catch (_) {}
+          const resp = await fetch('/api/matriculas/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          if (resp.ok) {
+            const data = await resp.json();
+            try { console.debug('backend:matricula response', { index: i, data }); } catch (_) {}
+            let m = null;
+            if (data && data.result && data.result.matricula) m = data.result.matricula;
+            else if (data && Array.isArray(data.results) && data.results[0] && data.results[0].matricula) m = data.results[0].matricula;
+            else if (data && data.matricula) m = data.matricula;
+            if (m) {
+              if (!enriched[i]) enriched[i] = {};
+              enriched[i].matricula = m;
+              setResults(prev => {
+                const copy = Array.isArray(prev) ? [...prev] : [];
+                const rec = Object.assign({}, copy[i] || {});
+                rec.matricula = m;
+                copy[i] = rec;
+                return copy;
+              });
+            } else {
+              setResults(prev => {
+                const copy = Array.isArray(prev) ? [...prev] : [];
+                const rec = Object.assign({}, copy[i] || {});
+                rec.matricula = '';
+                copy[i] = rec;
+                return copy;
+              });
+              logWarning(`Registro ${i + 1}: backend não retornou matrícula.`);
+            }
+          } else {
+            const text = await resp.text().catch(() => '');
+            try { console.debug('backend:matricula error', { index: i, status: resp.status, text }); } catch (_) {}
+            setResults(prev => {
+              const copy = Array.isArray(prev) ? [...prev] : [];
+              const rec = Object.assign({}, copy[i] || {});
+              rec.matricula = '';
+              copy[i] = rec;
+              return copy;
+            });
+            logWarning(`Falha ao obter matrícula para registro ${i + 1}: ${resp.status}`);
+          }
+        } catch (innerE) {
+          setResults(prev => {
+            const copy = Array.isArray(prev) ? [...prev] : [];
+            const rec = Object.assign({}, copy[i] || {});
+            rec.matricula = '';
+            copy[i] = rec;
+            return copy;
+          });
+          logWarning(`Erro ao chamar /api/matriculas/generate para registro ${i + 1}: ${innerE.message || innerE}`);
+        }
+      }
+      const received = (enriched || []).filter(it => it && it.matricula).length;
+      logSuccess(`Recebidas ${received} matriculas do backend.`);
+    } catch (e) {
+      logError('Falha ao gerar matrículas: ' + (e.message || e));
+    }
+  }
+
   return (
     <div style={{ minHeight: '100vh', padding: 24, fontFamily: 'Inter, Arial, sans-serif', background: 'linear-gradient(180deg,#f5f7fb 0%, #eef1f6 100%)' }}>
       {/* Header */}
@@ -1286,13 +1398,18 @@ export default function LeituraLivros() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <h4 style={{ marginTop: 0, color: '#1f2937', marginBottom: 0 }}>Registros extraídos</h4>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                {/* Baixar XML (server-side) removed — use "Salvar alterações" to generate client-side XML */}
-                <button onClick={() => setShowRawResults(s => !s)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer' }}>
-                  {showRawResults ? 'Ocultar JSON' : 'Mostrar JSON'}
-                </button>
-                <button onClick={handleSaveChangesAsXml} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff', cursor: 'pointer' }}>
-                  Salvar alterações
-                </button>
+                  {/* Botão para gerar matrículas via backend */}
+                  <button onClick={handleGenerateMatriculas} disabled={running || !results || results.length === 0}
+                    style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: running || !results || results.length === 0 ? '#cbd5e1' : 'linear-gradient(135deg,#10b981,#059669)', color: '#fff', cursor: running || !results || results.length === 0 ? 'not-allowed' : 'pointer' }}>
+                    Gerar Matrículas
+                  </button>
+                  {/* Baixar XML (server-side) removed — use "Salvar alterações" to generate client-side XML */}
+                  <button onClick={() => setShowRawResults(s => !s)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer' }}>
+                    {showRawResults ? 'Ocultar JSON' : 'Mostrar JSON'}
+                  </button>
+                  <button onClick={handleSaveChangesAsXml} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff', cursor: 'pointer' }}>
+                    Salvar alterações
+                  </button>
               </div>
             </div>
             {results.length === 0 ? (
