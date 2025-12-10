@@ -538,7 +538,7 @@ export default function LeituraLivros() {
           acervo: '01',
           servico: '55',
           ano: maskNumberToLength(ano || '', 4),
-          tipoLivro: maskNumberToLength(tipoLivroCodeToSend || '', 2),
+          tipoLivro: maskNumberToLength(tipoLivroCodeToSend || '', 1),
           livro: maskNumberToLength(livro || (numeroLivro ? String(Number(numeroLivro)) : ''), 5),
           folha: maskNumberToLength(folha || '', 3),
           termo: maskNumberToLength(termo || '', 7)
