@@ -570,7 +570,7 @@ export default function LeituraLivros() {
               try {
                 try { console.debug('backend:matricula request', { index: i, payload: body }); } catch (_) {}
                 try { logInfo(`Enviando payload matrícula ${i + 1}: ${JSON.stringify(body)}`); } catch (_) {}
-                const resp = await fetch('/api/matriculas/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                const resp = await fetch(`${apiURL}/matriculas/generate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
                 const respText = await resp.text().catch(() => '');
                 try { console.debug('backend:matricula response text', { index: i, status: resp.status, text: String(respText).slice(0,2000) }); } catch (_) {}
                 let data = null;
@@ -1161,7 +1161,7 @@ export default function LeituraLivros() {
         try {
           try { console.debug('backend:matricula request', { index: i, payload }); } catch (_) {}
           try { logInfo(`Enviando payload matrícula ${i + 1}: ${JSON.stringify(payload)}`); } catch (_) {}
-          const resp = await fetch('/api/matriculas/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          const resp = await fetch(`${apiURL}/matriculas/generate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
           const respText = await resp.text().catch(() => '');
           try { console.debug('backend:matricula response text', { index: i, status: resp.status, text: String(respText).slice(0,2000) }); } catch (_) {}
           let data = null;
