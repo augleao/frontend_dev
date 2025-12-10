@@ -364,6 +364,14 @@ export default function LeituraLivros() {
     });
   }
 
+  // Aplica máscara numérica com padding à esquerda e trimming à direita quando necessário
+  function maskNumberToLength(value, length) {
+    const s = String(value || '').replace(/\D/g, '');
+    if (!s) return '0'.repeat(length);
+    if (s.length >= length) return s.slice(-length);
+    return s.padStart(length, '0');
+  }
+
   // Attempt to find an embedded JSON object in text that contains `registros` or `records`
   function extractJsonFromText(text) {
     if (!text || typeof text !== 'string') return null;
@@ -524,15 +532,16 @@ export default function LeituraLivros() {
         // tipoLivroCode holds the selected numeric code (string) without leading zeros (ex: '1')
         const tipoLivroCodeToSend = String(tipoLivroCode || '1');
 
+        // Aplicar máscaras: CNS(6), Acervo(2)='00', RCPN/Serviço(2)='55', Ano(4), TipoLivro(2), Livro(5), Folha(3), Termo(7)
         return {
-          cns: String(cns || ''),
+          cns: maskNumberToLength(cns || '', 6),
           acervo: '00',
-          servico: '00',
-          ano: ano || String(new Date().getFullYear()),
-          tipoLivro: tipoLivroCodeToSend,
-          livro: livro || (numeroLivro ? String(Number(numeroLivro)) : ''),
-          folha: folha || '',
-          termo: termo || ''
+          servico: '55',
+          ano: maskNumberToLength(ano || '', 4),
+          tipoLivro: maskNumberToLength(tipoLivroCodeToSend || '', 2),
+          livro: maskNumberToLength(livro || (numeroLivro ? String(Number(numeroLivro)) : ''), 5),
+          folha: maskNumberToLength(folha || '', 3),
+          termo: maskNumberToLength(termo || '', 7)
         };
       });
 
@@ -1121,15 +1130,16 @@ export default function LeituraLivros() {
           }
         } catch (_) {}
         const tipoLivroCodeToSend = String(tipoLivroCode || '1');
+        // Aplicar máscaras: CNS(6), Acervo(2)='00', RCPN/Serviço(2)='55', Ano(4), TipoLivro(2), Livro(5), Folha(3), Termo(7)
         return {
-          cns: String(cns || ''),
+          cns: maskNumberToLength(cns || '', 6),
           acervo: '00',
-          servico: '00',
-          ano: ano || String(new Date().getFullYear()),
-          tipoLivro: tipoLivroCodeToSend,
-          livro: livro || (numeroLivro ? String(Number(numeroLivro)) : ''),
-          folha: folha || '',
-          termo: termo || ''
+          servico: '55',
+          ano: maskNumberToLength(ano || '', 4),
+          tipoLivro: maskNumberToLength(tipoLivroCodeToSend || '', 2),
+          livro: maskNumberToLength(livro || (numeroLivro ? String(Number(numeroLivro)) : ''), 5),
+          folha: maskNumberToLength(folha || '', 3),
+          termo: maskNumberToLength(termo || '', 7)
         };
       });
 
