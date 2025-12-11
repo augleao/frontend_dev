@@ -76,27 +76,6 @@ export default function LeituraLivros() {
         mode, versao, acao, cns, tipoRegistro, tipoLivroCode, numeroLivro, maxPorArquivo
       });
     } catch (_) {}
-
-    // Log adicional: mostrar usuário logado, serventia e CNS (local e backend) ao montar
-    (async () => {
-      try {
-        let usuarioLocal = {};
-        try { usuarioLocal = JSON.parse(localStorage.getItem('usuario') || '{}'); } catch (_) { usuarioLocal = {}; }
-        const usuarioLogado = usuarioLocal?.login || usuarioLocal?.nome || usuarioLocal?.username || usuarioLocal?.email || null;
-        let serventia = usuarioLocal?.serventia || usuarioLocal?.serventiaNome || usuarioLocal?.nomeServentia || null;
-        const localCns = usuarioLocal?.cns || usuarioLocal?.serventiaCns || usuarioLocal?.serventia_cns || null;
-        let backendCns = null;
-        try {
-          const data = await ServentiaService.getMinhaServentiaCns();
-          try { console.debug('backend:getMinhaServentiaCns on mount', data); } catch (_) {}
-          if (data && data.cns) backendCns = data.cns;
-          if (data && data.serventia) serventia = serventia || data.serventia;
-        } catch (e) {
-          try { console.debug('getMinhaServentiaCns failed on mount', e); } catch (_) {}
-        }
-        try { console.info(`Usuário: ${usuarioLogado || '—'} | Serventia: ${serventia || '—'} | CNS(local/backend): ${localCns || '—'}/${backendCns || '—'}`); } catch (_) {}
-      } catch (_) {}
-    })();
   }, []);
 
   // Mantém a coluna direita (Resumo/Registros) alinhada pelo topo do Console
@@ -353,23 +332,10 @@ export default function LeituraLivros() {
       if (!folhaVal && r && r.folha && typeof r.folha === 'object') folhaVal = extractValueFromRecord(r.folha, ['numero', 'number']);
       let termoVal = extractValueFromRecord(r, ['termo', 'term', 'TERMO']);
       if (!termoVal && r && r.dados) termoVal = extractValueFromRecord(r.dados, ['termo', 'term']);
-      try {
-        // Debug: log detected folha/termo para cada registro ao normalizar
-        try { console.debug('normalizeRecordsArray: detected', { folhaVal, termoVal, record: r }); } catch (_) {}
-        try { logInfo(`Detectado: FOLHA=${String(folhaVal || '')}, TERMO=${String(termoVal || '')}`); } catch (_) {}
-      } catch (_) {}
       if ((!copy.campos['FOLHA'] || String(copy.campos['FOLHA']).trim() === '') && folhaVal) copy.campos['FOLHA'] = String(folhaVal);
       if ((!copy.campos['TERMO'] || String(copy.campos['TERMO']).trim() === '') && termoVal) copy.campos['TERMO'] = String(termoVal);
       return copy;
     });
-  }
-
-  // Aplica máscara numérica com padding à esquerda e trimming à direita quando necessário
-  function maskNumberToLength(value, length) {
-    const s = String(value || '').replace(/\D/g, '');
-    if (!s) return '0'.repeat(length);
-    if (s.length >= length) return s.slice(-length);
-    return s.padStart(length, '0');
   }
 
   // Attempt to find an embedded JSON object in text that contains `registros` or `records`
@@ -410,23 +376,9 @@ export default function LeituraLivros() {
           break;
         case 'folha':
           rec.campos['FOLHA'] = value;
-          try {
-            // também mantenha a propriedade de topo `folha` sincronizada para formatos variados
-            // se já for um objeto, preserve outros campos
-            if (rec.folha && typeof rec.folha === 'object') {
-              rec.folha = Object.assign({}, rec.folha, { numero: value });
-            } else {
-              rec.folha = { numero: value };
-            }
-          } catch (_) {}
           break;
         case 'termo':
           rec.campos['TERMO'] = value;
-          try {
-            // sincroniza propriedade de topo `termo` para evitar discrepância entre
-            // exibição (getExactField) e o valor editado em rec.campos
-            rec.termo = value;
-          } catch (_) {}
           break;
         case 'dataRegistro':
           rec.campos['DATAREGISTRO'] = value;
@@ -532,16 +484,15 @@ export default function LeituraLivros() {
         // tipoLivroCode holds the selected numeric code (string) without leading zeros (ex: '1')
         const tipoLivroCodeToSend = String(tipoLivroCode || '1');
 
-        // Aplicar máscaras: CNS(6), Acervo(2)='00', RCPN/Serviço(2)='00', Ano(4), TipoLivro(1), Livro(5), Folha(3), Termo(7)
         return {
-          cns: maskNumberToLength(cns || '', 6),
-          acervo: '01',
-          servico: '55',
-          ano: maskNumberToLength(ano || '', 4),
-          tipoLivro: maskNumberToLength(tipoLivroCodeToSend || '', 1),
-          livro: maskNumberToLength(livro || (numeroLivro ? String(Number(numeroLivro)) : ''), 5),
-          folha: maskNumberToLength(folha || '', 3),
-          termo: maskNumberToLength(termo || '', 7)
+          cns: String(cns || ''),
+          acervo: '00',
+          servico: '00',
+          ano: ano || String(new Date().getFullYear()),
+          tipoLivro: tipoLivroCodeToSend,
+          livro: livro || (numeroLivro ? String(Number(numeroLivro)) : ''),
+          folha: folha || '',
+          termo: termo || ''
         };
       });
 
@@ -567,19 +518,19 @@ export default function LeituraLivros() {
               copy[i] = rec;
               return copy;
             });
-              try {
-                try { console.debug('backend:matricula request', { index: i, payload: body }); } catch (_) {}
-                try { logInfo(`Enviando payload matrícula ${i + 1}: ${JSON.stringify(body)}`); } catch (_) {}
-                const resp = await fetch(`${apiURL}/matriculas/generate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-                const respText = await resp.text().catch(() => '');
-                try { console.debug('backend:matricula response text', { index: i, status: resp.status, text: String(respText).slice(0,2000) }); } catch (_) {}
-                let data = null;
-                try { data = respText ? JSON.parse(respText) : null; } catch (_) { data = null; }
+            try {
+              try { console.debug('backend:matricula request', { index: i, payload: body }); } catch (_) {}
+              const resp = await fetch('/api/matriculas/generate', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+              });
+              if (resp.ok) {
+                const data = await resp.json();
+                try { console.debug('backend:matricula response', { index: i, data }); } catch (_) {}
                 let m = null;
                 if (data && data.result && data.result.matricula) m = data.result.matricula;
                 else if (data && Array.isArray(data.results) && data.results[0] && data.results[0].matricula) m = data.results[0].matricula;
                 else if (data && data.matricula) m = data.matricula;
-                if (resp.ok && m) {
+                if (m) {
                   // update local enriched copy
                   if (!enriched[i]) enriched[i] = {};
                   enriched[i].matricula = m;
@@ -591,7 +542,7 @@ export default function LeituraLivros() {
                     copy[i] = rec;
                     return copy;
                   });
-                } else if (resp.ok && !m) {
+                } else {
                   // clear pending state if no matricula returned
                   setResults(prev => {
                     const copy = Array.isArray(prev) ? [...prev] : [];
@@ -601,17 +552,19 @@ export default function LeituraLivros() {
                     return copy;
                   });
                   logWarning(`Registro ${i + 1}: backend não retornou matrícula.`);
-                } else {
-                  try { console.debug('backend:matricula error', { index: i, status: resp.status, text: respText.slice(0,2000) }); } catch (_) {}
-                  setResults(prev => {
-                    const copy = Array.isArray(prev) ? [...prev] : [];
-                    const rec = Object.assign({}, copy[i] || {});
-                    rec.matricula = '';
-                    copy[i] = rec;
-                    return copy;
-                  });
-                  logWarning(`Falha ao obter matrícula para registro ${i + 1}: ${resp.status} — ${String(respText).slice(0,300)}`);
                 }
+              } else {
+                const text = await resp.text().catch(() => '');
+                try { console.debug('backend:matricula error', { index: i, status: resp.status, text }); } catch (_) {}
+                setResults(prev => {
+                  const copy = Array.isArray(prev) ? [...prev] : [];
+                  const rec = Object.assign({}, copy[i] || {});
+                  rec.matricula = '';
+                  copy[i] = rec;
+                  return copy;
+                });
+                logWarning(`Falha ao obter matrícula para registro ${i + 1}: ${resp.status}`);
+              }
             } catch (innerE) {
               setResults(prev => {
                 const copy = Array.isArray(prev) ? [...prev] : [];
@@ -620,7 +573,7 @@ export default function LeituraLivros() {
                 copy[i] = rec;
                 return copy;
               });
-                logWarning(`Erro ao chamar /api/matriculas/generate para registro ${i + 1}: ${innerE.message || innerE}`);
+              logWarning(`Erro ao chamar /api/matriculas/generate para registro ${i + 1}: ${innerE.message || innerE}`);
             }
           }
           const received = (enriched || []).filter(it => it && it.matricula).length;
@@ -920,21 +873,14 @@ export default function LeituraLivros() {
                 try {
                   const parsed = extractJsonFromText(String(msg));
                   if (parsed) {
-                    try { console.debug('parsed message JSON', parsed); } catch (_) {}
-                    try { logInfo('JSON com registros detectado na mensagem do backend.'); } catch (_) {}
                     const arr = parsed.registros || parsed.records || null;
                     if (Array.isArray(arr) && arr.length) {
                       try {
-                        try { console.debug('backend:parsed_registros_raw', arr); } catch (_) {}
                         const normalized = normalizeRecordsArray(arr);
-                        // Debug UI + DevTools
-                        try { logInfo(`Registros normalizados detectados: ${normalized.length}`); } catch (_) {}
-                        try { console.debug('backend:parsed_registros', normalized); } catch (_) {}
                         // Replace results with parsed registros (this mirrors backend result when available)
                         setResults(normalized);
-                      } catch (e) {
-                        try { console.debug('normalizeRecordsArray failed', e); } catch (_) {}
-                      }
+                        try { console.debug('backend:parsed_registros', normalized); } catch (_) {}
+                      } catch (_) {}
                     }
                   }
                 } catch (_) {}
@@ -1021,8 +967,7 @@ export default function LeituraLivros() {
                         if (Array.isArray(arr) && arr.length) {
                           const normalizedParsed = normalizeRecordsArray(arr);
                           try { console.debug('backend:normalizedParsed', JSON.parse(JSON.stringify(normalizedParsed))); } catch (_) {}
-                            try { logInfo(`IA retornou ${normalizedParsed.length} registros (${ia.label || 'sem-label'})`); } catch (_) {}
-                            // merge: try to match by name, otherwise append
+                          // merge: try to match by name, otherwise append
                           for (const pRec of normalizedParsed) {
                             try {
                               // attempt to find matching finalResults entry by name
@@ -1040,11 +985,9 @@ export default function LeituraLivros() {
                                 // fill FOLHA/TERMO if missing
                                 try { if ((!finalResults[foundIdx].campos['FOLHA'] || String(finalResults[foundIdx].campos['FOLHA']).trim() === '') && pRec.campos && pRec.campos['FOLHA']) finalResults[foundIdx].campos['FOLHA'] = pRec.campos['FOLHA']; } catch (_) {}
                                 try { if ((!finalResults[foundIdx].campos['TERMO'] || String(finalResults[foundIdx].campos['TERMO']).trim() === '') && pRec.campos && pRec.campos['TERMO']) finalResults[foundIdx].campos['TERMO'] = pRec.campos['TERMO']; } catch (_) {}
-                                try { console.debug('merged into finalResults idx', foundIdx, { folha: pRec.campos && pRec.campos['FOLHA'], termo: pRec.campos && pRec.campos['TERMO'] }); } catch (_) {}
                               } else {
                                 // push as new result entry
                                 finalResults.push(pRec);
-                                try { console.debug('appended parsed record to finalResults', pRec); } catch (_) {}
                               }
                             } catch (_) {}
                           }
@@ -1056,33 +999,6 @@ export default function LeituraLivros() {
                 }
               } catch (_) {}
               try { console.debug('backend:finalResults_after_merge', JSON.parse(JSON.stringify(finalResults))); } catch (_) {}
-              // Garantir que, após merges, todo registro possua `campos` e que
-              // `FOLHA` e `TERMO` sejam extraídos de possíveis locais (folha.numero, termo, dados)
-              try {
-                for (let idx = 0; idx < finalResults.length; idx++) {
-                  const rec = finalResults[idx] || {};
-                  if (!rec.campos || typeof rec.campos !== 'object') rec.campos = {};
-                  // Folha: tente várias localizações
-                  let folhaVal = extractValueFromRecord(rec, ['folha', 'numeroFolha', 'numero_folha', 'FOLHA']);
-                  if (!folhaVal && rec && rec.folha && typeof rec.folha === 'object') {
-                    folhaVal = rec.folha.numero ?? rec.folha.number ?? rec.folha.value ?? '';
-                  }
-                  // Termo: direto no registro ou dentro de dados
-                  let termoVal = extractValueFromRecord(rec, ['termo', 'term', 'TERMO']);
-                  if (!termoVal && rec && rec.termo) termoVal = rec.termo;
-                  if (!termoVal && rec && rec.dados) termoVal = extractValueFromRecord(rec.dados, ['termo', 'term']);
-                  try {
-                    try { console.debug('final normalization: idx', idx, { folhaVal, termoVal, recPreview: { nome: getField(rec, ['nome', 'NOMEREGISTRADO']) } }); } catch (_) {}
-                    try { logInfo(`Registro ${idx + 1}: FOLHA=${String(folhaVal || '')}, TERMO=${String(termoVal || '')}`); } catch (_) {}
-                  } catch (_) {}
-                  if ((!rec.campos['FOLHA'] || String(rec.campos['FOLHA']).trim() === '') && folhaVal !== undefined && folhaVal !== null && String(folhaVal).trim() !== '') {
-                    rec.campos['FOLHA'] = String(folhaVal);
-                  }
-                  if ((!rec.campos['TERMO'] || String(rec.campos['TERMO']).trim() === '') && termoVal !== undefined && termoVal !== null && String(termoVal).trim() !== '') {
-                    rec.campos['TERMO'] = String(termoVal);
-                  }
-                }
-              } catch (_) {}
               setResults(finalResults);
               const count = (res?.records && Array.isArray(res.records)) ? res.records.length : (Array.isArray(res) ? res.length : 0);
               logTitle(`Resultados carregados (${count}).`);
@@ -1104,119 +1020,6 @@ export default function LeituraLivros() {
   }
 
   // server-side XML download removed; XML is generated client-side via "Salvar alterações"
-
-  // Gera matrículas para todos os registros atualmente carregados na UI
-  async function handleGenerateMatriculas() {
-    try {
-      if (!Array.isArray(results) || results.length === 0) {
-        logWarning('Nenhum registro disponível para gerar matrícula.');
-        return;
-      }
-      logInfo('Solicitando geração de matrícula(s) ao backend...');
-      const toSend = (results || []).map((r) => {
-        const livro = getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']);
-        const folha = getExactField(r, ['numeroFolha', 'folha', 'page', 'FOLHA', 'NRO_FOLHA', 'NUM_FOLHA']);
-        const termo = getExactField(r, ['numeroTermo', 'termo', 'term', 'TERMO', 'NRO_TERMO', 'NUM_TERMO', 'ATO']);
-        let dataReg = getField(r, ['dataRegistro', 'data', 'registroData', 'date']);
-        let ano = '';
-        try {
-          if (dataReg) {
-            const d = new Date(dataReg);
-            if (!Number.isNaN(d.getFullYear())) ano = String(d.getFullYear());
-            else {
-              const m = String(dataReg).match(/(\d{4})/);
-              if (m) ano = m[1];
-            }
-          }
-        } catch (_) {}
-        const tipoLivroCodeToSend = String(tipoLivroCode || '1');
-        // Aplicar máscaras: CNS(6), Acervo(2)='01', RCPN/Serviço(2)='55', Ano(4), TipoLivro(1), Livro(5), Folha(3), Termo(7)
-        return {
-          cns: maskNumberToLength(cns || '', 6),
-          acervo: '01',
-          servico: '55',
-          ano: maskNumberToLength(ano || '', 4),
-          tipoLivro: maskNumberToLength(tipoLivroCodeToSend || '', 1),
-          livro: maskNumberToLength(livro || (numeroLivro ? String(Number(numeroLivro)) : ''), 5),
-          folha: maskNumberToLength(folha || '', 3),
-          termo: maskNumberToLength(termo || '', 7)
-        };
-      });
-
-      let enriched = Array.isArray(results) ? [...results] : [];
-      // initialize placeholders
-      enriched = (Array.isArray(enriched) ? enriched : []).map(r => (r ? Object.assign({}, r) : {}));
-      setResults(enriched);
-
-      for (let i = 0; i < toSend.length; i++) {
-        const payload = toSend[i];
-        // mark pending
-        setResults(prev => {
-          const copy = Array.isArray(prev) ? [...prev] : [];
-          const rec = Object.assign({}, copy[i] || {});
-          rec.matricula = '...';
-          copy[i] = rec;
-          return copy;
-        });
-        try {
-          try { console.debug('backend:matricula request', { index: i, payload }); } catch (_) {}
-          try { logInfo(`Enviando payload matrícula ${i + 1}: ${JSON.stringify(payload)}`); } catch (_) {}
-          const resp = await fetch(`${apiURL}/matriculas/generate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-          const respText = await resp.text().catch(() => '');
-          try { console.debug('backend:matricula response text', { index: i, status: resp.status, text: String(respText).slice(0,2000) }); } catch (_) {}
-          let data = null;
-          try { data = respText ? JSON.parse(respText) : null; } catch (_) { data = null; }
-          let m = null;
-          if (data && data.result && data.result.matricula) m = data.result.matricula;
-          else if (data && Array.isArray(data.results) && data.results[0] && data.results[0].matricula) m = data.results[0].matricula;
-          else if (data && data.matricula) m = data.matricula;
-          if (resp.ok && m) {
-            if (!enriched[i]) enriched[i] = {};
-            enriched[i].matricula = m;
-            setResults(prev => {
-              const copy = Array.isArray(prev) ? [...prev] : [];
-              const rec = Object.assign({}, copy[i] || {});
-              rec.matricula = m;
-              copy[i] = rec;
-              return copy;
-            });
-          } else if (resp.ok && !m) {
-            setResults(prev => {
-              const copy = Array.isArray(prev) ? [...prev] : [];
-              const rec = Object.assign({}, copy[i] || {});
-              rec.matricula = '';
-              copy[i] = rec;
-              return copy;
-            });
-            logWarning(`Registro ${i + 1}: backend não retornou matrícula.`);
-          } else {
-            try { console.debug('backend:matricula error', { index: i, status: resp.status, text: respText.slice(0,2000) }); } catch (_) {}
-            setResults(prev => {
-              const copy = Array.isArray(prev) ? [...prev] : [];
-              const rec = Object.assign({}, copy[i] || {});
-              rec.matricula = '';
-              copy[i] = rec;
-              return copy;
-            });
-            logWarning(`Falha ao obter matrícula para registro ${i + 1}: ${resp.status} — ${String(respText).slice(0,300)}`);
-          }
-        } catch (innerE) {
-          setResults(prev => {
-            const copy = Array.isArray(prev) ? [...prev] : [];
-            const rec = Object.assign({}, copy[i] || {});
-            rec.matricula = '';
-            copy[i] = rec;
-            return copy;
-          });
-          logWarning(`Erro ao chamar /api/matriculas/generate para registro ${i + 1}: ${innerE.message || innerE}`);
-        }
-      }
-      const received = (enriched || []).filter(it => it && it.matricula).length;
-      logSuccess(`Recebidas ${received} matriculas do backend.`);
-    } catch (e) {
-      logError('Falha ao gerar matrículas: ' + (e.message || e));
-    }
-  }
 
   return (
     <div style={{ minHeight: '100vh', padding: 24, fontFamily: 'Inter, Arial, sans-serif', background: 'linear-gradient(180deg,#f5f7fb 0%, #eef1f6 100%)' }}>
@@ -1406,18 +1209,13 @@ export default function LeituraLivros() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <h4 style={{ marginTop: 0, color: '#1f2937', marginBottom: 0 }}>Registros extraídos</h4>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  {/* Botão para gerar matrículas via backend */}
-                  <button onClick={handleGenerateMatriculas} disabled={running || !results || results.length === 0}
-                    style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: running || !results || results.length === 0 ? '#cbd5e1' : 'linear-gradient(135deg,#10b981,#059669)', color: '#fff', cursor: running || !results || results.length === 0 ? 'not-allowed' : 'pointer' }}>
-                    Gerar Matrículas
-                  </button>
-                  {/* Baixar XML (server-side) removed — use "Salvar alterações" to generate client-side XML */}
-                  <button onClick={() => setShowRawResults(s => !s)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer' }}>
-                    {showRawResults ? 'Ocultar JSON' : 'Mostrar JSON'}
-                  </button>
-                  <button onClick={handleSaveChangesAsXml} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff', cursor: 'pointer' }}>
-                    Salvar alterações
-                  </button>
+                {/* Baixar XML (server-side) removed — use "Salvar alterações" to generate client-side XML */}
+                <button onClick={() => setShowRawResults(s => !s)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer' }}>
+                  {showRawResults ? 'Ocultar JSON' : 'Mostrar JSON'}
+                </button>
+                <button onClick={handleSaveChangesAsXml} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff', cursor: 'pointer' }}>
+                  Salvar alterações
+                </button>
               </div>
             </div>
             {results.length === 0 ? (
