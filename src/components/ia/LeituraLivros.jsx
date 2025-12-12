@@ -321,21 +321,84 @@ export default function LeituraLivros() {
     return '';
   }
 
+  function normalizeFiliacaoList(source) {
+    if (!Array.isArray(source) || !source.length) return undefined;
+    return source.map((item) => {
+      if (!item) return { NOME: '' };
+      if (typeof item === 'string') return { NOME: item };
+      const normalized = Object.assign({}, item);
+      if (!normalized.NOME) normalized.NOME = item.nome || item.name || '';
+      return normalized;
+    });
+  }
+
+  function hydrateRecordWithStandardFields(record, livroOverride) {
+    const copy = Object.assign({}, record || {});
+    const campos = Object.assign({}, copy.campos || {});
+    copy.campos = campos;
+
+    const assignCampo = (key, value) => {
+      if (!value && value !== 0) return;
+      const str = String(value);
+      if (!str.trim()) return;
+      campos[key] = str;
+    };
+
+    if (livroOverride) {
+      assignCampo('LIVRO', livroOverride);
+      if (!copy.numeroLivro) copy.numeroLivro = livroOverride;
+    }
+
+    const folhaVal = extractValueFromRecord(record, ['folha', 'numeroFolha', 'numero_folha', 'FOLHA']);
+    if (folhaVal) {
+      assignCampo('FOLHA', folhaVal);
+      copy.folha = folhaVal;
+      if (!copy.numeroFolha) copy.numeroFolha = folhaVal;
+    }
+
+    const termoVal = extractValueFromRecord(record, ['termo', 'numeroTermo', 'term', 'TERMO']);
+    if (termoVal) {
+      assignCampo('TERMO', termoVal);
+      copy.termo = termoVal;
+      if (!copy.numeroTermo) copy.numeroTermo = termoVal;
+    }
+
+    const dataRegistroVal = extractValueFromRecord(record, ['dataRegistro', 'data', 'registroData', 'date']);
+    if (dataRegistroVal) {
+      assignCampo('DATAREGISTRO', dataRegistroVal);
+      copy.dataRegistro = dataRegistroVal;
+    }
+
+    const nomeRegistradoVal = extractValueFromRecord(record, ['nomeRegistrado', 'nome', 'name', 'registrado']);
+    if (nomeRegistradoVal) {
+      assignCampo('NOMEREGISTRADO', nomeRegistradoVal);
+      copy.nomeRegistrado = nomeRegistradoVal;
+    }
+
+    const sexoVal = extractValueFromRecord(record, ['sexo', 'sex', 'genero']);
+    if (sexoVal) {
+      assignCampo('SEXO', sexoVal);
+      copy.sexo = sexoVal;
+    }
+
+    const dataNascimentoVal = extractValueFromRecord(record, ['dataNascimento', 'nascimento', 'birthDate', 'datanascimento']);
+    if (dataNascimentoVal) {
+      assignCampo('DATANASCIMENTO', dataNascimentoVal);
+      copy.dataNascimento = dataNascimentoVal;
+    }
+
+    const filiacaoList = normalizeFiliacaoList(record?.filiacao || record?.dados?.filiacao || copy?.filiacao);
+    if (filiacaoList) {
+      copy.filiacao = filiacaoList;
+    }
+
+    return copy;
+  }
+
   // Normalize an array of backend records/registros into the table format (fill LIVRO/FOLHA/TERMO)
   function normalizeRecordsArray(arr) {
     const numeroLivroFormatted = numeroLivro ? String(Number(numeroLivro)) : '';
-    return (Array.isArray(arr) ? arr : []).map((r) => {
-      const copy = Object.assign({}, r || {});
-      if (!copy.campos || typeof copy.campos !== 'object') copy.campos = {};
-      if (numeroLivroFormatted) copy.campos['LIVRO'] = numeroLivroFormatted;
-      let folhaVal = extractValueFromRecord(r, ['folha', 'numeroFolha', 'numero_folha', 'FOLHA']);
-      if (!folhaVal && r && r.folha && typeof r.folha === 'object') folhaVal = extractValueFromRecord(r.folha, ['numero', 'number']);
-      let termoVal = extractValueFromRecord(r, ['termo', 'term', 'TERMO']);
-      if (!termoVal && r && r.dados) termoVal = extractValueFromRecord(r.dados, ['termo', 'term']);
-      if ((!copy.campos['FOLHA'] || String(copy.campos['FOLHA']).trim() === '') && folhaVal) copy.campos['FOLHA'] = String(folhaVal);
-      if ((!copy.campos['TERMO'] || String(copy.campos['TERMO']).trim() === '') && termoVal) copy.campos['TERMO'] = String(termoVal);
-      return copy;
-    });
+    return (Array.isArray(arr) ? arr : []).map((r) => hydrateRecordWithStandardFields(r, numeroLivroFormatted));
   }
 
   // Attempt to find an embedded JSON object in text that contains `registros` or `records`
@@ -438,7 +501,7 @@ export default function LeituraLivros() {
       lines.push(`    <TERMO>${escapeXml(termo)}</TERMO>`);
       const dataReg = getField(r, ['dataRegistro', 'data', 'registroData', 'date']);
       lines.push(`    <DATAREGISTRO>${escapeXml(dataReg)}</DATAREGISTRO>`);
-      const nome = getField(r, ['nome', 'name', 'registrado']);
+      const nome = getField(r, ['nomeRegistrado', 'nome', 'name', 'registrado']);
       lines.push(`    <NOMEREGISTRADO>${escapeXml(nome)}</NOMEREGISTRADO>`);
       const sexo = getField(r, ['sexo', 'sex', 'genero']);
       lines.push(`    <SEXO>${escapeXml(sexo)}</SEXO>`);
@@ -846,8 +909,6 @@ export default function LeituraLivros() {
           promptTipoEscrita: pTipo?.prompt || '',
           numeroLivro: numeroLivroFormatted
         });
-        // Debug: response do backend após uploadFiles
-        try { console.debug('backend:uploadFiles response', resp); } catch (_) {}
       }
       if (!resp || !resp.jobId) {
         logError('Falha ao iniciar o processamento (resposta inválida).');
@@ -860,8 +921,6 @@ export default function LeituraLivros() {
       pollRef.current = setInterval(async () => {
         try {
           const status = await LeituraLivrosService.getStatus(resp.jobId);
-          // Debug: log do payload de status retornado pelo backend (poll)
-          try { console.debug('backend:getStatus', status); } catch (_) {}
           if (status) {
             // Mensagens incrementais do backend (evita duplicar em cada poll)
             if (Array.isArray(status.messages) && status.messages.length) {
@@ -875,12 +934,11 @@ export default function LeituraLivros() {
                   if (parsed) {
                     const arr = parsed.registros || parsed.records || null;
                     if (Array.isArray(arr) && arr.length) {
-                      try {
-                        const normalized = normalizeRecordsArray(arr);
-                        // Replace results with parsed registros (this mirrors backend result when available)
-                        setResults(normalized);
-                        try { console.debug('backend:parsed_registros', normalized); } catch (_) {}
-                      } catch (_) {}
+                        try {
+                          const normalized = normalizeRecordsArray(arr);
+                          // Replace results with parsed registros (this mirrors backend result when available)
+                          setResults(normalized);
+                        } catch (_) {}
                     }
                   }
                 } catch (_) {}
@@ -919,54 +977,22 @@ export default function LeituraLivros() {
               setRunning(false);
               logSuccess('Processamento concluído. Buscando resultados...');
               const res = await LeituraLivrosService.getResult(resp.jobId);
-              // Debug: log do resultado completo retornado pelo backend
-              try { console.debug('backend:getResult', res); } catch (_) {}
-              try {
-                console.debug('backend:getResult_full', JSON.stringify(res, null, 2));
-              } catch (jsonErr) {
-                try { console.debug('backend:getResult_full stringify-error', jsonErr); } catch (_) {}
-              }
               // If the user provided a global "Nº do LIVRO", populate each record's LIVRO field
               const numeroLivroFormatted = numeroLivro ? String(Number(numeroLivro)) : '';
               // support multiple result shapes: prefer res.records, then res.registros, then res (array)
               let finalResults = res.records || res.registros || res || [];
-              try {
-                finalResults = (Array.isArray(finalResults) ? finalResults : []).map((r) => {
-                  const copy = Object.assign({}, r || {});
-                  if (!copy.campos || typeof copy.campos !== 'object') copy.campos = {};
-                  // Overwrite LIVRO for each record with the user-provided value
-                  if (numeroLivroFormatted) copy.campos['LIVRO'] = numeroLivroFormatted;
-                  // Extract folha from possible shapes: r.folha:{numero: '1'} or r.folha === '1' or r.FOLHA
-                  try {
-                    const folhaVal = extractValueFromRecord(r, ['folha', 'folha.numero', 'numeroFolha', 'numero_folha', 'FOLHA']);
-                    let termoVal = extractValueFromRecord(r, ['termo', 'term', 'TERMO']);
-                    // fallback: sometimes folha may be an object under r.folha.numero directly
-                    if (!folhaVal && r && r.folha && typeof r.folha === 'object') folhaVal = extractValueFromRecord(r.folha, ['numero', 'number']);
-                    // if termo is nested inside dados
-                    if (!termoVal && r && r.dados) termoVal = extractValueFromRecord(r.dados, ['termo', 'term']);
-                    // Only set if campos doesn't already have a value
-                    if ((!copy.campos['FOLHA'] || String(copy.campos['FOLHA']).trim() === '') && folhaVal) copy.campos['FOLHA'] = String(folhaVal);
-                    if ((!copy.campos['TERMO'] || String(copy.campos['TERMO']).trim() === '') && termoVal) copy.campos['TERMO'] = String(termoVal);
-                  } catch (_) {}
-                  return copy;
-                });
-              } catch (_) {}
-              try { console.debug('backend:finalResults_before_merge', JSON.parse(JSON.stringify(finalResults))); } catch (_) {}
+              finalResults = (Array.isArray(finalResults) ? finalResults : []).map((r) => hydrateRecordWithStandardFields(r, numeroLivroFormatted));
               // If IA provided raw responses (iaRawResponses) with embedded registros JSON, merge them
               try {
                 if (res && Array.isArray(res.iaRawResponses) && res.iaRawResponses.length) {
                   for (const ia of res.iaRawResponses) {
                     try {
                       const raw = ia.raw || ia.debug || ia.text || '';
-                      try { console.debug('backend:ia_raw_length', { label: ia.label, len: String(raw || '').length }); } catch (_) {}
                       const parsed = extractJsonFromText(String(raw));
-                      try { if (parsed) console.debug('backend:ia_raw_parsed_keys', Object.keys(parsed)); } catch (_) {}
                       if (parsed) {
                         const arr = parsed.registros || parsed.records || null;
-                        try { console.debug('backend:ia_parsed_count', { label: ia.label, count: Array.isArray(arr) ? arr.length : 0 }); } catch (_) {}
                         if (Array.isArray(arr) && arr.length) {
                           const normalizedParsed = normalizeRecordsArray(arr);
-                          try { console.debug('backend:normalizedParsed', JSON.parse(JSON.stringify(normalizedParsed))); } catch (_) {}
                           // merge: try to match by name, otherwise append
                           for (const pRec of normalizedParsed) {
                             try {
@@ -991,14 +1017,12 @@ export default function LeituraLivros() {
                               }
                             } catch (_) {}
                           }
-                          try { console.debug('backend:after_merge_partial', JSON.parse(JSON.stringify(finalResults))); } catch (_) {}
                         }
                       }
                     } catch (_) {}
                   }
                 }
               } catch (_) {}
-              try { console.debug('backend:finalResults_after_merge', JSON.parse(JSON.stringify(finalResults))); } catch (_) {}
               setResults(finalResults);
               const count = (res?.records && Array.isArray(res.records)) ? res.records.length : (Array.isArray(res) ? res.length : 0);
               logTitle(`Resultados carregados (${count}).`);
@@ -1270,7 +1294,7 @@ export default function LeituraLivros() {
                             style={{ width: 140, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
-                          <input value={getField(r, ['nome', 'name', 'registrado']) || ''}
+                          <input value={getField(r, ['nomeRegistrado', 'nome', 'name', 'registrado']) || ''}
                             onChange={e => updateRecordField(i, 'nome', e.target.value)}
                             style={{ width: 220, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
                         </td>
