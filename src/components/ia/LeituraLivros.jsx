@@ -201,6 +201,11 @@ export default function LeituraLivros() {
       if ((v === undefined || v === null || String(v).toString().trim() === '') && typeof k === 'string') {
         v = record[String(k).toUpperCase()];
       }
+      // 4) fallback em record.dados (novo payload mantém os campos nesse objeto)
+      if ((v === undefined || v === null || String(v).toString().trim() === '') && record.dados) {
+        const dadosVal = record.dados[k] ?? record.dados[String(k).toUpperCase()];
+        if (dadosVal !== undefined && dadosVal !== null && String(dadosVal).toString().trim() !== '') v = dadosVal;
+      }
       if (v !== undefined && v !== null && String(v).toString().trim() !== '') return v;
     }
     // como fallback, se record.campos existir, tente algumas chaves comuns em MAIÚSCULAS
@@ -216,7 +221,7 @@ export default function LeituraLivros() {
   function getFiliacao(record, idx) {
     if (!record) return '';
     // 1) array 'filiacao' ou 'filiacoes'
-    const arr = record.filiacao || record.filiacoes;
+    const arr = record.filiacao || record.filiacoes || record?.dados?.filiacao;
     if (Array.isArray(arr) && arr[idx]) {
       const f = arr[idx];
       if (typeof f === 'string') return f;
@@ -276,6 +281,16 @@ export default function LeituraLivros() {
             }
             if (String(cUp).trim() !== '') return cUp;
           }
+        }
+      }
+      if (record.dados) {
+        const dVal = record.dados[k] ?? record.dados[String(k).toUpperCase()];
+        if (dVal !== undefined && dVal !== null) {
+          if (typeof dVal === 'object') {
+            const cand = dVal.numero ?? dVal.number ?? dVal.value ?? dVal.nro ?? dVal.num ?? dVal.text;
+            if (cand !== undefined && cand !== null && String(cand).trim() !== '') return cand;
+          }
+          if (String(dVal).trim() !== '') return dVal;
         }
       }
     }
