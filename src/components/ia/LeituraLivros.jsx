@@ -568,177 +568,320 @@ export default function LeituraLivros() {
       .replace(/'/g, '&apos;');
   }
 
-  function serializeResultsToXml(arr) {
-    const lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<REGISTROS>'];
-    (arr || []).forEach((r) => {
-      lines.push('  <REGISTRO>');
-      if (r.matricula) {
-        lines.push(`    <MATRICULA>${escapeXml(r.matricula)}</MATRICULA>`);
-      }
-      lines.push(`    <TIPO>${escapeXml(r.tipo || '')}</TIPO>`);
-      const livro = getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']);
-      const folha = getExactField(r, ['numeroFolha', 'folha', 'page', 'FOLHA', 'NRO_FOLHA', 'NUM_FOLHA']);
-      const termo = getExactField(r, ['numeroTermo', 'termo', 'term', 'TERMO', 'NRO_TERMO', 'NUM_TERMO', 'ATO']);
-      lines.push(`    <LIVRO>${escapeXml(livro)}</LIVRO>`);
-      lines.push(`    <FOLHA>${escapeXml(folha)}</FOLHA>`);
-      lines.push(`    <TERMO>${escapeXml(termo)}</TERMO>`);
-      const dataReg = getField(r, ['dataRegistro', 'data', 'registroData', 'date']);
-      lines.push(`    <DATAREGISTRO>${escapeXml(dataReg)}</DATAREGISTRO>`);
-      const nome = getField(r, ['nomeRegistrado', 'nome', 'name', 'registrado']);
-      lines.push(`    <NOMEREGISTRADO>${escapeXml(nome)}</NOMEREGISTRADO>`);
-      const sexo = getField(r, ['sexo', 'sex', 'genero']);
-      lines.push(`    <SEXO>${escapeXml(sexo)}</SEXO>`);
-      const nasc = getField(r, ['dataNascimento', 'nascimento', 'birthDate', 'datanascimento']);
-      lines.push(`    <DATANASCIMENTO>${escapeXml(nasc)}</DATANASCIMENTO>`);
-      const f1 = getFiliacao(r, 0);
-      const f2 = getFiliacao(r, 1);
-      lines.push(`    <FILIACAO1>${escapeXml(f1)}</FILIACAO1>`);
-      lines.push(`    <FILIACAO2>${escapeXml(f2)}</FILIACAO2>`);
-      // include origens if present
-      if (Array.isArray(r.origens) && r.origens.length) {
-        lines.push('    <ORIGENS>');
-        r.origens.forEach(o => lines.push(`      <ORIGEM>${escapeXml(o)}</ORIGEM>`));
-        lines.push('    </ORIGENS>');
-      }
-      lines.push('  </REGISTRO>');
+  function serializeNascimentoXml(arr) {
+    const cnsDigits = padLeftDigits(cns || '', 6);
+    const lines = [
+      '<?xml version="1.0" encoding="utf-8"?>',
+      '<CARGAREGISTROS>',
+      `  <VERSAO>${escapeXml(versao || '')}</VERSAO>`,
+      `  <ACAO>${escapeXml(acao || '')}</ACAO>`,
+      `  <CNS>${escapeXml(cnsDigits)}</CNS>`,
+      '  <MOVIMENTONASCIMENTOTN>'
+    ];
+
+    (arr || []).forEach((r, idx) => {
+      const indice = idx + 1;
+      const nome = getField(r, ['nomeRegistrado', 'nome', 'name', 'registrado']) || '';
+      const cpf = getField(r, ['cpfRegistrado', 'cpf', 'CPF']) || '';
+      const matriculaVal = r && r.matricula ? r.matricula : '';
+      const dataRegistro = getField(r, ['dataRegistro', 'data', 'registroData', 'date']) || '';
+      const dnv = getField(r, ['dnv', 'DNV']) || '';
+      const dataNasc = getField(r, ['dataNascimento', 'nascimento', 'birthDate', 'datanascimento']) || '';
+      const horaNasc = getField(r, ['horaNascimento', 'hora_nascimento', 'horanascimento']) || '';
+      const localNasc = getField(r, ['localNascimento', 'local_nascimento']) || '';
+      const sexoVal = getField(r, ['sexo', 'sex', 'genero']) || '';
+
+      lines.push('    <REGISTRONASCIMENTOINCLUSAO>');
+      lines.push(`      <INDICEREGISTRO>${indice}</INDICEREGISTRO>`);
+      lines.push(`      <NOMEREGISTRADO>${escapeXml(nome)}</NOMEREGISTRADO>`);
+      lines.push(`      <CPFREGISTRADO>${escapeXml(cpf)}</CPFREGISTRADO>`);
+      lines.push(`      <MATRICULA>${escapeXml(matriculaVal || '')}</MATRICULA>`);
+      lines.push(`      <DATAREGISTRO>${escapeXml(dataRegistro)}</DATAREGISTRO>`);
+      lines.push(`      <DNV>${escapeXml(dnv)}</DNV>`);
+      lines.push(`      <DATANASCIMENTO>${escapeXml(dataNasc)}</DATANASCIMENTO>`);
+      lines.push(`      <HORANASCIMENTO>${escapeXml(horaNasc)}</HORANASCIMENTO>`);
+      lines.push(`      <LOCALNASCIMENTO>${escapeXml(localNasc)}</LOCALNASCIMENTO>`);
+      lines.push(`      <SEXO>${escapeXml(sexoVal)}</SEXO>`);
+      lines.push('      <POSSUIGEMEOS></POSSUIGEMEOS>');
+      lines.push('      <NUMEROGEMEOS></NUMEROGEMEOS>');
+      lines.push('      <CODIGOIBGEMUNNASCIMENTO></CODIGOIBGEMUNNASCIMENTO>');
+      lines.push('      <PAISNASCIMENTO></PAISNASCIMENTO>');
+      lines.push('      <NACIONALIDADE></NACIONALIDADE>');
+      lines.push('      <TEXTONACIONALIDADEESTRANGEIRO></TEXTONACIONALIDADEESTRANGEIRO>');
+
+      const parents = [getFiliacao(r, 0), getFiliacao(r, 1)].filter(p => p !== undefined && p !== null && String(p).trim() !== '');
+      parents.forEach((p, pIdx) => {
+        lines.push('      <FILIACAONASCIMENTO>');
+        lines.push(`        <INDICEREGISTRO>${indice}</INDICEREGISTRO>`);
+        lines.push(`        <INDICEFILIACAO>${pIdx + 1}</INDICEFILIACAO>`);
+        lines.push(`        <NOME>${escapeXml(p)}</NOME>`);
+        lines.push('        <SEXO></SEXO>');
+        lines.push('        <CPF></CPF>');
+        lines.push('        <DATANASCIMENTO></DATANASCIMENTO>');
+        lines.push('        <IDADE></IDADE>');
+        lines.push('        <IDADE_DIAS_MESES_ANOS></IDADE_DIAS_MESES_ANOS>');
+        lines.push('        <CODIGOIBGEMUNLOGRADOURO></CODIGOIBGEMUNLOGRADOURO>');
+        lines.push('        <LOGRADOURO></LOGRADOURO>');
+        lines.push('        <NUMEROLOGRADOURO></NUMEROLOGRADOURO>');
+        lines.push('        <COMPLEMENTOLOGRADOURO></COMPLEMENTOLOGRADOURO>');
+        lines.push('        <BAIRRO></BAIRRO>');
+        lines.push('        <NACIONALIDADE></NACIONALIDADE>');
+        lines.push('        <DOMICILIOESTRANGEIRO></DOMICILIOESTRANGEIRO>');
+        lines.push('        <CODIGOIBGEMUNNATURALIDADE></CODIGOIBGEMUNNATURALIDADE>');
+        lines.push('        <TEXTOLIVREMUNICIPIONAT></TEXTOLIVREMUNICIPIONAT>');
+        lines.push('        <CODIGOOCUPACAOSDC></CODIGOOCUPACAOSDC>');
+        lines.push('      </FILIACAONASCIMENTO>');
+      });
+
+      lines.push('      <DOCUMENTOS>');
+      lines.push(`        <INDICEREGISTRO>${indice}</INDICEREGISTRO>`);
+      lines.push('        <INDICEFILIACAO></INDICEFILIACAO>');
+      lines.push('        <DONO>FILIACAO_NASCIMENTO</DONO>');
+      lines.push('        <TIPO_DOC></TIPO_DOC>');
+      lines.push('        <DESCRICAO></DESCRICAO>');
+      lines.push('        <NUMERO></NUMERO>');
+      lines.push('        <NUMERO_SERIE></NUMERO_SERIE>');
+      lines.push('        <CODIGOORGAOEMISSOR></CODIGOORGAOEMISSOR>');
+      lines.push('        <UF_EMISSAO></UF_EMISSAO>');
+      lines.push('        <DATA_EMISSAO></DATA_EMISSAO>');
+      lines.push('      </DOCUMENTOS>');
+      lines.push('      <ORGAOEMISSOREXTERIOR></ORGAOEMISSOREXTERIOR>');
+      lines.push('      <INFORMACOESCONSULADO></INFORMACOESCONSULADO>');
+      lines.push('      <OBSERVACOES></OBSERVACOES>');
+      lines.push('    </REGISTRONASCIMENTOINCLUSAO>');
     });
-    lines.push('</REGISTROS>');
+
+    lines.push('  </MOVIMENTONASCIMENTOTN>');
+    lines.push('</CARGAREGISTROS>');
     return lines.join('\n');
+  }
+
+  function serializeCasamentoXml(arr) {
+    const cnsDigits = padLeftDigits(cns || '', 6);
+    const lines = [
+      '<?xml version="1.0" encoding="utf-8"?>',
+      '<CARGAREGISTROS>',
+      `  <VERSAO>${escapeXml(versao || '')}</VERSAO>`,
+      `  <ACAO>${escapeXml(acao || '')}</ACAO>`,
+      `  <CNS>${escapeXml(cnsDigits)}</CNS>`,
+      '  <MOVIMENTOCASAMENTOTC>'
+    ];
+
+    (arr || []).forEach((r, idx) => {
+      const indice = idx + 1;
+      const conjuge1 = getField(r, ['nomeConjuge1', 'conjuge1', 'nome']) || '';
+      const conjuge2 = getField(r, ['nomeConjuge2', 'conjuge2']) || '';
+      const sexo1 = getField(r, ['sexoConjuge1', 'sexo1']) || '';
+      const sexo2 = getField(r, ['sexoConjuge2', 'sexo2']) || '';
+      const cpf1 = getField(r, ['cpfConjuge1', 'cpf1', 'cpf']) || '';
+      const cpf2 = getField(r, ['cpfConjuge2', 'cpf2']) || '';
+      const dataNasc1 = getField(r, ['dataNascimentoConjuge1', 'dataNascimento', 'data_nasc1']) || '';
+      const dataNasc2 = getField(r, ['dataNascimentoConjuge2', 'data_nasc2']) || '';
+      const pai = getFiliacao(r, 0) || '';
+      const mae = getFiliacao(r, 1) || '';
+      const matriculaVal = r && r.matricula ? r.matricula : '';
+      const dataRegistro = getField(r, ['dataRegistro', 'data', 'registroData', 'date']) || '';
+      const dataCasamento = getField(r, ['dataCasamento', 'data_casamento']) || '';
+      const regime = getField(r, ['regimeCasamento', 'regime_casamento']) || '';
+
+      lines.push('    <REGISTROCASAMENTOINCLUSAO>');
+      lines.push(`      <INDICEREGISTRO>${indice}</INDICEREGISTRO>`);
+      lines.push(`      <NOMECONJUGE1>${escapeXml(conjuge1)}</NOMECONJUGE1>`);
+      lines.push('      <NOVONOMECONJUGE1></NOVONOMECONJUGE1>');
+      lines.push(`      <CPFCONJUGE1>${escapeXml(cpf1)}</CPFCONJUGE1>`);
+      lines.push(`      <SEXOCONJUGE1>${escapeXml(sexo1)}</SEXOCONJUGE1>`);
+      lines.push(`      <DATANASCIMENTOCONJUGE1>${escapeXml(dataNasc1)}</DATANASCIMENTOCONJUGE1>`);
+      lines.push(`      <NOMEPAICONJUGE1>${escapeXml(pai)}</NOMEPAICONJUGE1>`);
+      lines.push('      <SEXOPAICONJUGE1></SEXOPAICONJUGE1>');
+      lines.push(`      <NOMEMAECONJUGE1>${escapeXml(mae)}</NOMEMAECONJUGE1>`);
+      lines.push('      <SEXOMAECONJUGE1></SEXOMAECONJUGE1>');
+      lines.push('      <CODIGOOCUPACAOSDCCONJUGE1></CODIGOOCUPACAOSDCCONJUGE1>');
+      lines.push('      <PAISNASCIMENTOCONJUGE1></PAISNASCIMENTOCONJUGE1>');
+      lines.push('      <NACIONALIDADECONJUGE1></NACIONALIDADECONJUGE1>');
+      lines.push('      <CODIGOIBGEMUNNATCONJUGE1></CODIGOIBGEMUNNATCONJUGE1>');
+      lines.push('      <TEXTOLIVREMUNNATCONJUGE1></TEXTOLIVREMUNNATCONJUGE1>');
+      lines.push('      <CODIGOIBGEMUNLOGRADOURO1></CODIGOIBGEMUNLOGRADOURO1>');
+      lines.push('      <DOMICILIOESTRANGEIRO1></DOMICILIOESTRANGEIRO1>');
+      lines.push(`      <NOMECONJUGE2>${escapeXml(conjuge2)}</NOMECONJUGE2>`);
+      lines.push('      <NOVONOMECONJUGE2></NOVONOMECONJUGE2>');
+      lines.push(`      <CPFCONJUGE2>${escapeXml(cpf2)}</CPFCONJUGE2>`);
+      lines.push(`      <SEXOCONJUGE2>${escapeXml(sexo2)}</SEXOCONJUGE2>`);
+      lines.push(`      <DATANASCIMENTOCONJUGE2>${escapeXml(dataNasc2)}</DATANASCIMENTOCONJUGE2>`);
+      lines.push('      <NOMEPAICONJUGE2></NOMEPAICONJUGE2>');
+      lines.push('      <SEXOPAICONJUGE2></SEXOPAICONJUGE2>');
+      lines.push('      <NOMEMAECONJUGE2></NOMEMAECONJUGE2>');
+      lines.push('      <SEXOMAECONJUGE2></SEXOMAECONJUGE2>');
+      lines.push('      <CODIGOOCUPACAOSDCCONJUGE2></CODIGOOCUPACAOSDCCONJUGE2>');
+      lines.push('      <PAISNASCIMENTOCONJUGE2></PAISNASCIMENTOCONJUGE2>');
+      lines.push('      <NACIONALIDADECONJUGE2></NACIONALIDADECONJUGE2>');
+      lines.push('      <CODIGOIBGEMUNNATCONJUGE2></CODIGOIBGEMUNNATCONJUGE2>');
+      lines.push('      <TEXTOLIVREMUNNATCONJUGE2></TEXTOLIVREMUNNATCONJUGE2>');
+      lines.push('      <CODIGOIBGEMUNLOGRADOURO2></CODIGOIBGEMUNLOGRADOURO2>');
+      lines.push('      <DOMICILIOESTRANGEIRO2></DOMICILIOESTRANGEIRO2>');
+      lines.push(`      <MATRICULA>${escapeXml(matriculaVal)}</MATRICULA>`);
+      lines.push(`      <DATAREGISTRO>${escapeXml(dataRegistro)}</DATAREGISTRO>`);
+      lines.push(`      <DATACASAMENTO>${escapeXml(dataCasamento)}</DATACASAMENTO>`);
+      lines.push(`      <REGIMECASAMENTO>${escapeXml(regime)}</REGIMECASAMENTO>`);
+      lines.push('      <DOCUMENTOS>');
+      lines.push(`        <INDICEREGISTRO>${indice}</INDICEREGISTRO>`);
+      lines.push('        <DONO></DONO>');
+      lines.push('        <TIPO_DOC></TIPO_DOC>');
+      lines.push('        <DESCRICAO></DESCRICAO>');
+      lines.push('        <NUMERO></NUMERO>');
+      lines.push('        <NUMERO_SERIE></NUMERO_SERIE>');
+      lines.push('        <CODIGOORGAOEMISSOR></CODIGOORGAOEMISSOR>');
+      lines.push('        <UF_EMISSAO></UF_EMISSAO>');
+      lines.push('        <DATA_EMISSAO></DATA_EMISSAO>');
+      lines.push('      </DOCUMENTOS>');
+      lines.push('      <ORGAOEMISSOREXTERIOR></ORGAOEMISSOREXTERIOR>');
+      lines.push('      <INFORMACOESCONSULADO></INFORMACOESCONSULADO>');
+      lines.push('      <OBSERVACOES></OBSERVACOES>');
+      lines.push('    </REGISTROCASAMENTOINCLUSAO>');
+    });
+
+    lines.push('  </MOVIMENTOCASAMENTOTC>');
+    lines.push('</CARGAREGISTROS>');
+    return lines.join('\n');
+  }
+
+  function serializeObitoXml(arr) {
+    const cnsDigits = padLeftDigits(cns || '', 6);
+    const lines = [
+      '<?xml version="1.0" encoding="utf-8"?>',
+      '<CARGAREGISTROS>',
+      `  <VERSAO>${escapeXml(versao || '')}</VERSAO>`,
+      `  <ACAO>${escapeXml(acao || '')}</ACAO>`,
+      `  <CNS>${escapeXml(cnsDigits)}</CNS>`,
+      '  <MOVIMENTOOBITOTO>'
+    ];
+
+    (arr || []).forEach((r, idx) => {
+      const indice = idx + 1;
+      const nome = getField(r, ['nomeRegistrado', 'nome', 'name', 'registrado']) || '';
+      const cpf = getField(r, ['cpf', 'cpfFalecido']) || '';
+      const matriculaVal = r && r.matricula ? r.matricula : '';
+      const dataRegistro = getField(r, ['dataRegistro', 'data', 'registroData', 'date']) || '';
+      const pai = getFiliacao(r, 0) || '';
+      const mae = getFiliacao(r, 1) || '';
+      const cpfPai = getField(r, ['cpfPai']) || '';
+      const cpfMae = getField(r, ['cpfMae']) || '';
+      const sexoPai = getField(r, ['sexoPai']) || '';
+      const sexoMae = getField(r, ['sexoMae']) || '';
+      const dataObito = getField(r, ['dataObito', 'data_obito']) || '';
+      const horaObito = getField(r, ['horaObito', 'hora_obito']) || '';
+      const sexoVal = getField(r, ['sexo', 'sex', 'genero']) || '';
+      const cor = getField(r, ['cor', 'corPele']) || '';
+      const estadoCivil = getField(r, ['estadoCivil', 'estado_civil']) || '';
+      const dataNasc = getField(r, ['dataNascimento', 'birthDate', 'datanascimento']) || '';
+
+      lines.push('    <REGISTROOBITOINCLUSAO>');
+      lines.push(`      <INDICEREGISTRO>${indice}</INDICEREGISTRO>`);
+      lines.push('      <FLAGDESCONHECIDO></FLAGDESCONHECIDO>');
+      lines.push(`      <NOMEFALECIDO>${escapeXml(nome)}</NOMEFALECIDO>`);
+      lines.push(`      <CPFFALECIDO>${escapeXml(cpf)}</CPFFALECIDO>`);
+      lines.push(`      <MATRICULA>${escapeXml(matriculaVal)}</MATRICULA>`);
+      lines.push(`      <DATAREGISTRO>${escapeXml(dataRegistro)}</DATAREGISTRO>`);
+      lines.push(`      <NOMEPAI>${escapeXml(pai)}</NOMEPAI>`);
+      lines.push(`      <CPFPAI>${escapeXml(cpfPai)}</CPFPAI>`);
+      lines.push(`      <SEXOPAI>${escapeXml(sexoPai)}</SEXOPAI>`);
+      lines.push(`      <NOMEMAE>${escapeXml(mae)}</NOMEMAE>`);
+      lines.push(`      <CPFMAE>${escapeXml(cpfMae)}</CPFMAE>`);
+      lines.push(`      <SEXOMAE>${escapeXml(sexoMae)}</SEXOMAE>`);
+      lines.push(`      <DATAOBITO>${escapeXml(dataObito)}</DATAOBITO>`);
+      lines.push(`      <HORAOBITO>${escapeXml(horaObito)}</HORAOBITO>`);
+      lines.push(`      <SEXO>${escapeXml(sexoVal)}</SEXO>`);
+      lines.push(`      <CORPELE>${escapeXml(cor)}</CORPELE>`);
+      lines.push(`      <ESTADOCIVIL>${escapeXml(estadoCivil)}</ESTADOCIVIL>`);
+      lines.push(`      <DATANASCIMENTOFALECIDO>${escapeXml(dataNasc)}</DATANASCIMENTOFALECIDO>`);
+      lines.push('      <IDADE></IDADE>');
+      lines.push('      <IDADE_DIAS_MESES_ANOS></IDADE_DIAS_MESES_ANOS>');
+      lines.push('      <ELEITOR></ELEITOR>');
+      lines.push('      <POSSUIBENS></POSSUIBENS>');
+      lines.push('      <CODIGOOCUPACAOSDC></CODIGOOCUPACAOSDC>');
+      lines.push('      <PAISNASCIMENTO></PAISNASCIMENTO>');
+      lines.push('      <NACIONALIDADE></NACIONALIDADE>');
+      lines.push('      <CODIGOIBGEMUNNATURALIDADE></CODIGOIBGEMUNNATURALIDADE>');
+      lines.push('      <TEXTOLIVREMUNICIPIONAT></TEXTOLIVREMUNICIPIONAT>');
+      lines.push('      <CODIGOIBGEMUNLOGRADOURO></CODIGOIBGEMUNLOGRADOURO>');
+      lines.push('      <DOMICILIOESTRANGEIROFALECIDO></DOMICILIOESTRANGEIROFALECIDO>');
+      lines.push('      <LOGRADOURO></LOGRADOURO>');
+      lines.push('      <NUMEROLOGRADOURO></NUMEROLOGRADOURO>');
+      lines.push('      <COMPLEMENTOLOGRADOURO></COMPLEMENTOLOGRADOURO>');
+      lines.push('      <BAIRRO></BAIRRO>');
+      lines.push('      <BENEFICIOS_PREVIDENCIARIOS>');
+      lines.push(`        <INDICEREGISTRO>${indice}</INDICEREGISTRO>`);
+      lines.push('        <NUMEROBENEFICIO></NUMEROBENEFICIO>');
+      lines.push('      </BENEFICIOS_PREVIDENCIARIOS>');
+      lines.push('      <DOCUMENTOS>');
+      lines.push(`        <INDICEREGISTRO>${indice}</INDICEREGISTRO>`);
+      lines.push('        <DONO>FALECIDO</DONO>');
+      lines.push('        <TIPO_DOC></TIPO_DOC>');
+      lines.push('        <DESCRICAO></DESCRICAO>');
+      lines.push('        <NUMERO></NUMERO>');
+      lines.push('        <NUMERO_SERIE></NUMERO_SERIE>');
+      lines.push('        <CODIGOORGAOEMISSOR></CODIGOORGAOEMISSOR>');
+      lines.push('        <UF_EMISSAO></UF_EMISSAO>');
+      lines.push('        <DATA_EMISSAO></DATA_EMISSAO>');
+      lines.push('      </DOCUMENTOS>');
+      lines.push('      <TIPOLOCALOBITO></TIPOLOCALOBITO>');
+      lines.push('      <TIPOMORTE></TIPOMORTE>');
+      lines.push('      <NUMDECLARACAOOBITO></NUMDECLARACAOOBITO>');
+      lines.push('      <NUMDECLARACAOOBITOIGNORADA></NUMDECLARACAOOBITOIGNORADA>');
+      lines.push('      <PAISOBITO></PAISOBITO>');
+      lines.push('      <CODIGOIBGEMUNLOGRADOUROOBITO></CODIGOIBGEMUNLOGRADOUROOBITO>');
+      lines.push('      <ENDERECOLOCALOBITOESTRANGEIRO></ENDERECOLOCALOBITOESTRANGEIRO>');
+      lines.push('      <LOGRADOUROOBITO></LOGRADOUROOBITO>');
+      lines.push('      <NUMEROLOGRADOUROOBITO></NUMEROLOGRADOUROOBITO>');
+      lines.push('      <COMPLEMENTOLOGRADOUROOBITO></COMPLEMENTOLOGRADOUROOBITO>');
+      lines.push('      <BAIRROOBITO></BAIRROOBITO>');
+      lines.push('      <CAUSAMORTEANTECEDENTES_A></CAUSAMORTEANTECEDENTES_A>');
+      lines.push('      <CAUSAMORTEANTECEDENTES_B></CAUSAMORTEANTECEDENTES_B>');
+      lines.push('      <CAUSAMORTEANTECEDENTES_C></CAUSAMORTEANTECEDENTES_C>');
+      lines.push('      <CAUSAMORTEANTECEDENTES_D></CAUSAMORTEANTECEDENTES_D>');
+      lines.push('      <CAUSAMORTEOUTRASCOND_A></CAUSAMORTEOUTRASCOND_A>');
+      lines.push('      <CAUSAMORTEOUTRASCOND_B></CAUSAMORTEOUTRASCOND_B>');
+      lines.push('      <LUGARFALECIMENTO></LUGARFALECIMENTO>');
+      lines.push('      <LUGARSEPULTAMENTOCEMITERIO></LUGARSEPULTAMENTOCEMITERIO>');
+      lines.push('      <NOMEATESTANTEPRIMARIO></NOMEATESTANTEPRIMARIO>');
+      lines.push('      <CRMATESTANTEPRIMARIO></CRMATESTANTEPRIMARIO>');
+      lines.push('      <NOMEATESTANTESECUNDARIO></NOMEATESTANTESECUNDARIO>');
+      lines.push('      <CRMATESTANTESECUNDARIO></CRMATESTANTESECUNDARIO>');
+      lines.push('      <NOMEDECLARANTE></NOMEDECLARANTE>');
+      lines.push('      <CPFDECLARANTE></CPFDECLARANTE>');
+      lines.push('      <ORGAOEMISSOREXTERIOR></ORGAOEMISSOREXTERIOR>');
+      lines.push('      <INFORMACOESCONSULADO></INFORMACOESCONSULADO>');
+      lines.push('      <OBSERVACOES></OBSERVACOES>');
+      lines.push('    </REGISTROOBITOINCLUSAO>');
+    });
+
+    lines.push('  </MOVIMENTOOBITOTO>');
+    lines.push('</CARGAREGISTROS>');
+    return lines.join('\n');
+  }
+
+  function serializeCargaXml(arr) {
+    const tipo = String(tipoRegistro || '').toUpperCase();
+    if (tipo === 'CASAMENTO') return serializeCasamentoXml(arr);
+    if (tipo === 'OBITO' || tipo === 'ÓBITO') return serializeObitoXml(arr);
+    return serializeNascimentoXml(arr);
   }
 
   async function handleSaveChangesAsXml() {
     try {
-      // Before generating XML, request matriculas from backend for each record
-      const toSend = (results || []).map((r) => {
-        const livro = getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']);
-        const folha = getExactField(r, ['numeroFolha', 'folha', 'page', 'FOLHA', 'NRO_FOLHA', 'NUM_FOLHA']);
-        const termo = getExactField(r, ['numeroTermo', 'termo', 'term', 'TERMO', 'NRO_TERMO', 'NUM_TERMO', 'ATO']);
-        // extract year from dataRegistro if possible
-        let dataReg = getField(r, ['dataRegistro', 'data', 'registroData', 'date']);
-        let ano = '';
-        try {
-          if (dataReg) {
-            const d = new Date(dataReg);
-            if (!Number.isNaN(d.getFullYear())) ano = String(d.getFullYear());
-            else {
-              const m = String(dataReg).match(/(\d{4})/);
-              if (m) ano = m[1];
-            }
-          }
-        } catch (_) { }
-
-        // tipoLivroCode holds the selected numeric code (string) without leading zeros (ex: '1')
-        const tipoLivroCodeToSend = String(tipoLivroCode || '1');
-
-        return {
-          cns: String(cns || ''),
-          acervo: '00',
-          servico: '00',
-          ano: ano || String(new Date().getFullYear()),
-          tipoLivro: tipoLivroCodeToSend,
-          livro: livro || (numeroLivro ? String(Number(numeroLivro)) : ''),
-          folha: folha || '',
-          termo: termo || ''
-        };
-      });
-
-      let enriched = Array.isArray(results) ? [...results] : [];
-      // initialize matricula placeholders so UI can show pending state
-      try {
-        enriched = (Array.isArray(enriched) ? enriched : []).map(r => (r ? Object.assign({}, r) : {}));
-        setResults(enriched);
-      } catch (_) {}
-
-      if (toSend.length) {
-        try {
-          logInfo('Solicitando matrícula(s) ao backend (uma por registro)...');
-          // Request matricula per record so we can log and map precisely and update UI as responses arrive
-          for (let i = 0; i < toSend.length; i++) {
-              const payload = toSend[i];
-              // build formatted masks from the record and let those values take precedence
-              const record = results[i] || {};
-              const body = Object.assign({}, payload, buildMatriculaPayloadFromRecord(record));
-            // mark this row as pending in the UI
-            setResults(prev => {
-              const copy = Array.isArray(prev) ? [...prev] : [];
-              const rec = Object.assign({}, copy[i] || {});
-              rec.matricula = '...';
-              copy[i] = rec;
-              return copy;
-            });
-            try {
-              try { console.debug('backend:matricula request', { index: i, payload: body }); } catch (_) {}
-              // ensure exact order: cns, acervo, servico, ano, tipoLivro, livro, folha, termo
-              const orderedBody = buildOrderedPayload(body, record);
-              try { logJsonPreview(`Payload enviado (matricula) [${i + 1}/${toSend.length}]`, orderedBody, 2000); } catch (_) {}
-              const resp = await fetch(`${apiURL}/matriculas/generate`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderedBody)
-              });
-              if (resp.ok) {
-                const data = await resp.json();
-                try { console.debug('backend:matricula response', { index: i, data }); } catch (_) {}
-                let m = null;
-                if (data && data.result && data.result.matricula) m = data.result.matricula;
-                else if (data && Array.isArray(data.results) && data.results[0] && data.results[0].matricula) m = data.results[0].matricula;
-                else if (data && data.matricula) m = data.matricula;
-                if (m) {
-                  // update local enriched copy
-                  if (!enriched[i]) enriched[i] = {};
-                  enriched[i].matricula = m;
-                  // push immediate update to UI so column shows matricula as it arrives
-                  setResults(prev => {
-                    const copy = Array.isArray(prev) ? [...prev] : [];
-                    const rec = Object.assign({}, copy[i] || {});
-                    rec.matricula = m;
-                    copy[i] = rec;
-                    return copy;
-                  });
-                } else {
-                  // clear pending state if no matricula returned
-                  setResults(prev => {
-                    const copy = Array.isArray(prev) ? [...prev] : [];
-                    const rec = Object.assign({}, copy[i] || {});
-                    rec.matricula = '';
-                    copy[i] = rec;
-                    return copy;
-                  });
-                  logWarning(`Registro ${i + 1}: backend não retornou matrícula.`);
-                }
-              } else {
-                const text = await resp.text().catch(() => '');
-                try { console.debug('backend:matricula error', { index: i, status: resp.status, text }); } catch (_) {}
-                setResults(prev => {
-                  const copy = Array.isArray(prev) ? [...prev] : [];
-                  const rec = Object.assign({}, copy[i] || {});
-                  rec.matricula = '';
-                  copy[i] = rec;
-                  return copy;
-                });
-                logWarning(`Falha ao obter matrícula para registro ${i + 1}: ${resp.status}`);
-              }
-            } catch (innerE) {
-              setResults(prev => {
-                const copy = Array.isArray(prev) ? [...prev] : [];
-                const rec = Object.assign({}, copy[i] || {});
-                rec.matricula = '';
-                copy[i] = rec;
-                return copy;
-              });
-              logWarning(`Erro ao chamar /api/matriculas/generate para registro ${i + 1}: ${innerE.message || innerE}`);
-            }
-          }
-          const received = (enriched || []).filter(it => it && it.matricula).length;
-          logSuccess(`Recebidas ${received} matriculas do backend.`);
-        } catch (e) {
-          logWarning('Erro ao processar chamadas de matricula: ' + (e.message || e));
-        }
+      if (!Array.isArray(results) || results.length === 0) {
+        logWarning('Nenhum registro para exportar.');
+        return;
       }
 
-      const xml = serializeResultsToXml(enriched.length ? enriched : (results || []));
+      logTitle('Gerar XML (client-side)');
+      const enriched = (Array.isArray(results) ? results : []).map(r => (r ? Object.assign({}, r) : {}));
+      const xml = serializeCargaXml(enriched);
+
       const blob = new Blob([xml], { type: 'application/xml' });
-      const filename = `crc_alterado_${jobId || 'manual'}_${Date.now()}.xml`;
+      const tipo = String(tipoRegistro || 'generico').toLowerCase();
+      const filename = `crc_${tipo}_${jobId || 'manual'}_${Date.now()}.xml`;
       downloadBlobAs(blob, filename);
-      logSuccess('XML gerado e download iniciado.');
+      logSuccess('XML gerado e download iniciado (layout CRC).');
     } catch (e) {
       logError('Falha ao gerar XML: ' + (e.message || e));
     }
