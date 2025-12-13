@@ -873,8 +873,17 @@ export default function LeituraLivros() {
         return;
       }
 
+      // Se existir registro sem matrícula, gera antes de exportar
+      const hasMissingMatricula = (results || []).some(r => !r || !r.matricula || String(r.matricula).trim() === '');
+      let currentResults = results;
+      if (hasMissingMatricula) {
+        logInfo('Gerando matrículas pendentes antes de exportar XML...');
+        const generated = await handleGenerateMatriculas({ silent: true });
+        if (generated && Array.isArray(generated)) currentResults = generated;
+      }
+
       logTitle('Gerar XML (client-side)');
-      const enriched = (Array.isArray(results) ? results : []).map(r => (r ? Object.assign({}, r) : {}));
+      const enriched = (Array.isArray(currentResults) ? currentResults : []).map(r => (r ? Object.assign({}, r) : {}));
       const xml = serializeCargaXml(enriched);
 
       const blob = new Blob([xml], { type: 'application/xml' });
@@ -888,11 +897,16 @@ export default function LeituraLivros() {
   }
 
   // Gera matrículas no backend para os registros atualmente carregados em `results`
-  async function handleGenerateMatriculas() {
+  async function handleGenerateMatriculas(options = {}) {
+    const silent = options && options.silent;
     try {
       if (!Array.isArray(results) || results.length === 0) { logWarning('Nenhum registro para gerar matrícula.'); return; }
-      logTitle('Gerar Matrículas');
-      logInfo('Solicitando geração de matrícula(s) ao backend...');
+      if (!silent) {
+        logTitle('Gerar Matrículas');
+        logInfo('Solicitando geração de matrícula(s) ao backend...');
+      }
+
+      let lastResultsSnapshot = results;
 
       for (let i = 0; i < results.length; i++) {
         const r = results[i] || {};
@@ -921,6 +935,7 @@ export default function LeituraLivros() {
           const rec = Object.assign({}, copy[i] || {});
           rec.matricula = '...';
           copy[i] = rec;
+          lastResultsSnapshot = copy;
           return copy;
         });
 
@@ -942,18 +957,20 @@ export default function LeituraLivros() {
                 const rec = Object.assign({}, copy[i] || {});
                 rec.matricula = m;
                 copy[i] = rec;
+                lastResultsSnapshot = copy;
                 return copy;
               });
-              logSuccess(`Registro ${i + 1}: matrícula gerada (${m}).`);
+              if (!silent) logSuccess(`Registro ${i + 1}: matrícula gerada (${m}).`);
             } else {
               setResults(prev => {
                 const copy = Array.isArray(prev) ? [...prev] : [];
                 const rec = Object.assign({}, copy[i] || {});
                 rec.matricula = '';
                 copy[i] = rec;
+                lastResultsSnapshot = copy;
                 return copy;
               });
-              logWarning(`Registro ${i + 1}: backend não retornou matrícula.`);
+              if (!silent) logWarning(`Registro ${i + 1}: backend não retornou matrícula.`);
             }
           } else {
             const text = await resp.text().catch(() => '');
@@ -962,9 +979,10 @@ export default function LeituraLivros() {
               const rec = Object.assign({}, copy[i] || {});
               rec.matricula = '';
               copy[i] = rec;
+              lastResultsSnapshot = copy;
               return copy;
             });
-            logWarning(`Falha ao gerar matrícula para registro ${i + 1}: ${resp.status} ${text.slice(0,300)}`);
+            if (!silent) logWarning(`Falha ao gerar matrícula para registro ${i + 1}: ${resp.status} ${text.slice(0,300)}`);
           }
         } catch (innerE) {
           setResults(prev => {
@@ -972,16 +990,19 @@ export default function LeituraLivros() {
             const rec = Object.assign({}, copy[i] || {});
             rec.matricula = '';
             copy[i] = rec;
+            lastResultsSnapshot = copy;
             return copy;
           });
-          logWarning(`Erro ao chamar /api/matriculas/generate para registro ${i + 1}: ${innerE.message || innerE}`);
+          if (!silent) logWarning(`Erro ao chamar /api/matriculas/generate para registro ${i + 1}: ${innerE.message || innerE}`);
         }
       }
 
-      const received = (results || []).filter(it => it && it.matricula).length;
-      logSuccess(`Geração concluída. Matrículas presentes: ${received}/${results.length}`);
+      const received = (lastResultsSnapshot || []).filter(it => it && it.matricula).length;
+      if (!silent) logSuccess(`Geração concluída. Matrículas presentes: ${received}/${(lastResultsSnapshot || []).length}`);
+      return lastResultsSnapshot;
     } catch (e) {
       logError('Falha na geração de matrículas: ' + (e.message || e));
+      return results;
     }
   }
 
@@ -1433,7 +1454,7 @@ export default function LeituraLivros() {
     }
   }
 
-  // server-side XML download removed; XML is generated client-side via "Salvar alterações"
+  // server-side XML download removed; XML is generated client-side via "Gerar XML"
 
   return (
     <div style={{ minHeight: '100vh', padding: 24, fontFamily: 'Inter, Arial, sans-serif', background: 'linear-gradient(180deg,#f5f7fb 0%, #eef1f6 100%)' }}>
@@ -1632,7 +1653,7 @@ export default function LeituraLivros() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <h4 style={{ marginTop: 0, color: '#1f2937', marginBottom: 0 }}>Registros extraídos</h4>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                {/* Baixar XML (server-side) removed — use "Salvar alterações" to generate client-side XML */}
+                {/* Baixar XML (server-side) removed — use "Gerar XML" to generate client-side XML */}
                 <button onClick={() => setShowRawResults(s => !s)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer' }}>
                   {showRawResults ? 'Ocultar JSON' : 'Mostrar JSON'}
                 </button>
@@ -1642,7 +1663,7 @@ export default function LeituraLivros() {
                   Gerar Matrículas
                 </button>
                 <button onClick={handleSaveChangesAsXml} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff', cursor: 'pointer' }}>
-                  Salvar alterações
+                  Gerar XML
                 </button>
               </div>
             </div>
