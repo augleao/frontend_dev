@@ -144,11 +144,12 @@ function RelatorioAtosConciliados() {
       let dadosTabela = [];
       relatorios
         .filter(relatorio => {
-          if (periodo.inicio && new Date(relatorio.data_geracao) < new Date(periodo.inicio)) return false;
-          if (periodo.fim) {
+          const dataGeracao = obterDataGeracao(relatorio);
+          if (periodo.inicio && dataGeracao && dataGeracao < new Date(periodo.inicio)) return false;
+          if (periodo.fim && dataGeracao) {
             const dataFim = new Date(periodo.fim);
             dataFim.setHours(23, 59, 59, 999);
-            if (new Date(relatorio.data_geracao) > dataFim) return false;
+            if (dataGeracao > dataFim) return false;
           }
           return true;
         })
@@ -159,10 +160,11 @@ function RelatorioAtosConciliados() {
           } catch {
             dados = {};
           }
+          const dataGeracao = obterDataGeracao(relatorio, dados);
           const atosFiltrados = filtrarAtos(dados.atos || []);
           atosFiltrados.forEach(ato => {
             dadosTabela.push([
-              new Date(relatorio.data_geracao).toLocaleString('pt-BR'),
+              dataGeracao ? dataGeracao.toLocaleString('pt-BR') : '--',
               ato.quantidade,
               ato.codigo,
               ato.descricao,
@@ -284,11 +286,12 @@ function RelatorioAtosConciliados() {
         (data.relatorios || [])
           .filter(rel => {
             // Filtro de período pelo campo Data de Geração
-            if (periodo.inicio && new Date(rel.data_geracao) < new Date(periodo.inicio)) return false;
-            if (periodo.fim) {
+            const dataGeracao = obterDataGeracao(rel);
+            if (periodo.inicio && dataGeracao && dataGeracao < new Date(periodo.inicio)) return false;
+            if (periodo.fim && dataGeracao) {
               const dataFim = new Date(periodo.fim);
               dataFim.setHours(23, 59, 59, 999);
-              if (new Date(rel.data_geracao) > dataFim) return false;
+              if (dataGeracao > dataFim) return false;
             }
             return true;
           })
@@ -345,6 +348,30 @@ function RelatorioAtosConciliados() {
     'Depósito Prévio': ['deposito_previo', 'deposito_previo_valor']
   };
 
+  // Usa a data do relatório salva no JSON (data_hora/data/data_relatorio) antes de cair no campo data_geracao do banco
+  const obterDataGeracao = (relatorio, dadosParsed) => {
+    let dados = dadosParsed;
+    if (!dados) {
+      try {
+        dados = typeof relatorio?.dados_relatorio === 'string'
+          ? JSON.parse(relatorio.dados_relatorio)
+          : relatorio?.dados_relatorio || {};
+      } catch {
+        dados = {};
+      }
+    }
+    const raw = dados?.data_hora || dados?.data || dados?.data_relatorio;
+    if (raw) {
+      const dt = new Date(raw);
+      if (!isNaN(dt)) return dt;
+    }
+    if (relatorio?.data_geracao) {
+      const dt = new Date(relatorio.data_geracao);
+      if (!isNaN(dt)) return dt;
+    }
+    return null;
+  };
+
   const filtrarAtos = (atos) => {
     return atos.filter(ato => {
       // Se não há filtro de forma, passa tudo
@@ -366,11 +393,12 @@ function RelatorioAtosConciliados() {
   let totalDinheiro = 0, totalCartao = 0, totalPix = 0, totalCrc = 0, totalDepositoPrevio = 0, totalAtos = 0;
   relatorios
     .filter(relatorio => {
-      if (periodo.inicio && new Date(relatorio.data_geracao) < new Date(periodo.inicio)) return false;
-      if (periodo.fim) {
+      const dataGeracao = obterDataGeracao(relatorio);
+      if (periodo.inicio && dataGeracao && dataGeracao < new Date(periodo.inicio)) return false;
+      if (periodo.fim && dataGeracao) {
         const dataFim = new Date(periodo.fim);
         dataFim.setHours(23, 59, 59, 999);
-        if (new Date(relatorio.data_geracao) > dataFim) return false;
+        if (dataGeracao > dataFim) return false;
       }
       return true;
     })
@@ -671,11 +699,12 @@ function RelatorioAtosConciliados() {
             relatorios
               .filter(relatorio => {
                 // Filtro de período pelo campo Data de Geração
-                if (periodo.inicio && new Date(relatorio.data_geracao) < new Date(periodo.inicio)) return false;
-                if (periodo.fim) {
+                const dataGeracao = obterDataGeracao(relatorio);
+                if (periodo.inicio && dataGeracao && dataGeracao < new Date(periodo.inicio)) return false;
+                if (periodo.fim && dataGeracao) {
                   const dataFim = new Date(periodo.fim);
                   dataFim.setHours(23, 59, 59, 999);
-                  if (new Date(relatorio.data_geracao) > dataFim) return false;
+                  if (dataGeracao > dataFim) return false;
                 }
                 return true;
               })
@@ -686,6 +715,7 @@ function RelatorioAtosConciliados() {
               } catch {
                 dados = {};
               }
+              const dataGeracao = obterDataGeracao(relatorio, dados);
               const atosFiltrados = filtrarAtos(dados.atos || []);
               if (atosFiltrados.length === 0) return null;
               // Calcular totais por forma de pagamento
@@ -713,7 +743,7 @@ function RelatorioAtosConciliados() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24 }}>
                       <div><strong>ID:</strong> {relatorio.id}</div>
-                      <div><strong>Data de Geração:</strong> {new Date(relatorio.data_geracao).toLocaleString('pt-BR')}</div>
+                      <div><strong>Data de Geração:</strong> {dataGeracao ? dataGeracao.toLocaleString('pt-BR') : '--'}</div>
                       <div><strong>Responsável:</strong> {dados.responsavel}</div>
                       <div><strong>Total em Dinheiro:</strong> R$ {totalDinheiro.toFixed(2)}</div>
                       <div><strong>Total em Cartão:</strong> R$ {totalCartao.toFixed(2)}</div>

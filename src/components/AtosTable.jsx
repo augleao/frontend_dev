@@ -148,6 +148,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
 
       const payload = {
         data_hora: normalizarDataRelatorio(dataRelatorio),
+        data_geracao: normalizarDataRelatorio(dataRelatorio), // mantem compatibilidade com coluna do banco
         serventia: usuario.serventia,
         cargo: usuario.cargo,
         responsavel: responsavel,
