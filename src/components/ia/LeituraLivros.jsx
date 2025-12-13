@@ -62,6 +62,7 @@ export default function LeituraLivros() {
   const [tipoLivroCode, setTipoLivroCode] = useState('1');
   const [maxPorArquivo, setMaxPorArquivo] = useState(2500);
   const [numeroLivro, setNumeroLivro] = useState('');
+  const [acervoGlobal, setAcervoGlobal] = useState('01');
 
   useEffect(() => {
     if (consoleRef.current) {
@@ -520,7 +521,7 @@ export default function LeituraLivros() {
     } catch (_) {}
 
     // Acervo: prefer rec.campos.ACERVO, then try common keys, default '01'
-    const acervoRaw = (rec && rec.campos && (rec.campos.ACERVO || rec.campos.acervo)) || getField(rec, ['acervo', 'ACERVO']) || '01';
+    const acervoRaw = (acervoGlobal && String(acervoGlobal).trim() !== '') ? String(acervoGlobal) : ((rec && rec.campos && (rec.campos.ACERVO || rec.campos.acervo)) || getField(rec, ['acervo', 'ACERVO']) || '01');
 
     // CNS (Código da serventia) must be 7 digits
     const cnsDigits = padLeftDigits(cns || '', 7);
@@ -651,6 +652,7 @@ export default function LeituraLivros() {
             });
             try {
               try { console.debug('backend:matricula request', { index: i, payload: body }); } catch (_) {}
+              try { logJsonPreview(`Payload enviado (matricula) [${i + 1}/${toSend.length}]`, body, 2000); } catch (_) {}
               const resp = await fetch('/api/matriculas/generate', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
               });
@@ -761,8 +763,9 @@ export default function LeituraLivros() {
           return copy;
         });
 
-        try {
+          try {
           try { console.debug('backend:matricula request (batch)', { index: i, payload }); } catch (_) {}
+          try { logJsonPreview(`Payload enviado (matricula) [${i + 1}/${results.length}]`, payload, 2000); } catch (_) {}
           const resp = await fetch('/api/matriculas/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
           if (resp.ok) {
             const data = await resp.json().catch(() => null);
@@ -1322,13 +1325,22 @@ export default function LeituraLivros() {
         <option value="CARGA">CARGA</option>
       </select>
       {/* Moveu Nº do LIVRO para baixo de ACAO, alinhado à esquerda */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
-        <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>Nº do LIVRO</label>
-        <input type="text" inputMode="numeric" pattern="[0-9]*" value={numeroLivro}
-          onChange={e => setNumeroLivro(String(e.target.value || '').replace(/\D/g, ''))}
-          placeholder="somente números"
-          style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14, width: 160 }} />
-      </div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 6, alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>Nº do LIVRO</label>
+            <input type="text" inputMode="numeric" pattern="[0-9]*" value={numeroLivro}
+              onChange={e => setNumeroLivro(String(e.target.value || '').replace(/\D/g, ''))}
+              placeholder="somente números"
+              style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14, width: 160 }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>Acervo</label>
+            <input type="text" inputMode="numeric" pattern="[0-9]*" value={acervoGlobal}
+              onChange={e => setAcervoGlobal(String(e.target.value || '').replace(/\D/g, '').slice(0,2))}
+              placeholder="01"
+              style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14, width: 72, textAlign: 'center' }} />
+          </div>
+        </div>
     </div>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>CNS</label>
@@ -1500,17 +1512,9 @@ export default function LeituraLivros() {
                     {results.map((r, i) => (
                       <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
-                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                            <input value={getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']) || ''}
-                              onChange={e => updateRecordField(i, 'livro', e.target.value)}
-                              style={{ width: 120, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                              <label style={{ fontSize: 10, color: '#6b7280', marginBottom: 4 }}>Acervo</label>
-                              <input value={getField(r, ['acervo', 'ACERVO']) || (r && r.campos && r.campos.ACERVO) || '01'}
-                                onChange={e => updateRecordField(i, 'acervo', String(e.target.value || '').replace(/\D/g, '').slice(0,2))}
-                                style={{ width: 48, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb', textAlign: 'center' }} />
-                            </div>
-                          </div>
+                          <input value={getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']) || ''}
+                            onChange={e => updateRecordField(i, 'livro', e.target.value)}
+                            style={{ width: 120, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
                           <input value={r && r.matricula ? r.matricula : ''} readOnly
