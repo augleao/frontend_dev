@@ -542,6 +542,22 @@ export default function LeituraLivros() {
     };
   }
 
+  // Build an ordered payload object with the exact property sequence required by backend
+  function buildOrderedPayload(defaults, rec) {
+    const formatted = buildMatriculaPayloadFromRecord(rec || {});
+    // prefer formatted values, fall back to defaults
+    return {
+      cns: formatted.cns || (defaults && defaults.cns) || '',
+      acervo: formatted.acervo || (defaults && defaults.acervo) || '',
+      servico: formatted.servico || (defaults && defaults.servico) || '',
+      ano: formatted.ano || (defaults && defaults.ano) || '',
+      tipoLivro: formatted.tipoLivro || (defaults && defaults.tipoLivro) || '',
+      livro: formatted.livro || (defaults && defaults.livro) || '',
+      folha: formatted.folha || (defaults && defaults.folha) || '',
+      termo: formatted.termo || (defaults && defaults.termo) || ''
+    };
+  }
+
   function escapeXml(s) {
     if (s === undefined || s === null) return '';
     return String(s)
@@ -652,9 +668,11 @@ export default function LeituraLivros() {
             });
             try {
               try { console.debug('backend:matricula request', { index: i, payload: body }); } catch (_) {}
-              try { logJsonPreview(`Payload enviado (matricula) [${i + 1}/${toSend.length}]`, body, 2000); } catch (_) {}
+              // ensure exact order: cns, acervo, servico, ano, tipoLivro, livro, folha, termo
+              const orderedBody = buildOrderedPayload(body, record);
+              try { logJsonPreview(`Payload enviado (matricula) [${i + 1}/${toSend.length}]`, orderedBody, 2000); } catch (_) {}
               const resp = await fetch('/api/matriculas/generate', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderedBody)
               });
               if (resp.ok) {
                 const data = await resp.json();
@@ -765,8 +783,9 @@ export default function LeituraLivros() {
 
           try {
           try { console.debug('backend:matricula request (batch)', { index: i, payload }); } catch (_) {}
-          try { logJsonPreview(`Payload enviado (matricula) [${i + 1}/${results.length}]`, payload, 2000); } catch (_) {}
-          const resp = await fetch('/api/matriculas/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          const orderedBody = buildOrderedPayload(payload, r);
+          try { logJsonPreview(`Payload enviado (matricula) [${i + 1}/${results.length}]`, orderedBody, 2000); } catch (_) {}
+          const resp = await fetch('/api/matriculas/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderedBody) });
           if (resp.ok) {
             const data = await resp.json().catch(() => null);
             try { console.debug('backend:matricula response (batch)', { index: i, data }); } catch (_) {}
