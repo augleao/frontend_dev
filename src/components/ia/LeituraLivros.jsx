@@ -671,7 +671,7 @@ export default function LeituraLivros() {
               // ensure exact order: cns, acervo, servico, ano, tipoLivro, livro, folha, termo
               const orderedBody = buildOrderedPayload(body, record);
               try { logJsonPreview(`Payload enviado (matricula) [${i + 1}/${toSend.length}]`, orderedBody, 2000); } catch (_) {}
-              const resp = await fetch('/api/matriculas/generate', {
+              const resp = await fetch(`${apiURL}/matriculas/generate`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderedBody)
               });
               if (resp.ok) {
@@ -785,7 +785,7 @@ export default function LeituraLivros() {
           try { console.debug('backend:matricula request (batch)', { index: i, payload }); } catch (_) {}
           const orderedBody = buildOrderedPayload(payload, r);
           try { logJsonPreview(`Payload enviado (matricula) [${i + 1}/${results.length}]`, orderedBody, 2000); } catch (_) {}
-          const resp = await fetch('/api/matriculas/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderedBody) });
+          const resp = await fetch(`${apiURL}/matriculas/generate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderedBody) });
           if (resp.ok) {
             const data = await resp.json().catch(() => null);
             try { console.debug('backend:matricula response (batch)', { index: i, data }); } catch (_) {}
