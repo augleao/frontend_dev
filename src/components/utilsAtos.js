@@ -38,15 +38,26 @@ export function detectarLayoutPDF(texto) {
   return 'antigo';
 }
 
+// Extrai a data do período especificado no PDF (prioritário)
+function extrairDataPeriodo(texto) {
+  const matchPeriodo = texto.match(/Atos praticados no período de\s*(\d{2}\/\d{2}\/\d{4})\s*até\s*(\d{2}\/\d{2}\/\d{4})/i);
+  if (matchPeriodo) {
+    return matchPeriodo[1];
+  }
+  return null;
+}
+
 // Extração para layout antigo
 export function extrairDadosAntigo(texto) {
+  let dataRelatorio = extrairDataPeriodo(texto);
   const linhas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-  let dataRelatorio = null;
-  for (const linha of linhas) {
-    const matchData = linha.match(/Emissão:\s*(\d{2}\/\d{2}\/\d{4})/);
-    if (matchData) {
-      dataRelatorio = matchData[1];
-      break;
+  if (!dataRelatorio) {
+    for (const linha of linhas) {
+      const matchData = linha.match(/Emissão:\s*(\d{2}\/\d{2}\/\d{4})/);
+      if (matchData) {
+        dataRelatorio = matchData[1];
+        break;
+      }
     }
   }
   const atos = [];
@@ -114,13 +125,15 @@ export function extrairDadosLayout3(texto) {
   console.log("Texto completo:", texto);
   
   const atos = [];
-  let dataRelatorio = null;
+  let dataRelatorio = extrairDataPeriodo(texto);
   
   // Extrair data do relatório
-  const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
-  if (matchData) {
-    dataRelatorio = matchData[1];
-    console.log("Data do relatório encontrada:", dataRelatorio);
+  if (!dataRelatorio) {
+    const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
+    if (matchData) {
+      dataRelatorio = matchData[1];
+      console.log("Data do relatório encontrada:", dataRelatorio);
+    }
   }
   
   // Regex para capturar o padrão específico do Layout 3
@@ -170,13 +183,15 @@ export function extrairDadosNovo(texto) {
   console.log("Texto recebido para extração:", texto.substring(0, 500) + "...");
   
   const atos = [];
-  let dataRelatorio = null;
+  let dataRelatorio = extrairDataPeriodo(texto);
   
   // Extrair data do relatório
-  const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
-  if (matchData) {
-    dataRelatorio = matchData[1];
-    console.log("Data do relatório encontrada:", dataRelatorio);
+  if (!dataRelatorio) {
+    const matchData = texto.match(/(\d{2}\/\d{2}\/\d{4})/);
+    if (matchData) {
+      dataRelatorio = matchData[1];
+      console.log("Data do relatório encontrada:", dataRelatorio);
+    }
   }
   
   const linhas = texto.split("\n");
