@@ -671,6 +671,111 @@ export default function LeituraLivros() {
     }
   }
 
+  // Gera matrículas no backend para os registros atualmente carregados em `results`
+  async function handleGenerateMatriculas() {
+    try {
+      if (!Array.isArray(results) || results.length === 0) { logWarning('Nenhum registro para gerar matrícula.'); return; }
+      logTitle('Gerar Matrículas');
+      logInfo('Solicitando geração de matrícula(s) ao backend...');
+
+      for (let i = 0; i < results.length; i++) {
+        const r = results[i] || {};
+        // monta payload similar ao usado para obter matrícula em handleSaveChangesAsXml
+        const livro = getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']) || (numeroLivro ? String(Number(numeroLivro)) : '');
+        const folha = getExactField(r, ['numeroFolha', 'folha', 'page', 'FOLHA', 'NRO_FOLHA', 'NUM_FOLHA']) || '';
+        const termo = getExactField(r, ['numeroTermo', 'termo', 'term', 'TERMO', 'NRO_TERMO', 'NUM_TERMO', 'ATO']) || '';
+        let dataReg = getField(r, ['dataRegistro', 'data', 'registroData', 'date']);
+        let ano = '';
+        try {
+          if (dataReg) {
+            const d = new Date(dataReg);
+            if (!Number.isNaN(d.getFullYear())) ano = String(d.getFullYear());
+            else {
+              const m = String(dataReg).match(/(\d{4})/);
+              if (m) ano = m[1];
+            }
+          }
+        } catch (_) {}
+
+        const payload = {
+          cns: String(cns || ''),
+          acervo: '00',
+          servico: '00',
+          ano: ano || String(new Date().getFullYear()),
+          tipoLivro: String(tipoLivroCode || '1'),
+          livro: livro || '',
+          folha: folha || '',
+          termo: termo || ''
+        };
+
+        // mark pending in UI
+        setResults(prev => {
+          const copy = Array.isArray(prev) ? [...prev] : [];
+          const rec = Object.assign({}, copy[i] || {});
+          rec.matricula = '...';
+          copy[i] = rec;
+          return copy;
+        });
+
+        try {
+          try { console.debug('backend:matricula request (batch)', { index: i, payload }); } catch (_) {}
+          const resp = await fetch('/api/matriculas/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          if (resp.ok) {
+            const data = await resp.json().catch(() => null);
+            try { console.debug('backend:matricula response (batch)', { index: i, data }); } catch (_) {}
+            let m = null;
+            if (data && data.result && data.result.matricula) m = data.result.matricula;
+            else if (data && Array.isArray(data.results) && data.results[0] && data.results[0].matricula) m = data.results[0].matricula;
+            else if (data && data.matricula) m = data.matricula;
+            if (m) {
+              setResults(prev => {
+                const copy = Array.isArray(prev) ? [...prev] : [];
+                const rec = Object.assign({}, copy[i] || {});
+                rec.matricula = m;
+                copy[i] = rec;
+                return copy;
+              });
+              logSuccess(`Registro ${i + 1}: matrícula gerada (${m}).`);
+            } else {
+              setResults(prev => {
+                const copy = Array.isArray(prev) ? [...prev] : [];
+                const rec = Object.assign({}, copy[i] || {});
+                rec.matricula = '';
+                copy[i] = rec;
+                return copy;
+              });
+              logWarning(`Registro ${i + 1}: backend não retornou matrícula.`);
+            }
+          } else {
+            const text = await resp.text().catch(() => '');
+            setResults(prev => {
+              const copy = Array.isArray(prev) ? [...prev] : [];
+              const rec = Object.assign({}, copy[i] || {});
+              rec.matricula = '';
+              copy[i] = rec;
+              return copy;
+            });
+            logWarning(`Falha ao gerar matrícula para registro ${i + 1}: ${resp.status} ${text.slice(0,300)}`);
+          }
+        } catch (innerE) {
+          setResults(prev => {
+            const copy = Array.isArray(prev) ? [...prev] : [];
+            const rec = Object.assign({}, copy[i] || {});
+            rec.matricula = '';
+            copy[i] = rec;
+            return copy;
+          });
+          logWarning(`Erro ao chamar /api/matriculas/generate para registro ${i + 1}: ${innerE.message || innerE}`);
+        }
+      }
+
+      const received = (results || []).filter(it => it && it.matricula).length;
+      logSuccess(`Geração concluída. Matrículas presentes: ${received}/${results.length}`);
+    } catch (e) {
+      logError('Falha na geração de matrículas: ' + (e.message || e));
+    }
+  }
+
   function downloadBlobAs(blob, filename) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1312,6 +1417,11 @@ export default function LeituraLivros() {
                 {/* Baixar XML (server-side) removed — use "Salvar alterações" to generate client-side XML */}
                 <button onClick={() => setShowRawResults(s => !s)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer' }}>
                   {showRawResults ? 'Ocultar JSON' : 'Mostrar JSON'}
+                </button>
+                <button onClick={handleGenerateMatriculas} disabled={running || results.length === 0}
+                  title={results.length === 0 ? 'Nenhum registro para gerar' : 'Gerar matrículas para os registros mostrados'}
+                  style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb', background: running || results.length === 0 ? '#f1f5f9' : '#fff', cursor: running || results.length === 0 ? 'not-allowed' : 'pointer' }}>
+                  Gerar Matrículas
                 </button>
                 <button onClick={handleSaveChangesAsXml} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff', cursor: 'pointer' }}>
                   Salvar alterações
