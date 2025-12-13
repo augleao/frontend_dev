@@ -760,6 +760,20 @@ export default function LeituraLivros() {
     pushConsole(preview);
   };
 
+  // Loga um snapshot JSON do payload retornado pelo backend (ajuda a diagnosticar campos de livros)
+  const logJsonPreview = (label, data, maxChars = 3500) => {
+    try {
+      const serialized = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      const truncated = serialized.length > maxChars
+        ? `${serialized.slice(0, maxChars)}\n[warning] ... payload truncado (${serialized.length - maxChars} caracteres ocultos)`
+        : serialized;
+      logTitle(label);
+      pushConsole(truncated);
+    } catch (err) {
+      logWarning(`Não foi possível exibir ${label}: ${err?.message || err}`);
+    }
+  };
+
   // Pré-teste simples do agente de IA na montagem da tela (não bloqueante)
   useEffect(() => {
     if (didMountTestRef.current) return;
@@ -992,6 +1006,7 @@ export default function LeituraLivros() {
               setRunning(false);
               logSuccess('Processamento concluído. Buscando resultados...');
               const res = await LeituraLivrosService.getResult(resp.jobId);
+              logJsonPreview('Payload recebido do backend (livros)', res);
               // If the user provided a global "Nº do LIVRO", populate each record's LIVRO field
               const numeroLivroFormatted = numeroLivro ? String(Number(numeroLivro)) : '';
               // support multiple result shapes: prefer res.records, then res.registros, then res (array)
