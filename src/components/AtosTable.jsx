@@ -6,6 +6,22 @@ import MensagemStatus from './MensagemStatus';
 import config from '../config'; 
 import { extrairDadosDoTexto, calcularValorTotalComISS, moedaParaNumero, formatarMoeda } from './utilsAtos';
 
+// Converte a data capturada do PDF (ex: 10/12/2025) para um formato ISO (YYYY-MM-DD) para salvar no backend
+function normalizarDataRelatorio(data) {
+  if (!data) return null;
+  if (data.includes('T')) return new Date(data).toISOString();
+  if (data.includes('/')) {
+    const [dia, mes, ano] = data.split('/');
+    const iso = new Date(parseInt(ano, 10), parseInt(mes, 10) - 1, parseInt(dia, 10));
+    return iso.toISOString();
+  }
+  if (data.includes('-')) {
+    const iso = new Date(data);
+    return iso.toISOString();
+  }
+  return data;
+}
+
 export default function AtosTable({ texto, usuario: usuarioProp }) {
   // Busca o usuário do localStorage caso não venha como prop
   const usuario = usuarioProp || JSON.parse(localStorage.getItem('usuario') || '{}');
@@ -131,7 +147,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       });
 
       const payload = {
-        data_hora: dataRelatorio,
+        data_hora: normalizarDataRelatorio(dataRelatorio),
         serventia: usuario.serventia,
         cargo: usuario.cargo,
         responsavel: responsavel,
