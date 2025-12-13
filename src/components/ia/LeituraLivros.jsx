@@ -482,12 +482,63 @@ export default function LeituraLivros() {
           if (typeof rec.filiacao[1] === 'string') rec.filiacao[1] = { NOME: rec.filiacao[1] };
           rec.filiacao[1].NOME = value;
           break;
+        case 'acervo':
+          rec.campos['ACERVO'] = value;
+          break;
         default:
           // noop
       }
       copy[idx] = rec;
       return copy;
     });
+  }
+
+  // Helper: pad left with zeros; strip non-digits first
+  function padLeftDigits(input, length) {
+    const s = String(input || '').replace(/\D/g, '');
+    if (!s) return '0'.repeat(length);
+    if (s.length >= length) return s.slice(-length);
+    return s.padStart(length, '0');
+  }
+
+  // Build payload fields formatted to required masks for /api/matriculas/generate
+  function buildMatriculaPayloadFromRecord(rec) {
+    const livroRaw = getExactField(rec, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']) || '';
+    const folhaRaw = getExactField(rec, ['numeroFolha', 'folha', 'page', 'FOLHA', 'NRO_FOLHA', 'NUM_FOLHA']) || '';
+    const termoRaw = getExactField(rec, ['numeroTermo', 'termo', 'term', 'TERMO', 'NRO_TERMO', 'NUM_TERMO', 'ATO']) || '';
+    const dataReg = getField(rec, ['dataRegistro', 'data', 'registroData', 'date']);
+    let ano = '';
+    try {
+      if (dataReg) {
+        const d = new Date(dataReg);
+        if (!Number.isNaN(d.getFullYear())) ano = String(d.getFullYear());
+        else {
+          const m = String(dataReg).match(/(\d{4})/);
+          if (m) ano = m[1];
+        }
+      }
+    } catch (_) {}
+
+    // Acervo: prefer rec.campos.ACERVO, then try common keys, default '01'
+    const acervoRaw = (rec && rec.campos && (rec.campos.ACERVO || rec.campos.acervo)) || getField(rec, ['acervo', 'ACERVO']) || '01';
+
+    // CNS (Código da serventia) must be 7 digits
+    const cnsDigits = padLeftDigits(cns || '', 7);
+    // RCPN fixed to 55 (2 digits)
+    const rcpn = padLeftDigits('55', 2);
+    // tipoLivro: single digit (use tipoLivroCode, fallback '1') — keep last digit
+    const tipoLivroDigit = String(tipoLivroCode || '1').replace(/\D/g, '').slice(-1) || '1';
+
+    return {
+      cns: cnsDigits,
+      acervo: padLeftDigits(acervoRaw, 2),
+      servico: rcpn,
+      ano: padLeftDigits(ano || String(new Date().getFullYear()), 4),
+      tipoLivro: tipoLivroDigit,
+      livro: padLeftDigits(livroRaw || (numeroLivro ? String(Number(numeroLivro)) : ''), 5),
+      folha: padLeftDigits(folhaRaw || '', 3),
+      termo: padLeftDigits(termoRaw || '', 7)
+    };
   }
 
   function escapeXml(s) {
@@ -586,8 +637,10 @@ export default function LeituraLivros() {
           logInfo('Solicitando matrícula(s) ao backend (uma por registro)...');
           // Request matricula per record so we can log and map precisely and update UI as responses arrive
           for (let i = 0; i < toSend.length; i++) {
-            const payload = toSend[i];
-            const body = Object.assign({}, payload, {});
+              const payload = toSend[i];
+              // build formatted masks from the record and let those values take precedence
+              const record = results[i] || {};
+              const body = Object.assign({}, payload, buildMatriculaPayloadFromRecord(record));
             // mark this row as pending in the UI
             setResults(prev => {
               const copy = Array.isArray(prev) ? [...prev] : [];
@@ -697,16 +750,7 @@ export default function LeituraLivros() {
           }
         } catch (_) {}
 
-        const payload = {
-          cns: String(cns || ''),
-          acervo: '00',
-          servico: '00',
-          ano: ano || String(new Date().getFullYear()),
-          tipoLivro: String(tipoLivroCode || '1'),
-          livro: livro || '',
-          folha: folha || '',
-          termo: termo || ''
-        };
+        const payload = buildMatriculaPayloadFromRecord(r);
 
         // mark pending in UI
         setResults(prev => {
@@ -1456,9 +1500,17 @@ export default function LeituraLivros() {
                     {results.map((r, i) => (
                       <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
-                          <input value={getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']) || ''}
-                            onChange={e => updateRecordField(i, 'livro', e.target.value)}
-                            style={{ width: 120, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <input value={getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']) || ''}
+                              onChange={e => updateRecordField(i, 'livro', e.target.value)}
+                              style={{ width: 120, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <label style={{ fontSize: 10, color: '#6b7280', marginBottom: 4 }}>Acervo</label>
+                              <input value={getField(r, ['acervo', 'ACERVO']) || (r && r.campos && r.campos.ACERVO) || '01'}
+                                onChange={e => updateRecordField(i, 'acervo', String(e.target.value || '').replace(/\D/g, '').slice(0,2))}
+                                style={{ width: 48, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb', textAlign: 'center' }} />
+                            </div>
+                          </div>
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
                           <input value={r && r.matricula ? r.matricula : ''} readOnly
