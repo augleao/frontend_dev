@@ -843,6 +843,51 @@ export default function LeituraLivros() {
     };
   }, []);
 
+  // Global handlers to capture uncaught errors and promise rejections and forward them to the in-app console
+  useEffect(() => {
+    const onUnhandledRejection = (ev) => {
+      try { console.debug('window:unhandledrejection', ev); } catch (_) {}
+      try {
+        const reason = ev && ev.reason ? ev.reason : ev;
+        const txt = typeof reason === 'string' ? reason : JSON.stringify(reason, null, 2);
+        pushConsole(`[error] ${nowHHMMSS()} - UnhandledRejection: ${String(txt).slice(0,3000)}`);
+      } catch (e) {
+        pushConsole(`[error] ${nowHHMMSS()} - UnhandledRejection (cannot serialize reason)`);
+      }
+    };
+
+    const onError = (ev) => {
+      try { console.debug('window:error', ev); } catch (_) {}
+      try {
+        const msg = ev && (ev.message || (ev.error && ev.error.message)) ? (ev.message || ev.error.message) : String(ev);
+        pushConsole(`[error] ${nowHHMMSS()} - Error: ${String(msg).slice(0,2000)}`);
+      } catch (e) {
+        pushConsole(`[error] ${nowHHMMSS()} - Error (cannot serialize event)`);
+      }
+    };
+
+    const onMessage = (ev) => {
+      try { console.debug('window:message', ev); } catch (_) {}
+      try {
+        let preview = '';
+        if (typeof ev.data === 'string') preview = ev.data.slice(0,2000);
+        else preview = JSON.stringify(ev.data).slice(0,2000);
+        pushConsole(`[info] ${nowHHMMSS()} - window.message from ${ev.origin || 'local'}: ${preview}`);
+      } catch (e) {
+        // ignore serialization errors
+      }
+    };
+
+    window.addEventListener('unhandledrejection', onUnhandledRejection);
+    window.addEventListener('error', onError);
+    window.addEventListener('message', onMessage);
+    return () => {
+      window.removeEventListener('unhandledrejection', onUnhandledRejection);
+      window.removeEventListener('error', onError);
+      window.removeEventListener('message', onMessage);
+    };
+  }, []);
+
   async function startProcessing() {
     // Ao iniciar, rola a tela para centralizar o console/terminal na viewport (método robusto)
     try {
@@ -1064,7 +1109,8 @@ export default function LeituraLivros() {
             }
           }
         } catch (e) {
-          logWarning('Erro ao consultar status do job.');
+          try { console.error('Erro ao consultar status do job', e); } catch (_) {}
+          logWarning('Erro ao consultar status do job: ' + (e && (e.message || e.toString()) ? (e.message || e.toString()) : String(e)));
         }
       }, 2000);
     } catch (e) {
