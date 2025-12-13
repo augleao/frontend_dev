@@ -523,8 +523,8 @@ export default function LeituraLivros() {
     // Acervo: prefer rec.campos.ACERVO, then try common keys, default '01'
     const acervoRaw = (acervoGlobal && String(acervoGlobal).trim() !== '') ? String(acervoGlobal) : ((rec && rec.campos && (rec.campos.ACERVO || rec.campos.acervo)) || getField(rec, ['acervo', 'ACERVO']) || '01');
 
-    // CNS (Código da serventia) must be 7 digits
-    const cnsDigits = padLeftDigits(cns || '', 7);
+    // CNS (Código da serventia) must be 6 digits
+    const cnsDigits = padLeftDigits(cns || '', 6);
     // RCPN fixed to 55 (2 digits)
     const rcpn = padLeftDigits('55', 2);
     // tipoLivro: single digit (use tipoLivroCode, fallback '1') — keep last digit
