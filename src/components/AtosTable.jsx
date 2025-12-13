@@ -110,6 +110,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       }
 
       const token = localStorage.getItem('token');
+  const dataGeracaoNormalizada = normalizarDataRelatorio(dataRelatorio);
 
       const atosDetalhados = atosComISS.map(ato => {
         const pagamentoDinheiro = ato.pagamentoDinheiro || { quantidade: 0, valor: 0 };
@@ -147,8 +148,8 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
       });
 
       const payload = {
-        data_hora: normalizarDataRelatorio(dataRelatorio),
-        data_geracao: normalizarDataRelatorio(dataRelatorio), // mantem compatibilidade com coluna do banco
+        data_hora: dataGeracaoNormalizada,
+        data_geracao: dataGeracaoNormalizada, // mantem compatibilidade com coluna do banco
         serventia: usuario.serventia,
         cargo: usuario.cargo,
         responsavel: responsavel,
@@ -167,7 +168,7 @@ export default function AtosTable({ texto, usuario: usuarioProp }) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ dadosRelatorio: payload })
+        body: JSON.stringify({ dadosRelatorio: payload, data_geracao: dataGeracaoNormalizada })
       });
 
       const data = await response.json();
