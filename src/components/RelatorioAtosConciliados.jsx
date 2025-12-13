@@ -227,6 +227,40 @@ function RelatorioAtosConciliados() {
     // eslint-disable-next-line
   }, []);
 
+  // Exclui relatório no backend e remove da lista local
+  const excluirRelatorio = async (id) => {
+    const confirmar = window.confirm('Deseja realmente excluir este relatório?');
+    if (!confirmar) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Token não encontrado.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch(`${config.apiURL}/excluir-relatorio/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        alert(data.message || 'Erro ao excluir relatório.');
+        return;
+      }
+
+      setRelatorios(prev => prev.filter(r => r.id !== id));
+    } catch (error) {
+      alert('Erro ao excluir relatório.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const carregarRelatorios = async () => {
     setLoading(true);
     try {
@@ -676,15 +710,34 @@ function RelatorioAtosConciliados() {
                   padding: 16,
                   marginBottom: 0
                 }}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginBottom: 12 }}>
-                    <div><strong>ID:</strong> {relatorio.id}</div>
-                    <div><strong>Data de Geração:</strong> {new Date(relatorio.data_geracao).toLocaleString('pt-BR')}</div>
-                    <div><strong>Responsável:</strong> {dados.responsavel}</div>
-                    <div><strong>Total em Dinheiro:</strong> R$ {totalDinheiro.toFixed(2)}</div>
-                    <div><strong>Total em Cartão:</strong> R$ {totalCartao.toFixed(2)}</div>
-                    <div><strong>Total em PIX:</strong> R$ {totalPix.toFixed(2)}</div>
-                    <div><strong>Total em CRC:</strong> R$ {totalCrc.toFixed(2)}</div>
-                    <div><strong>Total em Depósito Prévio:</strong> R$ {totalDepositoPrevio.toFixed(2)}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24 }}>
+                      <div><strong>ID:</strong> {relatorio.id}</div>
+                      <div><strong>Data de Geração:</strong> {new Date(relatorio.data_geracao).toLocaleString('pt-BR')}</div>
+                      <div><strong>Responsável:</strong> {dados.responsavel}</div>
+                      <div><strong>Total em Dinheiro:</strong> R$ {totalDinheiro.toFixed(2)}</div>
+                      <div><strong>Total em Cartão:</strong> R$ {totalCartao.toFixed(2)}</div>
+                      <div><strong>Total em PIX:</strong> R$ {totalPix.toFixed(2)}</div>
+                      <div><strong>Total em CRC:</strong> R$ {totalCrc.toFixed(2)}</div>
+                      <div><strong>Total em Depósito Prévio:</strong> R$ {totalDepositoPrevio.toFixed(2)}</div>
+                    </div>
+                    <button
+                      onClick={() => excluirRelatorio(relatorio.id)}
+                      style={{
+                        padding: '8px 14px',
+                        background: '#f87171',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 8,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 8px rgba(220, 38, 38, 0.10)',
+                        minWidth: 120
+                      }}
+                      title="Excluir este relatório"
+                    >
+                      Excluir
+                    </button>
                   </div>
                   <div style={{ marginTop: 12 }}>
                     <strong style={{ color: '#764ba2' }}>Atos Conciliados:</strong>
