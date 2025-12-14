@@ -278,7 +278,6 @@ function RelatorioAtosConciliados() {
         }
       });
       const data = await response.json();
-      console.debug('[RelatorioAtosConciliados] resposta /meus-relatorios', { raw: data });
       if (response.ok) {
         setRelatorios(data.relatorios || []);
         // Coletar formas de pagamento e tipos de ato únicos considerando apenas relatórios do período
@@ -373,7 +372,6 @@ function RelatorioAtosConciliados() {
     const hora = String(dt.getHours()).padStart(2, '0');
     const min = String(dt.getMinutes()).padStart(2, '0');
     const formatted = `${dia}-${mes}-${ano} ${hora}:${min}`;
-    console.debug('[RelatorioAtosConciliados] formatarDataHora', { valor, parsed: dt.toString(), formatted });
     return formatted;
   };
 
@@ -382,7 +380,6 @@ function RelatorioAtosConciliados() {
     // Prioriza a data_geracao do backend (contém horário correto), depois cai para campos do JSON
     if (relatorio?.data_geracao) {
       const dt = new Date(relatorio.data_geracao);
-      console.debug('[RelatorioAtosConciliados] obterDataGeracao data_geracao', { raw: relatorio.data_geracao, parsed: dt.toString(), valid: !isNaN(dt) });
       if (!isNaN(dt)) return dt;
     }
 
@@ -400,14 +397,11 @@ function RelatorioAtosConciliados() {
     if (raw) {
       const br = parseDataBr(raw);
       if (br) {
-        console.debug('[RelatorioAtosConciliados] obterDataGeracao raw JSON (BR)', { raw, parsed: br.toString(), valid: true });
         return br;
       }
       const dt = new Date(raw);
-      console.debug('[RelatorioAtosConciliados] obterDataGeracao raw JSON', { raw, parsed: dt.toString(), valid: !isNaN(dt) });
       if (!isNaN(dt)) return dt;
     }
-    console.debug('[RelatorioAtosConciliados] obterDataGeracao fallback null', { relatorioId: relatorio?.id });
     return null;
   };
 
