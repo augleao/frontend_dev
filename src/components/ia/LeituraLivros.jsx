@@ -1189,7 +1189,10 @@ export default function LeituraLivros() {
         logTitle('Checando disponibilidade do agente de IA (health)');
         // Chama apenas a rota de health do provedor de IA — não usamos /identificar-tipo aqui
         try {
-          const h = await withTimeout(fetch(`${apiURL}/ia/health`), 8000, 'ia-health');
+          const token = localStorage.getItem('token');
+          const h = await withTimeout(fetch(`${apiURL}/ia/health`, {
+            headers: { Authorization: `Bearer ${token || ''}` }
+          }), 8000, 'ia-health');
           if (h && h.ok) {
             const jd = await h.json().catch(() => null);
             try { console.debug('backend:ia/health', jd); } catch (_) {}

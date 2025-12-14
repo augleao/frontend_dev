@@ -12,7 +12,11 @@ export default function PromptsIAAdmin() {
     setLoading(true);
     setError('');
     try {
-      const r = await fetch(`${config.apiURL}/ia/prompts`);
+      const token = localStorage.getItem('token');
+      const r = await fetch(`${config.apiURL}/ia/prompts`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }
+      });
       if (!r.ok) throw new Error(`Falha ao carregar (${r.status})`);
       const data = await r.json();
       setItems(Array.isArray(data) ? data : []);
@@ -28,9 +32,10 @@ export default function PromptsIAAdmin() {
   async function save(indexador, prompt) {
     setError('');
     try {
+      const token = localStorage.getItem('token');
       const r = await fetch(`${config.apiURL}/ia/prompts/${encodeURIComponent(indexador)}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ prompt })
       });
       if (!r.ok) throw new Error(`Falha ao salvar (${r.status})`);
@@ -44,7 +49,11 @@ export default function PromptsIAAdmin() {
     if (!window.confirm(`Apagar prompt "${indexador}"?`)) return;
     setError('');
     try {
-      const r = await fetch(`${config.apiURL}/ia/prompts/${encodeURIComponent(indexador)}`, { method: 'DELETE' });
+      const token = localStorage.getItem('token');
+      const r = await fetch(`${config.apiURL}/ia/prompts/${encodeURIComponent(indexador)}`, {
+        method: 'DELETE',
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
+      });
       if (!r.ok) throw new Error(`Falha ao apagar (${r.status})`);
       await load();
     } catch (e) {
