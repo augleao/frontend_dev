@@ -470,24 +470,34 @@ export default function LeituraLivros() {
         case 'livro':
           // prefer guardar em rec.campos em maiúscula
           rec.campos['LIVRO'] = value;
+          // também atualize chaves no nível raiz para que getExactField retorne o novo valor
+          rec.numeroLivro = value;
+          rec.livro = value;
           break;
         case 'folha':
           rec.campos['FOLHA'] = value;
+          rec.numeroFolha = value;
+          rec.folha = value;
           break;
         case 'termo':
           rec.campos['TERMO'] = value;
+          rec.numeroTermo = value;
+          rec.termo = value;
           break;
         case 'dataRegistro':
           rec.campos['DATAREGISTRO'] = value;
+          rec.dataRegistro = value;
           break;
         case 'nome':
           rec.campos['NOMEREGISTRADO'] = value;
+          rec.nomeRegistrado = value;
           break;
         case 'sexo':
           rec.campos['SEXO'] = value;
           break;
         case 'dataNascimento':
           rec.campos['DATANASCIMENTO'] = value;
+          rec.dataNascimento = value;
           break;
         case 'filiacao1':
           if (!Array.isArray(rec.filiacao)) rec.filiacao = [{ NOME: '' }, { NOME: '' }];
