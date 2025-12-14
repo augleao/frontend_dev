@@ -114,63 +114,86 @@ export default function LeituraLivros() {
       const arr = Array.from(filesList || []);
       if (!arr.length) return;
       logTitle('Extrair Imagens (.p7s)');
-      logInfo(`Enviando ${arr.length} arquivo(s) para extração...`);
-      const resp = await LeituraLivrosService.extractP7s(arr);
-      // Debug: mostrar payload retornado pelo backend no DevTools
-      try { console.debug('backend:extractP7s response', resp); } catch (_) {}
-      // resposta pode ser { blob } ou JSON
+      logInfo(`Iniciando extração de ${arr.length} arquivo(s) .p7s...`);
+
       const filesToShow = [];
-      if (resp && resp.blob) {
-        // único blob retornado (assume payload único)
-        const ct = resp.contentType || 'application/octet-stream';
-        const filename = 'payload' + extFromContentType(ct);
-        filesToShow.push({ filename, blob: resp.blob, contentType: ct });
-      } else if (resp && Array.isArray(resp)) {
-        for (let i = 0; i < resp.length; i++) {
-          const it = resp[i];
-          if (it && it.buffer && it.buffer.data) {
+
+      // helper para processar resposta e empilhar blobs
+      const pushFromResp = (resp, baseName) => {
+        try { console.debug('backend:extractP7s response', resp); } catch (_) {}
+        if (!resp) return;
+        if (resp.blob) {
+          const ct = resp.contentType || 'application/octet-stream';
+          const filename = (baseName || 'payload') + extFromContentType(ct);
+          filesToShow.push({ filename, blob: resp.blob, contentType: ct });
+          return;
+        }
+        if (Array.isArray(resp)) {
+          for (let i = 0; i < resp.length; i++) {
+            const it = resp[i];
+            if (it && it.buffer && it.buffer.data) {
+              const u8 = new Uint8Array(it.buffer.data);
+              const blob = new Blob([u8], { type: it.contentType || '' });
+              filesToShow.push({ filename: (it.filename || `${baseName || 'payload'}_${i + 1}`) + extFromContentType(it.contentType), blob, contentType: it.contentType || '' });
+              continue;
+            }
+            if (it && it.base64) {
+              const bin = atob(it.base64);
+              const len = bin.length;
+              const u8 = new Uint8Array(len);
+              for (let j = 0; j < len; j++) u8[j] = bin.charCodeAt(j);
+              const blob = new Blob([u8], { type: it.contentType || '' });
+              filesToShow.push({ filename: (it.filename || `${baseName || 'payload'}_${i + 1}`) + extFromContentType(it.contentType), blob, contentType: it.contentType || '' });
+              continue;
+            }
+            logWarning(`Resposta inesperada para item ${i}: ${JSON.stringify(it).slice(0,200)}`);
+          }
+          return;
+        }
+        if (typeof resp === 'object') {
+          const it = resp;
+          if (it.buffer && it.buffer.data) {
             const u8 = new Uint8Array(it.buffer.data);
             const blob = new Blob([u8], { type: it.contentType || '' });
-            filesToShow.push({ filename: it.filename || `payload_${i + 1}` + extFromContentType(it.contentType), blob, contentType: it.contentType || '' });
-            continue;
-          }
-          if (it && it.base64) {
+            filesToShow.push({ filename: (it.filename || baseName || 'payload') + extFromContentType(it.contentType), blob, contentType: it.contentType || '' });
+          } else if (it.base64) {
             const bin = atob(it.base64);
             const len = bin.length;
             const u8 = new Uint8Array(len);
             for (let j = 0; j < len; j++) u8[j] = bin.charCodeAt(j);
             const blob = new Blob([u8], { type: it.contentType || '' });
-            filesToShow.push({ filename: it.filename || `payload_${i + 1}` + extFromContentType(it.contentType), blob, contentType: it.contentType || '' });
-            continue;
+            filesToShow.push({ filename: (it.filename || baseName || 'payload') + extFromContentType(it.contentType), blob, contentType: it.contentType || '' });
           }
-          logWarning(`Resposta inesperada para item ${i}: ${JSON.stringify(it).slice(0,200)}`);
         }
-      } else if (resp && typeof resp === 'object') {
-        const it = resp;
-        if (it.buffer && it.buffer.data) {
-          const u8 = new Uint8Array(it.buffer.data);
-          const blob = new Blob([u8], { type: it.contentType || '' });
-          filesToShow.push({ filename: it.filename || 'payload' + extFromContentType(it.contentType), blob, contentType: it.contentType || '' });
-        } else if (it.base64) {
-          const bin = atob(it.base64);
-          const len = bin.length;
-          const u8 = new Uint8Array(len);
-          for (let j = 0; j < len; j++) u8[j] = bin.charCodeAt(j);
-          const blob = new Blob([u8], { type: it.contentType || '' });
-          filesToShow.push({ filename: it.filename || 'payload' + extFromContentType(it.contentType), blob, contentType: it.contentType || '' });
+      };
+
+      // Se houver mais de um arquivo, processe sequencialmente chamando o serviço para cada um
+      if (arr.length > 1) {
+        for (let idx = 0; idx < arr.length; idx++) {
+          const single = arr[idx];
+          try {
+            logInfo(`Extraindo arquivo ${idx + 1}/${arr.length}: ${single.name || 'file'}`);
+            const resp = await LeituraLivrosService.extractP7s([single]);
+            pushFromResp(resp, single.name ? single.name.replace(/\.p7s$/i, '') : `payload_${idx + 1}`);
+            // leve uma pequena pausa para não sobrecarregar o backend
+            await new Promise(res => setTimeout(res, 120));
+          } catch (e) {
+            logWarning(`Falha ao extrair ${single.name || ('item ' + (idx + 1))}: ${e?.message || e}`);
+          }
         }
+      } else {
+        // único arquivo: mantenha compatibilidade com comportamento anterior
+        logInfo(`Enviando 1 arquivo para extração...`);
+        const resp = await LeituraLivrosService.extractP7s(arr);
+        pushFromResp(resp, arr[0] && arr[0].name ? arr[0].name.replace(/\.p7s$/i, '') : 'payload');
       }
+
       if (filesToShow.length) {
         setExtractedFiles(filesToShow);
         setShowExtractModal(true);
         logSuccess(`Extraídos ${filesToShow.length} arquivo(s). Escolha o destino para salvar.`);
       } else {
-        // Se o serviço retornou debugText (blob->text), logue para diagnóstico
-        if (resp && resp.debugText) {
-          logWarning('Resposta de extração não continha payloads reconhecíveis. Debug: ' + String(resp.debugText).slice(0,1000));
-        } else {
-          logWarning('Resposta de extração não continha payloads reconhecíveis.');
-        }
+        logWarning('Resposta de extração não continha payloads reconhecíveis.');
       }
     } catch (e) {
       logError('Falha ao extrair .p7s: ' + (e.message || e));
