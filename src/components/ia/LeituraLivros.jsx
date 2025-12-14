@@ -600,6 +600,19 @@ export default function LeituraLivros() {
       .replace(/'/g, '&apos;');
   }
 
+  // Normalize model/resource keys (strip provider prefixes and cosmetic suffixes)
+  function normalizeModelKey(name) {
+    if (!name) return '';
+    let s = String(name).trim();
+    s = s.replace(/^projects\/[^^\/]+\/locations\/[^^\/]+\/models\//i, '');
+    s = s.replace(/^projects\/[^^\/]+\/models\//i, '');
+    s = s.replace(/^models\//i, '');
+    s = s.replace(/-latest$/i, '');
+    s = s.replace(/-v?\d+(?:\.\d+)?$/i, '');
+    s = s.replace(/[\s_\/]+/g, '-').replace(/[^a-z0-9\-\.]/gi, '');
+    return s.toLowerCase();
+  }
+
   // Formata datas para exibição na tabela: DD-MM-AAAA
   function formatDateDisplay(v) {
     if (v === undefined || v === null) return '';
@@ -1182,7 +1195,10 @@ export default function LeituraLivros() {
             try { console.debug('backend:ia/health', jd); } catch (_) {}
             const modelName = jd && (jd.providerModel || jd.resolvedModel || jd.provider) ? (jd.providerModel || jd.resolvedModel || jd.provider) : null;
             logSuccess('✓ Agente online');
-            if (modelName) logInfo(`Agente de IA: ${modelName}`);
+            if (modelName) {
+              const disp = normalizeModelKey(modelName) || modelName;
+              logInfo(`Agente de IA: ${disp}`);
+            }
           } else {
             const statusCode = h ? h.status : 'no-response';
             logWarning(`⚠ Agente possivelmente indisponível (health status: ${statusCode}).`);
