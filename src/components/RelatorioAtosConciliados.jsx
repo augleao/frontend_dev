@@ -278,6 +278,7 @@ function RelatorioAtosConciliados() {
         }
       });
       const data = await response.json();
+      console.debug('[RelatorioAtosConciliados] resposta /meus-relatorios', { raw: data });
       if (response.ok) {
         setRelatorios(data.relatorios || []);
         // Coletar formas de pagamento e tipos de ato únicos considerando apenas relatórios do período
