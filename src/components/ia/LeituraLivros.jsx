@@ -232,13 +232,8 @@ export default function LeituraLivros() {
       }
       if (v !== undefined && v !== null && String(v).toString().trim() !== '') return v;
     }
-    // como fallback, se record.campos existir, tente algumas chaves comuns em MAIÚSCULAS
-    if (record.campos && typeof record.campos === 'object') {
-      const common = ['NOMEREGISTRADO', 'DATAREGISTRO', 'DATANASCIMENTO', 'SEXO'];
-      for (const c of common) {
-        if (record.campos[c]) return record.campos[c];
-      }
-    }
+    // Não usar fallback genérico aqui — retornos incorretos (ex.: data no lugar do nome)
+    // Caso nada seja encontrado nos caminhos testados acima, devolve string vazia.
     return '';
   }
 
