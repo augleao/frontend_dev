@@ -357,7 +357,7 @@ function RelatorioAtosConciliados() {
     const ano = dt.getFullYear();
     const hora = String(dt.getHours()).padStart(2, '0');
     const min = String(dt.getMinutes()).padStart(2, '0');
-    return `${dia}/${mes}/${ano} ${hora}:${min}`;
+    return `${dia}-${mes}-${ano} ${hora}:${min}`;
   };
 
   // Usa a data do relatório salva no JSON (data_hora/data/data_relatorio) antes de cair no campo data_geracao do banco
