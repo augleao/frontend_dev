@@ -572,6 +572,31 @@ export default function LeituraLivros() {
       .replace(/'/g, '&apos;');
   }
 
+  // Formata datas para exibição na tabela: DD-MM-AAAA
+  function formatDateDisplay(v) {
+    if (v === undefined || v === null) return '';
+    const s = String(v).trim();
+    if (!s) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+
+    // Tenta criar Date a partir de string (aceita ISO e timestamps)
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) {
+      return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`;
+    }
+
+    // dd/mm/yyyy ou dd-mm-yyyy
+    const m1 = s.match(/^(\d{2})[\/-](\d{2})[\/-](\d{4})$/);
+    if (m1) return `${m1[1]}-${m1[2]}-${m1[3]}`;
+
+    // yyyy-mm-dd ou yyyy/mm/dd
+    const m2 = s.match(/^(\d{4})[\/-](\d{2})[\/-](\d{2})$/);
+    if (m2) return `${m2[3]}-${m2[2]}-${m2[1]}`;
+
+    // fallback: retorna a string original
+    return s;
+  }
+
   function serializeNascimentoXml(arr) {
     const cnsDigits = padLeftDigits(cns || '', 6);
     const lines = [
@@ -1719,7 +1744,7 @@ export default function LeituraLivros() {
                             style={{ width: 100, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
-                          <input value={getField(r, ['dataRegistro', 'data', 'registroData', 'date']) || ''}
+                          <input value={formatDateDisplay(getField(r, ['dataRegistro', 'data', 'registroData', 'date'])) || ''}
                             onChange={e => updateRecordField(i, 'dataRegistro', e.target.value)}
                             style={{ width: 140, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
                         </td>
@@ -1736,7 +1761,7 @@ export default function LeituraLivros() {
                           </select>
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
-                          <input value={getField(r, ['dataNascimento', 'nascimento', 'birthDate', 'datanascimento']) || ''}
+                          <input value={formatDateDisplay(getField(r, ['dataNascimento', 'nascimento', 'birthDate', 'datanascimento'])) || ''}
                             onChange={e => updateRecordField(i, 'dataNascimento', e.target.value)}
                             style={{ width: 140, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
                         </td>
