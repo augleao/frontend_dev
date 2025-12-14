@@ -357,7 +357,9 @@ function RelatorioAtosConciliados() {
     const ano = dt.getFullYear();
     const hora = String(dt.getHours()).padStart(2, '0');
     const min = String(dt.getMinutes()).padStart(2, '0');
-    return `${dia}-${mes}-${ano} ${hora}:${min}`;
+    const formatted = `${dia}-${mes}-${ano} ${hora}:${min}`;
+    console.debug('[RelatorioAtosConciliados] formatarDataHora', { valor, parsed: dt.toString(), formatted });
+    return formatted;
   };
 
   // Usa a data do relatório salva no JSON (data_hora/data/data_relatorio) antes de cair no campo data_geracao do banco
@@ -375,12 +377,15 @@ function RelatorioAtosConciliados() {
     const raw = dados?.data_hora || dados?.data || dados?.data_relatorio;
     if (raw) {
       const dt = new Date(raw);
+      console.debug('[RelatorioAtosConciliados] obterDataGeracao raw JSON', { raw, parsed: dt.toString(), valid: !isNaN(dt) });
       if (!isNaN(dt)) return dt;
     }
     if (relatorio?.data_geracao) {
       const dt = new Date(relatorio.data_geracao);
+      console.debug('[RelatorioAtosConciliados] obterDataGeracao data_geracao', { raw: relatorio.data_geracao, parsed: dt.toString(), valid: !isNaN(dt) });
       if (!isNaN(dt)) return dt;
     }
+    console.debug('[RelatorioAtosConciliados] obterDataGeracao fallback null', { relatorioId: relatorio?.id });
     return null;
   };
 
