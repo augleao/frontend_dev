@@ -494,6 +494,10 @@ export default function LeituraLivros() {
     });
   }
 
+  function removeRecord(idx) {
+    setResults(prev => (Array.isArray(prev) ? prev.filter((_, i) => i !== idx) : []));
+  }
+
   // Helper: pad left with zeros; strip non-digits first
   function padLeftDigits(input, length) {
     const s = String(input || '').replace(/\D/g, '');
@@ -1689,6 +1693,7 @@ export default function LeituraLivros() {
                       <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Data de nascimento</th>
                       <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Filiação 1</th>
                       <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Filiação 2</th>
+                      <th style={{ textAlign: 'left', padding: '10px 12px', borderBottom: '2px solid #e6eef6' }}>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1740,6 +1745,14 @@ export default function LeituraLivros() {
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
                           <input value={getFiliacao(r, 1) || ''} onChange={e => updateRecordField(i, 'filiacao2', e.target.value)} style={{ width: 220, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                        </td>
+                        <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
+                          <button
+                            onClick={() => removeRecord(i)}
+                            style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fee2e2', color: '#b91c1c', cursor: 'pointer', fontWeight: 700 }}
+                          >
+                            Excluir
+                          </button>
                         </td>
                       </tr>
                     ))}
