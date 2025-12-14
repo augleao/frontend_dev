@@ -364,7 +364,19 @@ function registerIaRoutes(app) {
       }
 
       const providerModel = Array.isArray(candidates) && candidates.length ? candidates[0] : null;
-      return res.json({ ok: true, provider: 'db', providerModel, providerModelCandidates: candidates, serventiaNome: effectiveServentiaNome || detectedServentiaFromDb, stub });
+      // Normalize provider model and candidate keys for easier display in UIs
+      const providerModelNormalized = providerModel ? normalizeModelKey(providerModel) : null;
+      const providerModelCandidatesNormalized = Array.isArray(candidates) ? candidates.map((m) => normalizeModelKey(m)) : [];
+      return res.json({
+        ok: true,
+        provider: 'db',
+        providerModel,
+        providerModelNormalized,
+        providerModelCandidates: candidates,
+        providerModelCandidatesNormalized,
+        serventiaNome: effectiveServentiaNome || detectedServentiaFromDb,
+        stub
+      });
     } catch (e) {
       // Fallback to old shape if anything goes wrong
       return res.json({ ok: true, provider: 'db-only', stub: process.env.IA_STUB === 'true' });
