@@ -349,9 +349,23 @@ function RelatorioAtosConciliados() {
     'Depósito Prévio': ['deposito_previo', 'deposito_previo_valor']
   };
 
+  const parseDataBr = (raw) => {
+    if (typeof raw !== 'string') return null;
+    const m = raw.match(/^\s*(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})(?:\s+(\d{1,2}):(\d{2}))?\s*$/);
+    if (!m) return null;
+    const dia = Number(m[1]);
+    const mes = Number(m[2]);
+    const ano = Number(m[3]);
+    const hora = Number(m[4] || 0);
+    const minuto = Number(m[5] || 0);
+    if (dia < 1 || dia > 31 || mes < 1 || mes > 12 || hora > 23 || minuto > 59) return null;
+    const dt = new Date(ano, mes - 1, dia, hora, minuto);
+    return isNaN(dt) ? null : dt;
+  };
+
   const formatarDataHora = (valor) => {
     if (!valor) return '--';
-    const dt = valor instanceof Date ? valor : new Date(valor);
+    const dt = valor instanceof Date ? valor : (parseDataBr(valor) || new Date(valor));
     if (isNaN(dt)) return '--';
     const dia = String(dt.getDate()).padStart(2, '0');
     const mes = String(dt.getMonth() + 1).padStart(2, '0');
@@ -365,6 +379,13 @@ function RelatorioAtosConciliados() {
 
   // Usa a data do relatório salva no JSON (data_hora/data/data_relatorio) antes de cair no campo data_geracao do banco
   const obterDataGeracao = (relatorio, dadosParsed) => {
+    // Prioriza a data_geracao do backend (contém horário correto), depois cai para campos do JSON
+    if (relatorio?.data_geracao) {
+      const dt = new Date(relatorio.data_geracao);
+      console.debug('[RelatorioAtosConciliados] obterDataGeracao data_geracao', { raw: relatorio.data_geracao, parsed: dt.toString(), valid: !isNaN(dt) });
+      if (!isNaN(dt)) return dt;
+    }
+
     let dados = dadosParsed;
     if (!dados) {
       try {
@@ -377,13 +398,13 @@ function RelatorioAtosConciliados() {
     }
     const raw = dados?.data_hora || dados?.data || dados?.data_relatorio;
     if (raw) {
+      const br = parseDataBr(raw);
+      if (br) {
+        console.debug('[RelatorioAtosConciliados] obterDataGeracao raw JSON (BR)', { raw, parsed: br.toString(), valid: true });
+        return br;
+      }
       const dt = new Date(raw);
       console.debug('[RelatorioAtosConciliados] obterDataGeracao raw JSON', { raw, parsed: dt.toString(), valid: !isNaN(dt) });
-      if (!isNaN(dt)) return dt;
-    }
-    if (relatorio?.data_geracao) {
-      const dt = new Date(relatorio.data_geracao);
-      console.debug('[RelatorioAtosConciliados] obterDataGeracao data_geracao', { raw: relatorio.data_geracao, parsed: dt.toString(), valid: !isNaN(dt) });
       if (!isNaN(dt)) return dt;
     }
     console.debug('[RelatorioAtosConciliados] obterDataGeracao fallback null', { relatorioId: relatorio?.id });
