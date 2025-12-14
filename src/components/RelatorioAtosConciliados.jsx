@@ -164,7 +164,7 @@ function RelatorioAtosConciliados() {
           const atosFiltrados = filtrarAtos(dados.atos || []);
           atosFiltrados.forEach(ato => {
             dadosTabela.push([
-              dataGeracao ? dataGeracao.toLocaleString('pt-BR') : '--',
+              formatarDataHora(dataGeracao),
               ato.quantidade,
               ato.codigo,
               ato.descricao,
@@ -346,6 +346,18 @@ function RelatorioAtosConciliados() {
     'PIX': ['pix', 'pix_valor'],
     'CRC': ['crc', 'crc_valor'],
     'Depósito Prévio': ['deposito_previo', 'deposito_previo_valor']
+  };
+
+  const formatarDataHora = (valor) => {
+    if (!valor) return '--';
+    const dt = valor instanceof Date ? valor : new Date(valor);
+    if (isNaN(dt)) return '--';
+    const dia = String(dt.getDate()).padStart(2, '0');
+    const mes = String(dt.getMonth() + 1).padStart(2, '0');
+    const ano = dt.getFullYear();
+    const hora = String(dt.getHours()).padStart(2, '0');
+    const min = String(dt.getMinutes()).padStart(2, '0');
+    return `${dia}/${mes}/${ano} ${hora}:${min}`;
   };
 
   // Usa a data do relatório salva no JSON (data_hora/data/data_relatorio) antes de cair no campo data_geracao do banco
@@ -743,7 +755,7 @@ function RelatorioAtosConciliados() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24 }}>
                       <div><strong>ID:</strong> {relatorio.id}</div>
-                      <div><strong>Data de Geração:</strong> {dataGeracao ? dataGeracao.toLocaleString('pt-BR') : '--'}</div>
+                      <div><strong>Data de Geração:</strong> {formatarDataHora(dataGeracao)}</div>
                       <div><strong>Responsável:</strong> {dados.responsavel}</div>
                       <div><strong>Total em Dinheiro:</strong> R$ {totalDinheiro.toFixed(2)}</div>
                       <div><strong>Total em Cartão:</strong> R$ {totalCartao.toFixed(2)}</div>
