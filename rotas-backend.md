@@ -34,6 +34,21 @@
 - `GET    /api/atos-praticados/:id`      → Busca ato praticado por id
 - `DELETE /api/atos-praticados/:id`      → Remove ato praticado
 
+## Atos (versões TJMG)
+- `GET    /api/atos/versoes`                    → Lista todas as origens salvas em `atos_tabelas` e destaca a versão ativa
+- `GET    /api/atos/versoes/:origem`            → Pré-visualiza até 200 registros de uma origem específica
+- `POST   /api/atos/versoes/snapshot`           → Copia a tabela operacional `atos` inteira para `atos_tabelas` com a origem informada
+- `POST   /api/atos/versoes`                    → Importa registros (JSON) diretamente em `atos_tabelas` para a origem informada
+- `POST   /api/atos/versoes/:origem/ativar`     → Zera `atos` e popular com os registros da origem escolhida
+- `DELETE /api/atos/versoes/:origem`            → Remove completamente uma origem salva em `atos_tabelas`
+
+> Módulo: `routes/atosTabelas.js`
+>
+> ```js
+> const initAtosTabelasRoutes = require('./routes/atosTabelas');
+> initAtosTabelasRoutes(app, pool, { ensureAuth });
+> ```
+
 ## Declaração de Apuração (DAP)
 - `POST   /api/dap/upload`               → Recebe o PDF da DAP, dispara parser e cria registro (retorna { dapId, status })
 - `GET    /api/dap`                      → Lista DAPs (filtros: codigoServentia, ano, mes, retificadora, status)

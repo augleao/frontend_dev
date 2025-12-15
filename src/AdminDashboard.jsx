@@ -8,6 +8,7 @@ import {
   FaCloud,
   FaCog,
   FaFileUpload,
+  FaLayerGroup,
   FaRobot,
   FaSignOutAlt,
   FaTachometerAlt,
@@ -25,6 +26,7 @@ export default function AdminDashboard() {
     { label: 'Visão Geral', icon: FaTachometerAlt, to: '/admin' },
     { label: 'Pedidos & Serviços', icon: FaBoxOpen, to: '/manutencao-servicos' },
     { label: 'Importar Atos', icon: FaFileUpload, to: '/admin/importar-atos' },
+    { label: 'Versões TJMG', icon: FaLayerGroup, to: '/admin/atos-tabelas' },
     { label: 'Usuários', icon: FaUsers, to: '/admin/usuarios' },
     { label: 'Relatórios', icon: FaChartBar, to: '/relatorios' },
     { label: 'Legislação', icon: FaBalanceScale, to: '/admin/legislacao' },
@@ -40,6 +42,12 @@ export default function AdminDashboard() {
       description: 'Acompanhe pedidos, execução e entrega em tempo real.',
       icon: FaBoxOpen,
       to: '/manutencao-servicos'
+    },
+    {
+      label: 'Versões TJMG',
+      description: 'Capture, compare e ative tabelas oficiais de atos do TJMG.',
+      icon: FaLayerGroup,
+      to: '/admin/atos-tabelas'
     },
     {
       label: 'Financeiro',
@@ -81,6 +89,12 @@ export default function AdminDashboard() {
       description: 'Suba novas tabelas 07/08 em minutos.',
       icon: FaFileUpload,
       to: '/admin/importar-atos'
+    },
+    {
+      label: 'Versões TJMG',
+      description: 'Selecione qual tabela de atos abastece o sistema.',
+      icon: FaLayerGroup,
+      to: '/admin/atos-tabelas'
     },
     {
       label: 'Backup Manual',

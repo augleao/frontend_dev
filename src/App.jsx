@@ -47,6 +47,7 @@ import CertidaoGratuitaForm from './components/certidoes/CertidaoGratuitaForm';
 import RelatoriosObrigatorios from './components/RelatoriosObrigatorios';
 import Relatorios from './Relatorios';
 import AnaliseDAP from './components/ia/AnaliseDAP';
+import AtosTabelaManager from './components/admin/AtosTabelaManager';
 
 
 
@@ -214,6 +215,14 @@ function App() {
           element={
             <AdminRoute>
               <RenderBackupManager />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/atos-tabelas"
+          element={
+            <AdminRoute>
+              <AtosTabelaManager />
             </AdminRoute>
           }
         />
