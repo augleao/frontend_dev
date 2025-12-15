@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FiDatabase, FiEye, FiPlay, FiRefreshCcw, FiTrash2, FiUpload } from 'react-icons/fi';
+import { FiDatabase, FiEye, FiPlay, FiRefreshCcw, FiSave, FiTrash2, FiUpload } from 'react-icons/fi';
 import { LuLayers, LuSparkles } from 'react-icons/lu';
 import AtosTabelaService from '../../services/AtosTabelaService';
 import './AtosTabelaManager.css';
@@ -31,6 +31,7 @@ export default function AtosTabelaManager() {
   const [tableBusy, setTableBusy] = useState(false);
   const [preview, setPreview] = useState({ origem: null, registros: [] });
   const [previewBusy, setPreviewBusy] = useState(false);
+  const [updateBusy, setUpdateBusy] = useState(null);
 
   const showBanner = (type, message) => {
     setBanner({ type, message });
@@ -142,6 +143,42 @@ export default function AtosTabelaManager() {
       showBanner('error', err.message || 'Falha ao carregar a prévia desta origem.');
     } finally {
       setPreviewBusy(false);
+    }
+  };
+
+  const handlePreviewFieldChange = (codigo, field, value) => {
+    setPreview((prev) => {
+      if (!prev?.origem) return prev;
+      const registrosAtualizados = prev.registros.map((row) => (row.codigo === codigo ? { ...row, [field]: value } : row));
+      return { ...prev, registros: registrosAtualizados };
+    });
+  };
+
+  const handlePreviewSave = async (row) => {
+    if (!preview?.origem) return;
+    setUpdateBusy(row.codigo);
+    try {
+      const payload = {
+        descricao: row.descricao,
+        emol_bruto: row.emol_bruto,
+        recompe: row.recompe,
+        emol_liquido: row.emol_liquido,
+        issqn: row.issqn,
+        taxa_fiscal: row.taxa_fiscal,
+        valor_final: row.valor_final
+      };
+      const result = await AtosTabelaService.updateRecord(preview.origem, row.codigo, payload);
+      setPreview((prev) => {
+        if (!prev?.origem) return prev;
+        const registrosAtualizados = prev.registros.map((entry) => (entry.codigo === row.codigo ? { ...entry, ...(result?.registro || {}) } : entry));
+        return { ...prev, registros: registrosAtualizados };
+      });
+      showBanner('success', `Registro ${row.codigo} atualizado em ${preview.origem}.`);
+      await loadVersions();
+    } catch (err) {
+      showBanner('error', err.message || 'Não foi possível atualizar o registro.');
+    } finally {
+      setUpdateBusy(null);
     }
   };
 
@@ -309,17 +346,77 @@ export default function AtosTabelaManager() {
                   <th>Descrição</th>
                   <th>Valor final</th>
                   <th>Emol. bruto</th>
+                  <th>Recompe</th>
+                  <th>Emol. líquido</th>
                   <th>ISSQN</th>
+                  <th>Taxa fiscal</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {preview.registros.map((row) => (
                   <tr key={`${preview.origem}-${row.codigo}`}>
                     <td>{row.codigo}</td>
-                    <td>{row.descricao}</td>
-                    <td>{row.valor_final != null ? `R$ ${Number(row.valor_final).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-'}</td>
-                    <td>{row.emol_bruto != null ? `R$ ${Number(row.emol_bruto).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-'}</td>
-                    <td>{row.issqn != null ? `R$ ${Number(row.issqn).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-'}</td>
+                    <td>
+                      <input
+                        type="text"
+                        value={row.descricao ?? ''}
+                        onChange={(e) => handlePreviewFieldChange(row.codigo, 'descricao', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={row.valor_final ?? ''}
+                        onChange={(e) => handlePreviewFieldChange(row.codigo, 'valor_final', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={row.emol_bruto ?? ''}
+                        onChange={(e) => handlePreviewFieldChange(row.codigo, 'emol_bruto', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={row.recompe ?? ''}
+                        onChange={(e) => handlePreviewFieldChange(row.codigo, 'recompe', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={row.emol_liquido ?? ''}
+                        onChange={(e) => handlePreviewFieldChange(row.codigo, 'emol_liquido', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={row.issqn ?? ''}
+                        onChange={(e) => handlePreviewFieldChange(row.codigo, 'issqn', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={row.taxa_fiscal ?? ''}
+                        onChange={(e) => handlePreviewFieldChange(row.codigo, 'taxa_fiscal', e.target.value)}
+                      />
+                    </td>
+                    <td className="atm-inline-actions">
+                      <button type="button" onClick={() => handlePreviewSave(row)} disabled={updateBusy === row.codigo}>
+                        <FiSave size={16} /> {updateBusy === row.codigo ? 'Salvando...' : 'Salvar'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

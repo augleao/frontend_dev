@@ -396,6 +396,43 @@
   color: var(--atm-muted);
 }
 
+.atm-preview-table input,
+.atm-preview-table textarea {
+  width: 100%;
+  border: 1px solid var(--atm-border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.atm-preview-table textarea {
+  resize: vertical;
+  min-height: 56px;
+}
+
+.atm-inline-actions button {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: var(--atm-accent);
+  color: #fff;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.atm-inline-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 900px) {
   .atm-hero {
     grid-template-columns: 1fr;

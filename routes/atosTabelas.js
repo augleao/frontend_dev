@@ -116,6 +116,67 @@ module.exports = function initAtosTabelasRoutes(app, pool, middlewares = {}) {
     }
   });
 
+  // Atualiza um registro específico dentro de uma origem existente
+  app.put('/api/atos/versoes/:origem/:codigo', ensureAuth, async (req, res) => {
+    const origem = sanitizeOrigem(req.params.origem);
+    const codigo = req.params.codigo ? String(req.params.codigo).trim() : '';
+    if (!origem || !codigo) {
+      return res.status(400).json({ error: 'Origem ou código inválidos.' });
+    }
+    try {
+      const currentResult = await pool.query(`
+        SELECT codigo, descricao, emol_bruto, recompe, emol_liquido, issqn, taxa_fiscal, valor_final
+        FROM public.atos_tabelas
+        WHERE origem = $1 AND codigo = $2
+        LIMIT 1
+      `, [origem, codigo]);
+      if (!currentResult.rowCount) {
+        return res.status(404).json({ error: 'Registro não encontrado para a origem/código informados.' });
+      }
+      const current = currentResult.rows[0];
+      const normalized = normalizePayloadRow({
+        codigo,
+        descricao: req.body && Object.prototype.hasOwnProperty.call(req.body, 'descricao') ? req.body.descricao : current.descricao,
+        emol_bruto: req.body && Object.prototype.hasOwnProperty.call(req.body, 'emol_bruto') ? req.body.emol_bruto : current.emol_bruto,
+        recompe: req.body && Object.prototype.hasOwnProperty.call(req.body, 'recompe') ? req.body.recompe : current.recompe,
+        emol_liquido: req.body && Object.prototype.hasOwnProperty.call(req.body, 'emol_liquido') ? req.body.emol_liquido : current.emol_liquido,
+        issqn: req.body && Object.prototype.hasOwnProperty.call(req.body, 'issqn') ? req.body.issqn : current.issqn,
+        taxa_fiscal: req.body && Object.prototype.hasOwnProperty.call(req.body, 'taxa_fiscal') ? req.body.taxa_fiscal : current.taxa_fiscal,
+        valor_final: req.body && Object.prototype.hasOwnProperty.call(req.body, 'valor_final') ? req.body.valor_final : current.valor_final
+      });
+      if (!normalized) {
+        return res.status(400).json({ error: 'Payload inválido para atualização.' });
+      }
+      const updateResult = await pool.query(`
+        UPDATE public.atos_tabelas
+           SET descricao = $3,
+               emol_bruto = $4,
+               recompe = $5,
+               emol_liquido = $6,
+               issqn = $7,
+               taxa_fiscal = $8,
+               valor_final = $9,
+               atualizado_em = NOW()
+         WHERE origem = $1 AND codigo = $2
+         RETURNING codigo, descricao, emol_bruto, recompe, emol_liquido, issqn, taxa_fiscal, valor_final, atualizado_em
+      `, [
+        origem,
+        codigo,
+        normalized.descricao,
+        normalized.emol_bruto,
+        normalized.recompe,
+        normalized.emol_liquido,
+        normalized.issqn,
+        normalized.taxa_fiscal,
+        normalized.valor_final
+      ]);
+      return res.json({ ok: true, registro: updateResult.rows[0] });
+    } catch (err) {
+      console.error('[atos/versoes/:origem/:codigo][PUT] erro ao atualizar registro', err);
+      return res.status(500).json({ error: 'Erro ao atualizar o registro solicitado.' });
+    }
+  });
+
   // Salva a tabela "atos" atual como nova origem em atos_tabelas
   app.post('/api/atos/versoes/snapshot', ensureAuth, async (req, res) => {
     const origem = sanitizeOrigem(req.body && req.body.origem);

@@ -37,6 +37,7 @@
 ## Atos (versões TJMG)
 - `GET    /api/atos/versoes`                    → Lista todas as origens salvas em `atos_tabelas` e destaca a versão ativa
 - `GET    /api/atos/versoes/:origem`            → Pré-visualiza até 200 registros de uma origem específica
+- `PUT    /api/atos/versoes/:origem/:codigo`    → Atualiza campos de um registro específico dentro da origem
 - `POST   /api/atos/versoes/snapshot`           → Copia a tabela operacional `atos` inteira para `atos_tabelas` com a origem informada
 - `POST   /api/atos/versoes`                    → Importa registros (JSON) diretamente em `atos_tabelas` para a origem informada
 - `POST   /api/atos/versoes/:origem/ativar`     → Zera `atos` e popular com os registros da origem escolhida

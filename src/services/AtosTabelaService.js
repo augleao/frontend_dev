@@ -56,6 +56,15 @@ const AtosTabelaService = {
     return handleResponse(resp, 'Falha ao importar registros para a nova versão.');
   },
 
+  async updateRecord(origem, codigo, payload) {
+    const resp = await fetch(`${config.apiURL}/atos/versoes/${encodeURIComponent(origem)}/${encodeURIComponent(codigo)}`, {
+      method: 'PUT',
+      headers: buildAuthHeaders(true),
+      body: JSON.stringify(payload)
+    });
+    return handleResponse(resp, 'Falha ao atualizar o registro solicitado.');
+  },
+
   async activateVersion(origem) {
     const resp = await fetch(`${config.apiURL}/atos/versoes/${encodeURIComponent(origem)}/ativar`, {
       method: 'POST',
