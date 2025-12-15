@@ -220,7 +220,7 @@ function ImportarAtos() {
                   <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Descrição</th>
                   <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Emol. Bruto</th>
                   <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>ISSQN</th>
-                  <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Taxa Fiscal</th>
+                  <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>TFJ</th>
                   <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Valor Final</th>
                   <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'center' }}>Ações</th>
                 </tr>

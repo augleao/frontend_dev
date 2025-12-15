@@ -349,7 +349,7 @@ export default function AtosTabelaManager() {
                   <th>Recompe</th>
                   <th>Emol. líquido</th>
                   <th>ISSQN</th>
-                  <th>Taxa fiscal</th>
+                  <th>TFJ</th>
                   <th>Ações</th>
                 </tr>
               </thead>
