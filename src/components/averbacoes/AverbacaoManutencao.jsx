@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import config from '../../config';
 import Toast from '../Toast';
 import { DEFAULT_TOAST_DURATION } from '../toastConfig';
@@ -14,6 +14,7 @@ export default function AverbacaoManutencao() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdicao = Boolean(id);
+  const location = useLocation();
 
   const [form, setForm] = useState({
     data: new Date().toISOString().slice(0, 10),
@@ -70,6 +71,20 @@ export default function AverbacaoManutencao() {
   };
 
   useEffect(() => {
+    // If opening a NEW averbacao with prefill data (from list modal), apply it once
+    if (!isEdicao && location && location.state && location.state.prefill) {
+      try {
+        const p = location.state.prefill || {};
+        setForm(f => ({
+          ...f,
+          data: p.data || f.data,
+          tipoAto: p.tipoAto || f.tipoAto,
+          tipo: p.tipo || f.tipo,
+          ressarcivel: typeof p.ressarcivel === 'boolean' ? p.ressarcivel : f.ressarcivel
+        }));
+      } catch (e) { /* ignore */ }
+    }
+    // continue with existing effect: only when editing we fetch item
     if (!isEdicao) return;
     // track whether the server returned uploads embedded in the averbacao
     let hadEmbeddedUploads = false;

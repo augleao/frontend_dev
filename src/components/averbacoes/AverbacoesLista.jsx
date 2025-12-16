@@ -73,6 +73,11 @@ export default function AverbacoesLista() {
   const [toastType, setToastType] = useState('success');
   const toastTimerRef = useRef(null);
   const [modalAberto, setModalAberto] = useState(false);
+  const [novoModalAberto, setNovoModalAberto] = useState(false);
+  const [novoData, setNovoData] = useState(new Date().toISOString().slice(0, 10));
+  const [novoTipoAto, setNovoTipoAto] = useState('');
+  const [novoTipo, setNovoTipo] = useState('');
+  const [novoRessarcivel, setNovoRessarcivel] = useState(false);
   const [idSelecionado, setIdSelecionado] = useState(null);
   const [uploading, setUploading] = useState(false);
 
@@ -256,7 +261,7 @@ export default function AverbacoesLista() {
       }}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button
-            onClick={() => navigate('/averbacoes-gratuitas/nova')}
+            onClick={() => setNovoModalAberto(true)}
             style={{
               background: '#27ae60',
               color: 'white',
@@ -324,6 +329,51 @@ export default function AverbacoesLista() {
           </div>
         </div>
       </div>
+
+      {novoModalAberto && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
+          <div style={{ width: 560, maxWidth: '96%', background: '#fff', borderRadius: 8, padding: 16, boxShadow: '0 6px 24px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ marginTop: 0, marginBottom: 8 }}>Novo Ato Gratuito</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 13, fontWeight: 600 }}>Data</label>
+                <input type="date" value={novoData} onChange={e => setNovoData(e.target.value)} style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #ccc' }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 13, fontWeight: 600 }}>Ressarcível?</label>
+                <select value={novoRessarcivel ? 'sim' : 'nao'} onChange={e => setNovoRessarcivel(e.target.value === 'sim')} style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #ccc' }}>
+                  <option value="nao">Não</option>
+                  <option value="sim">Sim</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 13, fontWeight: 600 }}>Tipo de Ato</label>
+                <select value={novoTipoAto} onChange={e => setNovoTipoAto(e.target.value)} style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #ccc' }}>
+                  <option value="">Selecione...</option>
+                  <option value="Averbação">Averbação</option>
+                  <option value="Procedimento">Procedimento</option>
+                  <option value="Registro Livro E">Registro Livro E</option>
+                  <option value="Casamento">Casamento</option>
+                  <option value="Restauração ou Suprimento">Restauração ou Suprimento</option>
+                  <option value="Outros">Outros...</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 13, fontWeight: 600 }}>Subtipo (se aplicável)</label>
+                <input type="text" value={novoTipo} onChange={e => setNovoTipo(e.target.value)} placeholder="Subtipo / detalhe" style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #ccc' }} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+              <button onClick={() => { setNovoModalAberto(false); }} style={{ background: '#aaa', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: 6 }}>Cancelar</button>
+              <button onClick={() => {
+                // navegar para o formulário de manutenção passando os valores selecionados
+                navigate('/averbacoes-gratuitas/nova', { state: { prefill: { data: novoData, tipoAto: novoTipoAto, tipo: novoTipo, ressarcivel: novoRessarcivel } } });
+                setNovoModalAberto(false);
+              }} style={{ background: '#27ae60', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: 6 }}>Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={{ marginTop: 12, borderRadius: 12, background: '#f4f6f8', padding: 16 }}>
         <div style={{ marginBottom: 10, color: '#2c3e50', fontSize: 13 }}>
