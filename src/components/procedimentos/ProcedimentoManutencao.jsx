@@ -266,8 +266,8 @@ export default function ProcedimentoManutencao() {
           formData.append('atoTipo', 'procedimento');
         }
       }
-        // Informar ao backend o tipo do anexo para regras específicas (ex: renomeação)
-        formData.append('metadata', JSON.stringify({ tipo: 'procedimento' }));
+          // Informar ao backend o tipo do anexo para regras específicas (ex: renomeação)
+          formData.append('metadata', JSON.stringify({ tipo: form.tipoAto || 'procedimento' }));
       const res = await fetch(`${config.apiURL}/procedimentos-gratuitos/upload-pdf`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -329,7 +329,7 @@ export default function ProcedimentoManutencao() {
 
   const uploadFileToBackblaze = async (file) => {
     const token = localStorage.getItem('token');
-    const prepareBody = { filename: file.name, contentType: file.type || 'application/pdf', folder: 'procedimentos', metadata: { tipo: 'procedimento' } };
+    const prepareBody = { filename: file.name, contentType: file.type || 'application/pdf', folder: 'procedimentos', metadata: { tipo: form.tipoAto || 'procedimento' } };
     const prepareRes = await fetch(`${config.apiURL}/uploads/prepare`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -349,7 +349,7 @@ export default function ProcedimentoManutencao() {
       throw new Error(text || 'Falha ao enviar arquivo para o Backblaze.');
     }
 
-    const completeBody = { key, metadata: { originalName: file.name, tipo: 'procedimento' }, procedimentoId: isEdicao ? id : null, averbacaoId: null, atoId: isEdicao ? id : null, atoTipo: 'procedimento' };
+    const completeBody = { key, metadata: { originalName: file.name, tipo: form.tipoAto || 'procedimento' }, procedimentoId: isEdicao ? id : null, averbacaoId: null, atoId: isEdicao ? id : null, atoTipo: form.tipoAto || 'procedimento' };
     const completeRes = await fetch(`${config.apiURL}/uploads/complete`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

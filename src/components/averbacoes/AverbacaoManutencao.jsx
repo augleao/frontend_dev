@@ -323,7 +323,7 @@ export default function AverbacaoManutencao() {
         formData.append('data', form.data);
       }
       // Informar ao backend o tipo do anexo para regras específicas (ex: renomeação)
-      formData.append('metadata', JSON.stringify({ tipo: 'averbacao' }));
+      formData.append('metadata', JSON.stringify({ tipo: form.tipoAto || 'averbacao' }));
       // also include explicit ato identifiers for backend convenience
       if (isEdicao && id) {
         formData.append('atoId', id);
@@ -395,7 +395,7 @@ export default function AverbacaoManutencao() {
   const uploadFileToBackblaze = async (file) => {
     const token = localStorage.getItem('token');
     // 1) request presigned URL from backend
-    const prepareBody = { filename: file.name, contentType: file.type || 'application/pdf', folder: 'averbacoes', metadata: { tipo: 'averbacao' } };
+    const prepareBody = { filename: file.name, contentType: file.type || 'application/pdf', folder: 'averbacoes', metadata: { tipo: form.tipoAto || 'averbacao' } };
     console.log('[AverbacaoManutencao] uploadFileToBackblaze: preparando upload', { prepareBody });
     const prepareRes = await fetch(`${config.apiURL}/uploads/prepare`, {
       method: 'POST',
@@ -426,7 +426,7 @@ export default function AverbacaoManutencao() {
 
     // 3) inform backend that upload completed (and let it persist metadata)
     // Include averbacao id when present so backend can link the upload to the averbacao
-    const completeBody = { key, metadata: { originalName: file.name, tipo: 'averbacao' }, averbacaoId: isEdicao ? id : null, procedimentoId: null, atoId: isEdicao ? id : null, atoTipo: 'averbacao' };
+    const completeBody = { key, metadata: { originalName: file.name, tipo: form.tipoAto || 'averbacao' }, averbacaoId: isEdicao ? id : null, procedimentoId: null, atoId: isEdicao ? id : null, atoTipo: form.tipoAto || 'averbacao' };
     console.log('[AverbacaoManutencao] uploadFileToBackblaze: confirmando upload (complete)', { completeBody });
     const completeRes = await fetch(`${config.apiURL}/uploads/complete`, {
       method: 'POST',
