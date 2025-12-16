@@ -526,6 +526,23 @@ export default function LeituraLivros() {
     setResults(prev => (Array.isArray(prev) ? prev.filter((_, i) => i !== idx) : []));
   }
 
+  function insertRecordAt(index, record) {
+    setResults(prev => {
+      const arr = Array.isArray(prev) ? [...prev] : [];
+      const newRec = record || hydrateRecordWithStandardFields({}, (numeroLivro ? String(Number(numeroLivro)) : ''));
+      arr.splice(index, 0, newRec);
+      return arr;
+    });
+  }
+
+  function insertRecordAbove(idx) {
+    insertRecordAt(idx, hydrateRecordWithStandardFields({}, (numeroLivro ? String(Number(numeroLivro)) : '')));
+  }
+
+  function insertRecordBelow(idx) {
+    insertRecordAt(idx + 1, hydrateRecordWithStandardFields({}, (numeroLivro ? String(Number(numeroLivro)) : '')));
+  }
+
   // Helper: pad left with zeros; strip non-digits first
   function padLeftDigits(input, length) {
     const s = String(input || '').replace(/\D/g, '');
@@ -1819,12 +1836,28 @@ export default function LeituraLivros() {
                           <input value={getFiliacao(r, 1) || ''} onChange={e => updateRecordField(i, 'filiacao2', e.target.value)} style={{ width: 220, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
-                          <button
-                            onClick={() => removeRecord(i)}
-                            style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fee2e2', color: '#b91c1c', cursor: 'pointer', fontWeight: 700 }}
-                          >
-                            Excluir
-                          </button>
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <button
+                              onClick={() => insertRecordAbove(i)}
+                              title="Inserir registro acima"
+                              style={{ padding: '6px 8px', borderRadius: 6, border: '1px solid #c7e0f4', background: '#e6f2fb', color: '#0b5394', cursor: 'pointer' }}
+                            >
+                              + Acima
+                            </button>
+                            <button
+                              onClick={() => insertRecordBelow(i)}
+                              title="Inserir registro abaixo"
+                              style={{ padding: '6px 8px', borderRadius: 6, border: '1px solid #c7e0f4', background: '#e6f2fb', color: '#0b5394', cursor: 'pointer' }}
+                            >
+                              + Abaixo
+                            </button>
+                            <button
+                              onClick={() => removeRecord(i)}
+                              style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fee2e2', color: '#b91c1c', cursor: 'pointer', fontWeight: 700 }}
+                            >
+                              Excluir
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
