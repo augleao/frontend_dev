@@ -524,7 +524,7 @@ function AssistenteMandadosAverbacao() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <h1 style={{ color: 'white', margin: 0, fontSize: '24px', fontWeight: 600, letterSpacing: '0.5px' }}>
-            Assistente de Mandados de Averbação
+            Assistente de Mandados
           </h1>
         </div>
       </header>

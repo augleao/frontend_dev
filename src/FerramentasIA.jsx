@@ -14,8 +14,8 @@ function FerramentasIA() {
   const featureCards = [
     {
       id: 'assistente-preenchimento',
-      title: 'ASSISTENTE DE MANDADOS DE AVERBAÇÃO',
-      description: 'Analise e gere averbações decorrentes de mandados',
+      title: 'ASSISTENTE DE MANDADOS',
+      description: 'Analise mandados e gere averbações decorrentes de mandados',
       icon: '🧠',
       color: '#f1c40f',
       route: '/ferramentas-ia/assistente-mandados'
