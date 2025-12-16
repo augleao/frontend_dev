@@ -3,19 +3,24 @@ import {
   FaArchive,
   FaBalanceScale,
   FaBoxOpen,
+  FaCalendarAlt,
+  FaChartArea,
   FaChartBar,
-  FaChevronRight,
   FaCloud,
   FaCog,
   FaFileUpload,
   FaLayerGroup,
+  FaMoneyBillWave,
   FaRobot,
+  FaShareAlt,
   FaSignOutAlt,
+  FaStar,
   FaTachometerAlt,
+  FaThumbsUp,
   FaUsers
 } from 'react-icons/fa';
 import ConfigurarServentia from './ConfigurarServentia';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
@@ -36,46 +41,58 @@ export default function AdminDashboard() {
     { label: 'Prompts IA', icon: FaRobot, to: '/admin/prompts-ia' }
   ];
 
-  const featureCards = [
+  const kpiCards = [
     {
-      label: 'Central de Serviços',
-      description: 'Acompanhe pedidos, execução e entrega em tempo real.',
-      icon: FaBoxOpen,
-      to: '/manutencao-servicos'
+      label: 'Earning',
+      value: '$ 628',
+      caption: 'Atualizado há 5 min',
+      icon: FaMoneyBillWave
     },
     {
-      label: 'Versões TJMG',
-      description: 'Capture, compare e ative tabelas oficiais de atos do TJMG.',
-      icon: FaLayerGroup,
-      to: '/admin/atos-tabelas'
+      label: 'Share',
+      value: '2.434',
+      caption: 'Último disparo social',
+      icon: FaShareAlt
     },
     {
-      label: 'Financeiro',
-      description: 'Visualize o caixa diário e exporte relatórios.',
-      icon: FaChartBar,
-      to: '/caixa-diario'
+      label: 'Likes',
+      value: '1.259',
+      caption: 'Campanha ativa',
+      icon: FaThumbsUp
     },
     {
-      label: 'Equipe e Acessos',
-      description: 'Gerencie perfis de usuários e permissões.',
-      icon: FaUsers,
-      to: '/usuarios-admin'
-    },
-    {
-      label: 'Integrações',
-      description: 'Configure OneDrive, automações e prompts IA.',
-      icon: FaCloud,
-      to: '/admin/onedrive'
+      label: 'Rating',
+      value: '8,5',
+      caption: 'Pesquisa CNJ',
+      icon: FaStar
     }
   ];
 
-  // add Backblaze card to quick access
-  featureCards.push({
-    label: 'Backblaze',
-    description: 'Configure Backblaze B2 (armazenamento de PDFs).',
-    icon: FaCloud,
-    to: '/admin/backblaze'
-  });
+  const resultData = [
+    { month: 'JAN', current: 24, previous: 18 },
+    { month: 'FEB', current: 38, previous: 32 },
+    { month: 'MAR', current: 28, previous: 22 },
+    { month: 'APR', current: 26, previous: 20 },
+    { month: 'MAY', current: 35, previous: 25 },
+    { month: 'JUN', current: 48, previous: 30 },
+    { month: 'JUL', current: 30, previous: 24 },
+    { month: 'AUG', current: 19, previous: 21 },
+    { month: 'SEP', current: 27, previous: 18 }
+  ];
+
+  const maxResultValue = useMemo(
+    () => Math.max(...resultData.map((item) => Math.max(item.current, item.previous))),
+    [resultData]
+  );
+
+  const calendarMatrix = [
+    ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+    [null, null, 1, 2, 3, 4, 5],
+    [6, 7, 8, 9, 10, 11, 12],
+    [13, 14, 15, 16, 17, 18, 19],
+    [20, 21, 22, 23, 24, 25, 26],
+    [27, 28, 29, 30, null, null, null]
+  ];
 
   const quickActions = [
     {
@@ -110,14 +127,6 @@ export default function AdminDashboard() {
     }
   ];
 
-  const handleCardClick = (entry) => {
-    if (entry?.to) {
-      navigate(entry.to);
-    } else if (entry?.onClick) {
-      entry.onClick();
-    }
-  };
-
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
@@ -126,7 +135,13 @@ export default function AdminDashboard() {
   return (
     <div className="dashboard-root">
       <aside className="dashboard-sidebar">
-        <div className="sidebar-logo">Bibliofilia Admin</div>
+        <div className="sidebar-profile">
+          <div className="sidebar-avatar">
+            <span>JD</span>
+          </div>
+          <h2>John Don</h2>
+          <p>johndon@company.com</p>
+        </div>
         <nav className="sidebar-nav">
           {sidebarLinks.map((item) => {
             const Icon = item.icon;
@@ -148,36 +163,156 @@ export default function AdminDashboard() {
 
       <main className="dashboard-main">
         <div className="dashboard-topbar">
-          <div className="topbar-title">Painel de Administração</div>
-          <div className="topbar-actions">
-            <button type="button" className="topbar-action-btn" onClick={() => setShowConfigurar(true)}>
-              <FaCog size={16} />
-              Configurar Serventia
-            </button>
+          <div>
+            <div className="topbar-subtitle">Dashboard User</div>
+            <h1>Painel Administrativo</h1>
           </div>
+          <button type="button" className="topbar-action-btn" onClick={() => setShowConfigurar(true)}>
+            <FaCog size={16} />
+            Check Now
+          </button>
         </div>
 
         <section className="dashboard-cards">
-          {featureCards.map((card) => {
+          {kpiCards.map((card) => {
             const Icon = card.icon;
             return (
-              <button
-                type="button"
-                key={card.label}
-                className="dashboard-card"
-                onClick={() => handleCardClick(card)}
-              >
+              <div key={card.label} className="dashboard-card">
                 <div className="card-icon">
-                  <Icon size={22} />
+                  <Icon size={18} />
                 </div>
                 <div className="card-info">
                   <span className="card-label">{card.label}</span>
-                  <span className="card-description">{card.description}</span>
+                  <span className="card-value">{card.value}</span>
+                  <span className="card-description">{card.caption}</span>
                 </div>
-                <FaChevronRight className="card-chevron" size={16} />
-              </button>
+              </div>
             );
           })}
+        </section>
+
+        <section className="chart-grid">
+          <div className="chart-card">
+            <div className="chart-header">
+              <div>
+                <strong>Result</strong>
+                <span>Comparativo {new Date().getFullYear()}</span>
+              </div>
+              <button type="button" className="pill-btn">
+                28,79%
+              </button>
+            </div>
+            <div className="bar-chart">
+              {resultData.map((item) => (
+                <div key={item.month} className="bar-column">
+                  <div
+                    className="bar bar-current"
+                    style={{ height: `${(item.current / maxResultValue) * 100}%` }}
+                  />
+                  <div
+                    className="bar bar-previous"
+                    style={{ height: `${(item.previous / maxResultValue) * 100}%` }}
+                  />
+                  <span className="bar-label">{item.month}</span>
+                </div>
+              ))}
+            </div>
+            <div className="legend">
+              <span>
+                <span className="dot dot-primary" /> 2019
+              </span>
+              <span>
+                <span className="dot dot-secondary" /> 2020
+              </span>
+            </div>
+          </div>
+
+          <div className="chart-card donut-card">
+            <div className="chart-header">
+              <div>
+                <strong>Engajamento</strong>
+                <span>Meta mensal</span>
+              </div>
+              <FaChartBar size={20} />
+            </div>
+            <div className="donut-wrapper">
+              <div className="donut" />
+              <div className="donut-value">45%</div>
+            </div>
+            <ul className="donut-list">
+              <li>Lorem ipsum</li>
+              <li>Lorem ipsum</li>
+              <li>Lorem ipsum</li>
+              <li>Lorem ipsum</li>
+            </ul>
+            <button type="button" className="pill-btn secondary">Check Now</button>
+          </div>
+        </section>
+
+        <section className="insight-grid">
+          <div className="chart-card wave-card">
+            <div className="chart-header">
+              <div>
+                <strong>Fluxo Diário</strong>
+                <span>Atos registrados</span>
+              </div>
+              <FaChartArea size={18} />
+            </div>
+            <svg viewBox="0 0 360 160" preserveAspectRatio="none" className="wave-svg">
+              <defs>
+                <linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#ffb347" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#fdf5e6" stopOpacity="0.1" />
+                </linearGradient>
+                <linearGradient id="waveGradientSecondary" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#3555ff" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#d6e4ff" stopOpacity="0.1" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M0 120 C40 80 80 90 120 110 C150 125 180 100 210 95 C250 88 290 110 330 90 L360 110 L360 160 L0 160 Z"
+                fill="url(#waveGradient)"
+                stroke="none"
+              />
+              <path
+                d="M0 140 C50 120 90 130 130 100 C170 70 210 115 250 95 C290 75 320 120 360 105 L360 160 L0 160 Z"
+                fill="url(#waveGradientSecondary)"
+                stroke="none"
+              />
+            </svg>
+            <div className="wave-legend">
+              <span>
+                <span className="dot dot-primary" /> Loren Ipsum
+              </span>
+              <span>
+                <span className="dot dot-secondary" /> Dolor Amet
+              </span>
+            </div>
+          </div>
+
+          <div className="chart-card calendar-card">
+            <div className="chart-header">
+              <div>
+                <strong>Calendário</strong>
+                <span>Agosto</span>
+              </div>
+              <FaCalendarAlt size={18} />
+            </div>
+            <div className="calendar-grid">
+              {calendarMatrix.map((row, rowIndex) => (
+                <div key={`row-${rowIndex}`} className="calendar-row">
+                  {row.map((cell, cellIndex) => (
+                    <span
+                      key={`cell-${cellIndex}`}
+                      className={`calendar-cell ${cell === 13 || cell === 25 ? 'active' : ''}`}
+                    >
+                      {cell ?? ''}
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         <section className="dashboard-actions">
@@ -211,12 +346,6 @@ export default function AdminDashboard() {
               </button>
             );
           })}
-        </section>
-
-        <section className="dashboard-extra">
-          <div className="extra-placeholder">
-            Dica: acompanhe os indicadores principais diariamente para antecipar gargalos nas equipes e no fluxo de atos.
-          </div>
         </section>
       </main>
 
