@@ -27,14 +27,6 @@ function FerramentasIA() {
       icon: '📄',
       color: '#f39c12',
       route: '/ferramentas-ia/leitura-livros'
-    },
-    {
-      id: 'classificador-atos',
-      title: 'CLASSIFICADOR DE ATOS',
-      description: 'Classifique documentos por tipo (em breve)',
-      icon: '🏷️',
-      color: '#f7b731',
-      route: '/ferramentas-ia'
     }
   ];
 
