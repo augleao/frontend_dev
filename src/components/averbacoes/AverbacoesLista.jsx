@@ -77,6 +77,8 @@ export default function AverbacoesLista() {
   const [novoData, setNovoData] = useState(new Date().toISOString().slice(0, 10));
   const [novoTipoAto, setNovoTipoAto] = useState('');
   const [novoTipo, setNovoTipo] = useState('');
+  const [novoTipoOutro, setNovoTipoOutro] = useState('');
+  const [novoSaving, setNovoSaving] = useState(false);
   const [novoRessarcivel, setNovoRessarcivel] = useState(false);
   const [idSelecionado, setIdSelecionado] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -348,7 +350,7 @@ export default function AverbacoesLista() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={{ fontSize: 13, fontWeight: 600 }}>Tipo de Ato</label>
-                <select value={novoTipoAto} onChange={e => setNovoTipoAto(e.target.value)} style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #ccc' }}>
+                <select value={novoTipoAto} onChange={e => { const v = e.target.value; setNovoTipoAto(v); if (v !== 'Averbação') { setNovoTipo(''); setNovoTipoOutro(''); } }} style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #ccc' }}>
                   <option value="">Selecione...</option>
                   <option value="Averbação">Averbação</option>
                   <option value="Procedimento">Procedimento</option>
@@ -358,18 +360,83 @@ export default function AverbacoesLista() {
                   <option value="Outros">Outros...</option>
                 </select>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ fontSize: 13, fontWeight: 600 }}>Subtipo (se aplicável)</label>
-                <input type="text" value={novoTipo} onChange={e => setNovoTipo(e.target.value)} placeholder="Subtipo / detalhe" style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #ccc' }} />
-              </div>
+              {novoTipoAto === 'Averbação' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600 }}>Tipo de Averbação</label>
+                  <select value={novoTipo} onChange={e => setNovoTipo(e.target.value)} style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #ccc' }}>
+                    <option value="">Selecione...</option>
+                    <option value="Divórcio">Divórcio</option>
+                    <option value="Reconhecimento de Paternidade">Reconhecimento de Paternidade</option>
+                    <option value="Adoção Unilateral">Adoção Unilateral</option>
+                    <option value="Outras">Outras</option>
+                  </select>
+                  {novoTipo === 'Outras' && (
+                    <input type="text" value={novoTipoOutro} onChange={e => setNovoTipoOutro(e.target.value)} placeholder="Descreva o tipo de averbação" style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #ccc', marginTop: 6 }} />
+                  )}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600 }}>Subtipo (se aplicável)</label>
+                  <input type="text" value={novoTipo} onChange={e => setNovoTipo(e.target.value)} placeholder="Subtipo / detalhe" style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid #ccc' }} />
+                </div>
+              )}
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
-              <button onClick={() => { setNovoModalAberto(false); }} style={{ background: '#aaa', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: 6 }}>Cancelar</button>
-              <button onClick={() => {
-                // navegar para o formulário de manutenção passando os valores selecionados
-                navigate('/averbacoes-gratuitas/nova', { state: { prefill: { data: novoData, tipoAto: novoTipoAto, tipo: novoTipo, ressarcivel: novoRessarcivel } } });
-                setNovoModalAberto(false);
-              }} style={{ background: '#27ae60', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: 6 }}>Salvar</button>
+              <button disabled={novoSaving} onClick={() => { setNovoModalAberto(false); }} style={{ background: '#aaa', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: 6 }}>Cancelar</button>
+              <button disabled={novoSaving} onClick={async () => {
+                try {
+                  setNovoSaving(true);
+                  // Validations: when Averbação, require tipo (and tipoOutro if Outras)
+                  if (novoTipoAto === 'Averbação') {
+                    if (!novoTipo || (novoTipo === 'Outras' && !novoTipoOutro)) {
+                      showToast('error', 'Informe o tipo de averbação.');
+                      setNovoSaving(false);
+                      return;
+                    }
+                  }
+                  const token = localStorage.getItem('token');
+                  const payload = {
+                    data: novoData,
+                    tipoAto: novoTipoAto,
+                    tipo: novoTipo === 'Outras' ? (novoTipoOutro || 'Outras') : novoTipo,
+                    ressarcivel: !!novoRessarcivel,
+                    livro: '',
+                    folha: '',
+                    termo: ''
+                  };
+                  const res = await fetch(`${config.apiURL}/averbacoes-gratuitas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify(payload)
+                  });
+                  if (!res.ok) {
+                    const t = await res.text();
+                    showToast('error', t || 'Erro ao salvar.');
+                    setNovoSaving(false);
+                    return;
+                  }
+                  const text = await res.text();
+                  let dataResp = {};
+                  try { dataResp = text ? JSON.parse(text) : {}; } catch (e) { dataResp = {}; }
+                  const averbacaoId = dataResp?.id || dataResp?.averbacao?.id || null;
+                  showToast('success', 'Ato salvo com sucesso!');
+                  setNovoModalAberto(false);
+                  // navigate to edit page to allow adding selo, like salvar() does
+                  if (averbacaoId) {
+                    setTimeout(() => navigate(`/averbacoes-gratuitas/${encodeURIComponent(averbacaoId)}/editar`, {
+                      state: { message: 'Ato salvo. Agora adicione o selo eletrônico.', type: 'success' }
+                    }), 300);
+                  } else {
+                    // fallback: open new form with prefill if no id returned
+                    navigate('/averbacoes-gratuitas/nova', { state: { prefill: { data: novoData, tipoAto: novoTipoAto, tipo: novoTipo, tipoOutro: novoTipoOutro || undefined, ressarcivel: novoRessarcivel } } });
+                  }
+                } catch (e) {
+                  console.error('[AverbacoesLista] salvar novo ato: erro', e);
+                  showToast('error', 'Erro ao salvar.');
+                } finally {
+                  setNovoSaving(false);
+                }
+              }} style={{ background: '#27ae60', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: 6 }}>{novoSaving ? 'Salvando...' : 'Salvar'}</button>
             </div>
           </div>
         </div>

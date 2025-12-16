@@ -80,6 +80,7 @@ export default function AverbacaoManutencao() {
           data: p.data || f.data,
           tipoAto: p.tipoAto || f.tipoAto,
           tipo: p.tipo || f.tipo,
+          tipoOutro: p.tipoOutro || f.tipoOutro,
           ressarcivel: typeof p.ressarcivel === 'boolean' ? p.ressarcivel : f.ressarcivel
         }));
       } catch (e) { /* ignore */ }
