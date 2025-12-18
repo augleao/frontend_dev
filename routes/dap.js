@@ -267,7 +267,14 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
   const parsePdf = options.parseDapPdf || parseDapPdf;
   const enforceServentia = options.enforceServentia || ((req) => {
     const user = req.user || {};
+    const filters = extractFilters(req.query || {});
     const candidates = [
+      // mesma ordem de prioridade usada na /api/dap: query primeiro
+      filters.codigoServentia,
+      req.query?.codigo_serventia,
+      req.body?.codigoServentia,
+      req.body?.codigo_serventia,
+      // fallback: token do usuário
       user.codigo_serventia,
       user.codigoServentia,
       user.serventia_codigo,
@@ -275,9 +282,6 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
       user.serventia_id,
       user.serventiaId,
       user.serventia,
-      req.query?.codigoServentia,
-      req.query?.serventia,
-      req.body?.codigoServentia,
     ].filter((v) => v !== undefined && v !== null && String(v).trim() !== '');
 
     try {
@@ -285,6 +289,7 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
         user,
         query: req.query,
         body: req.body,
+        filters,
         candidates,
       });
     } catch (_) {}
