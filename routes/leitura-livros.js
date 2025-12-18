@@ -12,6 +12,9 @@ const { authenticate } = require('../middlewares/auth');
 const pool = require('../db');
 const { resolveIaModel, resolveIaModels, resolveUserServentiaNome, resolveModelCandidates } = require('../utils/iaHelpers');
 
+// In-memory store for IA raw responses per jobId. Not persisted to disk; will be moved into result.json when job finishes.
+const IA_RAW_STORE = new Map();
+
 // Configs
 const JOBS_ROOT = process.env.LEITURA_JOBS_DIR || path.join(__dirname, '..', 'jobs');
 const ALLOWED_FOLDERS = (process.env.LEITURA_ALLOWED_FOLDERS || '')
@@ -88,6 +91,29 @@ function pushMessage(statusObj, level, text) {
   else if (tag === 'warning') prefix = '[warning]';
   else if (tag === 'error') prefix = '[error]';
   statusObj.messages.push(`${prefix} ${text}`);
+}
+
+// Backwards-compatible pushMessage with optional meta tag.
+// If `meta` contains a `promptTag` or `label`, it will be prefixed to the message
+function pushMessageWithMeta(statusObj, level, text, meta) {
+  try {
+    const tag = level.toLowerCase();
+    let prefix = '[info]';
+    if (tag === 'title') prefix = '[title]';
+    else if (tag === 'success') prefix = '[success]';
+    else if (tag === 'warning') prefix = '[warning]';
+    else if (tag === 'error') prefix = '[error]';
+
+    let metaTag = '';
+    if (meta && typeof meta === 'object') {
+      metaTag = meta.promptTag || meta.label || meta.indexador || '';
+      if (metaTag) metaTag = `[IA:${String(metaTag)}] `;
+    }
+
+    statusObj.messages.push(`${prefix} ${metaTag}${text}`);
+  } catch (_) {
+    try { statusObj.messages.push(`[info] ${text}`); } catch(_) {}
+  }
 }
 
 // Import shared IA helpers (DB-driven model resolution, serventia resolution)
@@ -174,7 +200,7 @@ async function safeLogPrompt(status, label, promptText, extra = {}) {
     const text = String(promptText || '');
     const truncated = text.length > max ? (text.slice(0, max) + ' …[truncado]') : text;
     const meta = extra && Object.keys(extra).length ? ` ${JSON.stringify(extra)}` : '';
-    pushMessage(status, 'info', `IA • Prompt (${label}) — enviado${meta ? ' ' + meta : ''}:\n${truncated}`);
+    pushMessageWithMeta(status, 'info', `IA • Prompt (${label}) — enviado${meta ? ' ' + meta : ''}:\n${truncated}`, { promptTag: label });
     await flushStatus(status);
   } catch (_) {}
 }
@@ -187,8 +213,17 @@ async function safeLogResponse(status, label, rawText) {
     const max = Math.max(500, Number(process.env.IA_LOG_MAX || 2000));
     const text = String(rawText || '');
     const truncated = text.length > max ? (text.slice(0, max) + ' …[truncado]') : text;
-    pushMessage(status, 'info', `IA • Resposta (${label}) — bruta:
-${truncated}`);
+    pushMessageWithMeta(status, 'info', `IA • Resposta (${label}) — bruta:
+  ${truncated}`, { promptTag: label });
+    // Store the full raw IA response in the in-memory store keyed by jobId
+    try {
+      if (status && status.jobId) {
+        const id = String(status.jobId);
+        const arr = IA_RAW_STORE.get(id) || [];
+        arr.push({ label: String(label || ''), raw: String(rawText || ''), ts: (new Date()).toISOString() });
+        IA_RAW_STORE.set(id, arr);
+      }
+    } catch (_) {}
     await flushStatus(status);
   } catch (_) {}
 }
@@ -202,6 +237,7 @@ function logExtractedText(status, source, text) {
     const msg = `Texto extraído (${source}): ${t.length} caracteres. Prévia:\n${preview}`;
     // Console output to help during live debugging
     try { console.log(msg); } catch(_) {}
+    // Console output removed to avoid noisy logs
     pushMessage(status, 'info', msg);
   } catch(_) {}
 }
@@ -284,6 +320,65 @@ async function ocrAndExtractRecords(filePaths, params, status, cancelFlagRef, ct
   const records = [];
   const seen = new Set();
   let processed = 0;
+  const manuscriptImages = [];
+  // If multiple files are uploaded for the same book, infer the writing/type
+  // from the FIRST file and reuse that classification for the rest to save
+  // IA/OCR calls and avoid inconsistent per-page classifications.
+  const multipleFiles = Array.isArray(filePaths) && filePaths.length > 1;
+  let inferred = { writingType: null, tipoRegistro: null, detectedType: null };
+  if (multipleFiles) {
+    try {
+      const first = filePaths[0];
+      const fext = path.extname(first).toLowerCase();
+      if (fext === '.p7s') {
+        try {
+          const buf = await fsp.readFile(first);
+          const payload = await extractP7sPayload(buf, status);
+          if (payload && payload.buffer) {
+            const detected = detectContentType(payload.buffer);
+            inferred.detectedType = detected.type;
+            if (detected.type === 'pdf') {
+              const outName = `${path.basename(first)}.payload${detected.ext}`;
+              const outPath = path.join(path.dirname(first), outName);
+              await fsp.writeFile(outPath, payload.buffer);
+              const text = await extractPdfText(outPath, status);
+              if (text && text.trim().length >= 10) inferred.writingType = 'digitado';
+            } else if (detected.type === 'image') {
+              const outName = `${path.basename(first)}.payload${detected.ext}`;
+              const outPath = path.join(path.dirname(first), outName);
+              await fsp.writeFile(outPath, payload.buffer);
+              const escritaImg = await identifyEscritaWithGeminiImage(outPath, status, ctx);
+              inferred.writingType = escritaImg && escritaImg.tipo ? escritaImg.tipo : null;
+              inferred.tipoRegistro = escritaImg && escritaImg.tipoRegistro ? escritaImg.tipoRegistro : null;
+            }
+          }
+        } catch (e) {
+          pushMessage(status, 'warning', `Falha ao inferir tipo do primeiro .p7s: ${e.message}`);
+        }
+      } else if (fext === '.pdf') {
+        try {
+          const text = await extractPdfText(first, status);
+          inferred.detectedType = 'pdf';
+          if (text && text.trim().length >= 10) inferred.writingType = 'digitado';
+        } catch (e) {
+          pushMessage(status, 'warning', `Falha ao inferir tipo do primeiro PDF: ${e.message}`);
+        }
+      } else {
+        try {
+          inferred.detectedType = 'image';
+          const escritaImg = await identifyEscritaWithGeminiImage(first, status, ctx);
+          inferred.writingType = escritaImg && escritaImg.tipo ? escritaImg.tipo : null;
+          inferred.tipoRegistro = escritaImg && escritaImg.tipoRegistro ? escritaImg.tipoRegistro : null;
+        } catch (e) {
+          pushMessage(status, 'warning', `Falha ao inferir tipo da primeira imagem: ${e.message}`);
+        }
+      }
+      if (inferred.writingType) pushMessage(status, 'info', `Classificação inferida do primeiro arquivo: ${inferred.writingType}`);
+    } catch (e) {
+      // Non-fatal — continue and fall back to per-file classification
+      pushMessage(status, 'warning', `Erro ao inferir a partir do primeiro arquivo: ${e.message}`);
+    }
+  }
   for (const fp of filePaths) {
     if (seen.has(fp)) { continue; }
     if (cancelFlagRef.cancelled) break;
@@ -304,29 +399,66 @@ async function ocrAndExtractRecords(filePaths, params, status, cancelFlagRef, ct
             const text = await extractPdfText(outPath, status);
             await maybeProduceRecordFromText(text, outPath, records, params, status, ctx);
           } else if (detected.type === 'image') {
-            // Classificar escrita via imagem; se manuscrito, IA multimodal; senão OCR + IA texto
+            // Classificar escrita via imagem PRIMEIRO; se manuscrito, IA multimodal; senão OCR + IA texto
             let recFromImg = null;
             let escritaTipo = null;
             let escritaReg = null;
-            try {
-              const escritaImg = await identifyEscritaWithGeminiImage(outPath, status, ctx);
-              escritaTipo = escritaImg && escritaImg.tipo ? escritaImg.tipo : null;
-              escritaReg = escritaImg && escritaImg.tipoRegistro ? escritaImg.tipoRegistro : null;
-              if (escritaImg && escritaImg.tipo === 'manuscrito') {
-                  recFromImg = await analyzeRecordFromImageWithGemini(outPath, params, status, { tipoRegistroOverride: escritaReg }, ctx);
+            let queuedForAggregate = false;
+            console.log(`[P7S->Image] Classificando tipo de escrita da imagem antes de processar...`);
+            pushMessage(status, 'info', 'Classificando escrita da imagem extraída do .p7s...');
+              try {
+              let escritaImg = null;
+              if (multipleFiles && inferred.writingType) {
+                escritaImg = { tipo: inferred.writingType, tipoRegistro: inferred.tipoRegistro };
+                escritaTipo = escritaImg.tipo || null;
+                escritaReg = escritaImg.tipoRegistro || null;
+                console.log(`[P7S->Image] Reutilizando classificação do primeiro arquivo: ${escritaTipo || 'desconhecido'}`);
+                pushMessage(status, 'info', `Reutilizando classificação do primeiro arquivo: ${escritaTipo || 'desconhecido'}`);
+              } else {
+                const escritaImgLocal = await identifyEscritaWithGeminiImage(outPath, status, ctx);
+                escritaImg = escritaImgLocal;
+                escritaTipo = escritaImg && escritaImg.tipo ? escritaImg.tipo : null;
+                escritaReg = escritaImg && escritaImg.tipoRegistro ? escritaImg.tipoRegistro : null;
+                console.log(`[P7S->Image] Tipo identificado: ${escritaTipo || 'desconhecido'}`);
+                pushMessage(status, 'info', `Imagem (.p7s) identificada como ${escritaTipo || 'desconhecida'}`);
               }
-            } catch (_) {}
-            if (recFromImg) {
+              
+              if (escritaImg && escritaImg.tipo === 'manuscrito') {
+                console.log(`[P7S->Image] Manuscrito detectado - enfileirando para processamento agregado`);
+                pushMessage(status, 'info', 'Imagem manuscrita; enfileirando para transcrição agregada');
+                const alreadyQueued = manuscriptImages.some(item => item.imagePath === outPath);
+                if (!alreadyQueued) {
+                  manuscriptImages.push({ imagePath: outPath, source: path.basename(outPath), tipoRegistro: escritaReg || params.tipoRegistro || null });
+                }
+                queuedForAggregate = true;
+              } else {
+                console.log(`[P7S->Image] Digitado detectado - usando OCR + IA textual`);
+                pushMessage(status, 'info', 'Imagem digitada; executando OCR e IA textual');
+              }
+            } catch (err) {
+              console.error(`[P7S->Image] Erro ao classificar escrita: ${err.message}`);
+              pushMessage(status, 'warning', `Falha ao classificar escrita da imagem: ${err.message}`);
+            }
+            
+            if (queuedForAggregate) {
+              pushMessage(status, 'info', 'Página manuscrita aguardando processamento agregado.');
+            } else if (recFromImg) {
               // Sempre inclusão, conforme requisito
               recFromImg.tipo = 'INCLUSAO';
               recFromImg.origens = [...(recFromImg.origens || []), path.basename(outPath)];
               if (!recFromImg.campos || typeof recFromImg.campos !== 'object') recFromImg.campos = {};
               if (!Array.isArray(recFromImg.filiacao)) recFromImg.filiacao = [];
               if (!Array.isArray(recFromImg.documentos)) recFromImg.documentos = [];
+              
+              console.log(`[P7S->Image] Record de manuscrito criado: FOLHA=${recFromImg.folha?.numero || recFromImg.campos?.FOLHA || 'n/a'}, TERMO=${recFromImg.termo || recFromImg.campos?.NUMEROTERMO || 'n/a'}`);
+              pushMessage(status, 'success', 'Registro manuscrito extraído com IA multimodal');
               records.push(recFromImg);
             } else {
-          const text = await ocrImage(outPath, status);
-        await maybeProduceRecordFromText(text, outPath, records, params, status, { writingType: escritaTipo || 'digitado', tipoRegistroOverride: escritaReg }, ctx);
+              // Não é manuscrito OU falhou - usa OCR + IA texto
+              console.log(`[P7S->Image] Processando com OCR...`);
+              pushMessage(status, 'info', 'Executando OCR na imagem para extração textual');
+              const text = await ocrImage(outPath, status);
+              await maybeProduceRecordFromText(text, outPath, records, params, status, { writingType: escritaTipo || 'digitado', tipoRegistroOverride: escritaReg }, ctx);
             }
           } else {
             pushMessage(status, 'warning', `Payload extraído do .p7s com tipo desconhecido; ignorando (${outName})`);
@@ -361,27 +493,64 @@ async function ocrAndExtractRecords(filePaths, params, status, cancelFlagRef, ct
             await maybeProduceRecordFromText(text, fp, records, params, status, {}, ctx);
         }
       } else {
-        // imagem
+        // imagem direta (não .p7s)
         let recFromImg = null;
         let escritaTipo = null;
         let escritaReg = null;
+        let queuedForAggregate = false;
+        console.log(`[Image] Classificando tipo de escrita da imagem antes de processar...`);
+        pushMessage(status, 'info', 'Classificando escrita da imagem enviada...');
         try {
-          const escritaImg = await identifyEscritaWithGeminiImage(fp, status, ctx);
-          escritaTipo = escritaImg && escritaImg.tipo ? escritaImg.tipo : null;
-          escritaReg = escritaImg && escritaImg.tipoRegistro ? escritaImg.tipoRegistro : null;
-          if (escritaImg && escritaImg.tipo === 'manuscrito') {
-            recFromImg = await analyzeRecordFromImageWithGemini(fp, params, status, { tipoRegistroOverride: escritaReg }, ctx);
+          let escritaImg = null;
+          if (multipleFiles && inferred.writingType) {
+            escritaImg = { tipo: inferred.writingType, tipoRegistro: inferred.tipoRegistro };
+            escritaTipo = escritaImg.tipo || null;
+            escritaReg = escritaImg.tipoRegistro || null;
+            console.log(`[Image] Reutilizando classificação do primeiro arquivo: ${escritaTipo || 'desconhecido'}`);
+            pushMessage(status, 'info', `Reutilizando classificação do primeiro arquivo: ${escritaTipo || 'desconhecido'}`);
+          } else {
+            const escritaImgLocal = await identifyEscritaWithGeminiImage(fp, status, ctx);
+            escritaImg = escritaImgLocal;
+            escritaTipo = escritaImg && escritaImg.tipo ? escritaImg.tipo : null;
+            escritaReg = escritaImg && escritaImg.tipoRegistro ? escritaImg.tipoRegistro : null;
+            console.log(`[Image] Tipo identificado: ${escritaTipo || 'desconhecido'}`);
+            pushMessage(status, 'info', `Imagem identificada como ${escritaTipo || 'desconhecida'}`);
           }
-        } catch (_) {}
-        if (recFromImg) {
+          
+          if (escritaImg && escritaImg.tipo === 'manuscrito') {
+            console.log(`[Image] Manuscrito detectado - enfileirando para processamento agregado`);
+            pushMessage(status, 'info', 'Imagem manuscrita; enfileirando para transcrição agregada');
+            const alreadyQueued = manuscriptImages.some(item => item.imagePath === fp);
+            if (!alreadyQueued) {
+              manuscriptImages.push({ imagePath: fp, source: path.basename(fp), tipoRegistro: escritaReg || params.tipoRegistro || null });
+            }
+            queuedForAggregate = true;
+          } else {
+            console.log(`[Image] Digitado detectado - usando OCR + IA textual`);
+            pushMessage(status, 'info', 'Imagem digitada; executando OCR e IA textual');
+          }
+        } catch (err) {
+          console.error(`[Image] Erro ao classificar escrita: ${err.message}`);
+          pushMessage(status, 'warning', `Falha ao classificar escrita da imagem: ${err.message}`);
+        }
+        
+        if (queuedForAggregate) {
+          pushMessage(status, 'info', 'Página manuscrita aguardando processamento agregado.');
+        } else if (recFromImg) {
           // Sempre inclusão, conforme requisito
           recFromImg.tipo = 'INCLUSAO';
           recFromImg.origens = [...(recFromImg.origens || []), path.basename(fp)];
           if (!recFromImg.campos || typeof recFromImg.campos !== 'object') recFromImg.campos = {};
           if (!Array.isArray(recFromImg.filiacao)) recFromImg.filiacao = [];
           if (!Array.isArray(recFromImg.documentos)) recFromImg.documentos = [];
+          
+          console.log(`[Image] Record de manuscrito criado: FOLHA=${recFromImg.folha?.numero || recFromImg.campos?.FOLHA || 'n/a'}, TERMO=${recFromImg.termo || recFromImg.campos?.NUMEROTERMO || 'n/a'}`);
+          pushMessage(status, 'success', 'Registro manuscrito extraído com IA multimodal');
           records.push(recFromImg);
         } else {
+          // Não é manuscrito OU falhou - usa OCR + IA texto
+          console.log(`[Image] Processando com OCR...`);
+          pushMessage(status, 'info', 'Executando OCR na imagem para extração textual');
           const text = await ocrImage(fp, status);
           await maybeProduceRecordFromText(text, fp, records, params, status, { writingType: escritaTipo || 'digitado', tipoRegistroOverride: escritaReg }, ctx);
         }
@@ -393,6 +562,61 @@ async function ocrAndExtractRecords(filePaths, params, status, cancelFlagRef, ct
     processed++;
     status.progress = Math.min(99, Math.round((processed / filePaths.length) * 80) + 10);
     await writeJSON(jobPaths(status.jobId).status, status);
+  }
+
+  // Fluxo agregado: processa páginas manuscritas somente após concluir o loop principal.
+  if (manuscriptImages.length && !cancelFlagRef.cancelled) {
+    pushMessage(status, 'title', `Processando ${manuscriptImages.length} página(s) manuscrita(s) em lote`);
+    const metas = { paginas: [] };
+    const aggregatedParts = [];
+    for (let i = 0; i < manuscriptImages.length && !cancelFlagRef.cancelled; i++) {
+      const item = manuscriptImages[i];
+      const pageLabel = `Página manuscrita ${i + 1}/${manuscriptImages.length} (${item.source})`;
+      pushMessage(status, 'info', `${pageLabel}: enviando para transcrição`);
+      const transcript = await transcribeImageWithGemini(item.imagePath, status, ctx);
+      const text = transcript && transcript.text ? transcript.text.trim() : '';
+      metas.paginas.push({ nome: item.source, tipoRegistroSugerido: item.tipoRegistro || params.tipoRegistro || null, possuiTexto: text.length > 0 });
+      if (text.length > 0) {
+        aggregatedParts.push(`# ${item.source}\n${text}`);
+        pushMessage(status, 'success', `${pageLabel}: transcrição concluída (${text.length} caracteres).`);
+      } else {
+        pushMessage(status, 'warning', `${pageLabel}: transcrição vazia ou ilegível.`);
+      }
+    }
+
+    const aggregatedText = aggregatedParts.join('\n\n');
+    if (aggregatedText.length) {
+      const preview = aggregatedText.length > 1000 ? `${aggregatedText.slice(0, 1000)} …[truncado]` : aggregatedText;
+      pushMessage(status, 'info', `Texto agregado manuscrito (${aggregatedText.length} caracteres) prévia:\n${preview}`);
+      try { console.log(`[Manuscrito][AggregatedText] len=${aggregatedText.length} preview=`, preview); } catch (_) {}
+    }
+    if (!cancelFlagRef.cancelled && aggregatedText.trim().length > 0) {
+      pushMessage(status, 'info', 'Executando análise agregada das transcrições manuscritas.');
+      const aggregated = await analyzeAggregatedManuscriptWithGemini(aggregatedText, metas, params, status, ctx);
+      const registros = aggregated && Array.isArray(aggregated.registros) ? aggregated.registros : [];
+      if (registros.length) {
+        pushMessage(status, 'success', `Análise agregada retornou ${registros.length} registro(s).`);
+        const origens = Array.from(new Set(manuscriptImages.map(m => m.source)));
+        registros.forEach((reg, idx) => {
+          const destinoTipo = (reg && reg.tipoRegistro) ? reg.tipoRegistro : (params.tipoRegistro || null);
+          const normalized = mapIaRegistroToNormalized(reg, destinoTipo);
+          if (!normalized) return;
+          normalized.tipo = (reg && typeof reg.tipo === 'string' && reg.tipo.toUpperCase() === 'ALTERACAO') ? 'ALTERACAO' : 'INCLUSAO';
+          if (!normalized.tipoRegistro) {
+            normalized.tipoRegistro = destinoTipo ? String(destinoTipo).toUpperCase() : String(params.tipoRegistro || '').toUpperCase() || null;
+          }
+          normalized.origens = Array.isArray(normalized.origens) && normalized.origens.length
+            ? Array.from(new Set([...normalized.origens, ...origens]))
+            : origens;
+          records.push(normalized);
+          pushMessage(status, 'info', `Registro manuscrito agregado #${idx + 1} armazenado (tipo=${normalized.tipo}).`);
+        });
+      } else {
+        pushMessage(status, 'warning', 'Análise agregada não identificou registros manuscritos.');
+      }
+    } else {
+      pushMessage(status, 'warning', 'Transcrições manuscritas vazias; análise agregada ignorada.');
+    }
   }
   return records;
 }
@@ -771,7 +995,7 @@ async function buildXmlFilesViaIa(records, params, jobDir, status, ctx = {}) {
   if (candidates && candidates.length) { primary = candidates[0]; secondary = candidates[1] || candidates[0]; }
   else { const rr = resolveIaModels(); primary = rr.primary; secondary = rr.secondary; }
 
-    const xmlPaths = [];
+    const xmlPayloads = [];
 
     // Helper: validate IA XML has meaningful non-empty content for required tags per tipo
     const iaXmlHasRequiredContent = (xml, tipo) => {
@@ -807,6 +1031,7 @@ async function buildXmlFilesViaIa(records, params, jobDir, status, ctx = {}) {
       const resp = await callWithRetries(() => model.generateContent(clampForPrompt(promptText)), { retries: 3, baseDelayMs: 700 });
       const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
       await safeLogResponse(status, `${idx} (xml)`, out);
+      try { console.log(`[AI-RESPONSE] id=${status && status.jobId ? status.jobId : 'unknown'} fn=buildXmlFilesViaIa promptIndex=${idx} model=${modelName} chunk=${ci+1}/${chunks.length} out=`, out); } catch(_){}
       const xml = String(out || '').trim();
       if (!xml || xml.length < 20 || !xml.includes('<CARGAREGISTROS')) return null;
       if (!iaXmlHasRequiredContent(xml, params.tipoRegistro)) return null;
@@ -826,11 +1051,10 @@ async function buildXmlFilesViaIa(records, params, jobDir, status, ctx = {}) {
         return null;
       }
       const filename = `crc_${params.tipoRegistro.toLowerCase()}_${params.acao.toLowerCase()}_${path.basename(jobDir)}${chunks.length > 1 ? '_' + (ci + 1) : ''}.xml`;
-      const xmlPath = path.join(jobDir, filename);
-      fs.writeFileSync(xmlPath, xml, 'utf8');
-      xmlPaths.push(xmlPath);
+      // Do NOT write XML files on the server. Return IA payloads so frontend can generate XML.
+      xmlPayloads.push({ filename, xml, model: (primary === modelName ? primary : modelName), chunk: ci + 1, totalChunks: chunks.length, prompt: promptText });
     }
-    return xmlPaths;
+    return xmlPayloads;
   } catch (e) {
     pushMessage(status, 'warning', `Falha ao gerar XML via IA: ${(e && e.message) || e}`);
     return null;
@@ -874,7 +1098,20 @@ async function runJob(jobId, inputs, params) {
     status.progress = 15;
     await writeJSON(paths.status, status);
 
-  const records = await ocrAndExtractRecords(filePaths, params, status, cancelFlag, ctx);
+  let records = await ocrAndExtractRecords(filePaths, params, status, cancelFlag, ctx);
+
+  // Deduplica registros gerados pela IA/OCR antes de prosseguir
+  try {
+    const before = Array.isArray(records) ? records.length : 0;
+    records = dedupeRecords(Array.isArray(records) ? records : [], params && params.tipoRegistro);
+    const after = Array.isArray(records) ? records.length : 0;
+    const removed = before - after;
+    if (removed > 0) {
+      pushMessage(status, 'info', `Dedup: removidos ${removed} registro(s) duplicado(s); total ${after}.`);
+    }
+  } catch (err) {
+    pushMessage(status, 'warning', `Falha ao deduplicar registros: ${err && err.message ? err.message : err}`);
+  }
 
     // after extraction, ensure progress advances (extraction may have already updated progress)
     try {
@@ -889,7 +1126,175 @@ async function runJob(jobId, inputs, params) {
     const result = {
       params,
       records,
-      recordsCount: Array.isArray(records) ? records.length : 0
+      recordsCount: Array.isArray(records) ? records.length : 0,
+      meta: buildMetaSnapshot(filePaths, status),
+      status: {
+        state: status.status,
+        progress: status.progress,
+        messages: Array.isArray(status.messages) ? [...status.messages] : [],
+      },
+      errors: [],
+    };
+
+    // Move any collected IA raw responses from in-memory store into the result JSON (do not keep them in status.json)
+    try {
+      const raws = IA_RAW_STORE.get(jobId);
+      if (Array.isArray(raws) && raws.length) {
+        // Parse raw IA responses when possible and coerce numeric-like fields (ex: folha.numero)
+        const processed = raws.map((r) => {
+          const out = Object.assign({}, r);
+          try {
+            const parsed = parseJsonLoose(r.raw);
+            if (parsed && Array.isArray(parsed.registros)) {
+              parsed.registros.forEach((rec) => {
+                try {
+                  if (rec && rec.folha && typeof rec.folha.numero === 'string') {
+                    const s = rec.folha.numero.trim();
+                    if (/^-?\d+$/.test(s)) rec.folha.numero = Number(s);
+                    else if (/^\d+\.\d+$/.test(s)) rec.folha.numero = Number(s);
+                  }
+                } catch(_) {}
+              });
+            }
+            out.parsed = parsed;
+          } catch(_) {}
+          return out;
+        });
+        result.iaRawResponses = processed;
+        IA_RAW_STORE.delete(jobId);
+      }
+    } catch (_) {}
+
+    // Merge folha.numero and termo from parsed IA responses into result.records before saving
+    try {
+      if (Array.isArray(result.iaRawResponses) && Array.isArray(result.records)) {
+        const parsedRegs = [];
+        for (const ia of result.iaRawResponses) {
+          if (ia && ia.parsed && Array.isArray(ia.parsed.registros)) parsedRegs.push(...ia.parsed.registros);
+        }
+        for (const p of parsedRegs) {
+          try {
+            const termo = p && (p.termo != null ? String(p.termo) : null);
+            // find by termo first
+            let target = null;
+            if (termo) {
+              target = result.records.find(r => {
+                const rTerm = (r.termo != null ? String(r.termo) : (r.campos && (r.campos.NUMEROTERMO || r.campos.TERMO) ? String(r.campos.NUMEROTERMO || r.campos.TERMO) : null));
+                return rTerm && String(rTerm) === termo;
+              });
+            }
+            // fallback: match by name + date if available
+            if (!target) {
+              const nameCandidates = (p.dados && (p.dados.nomeRegistrado || p.dados.nome || p.dados.nubente1 || p.dados.nomeFalecido)) ? String(p.dados.nomeRegistrado || p.dados.nome || p.dados.nubente1 || p.dados.nomeFalecido).toLowerCase().trim() : null;
+              const dateCandidate = p && (p.dataRegistro || (p.dados && (p.dados.dataNascimento || p.dados.dataCasamento || p.dados.dataObito))) ? String(p.dataRegistro || p.dados.dataNascimento || p.dados.dataCasamento || p.dados.dataObito) : null;
+              if (nameCandidates) {
+                target = result.records.find(r => {
+                  const rn = (r.campos && (r.campos.NOMEREGISTRADO || r.campos.NOME)) ? String(r.campos.NOMEREGISTRADO || r.campos.NOME).toLowerCase().trim() : null;
+                  if (!rn) return false;
+                  if (dateCandidate && r.campos && r.campos.DATAREGISTRO) {
+                    return rn === nameCandidates && String(r.campos.DATAREGISTRO).includes(String(dateCandidate).slice(0,10));
+                  }
+                  return rn === nameCandidates;
+                });
+              }
+            }
+            if (target) {
+              // attach folha.numero
+              if (p.folha && p.folha.numero != null) {
+                target.folha = target.folha || {};
+                target.folha.numero = (typeof p.folha.numero === 'number') ? p.folha.numero : (isNaN(Number(p.folha.numero)) ? p.folha.numero : Number(p.folha.numero));
+              }
+              // attach termo
+              if (p.termo != null) {
+                target.termo = p.termo;
+                target.campos = target.campos || {};
+                target.campos.NUMEROTERMO = String(p.termo);
+              }
+            }
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+
+    // If the result contains legacy finalResults payloads, try to enrich them with folha.numero and termo
+    try {
+      const keysToPatch = ['finalResults_before_merge', 'finalResults_after_merge'];
+      if (Array.isArray(result.iaRawResponses) && result.iaRawResponses.length) {
+        const parsedRegs = [];
+        for (const ia of result.iaRawResponses) {
+          if (ia && ia.parsed && Array.isArray(ia.parsed.registros)) parsedRegs.push(...ia.parsed.registros);
+        }
+        if (parsedRegs.length) {
+          for (const key of keysToPatch) {
+            if (!Array.isArray(result[key])) continue;
+            for (const p of parsedRegs) {
+              try {
+                const termo = p && (p.termo != null ? String(p.termo) : null);
+                let target = null;
+                // try match by termo first
+                if (termo) {
+                  target = result[key].find(r => {
+                    const rTerm = (r.termo != null ? String(r.termo) : (r.campos && (r.campos.NUMEROTERMO || r.campos.TERMO) ? String(r.campos.NUMEROTERMO || r.campos.TERMO) : null));
+                    return rTerm && String(rTerm) === termo;
+                  });
+                }
+                // fallback: name + date
+                if (!target) {
+                  const nameCandidates = (p.dados && (p.dados.nomeRegistrado || p.dados.nome || p.dados.nubente1 || p.dados.nomeFalecido)) ? String(p.dados.nomeRegistrado || p.dados.nome || p.dados.nubente1 || p.dados.nomeFalecido).toLowerCase().trim() : null;
+                  const dateCandidate = p && (p.dataRegistro || (p.dados && (p.dados.dataNascimento || p.dados.dataCasamento || p.dados.dataObito))) ? String(p.dataRegistro || p.dados.dataNascimento || p.dados.dataCasamento || p.dados.dataObito) : null;
+                  if (nameCandidates) {
+                    target = result[key].find(r => {
+                      const rn = (r.campos && (r.campos.NOMEREGISTRADO || r.campos.NOME)) ? String(r.campos.NOMEREGISTRADO || r.campos.NOME).toLowerCase().trim() : null;
+                      if (!rn) return false;
+                      if (dateCandidate && r.campos && r.campos.DATAREGISTRO) {
+                        return rn === nameCandidates && String(r.campos.DATAREGISTRO).includes(String(dateCandidate).slice(0,10));
+                      }
+                      return rn === nameCandidates;
+                    });
+                  }
+                }
+                if (target) {
+                  if (p.folha && p.folha.numero != null) {
+                    target.folha = target.folha || {};
+                    target.folha.numero = (typeof p.folha.numero === 'number') ? p.folha.numero : (isNaN(Number(p.folha.numero)) ? p.folha.numero : Number(p.folha.numero));
+                  }
+                  if (p.termo != null) {
+                    target.termo = p.termo;
+                    target.campos = target.campos || {};
+                    target.campos.NUMEROTERMO = String(p.termo);
+                  }
+                }
+              } catch (_) {}
+            }
+          }
+        }
+      }
+    } catch (_) {}
+
+    result.payload = buildFrontendPayload(result.records, params.tipoRegistro);
+
+    // Log outgoing payloads (to status messages and console) before saving result
+    try {
+      const hasXml = Array.isArray(result.xmlPayloads) && result.xmlPayloads.length;
+      const previewObj = { params: result.params, registros: result.payload ? result.payload.registros.length : 0, hasXmlPayloads: !!hasXml };
+      const previewStr = JSON.stringify(previewObj, null, 2);
+      pushMessageWithMeta(status, 'info', `Enviando resultado ao frontend: ${previewStr}`, { promptTag: 'outgoing_result' });
+      if (hasXml) {
+        for (const p of result.xmlPayloads) {
+          try {
+            const xmlPreview = String(p.xml || '').slice(0, 800);
+            pushMessageWithMeta(status, 'info', `Payload XML: ${p.filename} — preview:\n${xmlPreview}${(String(p.xml || '').length > 800) ? ' …[truncado]' : ''}`, { promptTag: 'xml_payload' });
+            try { console.log(`[leitura-livros][job ${status.jobId}] payload ${p.filename}: ${xmlPreview.length > 200 ? xmlPreview.slice(0,200)+' …[truncado]' : xmlPreview}`); } catch(_){}
+          } catch(_){}
+        }
+      }
+    } catch (_) {}
+
+    result.meta = buildMetaSnapshot(filePaths, status);
+    result.status = {
+      state: status.status,
+      progress: status.progress,
+      messages: Array.isArray(status.messages) ? [...status.messages] : [],
     };
     await writeJSON(paths.result, result);
 
@@ -957,17 +1362,22 @@ async function identifyEscritaWithGeminiImage(imagePath, status, ctx = {}) {
       const b64 = (await fsp.readFile(imagePath)).toString('base64');
       const parts = [ { text: promptTpl }, { inlineData: { mimeType: mimeFromExt(imagePath), data: b64 } } ];
       await safeLogPrompt(status, 'tipo_escrita (imagem)', promptTpl, { model: modelName, image: path.basename(imagePath) });
+      console.log(`[AI-INVOKE] id=${status && status.jobId ? status.jobId : 'unknown'} fn=identifyEscritaWithGeminiImage model=${modelName} image=${path.basename(imagePath)}`);
+      console.log(`[AI-INVOKE] id=${status && status.jobId ? status.jobId : 'unknown'} fn=analyzeRecordFromImageWithGemini model=${modelName} image=${path.basename(imagePath)}`);
       const resp = await callWithRetries(() => model.generateContent(parts), { retries: 3, baseDelayMs: 700 });
       const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
       await safeLogResponse(status, 'tipo_escrita (imagem)', out);
-      return parseJsonLoose(out);
+      try { console.log(`[AI-RESPONSE] id=${status && status.jobId ? status.jobId : 'unknown'} fn=identifyEscritaWithGeminiImage promptIndex=tipo_escrita model=${modelName} image=${path.basename(imagePath)} out=`, out); } catch(_) {}
+      // Retornar tanto o JSON parseado quanto o texto bruto para uso posterior
+      return { parsed: parseJsonLoose(out), raw: out };
     };
-    let data = await tryOnce(primary);
-    if (!data) {
+    let dataObj = await tryOnce(primary);
+    if (!dataObj || !dataObj.parsed) {
       pushMessage(status, 'info', `tipo_escrita: reforçando com modelo secundário (${secondary})`);
-      data = await tryOnce(secondary);
+      dataObj = await tryOnce(secondary);
     }
-    data = data || {};
+    const data = (dataObj && dataObj.parsed) ? dataObj.parsed : {};
+    const outRaw = (dataObj && dataObj.raw) ? dataObj.raw : '';
     // tipo pode vir como leitura_manuscrito|leitura_digitado — normaliza
     let tipoRaw = String(data.tipo || '').toLowerCase();
     let tipo = tipoRaw.includes('manuscrito') ? 'manuscrito' : (tipoRaw.includes('digit') ? 'digitado' : 'digitado');
@@ -975,8 +1385,8 @@ async function identifyEscritaWithGeminiImage(imagePath, status, ctx = {}) {
     const criterios = Array.isArray(data.criterios) ? data.criterios.slice(0, 5) : [];
     let tipoRegistro = String(data.tipoRegistro || '').toUpperCase();
     if (!['NASCIMENTO','CASAMENTO','OBITO'].includes(tipoRegistro)) {
-      // tentativa leve baseada no texto bruto
-      const lc = out.toLowerCase();
+      // tentativa leve baseada no texto bruto retornado pelo modelo
+      const lc = (outRaw || '').toLowerCase();
       if (lc.includes('nascimento')) tipoRegistro = 'NASCIMENTO';
       else if (lc.includes('casamento')) tipoRegistro = 'CASAMENTO';
       else if (lc.includes('óbito') || lc.includes('obito')) tipoRegistro = 'OBITO';
@@ -1023,6 +1433,7 @@ async function analyzeRecordFromImageWithGemini(imagePath, params, status, opts 
       const resp = await callWithRetries(() => model.generateContent(parts), { retries: 3, baseDelayMs: 700 });
       const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
       await safeLogResponse(status, `${idxUsed} (imagem)`, out);
+      try { console.log(`[AI-RESPONSE] id=${status && status.jobId ? status.jobId : 'unknown'} fn=analyzeRecordFromImageWithGemini promptIndex=${idxUsed} model=${modelName} image=${path.basename(imagePath)} out=`, out); } catch(_){}
       const data = parseJsonLoose(out);
       if (data && typeof data === 'object') {
         // Suporte ao formato { registros: [...] } — escolher o de melhor cobertura
@@ -1064,6 +1475,139 @@ async function analyzeRecordFromImageWithGemini(imagePath, params, status, opts 
   }
 }
 
+// IA: transcrever página manuscrita em texto estruturado
+async function transcribeImageWithGemini(imagePath, status, ctx = {}) {
+  try {
+    if (process.env.IA_STUB === 'true') {
+      const fallback = await ocrImage(imagePath, status);
+      return { text: fallback || '', raw: fallback || '' };
+    }
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return { text: '', raw: '' };
+    const row = await getPromptByIndexador('extracao_manuscrito');
+    const promptTpl = (row && row.prompt) || 'Transcreva integralmente o conteúdo manuscrito legível da imagem e devolva apenas o texto em português atual.\nSe o texto estiver ilegível, responda uma string vazia. Não invente dados.';
+    const prompt = addStrictPreamble(promptTpl, null);
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const candidates = (ctx && Array.isArray(ctx.modelCandidates) && ctx.modelCandidates.length) ? ctx.modelCandidates : null;
+    const { primary, secondary } = (() => {
+      if (candidates && candidates.length) return { primary: candidates[0], secondary: candidates[1] || candidates[0] };
+      const resolved = resolveIaModels();
+      return { primary: resolved.primary, secondary: resolved.secondary };
+    })();
+
+    const label = 'transcribe_manuscrito (imagem)';
+    const tryOnce = async (modelName) => {
+      if (!modelName) throw new Error('Modelo IA não configurado para transcrição.');
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const b64 = (await fsp.readFile(imagePath)).toString('base64');
+      const parts = [{ text: prompt }, { inlineData: { mimeType: mimeFromExt(imagePath), data: b64 } }];
+      await safeLogPrompt(status, label, prompt, { model: modelName, image: path.basename(imagePath) });
+      const resp = await callWithRetries(() => model.generateContent(parts), { retries: 3, baseDelayMs: 700 });
+      const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
+      await safeLogResponse(status, label, out);
+      try { console.log(`[AI-RESPONSE] id=${status && status.jobId ? status.jobId : 'unknown'} fn=transcribeImageWithGemini promptIndex=extracao_manuscrito model=${modelName} image=${path.basename(imagePath)} out=`, out); } catch (_) {}
+      return out;
+    };
+
+    let raw = await tryOnce(primary);
+    if (!raw || raw.trim().length === 0) {
+      pushMessage(status, 'info', 'Transcrição manuscrita vazia; reforçando com modelo secundário.');
+      raw = await tryOnce(secondary);
+    }
+    const parsed = parseJsonLoose(raw);
+    let text = '';
+    if (parsed && typeof parsed === 'object') {
+      const primaryFields = ['transcricao', 'texto', 'text', 'content', 'resultado', 'aggregatedText'];
+      for (const field of primaryFields) {
+        if (typeof parsed[field] === 'string' && parsed[field].trim().length) {
+          text = parsed[field];
+          break;
+        }
+      }
+      if (!text && Array.isArray(parsed.pages)) {
+        const collected = parsed.pages
+          .map(page => (page && typeof page.text === 'string') ? page.text.trim() : '')
+          .filter(str => str.length > 0);
+        if (collected.length) {
+          text = collected.join('\n\n');
+        }
+      }
+    }
+    if (!text && typeof raw === 'string') {
+      text = raw;
+    }
+    return {
+      text: String(text || ''),
+      raw: typeof raw === 'string' ? raw : JSON.stringify(raw),
+      parsed: parsed && typeof parsed === 'object' ? parsed : null
+    };
+  } catch (e) {
+    pushMessage(status, 'warning', `Falha na transcrição manuscrita: ${(e && e.message) || e}`);
+    return { text: '', raw: '' };
+  }
+}
+
+// IA: extrair registros a partir do texto agregado de manuscritos
+async function analyzeAggregatedManuscriptWithGemini(aggregatedText, metas, params, status, ctx = {}) {
+  try {
+    if (!aggregatedText || !aggregatedText.trim()) return null;
+    if (process.env.IA_STUB === 'true') {
+      return { registros: [] };
+    }
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return null;
+    const row = await getPromptByIndexador('dados_manuscrito');
+    const promptTpl = (row && row.prompt) || (
+      'Analise o texto agregado de registros manuscritos e extraia TODOS os registros encontrados.\n' +
+      'Responda APENAS JSON válido com o formato:\n' +
+      '{ "registros": [ { "tipo": "INCLUSAO"|"ALTERACAO", "tipoRegistro": "NASCIMENTO"|"CASAMENTO"|"OBITO", "folha"?: string|{ "numero": string|number }, "termo"?: string|number, "dataRegistro"?: string, "dados": {...} } ] }\n' +
+      'Preencha apenas com informações presentes no texto. Datas devem ser ISO (YYYY-MM-DD) quando possível.'
+    );
+    const prompt = addStrictPreamble(renderTemplate(promptTpl, {
+      paginas: metas && metas.paginas ? JSON.stringify(metas.paginas) : '',
+      tipoRegistro: params && params.tipoRegistro ? String(params.tipoRegistro) : ''
+    }), params && params.tipoRegistro);
+
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const candidates = (ctx && Array.isArray(ctx.modelCandidates) && ctx.modelCandidates.length) ? ctx.modelCandidates : null;
+    const { primary, secondary } = (() => {
+      if (candidates && candidates.length) return { primary: candidates[0], secondary: candidates[1] || candidates[0] };
+      const resolved = resolveIaModels();
+      return { primary: resolved.primary, secondary: resolved.secondary };
+    })();
+
+    const label = 'dados_manuscrito (texto agregado)';
+    const tryOnce = async (modelName) => {
+      if (!modelName) throw new Error('Modelo IA não configurado para análise de manuscrito agregado.');
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const input = clampForPrompt(`${prompt}\n\n=== TEXTO AGREGADO ===\n${aggregatedText}`);
+      await safeLogPrompt(status, label, prompt, { model: modelName, paginas: metas && metas.paginas ? metas.paginas.length : 0 });
+      const resp = await callWithRetries(() => model.generateContent(input), { retries: 3, baseDelayMs: 700 });
+      const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
+      await safeLogResponse(status, label, out);
+      try { console.log(`[AI-RESPONSE] id=${status && status.jobId ? status.jobId : 'unknown'} fn=analyzeAggregatedManuscriptWithGemini promptIndex=dados_manuscrito model=${modelName} out=`, out); } catch (_) {}
+      return parseJsonLoose(out);
+    };
+
+    let parsed = await tryOnce(primary);
+    let registros = parsed && Array.isArray(parsed.registros) ? parsed.registros : [];
+    if (!registros.length) {
+      pushMessage(status, 'info', 'Análise agregada retornou vazia; reforçando com modelo secundário.');
+      parsed = await tryOnce(secondary);
+      registros = parsed && Array.isArray(parsed.registros) ? parsed.registros : [];
+    }
+    if (parsed && typeof parsed === 'object' && Array.isArray(parsed.registros)) {
+      return parsed;
+    }
+    return null;
+  } catch (e) {
+    pushMessage(status, 'warning', `Falha na análise do manuscrito agregado: ${(e && e.message) || e}`);
+    return null;
+  }
+}
+
 // Converte YYYY-MM-DD -> DD/MM/AAAA
 function toBrDate(s) {
   if (!s) return '';
@@ -1078,9 +1622,25 @@ function mapIaRegistroToNormalized(reg, tipoReg) {
   try {
     const t = String(tipoReg || '').toUpperCase();
     const dados = reg && reg.dados ? reg.dados : {};
-    const out = { tipo: 'INCLUSAO', campos: {}, filiacao: [], documentos: [] };
+    const out = { tipo: 'INCLUSAO', campos: {}, filiacao: [], documentos: [], tipoRegistro: t || null };
     if (reg && reg.dataRegistro) out.campos['DATAREGISTRO'] = toBrDate(reg.dataRegistro);
     if (reg && reg.observacoes) out.campos['OBSERVACOES'] = String(reg.observacoes || '');
+    
+    // Mapear folha e termo quando presentes na resposta da IA (ANTES dos returns específicos)
+    try {
+      if (reg && reg.folha && (reg.folha.numero != null)) {
+        out.folha = out.folha || {};
+        const num = reg.folha.numero;
+        out.folha.numero = (typeof num === 'number') ? num : (isNaN(Number(num)) ? String(num) : Number(num));
+        out.campos['FOLHA'] = String(out.folha.numero);
+        console.log(`[IA->Mapping] ✓ Folha capturada da IA: ${out.folha.numero}`);
+      }
+      if (reg && (reg.termo != null)) {
+        out.termo = reg.termo;
+        out.campos['NUMEROTERMO'] = String(reg.termo);
+        console.log(`[IA->Mapping] ✓ Termo capturado da IA: ${reg.termo}`);
+      }
+    } catch (_) {}
 
     if (t === 'NASCIMENTO' || !t) {
       if (dados.nomeRegistrado) out.campos['NOMEREGISTRADO'] = String(dados.nomeRegistrado).toUpperCase();
@@ -1122,7 +1682,8 @@ function mapIaRegistroToNormalized(reg, tipoReg) {
       if (dados.horaObito) out.campos['HORAOBITO'] = String(dados.horaObito);
       return out;
     }
-    return null;
+
+    return out;
   } catch (_) { return null; }
 }
 
@@ -1177,8 +1738,7 @@ Responda APENAS JSON estrito no formato:
 }
 Texto:
 {{texto}}`;
-  let promptTpl = defaultTpl;
-  const row = await getPromptByIndexador('tipo_escrita');
+    pushMessageWithMeta(status, 'info', `IA • Resposta (${label}) — bruta:\n  ${truncated}`, { promptTag: label });
   if (row && row.prompt) promptTpl = row.prompt;
   const prompt = renderTemplate(promptTpl, { texto: useText });
   try {
@@ -1196,9 +1756,11 @@ Texto:
       }
       const model = genAI.getGenerativeModel({ model: modelName });
       await safeLogPrompt(status, 'tipo_escrita', prompt, { model: modelName, mode: 'texto' });
+      console.log(`[AI-INVOKE] id=${status && status.jobId ? status.jobId : 'unknown'} fn=identifyEscritaWithGemini model=${modelName}`);
       const resp = await callWithRetries(() => model.generateContent(prompt), { retries: 3, baseDelayMs: 700 });
       const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
       await safeLogResponse(status, 'tipo_escrita', out);
+      try { console.log(`[AI-RESPONSE] id=${status && status.jobId ? status.jobId : 'unknown'} fn=identifyEscritaWithGemini promptIndex=tipo_escrita model=${modelName} out=`, out); } catch(_){}
       return parseJsonLoose(out);
     };
     let data = await tryOnce(primary);
@@ -1299,9 +1861,11 @@ Texto (normalizado):\n${useText}`;
       }
       const model = genAI.getGenerativeModel({ model: modelName });
       await safeLogPrompt(status, labelBase, prompt, { model: modelName, tipoRegistro: tipoReg });
+      console.log(`[AI-INVOKE] id=${status && status.jobId ? status.jobId : 'unknown'} fn=analyzeRecordWithGemini model=${modelName} label=${labelBase}`);
       const resp = await callWithRetries(() => model.generateContent(prompt), { retries: 3, baseDelayMs: 700 });
       const out = (resp && resp.response && resp.response.text && resp.response.text()) || '';
       await safeLogResponse(status, labelBase, out);
+      try { console.log(`[AI-RESPONSE] id=${status && status.jobId ? status.jobId : 'unknown'} fn=analyzeRecordWithGemini promptIndex=${idxUsed || 'leitura_generica'} model=${modelName} label=${labelBase} out=`, out); } catch(_){}
       const data = parseJsonLoose(out);
       if (data && typeof data === 'object') {
         if (Array.isArray(data.registros) && data.registros.length > 0) {
@@ -1358,6 +1922,22 @@ function mapIaRegistroToNormalized(reg, tipoReg) {
     // comum: data do registro no topo do item
     if (reg && reg.dataRegistro) out.campos['DATAREGISTRO'] = toBrDate(reg.dataRegistro);
     if (reg && reg.observacoes) out.campos['OBSERVACOES'] = String(reg.observacoes || '');
+    
+    // Mapear folha e termo quando presentes na resposta da IA (ANTES dos returns específicos)
+    try {
+      if (reg && reg.folha && (reg.folha.numero != null)) {
+        out.folha = out.folha || {};
+        const num = reg.folha.numero;
+        out.folha.numero = (typeof num === 'number') ? num : (isNaN(Number(num)) ? String(num) : Number(num));
+        out.campos['FOLHA'] = String(out.folha.numero);
+        console.log(`[IA->Mapping] ✓ Folha capturada da IA: ${out.folha.numero}`);
+      }
+      if (reg && (reg.termo != null)) {
+        out.termo = reg.termo;
+        out.campos['NUMEROTERMO'] = String(reg.termo);
+        console.log(`[IA->Mapping] ✓ Termo capturado da IA: ${reg.termo}`);
+      }
+    } catch (_) {}
 
     if (t === 'NASCIMENTO') {
       if (dados.nomeRegistrado) out.campos['NOMEREGISTRADO'] = String(dados.nomeRegistrado).toUpperCase();
@@ -1402,7 +1982,7 @@ function mapIaRegistroToNormalized(reg, tipoReg) {
       return out;
     }
 
-    return null;
+    return out;
   } catch (_) {
     return null;
   }
@@ -1454,13 +2034,47 @@ async function maybeProduceRecordFromText(text, sourcePath, records, params, sta
       rec.campos = { ...rec.campos, ...extraCampos };
     }
   }
+  
+  // SEMPRE tentar extrair folha e termo do texto, mesmo se a IA já retornou dados
+  // Isso garante que esses campos críticos sejam capturados
+  try {
+    const extraCampos = minimalHeuristicExtract(String(text || ''), params.tipoRegistro || 'NASCIMENTO');
+    console.log(`[Heurística] Campos extraídos: FOLHA=${extraCampos.FOLHA || 'n/a'}, TERMO=${extraCampos.NUMEROTERMO || 'n/a'}`);
+    
+    // Se folha não existe ou está vazia, tenta da heurística
+    if (!rec.campos.FOLHA && extraCampos.FOLHA) {
+      rec.campos.FOLHA = extraCampos.FOLHA;
+      // Mapear para propriedade de topo
+      rec.folha = rec.folha || {};
+      rec.folha.numero = isNaN(Number(extraCampos.FOLHA)) ? extraCampos.FOLHA : Number(extraCampos.FOLHA);
+      console.log(`[Heurística->Record] ✓ Folha aplicada ao record: ${rec.folha.numero}`);
+    } else if (rec.campos.FOLHA) {
+      console.log(`[Heurística->Record] ⊘ Folha já existe no record (IA): ${rec.campos.FOLHA}`);
+    }
+    
+    // Se termo não existe ou está vazio, tenta da heurística
+    if (!rec.campos.NUMEROTERMO && extraCampos.NUMEROTERMO) {
+      rec.campos.NUMEROTERMO = extraCampos.NUMEROTERMO;
+      // Mapear para propriedade de topo
+      rec.termo = isNaN(Number(extraCampos.NUMEROTERMO)) ? extraCampos.NUMEROTERMO : Number(extraCampos.NUMEROTERMO);
+      console.log(`[Heurística->Record] ✓ Termo aplicado ao record: ${rec.termo}`);
+    } else if (rec.campos.NUMEROTERMO) {
+      console.log(`[Heurística->Record] ⊘ Termo já existe no record (IA): ${rec.campos.NUMEROTERMO}`);
+    }
+  } catch (err) {
+    console.error(`[Heurística] Erro ao extrair folha/termo: ${err.message}`);
+  }
+  
   // Forçar sempre inclusão conforme requisito do cliente
   rec.tipo = 'INCLUSAO';
+  rec.tipoRegistro = String((opts && opts.tipoRegistroOverride) || params.tipoRegistro || '').toUpperCase() || null;
   // Sempre anexa a origem e normaliza tipos básicos
   rec.origens = [...(rec.origens || []), path.basename(sourcePath)];
   if (!rec.campos || typeof rec.campos !== 'object') rec.campos = {};
   if (!Array.isArray(rec.filiacao)) rec.filiacao = [];
   if (!Array.isArray(rec.documentos)) rec.documentos = [];
+  
+  console.log(`[Record->Array] Adicionando record: FOLHA=${rec.folha?.numero || 'n/a'}, TERMO=${rec.termo || 'n/a'}, NOME=${rec.campos?.NOMEREGISTRADO || 'n/a'}`);
   records.push(rec);
 }
 
@@ -1489,11 +2103,20 @@ function minimalHeuristicExtract(text, tipoReg) {
   if (data) campos.DATAREGISTRO = data;
   const livro = guessField(t, /LIVRO\s*[:\-]?\s*(\S{1,20})/i, '');
   if (livro) campos.LIVRO = livro;
-  const folha = guessField(t, /FOLHA\s*[:\-]?\s*(\S{1,20})/i, '')
-    || guessField(t, /FOLIO\s*[:\-]?\s*(\S{1,20})/i, '');
+  
+  // Extração robusta de folha com múltiplas variações
+  const folha = guessField(t, /FOLHA\s*[:\-]?\s*N?[ºª°]?\s*(\d+[A-Za-z]?)/i, '')
+    || guessField(t, /F[OÓ]LIO\s*[:\-]?\s*N?[ºª°]?\s*(\d+[A-Za-z]?)/i, '')
+    || guessField(t, /FLS?\.?\s*[:\-]?\s*N?[ºª°]?\s*(\d+[A-Za-z]?)/i, '')
+    || guessField(t, /FOLHA\s*[:\-]?\s*(\S{1,20})/i, '');
   if (folha) campos.FOLHA = folha;
-  const termo = guessField(t, /(?:TERMO|N[ÚU]MERO\s*DO\s*TERMO)\s*[:\-]?\s*(\S{1,20})/i, '');
+  
+  // Extração robusta de termo com múltiplas variações
+  const termo = guessField(t, /TERMO\s*[:\-]?\s*N?[ºª°]?\s*(\d+[A-Za-z]?)/i, '')
+    || guessField(t, /N[ÚU]MERO\s*(?:DO\s*)?TERMO\s*[:\-]?\s*N?[ºª°]?\s*(\d+[A-Za-z]?)/i, '')
+    || guessField(t, /TERMO\s*[:\-]?\s*(\S{1,20})/i, '');
   if (termo) campos.NUMEROTERMO = termo;
+  
   return campos;
 }
 
@@ -1527,6 +2150,24 @@ function normalizeRecordOutput(data, text, tipoReg) {
       });
       out.campos = { ...out.campos, ...normalized };
     }
+    // If data contains a top-level folha object, map it into campos and out.folha
+    try {
+      const srcFolha = (data && data.folha) ? data.folha : (baseObj && baseObj.folha ? baseObj.folha : null);
+      if (srcFolha && srcFolha.numero != null) {
+        out.folha = out.folha || {};
+        const fv = srcFolha.numero;
+        out.folha.numero = (typeof fv === 'number') ? fv : (isNaN(Number(fv)) ? String(fv) : Number(fv));
+        if (!out.campos.FOLHA) out.campos.FOLHA = String(out.folha.numero);
+      }
+    } catch (_) {}
+    // If data contains a top-level termo, map it into campos and out.termo
+    try {
+      const srcTermo = (data && (data.termo != null)) ? data.termo : (baseObj && (baseObj.termo != null) ? baseObj.termo : null);
+      if (srcTermo != null) {
+        out.termo = srcTermo;
+        if (!out.campos.NUMEROTERMO) out.campos.NUMEROTERMO = String(srcTermo);
+      }
+    } catch (_) {}
   }
   // 2) Sinônimos comuns
   const rename = (fromList, to) => {
@@ -1542,6 +2183,16 @@ function normalizeRecordOutput(data, text, tipoReg) {
   rename(['LIVRO', 'LIVROASSENTO', 'LIVRO_DO_ASSENTO'], 'LIVRO');
   rename(['FOLHA', 'FOLIO', 'FOLHAASSENTO', 'FOLHA_DO_ASSENTO'], 'FOLHA');
   rename(['NUMEROTERMO', 'TERMO', 'NUMERO_TERMO', 'NTERMO', 'NUMERO_DO_TERMO'], 'NUMEROTERMO');
+  
+  // Map campos.FOLHA to out.folha if not already set
+  if (out.campos.FOLHA && !out.folha) {
+    out.folha = { numero: isNaN(Number(out.campos.FOLHA)) ? out.campos.FOLHA : Number(out.campos.FOLHA) };
+  }
+  // Map campos.NUMEROTERMO to out.termo if not already set
+  if (out.campos.NUMEROTERMO && out.termo == null) {
+    out.termo = isNaN(Number(out.campos.NUMEROTERMO)) ? out.campos.NUMEROTERMO : Number(out.campos.NUMEROTERMO);
+  }
+  
   // Específicos por tipo de registro
   const tipo = (tipoReg || '').toUpperCase();
   if (tipo === 'CASAMENTO') {
@@ -1625,6 +2276,327 @@ function normalizeRecordOutput(data, text, tipoReg) {
     out.campos = minimalHeuristicExtract(text, tipoReg);
   }
   return out;
+}
+
+function toNullableString(value) {
+  if (value == null) return null;
+  const str = String(value).trim();
+  return str.length ? str : null;
+}
+
+function pickFirstValue(obj, keys) {
+  if (!obj) return null;
+  for (const key of keys) {
+    if (obj[key] != null && String(obj[key]).trim().length) return obj[key];
+  }
+  return null;
+}
+
+function ensureTwoDigits(num) {
+  const n = Number(num);
+  if (!Number.isFinite(n)) return null;
+  return String(Math.max(0, Math.trunc(n))).padStart(2, '0');
+}
+
+function parseDateParts(value) {
+  const str = String(value || '').trim();
+  if (!str) return null;
+  let m = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) {
+    return { year: m[1], month: m[2], day: m[3] };
+  }
+  m = str.match(/^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/);
+  if (m) {
+    return { year: m[3], month: ensureTwoDigits(m[2]), day: ensureTwoDigits(m[1]) };
+  }
+  return null;
+}
+
+function toIsoDate(value) {
+  const parts = parseDateParts(value);
+  if (!parts || !parts.year || !parts.month || !parts.day) return null;
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+function toBrDashDate(value) {
+  const parts = parseDateParts(value);
+  if (!parts || !parts.year || !parts.month || !parts.day) return null;
+  return `${parts.day}-${parts.month}-${parts.year}`;
+}
+
+function normalizeSexoValue(value) {
+  const str = String(value || '').trim().toUpperCase();
+  if (!str) return null;
+  if (str.startsWith('M')) return 'M';
+  if (str.startsWith('F')) return 'F';
+  return null;
+}
+
+function buildMunicipioUf(campos) {
+  if (!campos) return null;
+  const city = pickFirstValue(campos, ['LOCALNASCIMENTO', 'MUNICIPIONASCIMENTO', 'MUNICIPIO']);
+  const uf = pickFirstValue(campos, ['UFNASCIMENTO', 'UF']);
+  if (!city && !uf) return null;
+  const suffix = city && uf ? ` ${city}/${uf}` : (city ? ` ${city}` : ` ${uf}`);
+  return `Município de nascimento:${suffix}`.trim();
+}
+
+function buildFiliacaoPayload(filiacao) {
+  if (!Array.isArray(filiacao) || !filiacao.length) return [];
+  return filiacao.slice(0, 2).map((rel) => ({
+    nome: toNullableString(rel && (rel.NOME || rel.nome)),
+    naturalidade: toNullableString(rel && (rel.NATURALIDADE || rel.TEXTOLIVREMUNICIPIONAT || rel.NATURALIDADETXT || rel.CIDADENATURALIDADE)),
+  }));
+}
+
+function buildAvosPayload(campos) {
+  if (!campos) return [];
+  const avoKeys = ['AVOPATERNO', 'AVOMATERNO', 'AVOSPATERNO', 'AVOSMATERNOS', 'AVO1', 'AVO2', 'AVO3', 'AVO4'];
+  return avoKeys
+    .map((key) => toNullableString(campos[key]))
+    .filter((val) => !!val);
+}
+
+function buildNubentePayload(campos, idx) {
+  const suffix = String(idx);
+  return {
+    nome: toNullableString(campos && campos[`NOMECONJUGE${suffix}`]),
+    documento: toNullableString(campos && (campos[`CPFCONJUGE${suffix}`] || campos[`DOCUMENTOCONJUGE${suffix}`])),
+    dataNascimento: toIsoDate(campos && campos[`DATANASCIMENTOCONJUGE${suffix}`]),
+    naturalidade: toNullableString(campos && (campos[`NATURALIDADECONJUGE${suffix}`] || campos[`TEXTOLIVREMUNNATCONJUGE${suffix}`])),
+    estadoCivil: toNullableString(campos && campos[`ESTADOCIVILCONJUGE${suffix}`]),
+  };
+}
+
+function buildCasamentoTestemunhas(campos) {
+  if (!campos) return [];
+  const candidates = [campos.TESTEMUNHA1, campos.TESTEMUNHA2, campos.TESTEMUNHA_1, campos.TESTEMUNHA_2];
+  if (typeof campos.TESTEMUNHAS === 'string') {
+    candidates.push(...campos.TESTEMUNHAS.split(/[;,\n]+/));
+  }
+  return candidates
+    .map((val) => toNullableString(val))
+    .filter((val) => !!val);
+}
+
+function buildFalecidoPayload(campos) {
+  return {
+    nome: toNullableString(campos && (campos.NOMEFALECIDO || campos.NOMEREGISTRADO)),
+    documento: toNullableString(campos && (campos.CPFFALECIDO || campos.DOCFALECIDO)),
+    idade: toNullableString(campos && (campos.IDADEFALECIDO || campos.IDADE)),
+    naturalidade: toNullableString(campos && (campos.NATURALIDADE || campos.CIDADENATURALIDADE)),
+    estadoCivil: toNullableString(campos && (campos.ESTADOCIVIL || campos.ESTADOCIVILFALECIDO)),
+  };
+}
+
+function normalizeHour(value) {
+  const str = String(value || '').trim();
+  if (!str) return null;
+  const m = str.match(/^(\d{1,2})[:hH](\d{2})/);
+  if (m) {
+    const hh = ensureTwoDigits(m[1]);
+    const mm = ensureTwoDigits(m[2]);
+    if (hh && mm) return `${hh}:${mm}`;
+  }
+  const digits = str.replace(/[^0-9]/g, '');
+  if (digits.length === 4) {
+    return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+  }
+  return null;
+}
+
+function normalizeFolhaValue(record) {
+  if (!record) return null;
+  if (record.folha && record.folha.numero != null) return String(record.folha.numero);
+  if (record.campos && record.campos.FOLHA) return String(record.campos.FOLHA);
+  return null;
+}
+
+function normalizeTermoValue(record) {
+  if (!record) return null;
+  if (record.termo != null) return String(record.termo);
+  if (record.campos && record.campos.NUMEROTERMO) return String(record.campos.NUMEROTERMO);
+  return null;
+}
+
+// --- Deduplicação e merge de registros ---
+function normalizeKeyValueForMatch(val) {
+  return stripDiacritics(String(val || '').toUpperCase()).replace(/[^A-Z0-9]/g, '').trim();
+}
+
+function primaryNameForRecord(record) {
+  const campos = record && record.campos ? record.campos : {};
+  return campos.NOMEREGISTRADO || campos.NOME || campos.NOMEFALECIDO || null;
+}
+
+function buildRecordKeys(record, defaultTipoRegistro) {
+  const keys = [];
+  const tipo = String(record && record.tipoRegistro ? record.tipoRegistro : defaultTipoRegistro || '').toUpperCase();
+  const termo = normalizeTermoValue(record);
+  const folha = normalizeFolhaValue(record);
+  const nome = primaryNameForRecord(record);
+  const dataRegistro = record && record.campos ? toIsoDate(record.campos.DATAREGISTRO) || record.campos.DATAREGISTRO : null;
+
+  if (termo) keys.push(`TERMO:${tipo}:${normalizeKeyValueForMatch(termo)}`);
+  if (folha) keys.push(`FOLHA:${tipo}:${normalizeKeyValueForMatch(folha)}`);
+  if (nome && dataRegistro) keys.push(`NOME_DATA:${tipo}:${normalizeKeyValueForMatch(nome)}:${normalizeKeyValueForMatch(dataRegistro)}`);
+  if (nome) keys.push(`NOME:${tipo}:${normalizeKeyValueForMatch(nome)}`);
+  return keys;
+}
+
+function preferValue(current, incoming) {
+  const c = current == null ? '' : String(current).trim();
+  const i = incoming == null ? '' : String(incoming).trim();
+  if (!c && i) return incoming;
+  if (!i) return current;
+  const numRe = /^-?\d+(,\d+|\.\d+)?$/;
+  if (numRe.test(i) && !numRe.test(c)) return incoming;
+  if (numRe.test(i) && numRe.test(c)) {
+    const ni = Number(i.replace(',', '.'));
+    const nc = Number(c.replace(',', '.'));
+    if (!Number.isNaN(ni) && Number.isNaN(nc)) return incoming;
+    if (!Number.isNaN(ni) && !Number.isNaN(nc) && ni !== 0 && nc === 0) return incoming;
+  }
+  return i.length > c.length ? incoming : current;
+}
+
+function mergeRecordInto(target, incoming) {
+  if (!incoming) return target;
+  // tipo: se alguma for ALTERACAO, mantém ALTERACAO
+  if (incoming.tipo === 'ALTERACAO') target.tipo = 'ALTERACAO';
+  target.tipoRegistro = target.tipoRegistro || incoming.tipoRegistro || null;
+
+  // folh/termo
+  target.folha = target.folha || incoming.folha;
+  if (!target.folha && incoming.folha) target.folha = incoming.folha;
+  if (!target.termo && incoming.termo != null) target.termo = incoming.termo;
+
+  // campos
+  target.campos = target.campos || {};
+  const srcCampos = incoming.campos || {};
+  Object.keys(srcCampos).forEach((k) => {
+    target.campos[k] = preferValue(target.campos[k], srcCampos[k]);
+  });
+
+  // filiação (dedup por nome)
+  const filiaBase = Array.isArray(target.filiacao) ? target.filiacao : [];
+  const filiaIn = Array.isArray(incoming.filiacao) ? incoming.filiacao : [];
+  const seenFil = new Set(filiaBase.map((f) => normalizeKeyValueForMatch(f && f.NOME)));
+  filiaIn.forEach((f) => {
+    const key = normalizeKeyValueForMatch(f && f.NOME);
+    if (key && !seenFil.has(key)) { filiaBase.push(f); seenFil.add(key); }
+  });
+  target.filiacao = filiaBase;
+
+  // documentos (dedup por NUMERO)
+  const docsBase = Array.isArray(target.documentos) ? target.documentos : [];
+  const docsIn = Array.isArray(incoming.documentos) ? incoming.documentos : [];
+  const seenDocs = new Set(docsBase.map((d) => normalizeKeyValueForMatch(d && d.NUMERO)));
+  docsIn.forEach((d) => {
+    const key = normalizeKeyValueForMatch(d && d.NUMERO);
+    if (key && !seenDocs.has(key)) { docsBase.push(d); seenDocs.add(key); }
+  });
+  target.documentos = docsBase;
+
+  // beneficios
+  const benBase = Array.isArray(target.beneficios) ? target.beneficios : [];
+  const benIn = Array.isArray(incoming.beneficios) ? incoming.beneficios : [];
+  const seenBen = new Set(benBase.map((b) => JSON.stringify(b)));
+  benIn.forEach((b) => { const key = JSON.stringify(b); if (!seenBen.has(key)) { benBase.push(b); seenBen.add(key); } });
+  target.beneficios = benBase;
+
+  // origens
+  const origBase = Array.isArray(target.origens) ? target.origens : [];
+  const origIn = Array.isArray(incoming.origens) ? incoming.origens : [];
+  target.origens = Array.from(new Set([...origBase, ...origIn]));
+
+  return target;
+}
+
+function dedupeRecords(records, defaultTipoRegistro = null) {
+  const map = new Map();
+  records.forEach((rec) => {
+    const keys = buildRecordKeys(rec, defaultTipoRegistro);
+    let bucketKey = null;
+    for (const k of keys) {
+      if (map.has(k)) { bucketKey = k; break; }
+    }
+    if (!bucketKey) bucketKey = keys[0] || `NO_KEY_${map.size}`;
+    const existing = map.get(bucketKey);
+    if (existing) {
+      map.set(bucketKey, mergeRecordInto(existing, rec));
+    } else {
+      map.set(bucketKey, JSON.parse(JSON.stringify(rec)));
+    }
+    const ref = map.get(bucketKey);
+    keys.forEach((k) => { if (!map.has(k)) map.set(k, ref); });
+  });
+  // map mantém aliases para múltiplas chaves apontando para o mesmo objeto; usamos Set para não repetir
+  return Array.from(new Set(map.values()));
+}
+
+function buildFrontendRecord(record, defaultTipoRegistro) {
+  if (!record || typeof record !== 'object') return null;
+  const tipo = (record.tipo === 'ALTERACAO') ? 'ALTERACAO' : 'INCLUSAO';
+  const tipoRegistro = String(record.tipoRegistro || defaultTipoRegistro || '').toUpperCase() || null;
+  const campos = record.campos || {};
+  const base = {
+    tipo,
+    tipoRegistro,
+    folha: toNullableString(normalizeFolhaValue(record)),
+    termo: toNullableString(normalizeTermoValue(record)),
+    dataRegistro: toIsoDate(campos.DATAREGISTRO),
+    dados: {},
+  };
+
+  if (tipoRegistro === 'CASAMENTO') {
+    base.dados = {
+      nubente1: buildNubentePayload(campos, 1),
+      nubente2: buildNubentePayload(campos, 2),
+      dataCasamento: toBrDashDate(campos.DATACASAMENTO),
+      local: toNullableString(campos.LOCALCASAMENTO || campos.LOCAL),
+      regimeBens: toNullableString(campos.REGIMECASAMENTO),
+      testemunhas: buildCasamentoTestemunhas(campos),
+    };
+  } else if (tipoRegistro === 'OBITO') {
+    base.dados = {
+      falecido: buildFalecidoPayload(campos),
+      dataObito: toBrDashDate(campos.DATAOBITO),
+      horaObito: normalizeHour(campos.HORAOBITO),
+      localObito: toNullableString(campos.LOCALOBITO || campos.LOGRADOUROOBITO),
+      declarante: toNullableString(campos.NOMEDECLARANTE || campos.DECLARANTE),
+      localSepultamento: toNullableString(campos.LOCALSEPULTAMENTO || campos.DESTINOCORPO),
+      do: toNullableString(campos.NUMDECLARACAOOBITO || campos.DO),
+    };
+  } else {
+    base.dados = {
+      nomeRegistrado: toNullableString(campos.NOMEREGISTRADO || campos.NOME),
+      sexo: normalizeSexoValue(campos.SEXO),
+      dataNascimento: toBrDashDate(campos.DATANASCIMENTO),
+      municipioUF: buildMunicipioUf(campos),
+      filiacao: buildFiliacaoPayload(record.filiacao),
+      avos: buildAvosPayload(campos),
+    };
+  }
+  return base;
+}
+
+function buildFrontendPayload(records, defaultTipoRegistro) {
+  const registros = Array.isArray(records)
+    ? records.map((rec) => buildFrontendRecord(rec, defaultTipoRegistro)).filter((rec) => !!rec)
+    : [];
+  return { registros };
+}
+
+function buildMetaSnapshot(filePaths, statusObj) {
+  const arquivos = Array.isArray(filePaths)
+    ? filePaths.map((fp, idx) => ({ indice: idx + 1, nome: path.basename(fp), caminho: fp }))
+    : [];
+  const paginas = [];
+  const avisos = Array.isArray(statusObj && statusObj.messages)
+    ? statusObj.messages.filter((msg) => typeof msg === 'string' && msg.startsWith('[warning]'))
+    : [];
+  return { arquivos, paginas, avisos };
 }
 
 function detectContentType(buf) {
@@ -1929,8 +2901,97 @@ function registerLeituraLivrosRoutes(app) {
     const { jobId } = req.params;
     const paths = jobPaths(jobId);
     try {
-      const result = await readJSON(paths.result);
-      return res.json(result);
+        const result = await readJSON(paths.result);
+        
+        let mutated = false;
+        // Merge folha.numero and termo from parsed IA responses into result.records when available
+        try {
+          if (Array.isArray(result.iaRawResponses) && Array.isArray(result.records)) {
+            const parsedRegs = [];
+            for (const ia of result.iaRawResponses) {
+              if (ia && ia.parsed && Array.isArray(ia.parsed.registros)) parsedRegs.push(...ia.parsed.registros);
+            }
+            for (const p of parsedRegs) {
+              try {
+                const termo = p && (p.termo != null ? String(p.termo) : null);
+                let target = null;
+                if (termo) {
+                  target = result.records.find(r => {
+                    const rTerm = (r.termo != null ? String(r.termo) : (r.campos && (r.campos.NUMEROTERMO || r.campos.TERMO) ? String(r.campos.NUMEROTERMO || r.campos.TERMO) : null));
+                    return rTerm && String(rTerm) === termo;
+                  });
+                }
+                if (!target) {
+                  const nameCandidates = (p.dados && (p.dados.nomeRegistrado || p.dados.nome || p.dados.nubente1 || p.dados.nomeFalecido)) ? String(p.dados.nomeRegistrado || p.dados.nome || p.dados.nubente1 || p.dados.nomeFalecido).toLowerCase().trim() : null;
+                  const dateCandidate = p && (p.dataRegistro || (p.dados && (p.dados.dataNascimento || p.dados.dataCasamento || p.dados.dataObito))) ? String(p.dataRegistro || p.dados.dataNascimento || p.dados.dataCasamento || p.dados.dataObito) : null;
+                  if (nameCandidates) {
+                    target = result.records.find(r => {
+                      const rn = (r.campos && (r.campos.NOMEREGISTRADO || r.campos.NOME)) ? String(r.campos.NOMEREGISTRADO || r.campos.NOME).toLowerCase().trim() : null;
+                      if (!rn) return false;
+                      if (dateCandidate && r.campos && r.campos.DATAREGISTRO) {
+                        return rn === nameCandidates && String(r.campos.DATAREGISTRO).includes(String(dateCandidate).slice(0,10));
+                      }
+                      return rn === nameCandidates;
+                    });
+                  }
+                }
+                if (target) {
+                  if (p.folha && p.folha.numero != null) {
+                    target.folha = target.folha || {};
+                    target.folha.numero = (typeof p.folha.numero === 'number') ? p.folha.numero : (isNaN(Number(p.folha.numero)) ? p.folha.numero : Number(p.folha.numero));
+                    mutated = true;
+                  }
+                  if (p.termo != null) {
+                    target.termo = p.termo;
+                    target.campos = target.campos || {};
+                    target.campos.NUMEROTERMO = String(p.termo);
+                    mutated = true;
+                  }
+                }
+              } catch (_) {}
+            }
+          }
+        } catch (_) {}
+
+        if (!result.payload || mutated) {
+          result.payload = buildFrontendPayload(result.records || [], result.params && result.params.tipoRegistro);
+          mutated = true;
+        }
+
+        if (mutated) {
+          try { await writeJSON(paths.result, result); } catch (_) {}
+        }
+
+        const payload = result.payload || { registros: [] };
+        if (!Array.isArray(payload.registros)) payload.registros = [];
+        console.log(`[Result->Payload] Preparando payload: ${payload.registros.length} registros`);
+        payload.registros.forEach((reg, idx) => {
+          console.log(`[Result->Payload] Registro ${idx + 1}: tipo=${reg.tipoRegistro || result.params?.tipoRegistro || 'n/a'}, FOLHA=${reg.folha || 'n/a'}, TERMO=${reg.termo || 'n/a'}`);
+        });
+        console.log(`[Result->Payload] ✓ Payload pronto para envio`);
+        try {
+          const serialized = JSON.stringify(payload);
+          const maxLog = Math.max(2000, Number(process.env.LEITURA_PAYLOAD_LOG_MAX || 12000));
+          const preview = serialized.length > maxLog ? `${serialized.slice(0, maxLog)}...[truncado]` : serialized;
+          console.log(`[Result->Payload] Payload final enviado ao frontend (${payload.registros.length} registros, ${serialized.length} chars): ${preview}`);
+        } catch (e) {
+          try { console.warn(`[Result->Payload] Falha ao serializar payload final: ${e && e.message ? e.message : e}`); } catch(_) {}
+        }
+
+        // Log delivery and return the result
+        try {
+          try { console.log(`[leitura-livros] Returning result for job ${jobId}`); } catch(_){ }
+          // Append a status message noting the delivery (non-fatal)
+          try {
+            const st = await readJSON(paths.status).catch(() => null);
+            if (st) {
+              st.messages = st.messages || [];
+              st.messages.push(`[info] Resultado entregue ao frontend`);
+              await writeJSON(paths.status, st);
+            }
+          } catch(_){ }
+        } catch(_){}
+        return res.json(payload);
     } catch {
       return res.status(404).json({ error: 'jobId não encontrado' });
     }
