@@ -7,6 +7,7 @@ import DapTable from '../dap/DapTable';
 import DapDetailsDrawer from '../dap/DapDetailsDrawer';
 import { identificarTipo, analisarExigencia, gerarTextoAverbacao } from '../servicos/IAWorkflowService';
 import ModalTerminalIA from './ModalTerminalIA';
+import HistoricoNasObModal from './HistoricoNasObModal';
 
 const currentYear = new Date().getFullYear();
 
@@ -28,6 +29,7 @@ function AnaliseDAP() {
   const [, setFeedback] = useState({ tipo: '', mensagem: '' });
   const [modalOpen, setModalOpen] = useState(false);
   const [modalIndexador, setModalIndexador] = useState('');
+  const [historicoNasObOpen, setHistoricoNasObOpen] = useState(false);
   const selectedDaps = useMemo(() => (Array.isArray(daps) && Array.isArray(selectedIds) ? daps.filter((x) => selectedIds.includes(x.id)) : []), [daps, selectedIds]);
 
   useEffect(() => {
@@ -458,6 +460,14 @@ function AnaliseDAP() {
         >
           Comparativo de DAPs
         </button>
+
+        <button
+          type="button"
+          onClick={() => setHistoricoNasObOpen(true)}
+          style={{ ...iaButtonStyle, background: 'linear-gradient(135deg,#047857,#10b981)' }}
+        >
+          Histórico de Nas/OB
+        </button>
       </div>
 
       <DapTable
@@ -495,6 +505,11 @@ function AnaliseDAP() {
         indexador={modalIndexador}
         items={selectedDaps}
         onRun={handleRunWithPrompt}
+      />
+
+      <HistoricoNasObModal
+        open={historicoNasObOpen}
+        onClose={() => setHistoricoNasObOpen(false)}
       />
 
       <DapDetailsDrawer
