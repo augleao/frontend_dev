@@ -86,6 +86,18 @@ export default {
     if (!res.ok) throw new Error('Falha ao obter resultado');
     return res.json();
   },
+  async getFullText(jobId) {
+    const res = await withAuthFetch(`${config.apiURL}/leitura-livros/fulltext/${encodeURIComponent(jobId)}`);
+    if (!res.ok) throw new Error('Falha ao baixar inteiro teor');
+    return res.text();
+  },
+  async getFullTextByPath(downloadPath) {
+    if (!downloadPath) throw new Error('Caminho de download inválido');
+    const url = downloadPath.startsWith('http') ? downloadPath : `${config.apiURL}${downloadPath.startsWith('/') ? '' : '/'}${downloadPath}`;
+    const res = await withAuthFetch(url);
+    if (!res.ok) throw new Error('Falha ao baixar inteiro teor');
+    return res.text();
+  },
   // removed getResultXml: XML is now generated client-side from edited records
   
 };

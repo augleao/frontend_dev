@@ -43,6 +43,15 @@ export default function LeituraLivros() {
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState([]);
   const [showRawResults, setShowRawResults] = useState(false);
+  const [fullTextPreview, setFullTextPreview] = useState('');
+  const [fullTextInline, setFullTextInline] = useState('');
+  const [fullTextAvailable, setFullTextAvailable] = useState(false);
+  const [fullTextDownloadUrl, setFullTextDownloadUrl] = useState('');
+  const [fullTextContent, setFullTextContent] = useState('');
+  const [fullTextLoading, setFullTextLoading] = useState(false);
+  const [fullTextError, setFullTextError] = useState('');
+  const [fullTextRequested, setFullTextRequested] = useState(false);
+  const [fullTextJobId, setFullTextJobId] = useState(null);
   const pollRef = useRef(null);
   const didMountTestRef = useRef(false);
   const lastProgressRef = useRef(0);
@@ -104,8 +113,28 @@ export default function LeituraLivros() {
     setConsoleLines(prev => [...prev, typeof line === 'string' ? line : JSON.stringify(line)]);
   }
 
-  function clearConsole() {
-    setConsoleLines([]);
+  async function fetchFullTextContent(downloadPathOverride = '', jobIdOverride = null) {
+    const effectiveJobId = jobIdOverride || fullTextJobId || jobId;
+    const downloadPath = downloadPathOverride || fullTextDownloadUrl;
+    if (!downloadPath && !effectiveJobId) {
+      logWarning('Nenhum job ativo para baixar o inteiro teor.');
+      return;
+    }
+    setFullTextLoading(true);
+    setFullTextError('');
+    try {
+      const text = downloadPath
+        ? await LeituraLivrosService.getFullTextByPath(downloadPath)
+        : await LeituraLivrosService.getFullText(effectiveJobId);
+      setFullTextContent(text || '');
+      logSuccess('Inteiro teor carregado.');
+    } catch (e) {
+      const msg = e?.message || 'Falha ao baixar inteiro teor';
+      setFullTextError(msg);
+      logError(msg);
+    } finally {
+      setFullTextLoading(false);
+    }
   }
 
   // Handler para extrair imagens de arquivos .p7s via backend
@@ -1316,7 +1345,8 @@ export default function LeituraLivros() {
     };
   }, []);
 
-  async function startProcessing() {
+  async function startProcessing(options = {}) {
+    const fetchFullTextAfter = !!(options && options.fetchFullText);
     // Ao iniciar, rola a tela para centralizar o console/terminal na viewport (método robusto)
     try {
       const el = consoleRef.current;
@@ -1338,6 +1368,15 @@ export default function LeituraLivros() {
 
     setResults([]);
     setConsoleLines([]);
+    setFullTextPreview('');
+    setFullTextInline('');
+    setFullTextAvailable(false);
+    setFullTextDownloadUrl('');
+    setFullTextContent('');
+    setFullTextError('');
+    setFullTextLoading(false);
+    setFullTextRequested(fetchFullTextAfter);
+    setFullTextJobId(null);
     setRunning(true);
     setProgress(0);
     lastProgressRef.current = 0;
@@ -1418,6 +1457,7 @@ export default function LeituraLivros() {
         return;
       }
       setJobId(resp.jobId);
+      setFullTextJobId(resp.jobId);
       logTitle(`Job iniciado: ${resp.jobId}`);
       // comece a pollar
       pollRef.current = setInterval(async () => {
@@ -1480,15 +1520,31 @@ export default function LeituraLivros() {
               logSuccess('Processamento concluído. Buscando resultados...');
               const res = await LeituraLivrosService.getResult(resp.jobId);
               logJsonPreview('Payload recebido do backend (livros)', res);
-              // If the user provided a global "Nº do LIVRO", populate each record's LIVRO field
+              const payload = res && res.payload ? res.payload : res;
+              const payloadObj = payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {};
               const numeroLivroFormatted = numeroLivro ? String(Number(numeroLivro)) : '';
-              // support multiple result shapes: prefer res.records, then res.registros, then res (array)
-              let finalResults = res.records || res.registros || res || [];
-              finalResults = (Array.isArray(finalResults) ? finalResults : []).map((r) => hydrateRecordWithStandardFields(r, numeroLivroFormatted));
+
+              const previewText = payloadObj.fullTextPreview || '';
+              const inlineText = payloadObj.fullTextInline || '';
+              const available = !!payloadObj.fullTextAvailable;
+              const downloadPath = payloadObj.fullTextDownload || '';
+              setFullTextPreview(previewText || '');
+              setFullTextInline(inlineText || '');
+              setFullTextAvailable(available);
+              setFullTextDownloadUrl(downloadPath || '');
+              if (inlineText) {
+                setFullTextContent(inlineText);
+              } else if (previewText) {
+                setFullTextContent(previewText);
+              }
+
+              const recordsCandidate = Array.isArray(payload) ? payload : (payloadObj.records || payloadObj.registros || payload || []);
+              let finalResults = (Array.isArray(recordsCandidate) ? recordsCandidate : []).map((r) => hydrateRecordWithStandardFields(r, numeroLivroFormatted));
               // If IA provided raw responses (iaRawResponses) with embedded registros JSON, merge them
               try {
-                if (res && Array.isArray(res.iaRawResponses) && res.iaRawResponses.length) {
-                  for (const ia of res.iaRawResponses) {
+                const iaResponses = payloadObj.iaRawResponses || res?.iaRawResponses || [];
+                if (Array.isArray(iaResponses) && iaResponses.length) {
+                  for (const ia of iaResponses) {
                     try {
                       const raw = ia.raw || ia.debug || ia.text || '';
                       const parsed = extractJsonFromText(String(raw));
@@ -1527,8 +1583,18 @@ export default function LeituraLivros() {
                 }
               } catch (_) {}
               setResults(finalResults);
-              const count = (res?.records && Array.isArray(res.records)) ? res.records.length : (Array.isArray(res) ? res.length : 0);
+              const count = finalResults.length;
               logTitle(`Resultados carregados (${count}).`);
+
+              if (fetchFullTextAfter) {
+                if (inlineText) {
+                  logSuccess('Inteiro teor recebido inline (pequeno).');
+                } else if (available) {
+                  await fetchFullTextContent(downloadPath || '', resp.jobId);
+                } else {
+                  logWarning('Inteiro teor não disponível para download neste job.');
+                }
+              }
             } else if (status.status === 'failed') {
               clearInterval(pollRef.current);
               setRunning(false);
@@ -1684,8 +1750,11 @@ export default function LeituraLivros() {
         </div>
       </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={clearConsole}
-            style={{ background: '#fff', border: '1px solid #e5e7eb', color: '#374151', padding: '8px 12px', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>Limpar console</button>
+          <button
+            onClick={() => startProcessing({ fetchFullText: true })}
+            disabled={running || (mode === 'upload' && files.length === 0)}
+            title={mode === 'upload' && files.length === 0 ? 'Selecione arquivos para enviar' : 'Enviar e recuperar o inteiro teor'}
+            style={{ background: '#fff', border: '1px solid #e5e7eb', color: '#374151', padding: '8px 12px', borderRadius: 10, fontWeight: 700, cursor: running || (mode === 'upload' && files.length === 0) ? 'not-allowed' : 'pointer' }}>Inteiro teor</button>
           <button onClick={() => handleExtractP7s(files)} disabled={running || files.length === 0}
             title={files.length === 0 ? 'Selecione arquivos primeiro' : 'Extrair imagens dos arquivos selecionados'}
             style={{ background: '#fff', border: '1px solid #e5e7eb', color: '#374151', padding: '8px 12px', borderRadius: 10, fontWeight: 700, cursor: running || files.length === 0 ? 'not-allowed' : 'pointer' }}>Extrair Imagem</button>
@@ -1867,6 +1936,42 @@ export default function LeituraLivros() {
             )}
           </div>
         </div>
+
+          {(fullTextRequested || fullTextPreview || fullTextInline || fullTextAvailable || fullTextContent || fullTextLoading || fullTextError) && (
+            <div style={{ width: '100%' }}>
+              <div style={{ background: '#ffffff', borderRadius: 16, padding: 16, boxShadow: '0 10px 26px rgba(32,50,73,0.08)', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                  <h4 style={{ marginTop: 0, color: '#1f2937', marginBottom: 0 }}>Inteiro teor</h4>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    {fullTextAvailable && (
+                      <button
+                        onClick={() => fetchFullTextContent(fullTextDownloadUrl || '', fullTextJobId || jobId)}
+                        disabled={fullTextLoading}
+                        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #e5e7eb', background: fullTextLoading ? '#f1f5f9' : '#fff', cursor: fullTextLoading ? 'not-allowed' : 'pointer' }}
+                      >
+                        {fullTextLoading ? 'Carregando…' : 'Baixar inteiro teor'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {fullTextError && (
+                  <div style={{ color: '#b91c1c', background: '#fef2f2', border: '1px solid #fecdd3', padding: 10, borderRadius: 10, marginBottom: 10 }}>
+                    {fullTextError}
+                  </div>
+                )}
+                {(fullTextContent || fullTextPreview) ? (
+                  <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: '#0f172a', color: '#e6eef6', padding: 12, borderRadius: 8, maxHeight: 420, overflow: 'auto', marginBottom: 0 }}>
+                    {fullTextContent || fullTextPreview}
+                  </pre>
+                ) : (
+                  <div style={{ color: '#64748b' }}>{fullTextLoading ? 'Carregando inteiro teor...' : 'Inteiro teor não disponível para este job.'}</div>
+                )}
+                {fullTextAvailable && !fullTextContent && !fullTextLoading && (
+                  <div style={{ marginTop: 8, color: '#475569', fontSize: 13 }}>Prévia exibida; clique em Baixar inteiro teor para o texto completo.</div>
+                )}
+              </div>
+            </div>
+          )}
       </div>
     </div>
   );
