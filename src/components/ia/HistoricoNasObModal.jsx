@@ -154,15 +154,19 @@ export default function HistoricoNasObModal({ open, onClose }) {
     let cancelled = false;
     setLoading(true);
     setError('');
+    console.log('[HistoricoNasObModal] aberto -> fetch historico');
     (async () => {
       try {
         const payload = await getHistoricoNasOb();
+        console.log('[HistoricoNasObModal] payload bruto', payload);
         if (cancelled) return;
         const months = Array.isArray(payload?.months) && payload.months.length > 0
           ? payload.months.map((month) => normalizeMonthPayload(month))
           : buildEmptyHistory();
+        console.log('[HistoricoNasObModal] meses normalizados', months);
         setHistorico(months);
       } catch (err) {
+        console.error('[HistoricoNasObModal] erro ao carregar historico', err);
         if (!cancelled) {
           setError('Não foi possível carregar os registros dos últimos 12 meses.');
         }
@@ -174,6 +178,7 @@ export default function HistoricoNasObModal({ open, onClose }) {
     })();
     return () => {
       cancelled = true;
+      console.log('[HistoricoNasObModal] efeito encerrado, requests cancelados');
     };
   }, [open]);
 

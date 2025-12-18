@@ -107,8 +107,29 @@ export async function uploadDap({ file, metadata } = {}) {
 }
 
 export async function getHistoricoNasOb() {
-  const response = await axios.get(`${apiURL}/dap/historico-nas-ob`, {
-    headers: buildAuthHeaders(),
+  const url = `${apiURL}/dap/historico-nas-ob`;
+  const headers = buildAuthHeaders();
+  const tokenPreview = headers.Authorization ? `${String(headers.Authorization).slice(0, 18)}…` : null;
+
+  console.log('[dapService] GET /dap/historico-nas-ob', {
+    url,
+    hasToken: !!headers.Authorization,
+    tokenPreview,
   });
-  return response.data;
+
+  try {
+    const response = await axios.get(url, { headers });
+    console.log('[dapService] historico-nas-ob ok', {
+      status: response.status,
+      dataKeys: Object.keys(response.data || {}),
+    });
+    return response.data;
+  } catch (error) {
+    console.error('[dapService] historico-nas-ob erro', {
+      status: error?.response?.status,
+      data: error?.response?.data,
+      message: error?.message,
+    });
+    throw error;
+  }
 }
