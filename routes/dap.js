@@ -265,6 +265,29 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
   const guard = options.ensureAuth || ensureAuth;
   const uploadMiddleware = upload.single('file');
   const parsePdf = options.parseDapPdf || parseDapPdf;
+  const enforceServentia = options.enforceServentia || ((req) => {
+    const user = req.user || {};
+    const candidates = [
+      user.codigo_serventia,
+      user.codigoServentia,
+      user.serventia_codigo,
+      user.serventiaCodigo,
+      user.serventia_id,
+      user.serventiaId,
+      user.serventia,
+      req.query?.codigoServentia,
+      req.query?.serventia,
+      req.body?.codigoServentia,
+    ].filter((v) => v !== undefined && v !== null && String(v).trim() !== '');
+
+    if (!candidates.length) {
+      const err = new Error('Serventia do usuário não encontrada.');
+      err.status = 400;
+      throw err;
+    }
+
+    return String(candidates[0]);
+  });
 
   // Upload + parsing de PDF
   app.post('/api/dap/upload', guard, uploadMiddleware, async (req, res) => {
@@ -463,7 +486,7 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
     }
   });
 // grafico 12 meses nacimento e obito
-  app.get('/api/dap/historico-nas-ob', ensureAuth, async (req, res) => {
+  app.get('/api/dap/historico-nas-ob', guard, async (req, res) => {
     try {
       const codigoServentia = enforceServentia(req);
       const months = getLast12Months();
@@ -484,7 +507,7 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
           AND CAST(NULLIF(ato.tributacao, '') AS INTEGER) = ANY($4)
         GROUP BY d.ano_referencia, d.mes_referencia, ato.codigo, CAST(NULLIF(ato.tributacao, '') AS INTEGER)
       `;
-      const { rows } = await pool.query(sql, [codigoServentia, monthThreshold, codes, tribs]);
+      const { rows } = await db.query(sql, [codigoServentia, monthThreshold, codes, tribs]);
 
       const monthMap = new Map();
       months.forEach((month) => {
@@ -520,7 +543,9 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
       return res.json({ months: responseMonths });
     } catch (error) {
       console.error('Erro ao gerar histórico Nas/OB:', error);
-      return res.status(500).json({ error: 'Erro ao carregar o histórico de registros.' });
+      const status = error.status && Number.isInteger(error.status) ? error.status : 500;
+      const message = error.message || 'Erro ao carregar o histórico de registros.';
+      return res.status(status).json({ error: message });
     }
   });
 
