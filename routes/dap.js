@@ -394,92 +394,24 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
       const params = [];
       const where = applyFiltersSQL(filters, params);
       const sql = `
-        SELECT id, mes_referencia, ano_referencia, retificadora, retificadora_de_id,
-               serventia_nome, codigo_serventia, cnpj, data_transmissao, codigo_recibo,
-               observacoes, emolumento_apurado, taxa_fiscalizacao_judiciaria_apurada,
-               taxa_fiscalizacao_judiciaria_paga, recompe_apurado, recompe_depositado,
-               data_deposito_recompe, valores_recebidos_recompe, valores_recebidos_ferrfis,
-               issqn_recebido_usuarios, repasses_responsaveis_anteriores, saldo_deposito_previo,
-               total_despesas_mes, estoque_selos_eletronicos_transmissao
+        SELECT id, mes_referencia AS "mesReferencia", ano_referencia AS "anoReferencia",
+               retificadora, retificadora_de_id AS "retificadoraDeId", retificada_por_id AS "retificadaPorId",
+               codigo_serventia AS "codigoServentia", serventia_nome AS "serventiaNome",
+               data_transmissao AS "dataTransmissao", codigo_recibo AS "codigoRecibo"
         FROM public.dap
         ${where}
-        ORDER BY ano_referencia DESC, mes_referencia DESC, id DESC
+        ORDER BY ano_referencia DESC, mes_referencia DESC, codigo_serventia ASC
+        LIMIT 200
       `;
       const { rows } = await db.query(sql, params);
-      return res.json({ items: rows });
+      return res.json(rows);
     } catch (error) {
       console.error('Erro ao listar DAPs:', error);
       return res.status(500).json({ error: 'Erro ao listar DAPs.' });
     }
   });
 
-  // gráfico 12 meses nascimento e óbito — precisa vir ANTES de /api/dap/:id para não ser confundido com um parâmetro
-  app.get('/api/dap/historico-nas-ob', guard, async (req, res) => {
-    try {
-      const codigoServentia = enforceServentia(req);
-      try { console.log('[historico-nas-ob] codigoServentia', codigoServentia); } catch (_) {}
-      const months = getLast12Months();
-      const monthThreshold = Math.min(...months.map((month) => month.year * 100 + month.month));
-      try { console.log('[historico-nas-ob] months window', months, 'threshold', monthThreshold); } catch (_) {}
-      const codes = Array.from(new Set(HISTORICO_CATEGORIES.map((category) => category.code)));
-      const tribs = Array.from(new Set(HISTORICO_CATEGORIES.map((category) => category.trib)));
-      try { console.log('[historico-nas-ob] codes', codes, 'tribs', tribs); } catch (_) {}
-
-      const sql = `
-        SELECT d.ano_referencia AS ano, d.mes_referencia AS mes,
-               ato.codigo, CAST(NULLIF(ato.tributacao, '') AS INTEGER) AS tributacao,
-               SUM(ato.quantidade) AS quantidade
-        FROM public.dap d
-        JOIN public.dap_periodo dp ON dp.dap_id = d.id
-        JOIN public.dap_periodo_ato_snapshot ato ON ato.periodo_id = dp.id
-        WHERE d.codigo_serventia = $1
-          AND (d.ano_referencia * 100 + d.mes_referencia) >= $2
-          AND ato.codigo = ANY($3)
-          AND CAST(NULLIF(ato.tributacao, '') AS INTEGER) = ANY($4)
-        GROUP BY d.ano_referencia, d.mes_referencia, ato.codigo, CAST(NULLIF(ato.tributacao, '') AS INTEGER)
-      `;
-      const { rows } = await db.query(sql, [codigoServentia, monthThreshold, codes, tribs]);
-      try { console.log('[historico-nas-ob] rows', rows); } catch (_) {}
-
-      const monthMap = new Map();
-      months.forEach((month) => {
-        monthMap.set(month.key, {
-          ...month,
-          totals: HISTORICO_CATEGORIES.reduce((acc, category) => ({
-            ...acc,
-            [category.id]: 0,
-          }), {}),
-        });
-      });
-
-      rows.forEach((row) => {
-        const key = buildMonthKey(row.ano, row.mes);
-        const entry = monthMap.get(key);
-        if (!entry) return;
-        const category = HISTORICO_CATEGORIES.find((cat) => cat.code === row.codigo && cat.trib === row.tributacao);
-        if (!category) return;
-        entry.totals[category.id] += Number(row.quantidade) || 0;
-      });
-
-      const responseMonths = months.map((month) => {
-        const entry = monthMap.get(month.key);
-        return {
-          key: month.key,
-          label: month.label,
-          year: month.year,
-          month: month.month,
-          totals: entry ? { ...entry.totals } : HISTORICO_CATEGORIES.reduce((acc, category) => ({ ...acc, [category.id]: 0 }), {}),
-        };
-      });
-
-      return res.json({ months: responseMonths });
-    } catch (error) {
-      console.error('Erro ao gerar histórico Nas/OB:', error);
-      const status = error.status && Number.isInteger(error.status) ? error.status : 500;
-      return res.status(status).json({ error: error.message || 'Erro ao carregar o histórico de registros.', debug: error.debug });
-    }
-  });
-
+  // Detalhe
   app.get('/api/dap/:id', guard, async (req, res) => {
     try {
       const id = Number(req.params.id);
@@ -487,13 +419,14 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
 
       const headerSql = `
         SELECT id, mes_referencia AS "mesReferencia", ano_referencia AS "anoReferencia",
-               retificadora, retificadora_de_id AS "retificadoraDeId", serventia_nome AS "serventiaNome",
-               codigo_serventia AS "codigoServentia", cnpj, data_transmissao AS "dataTransmissao",
-               codigo_recibo AS "codigoRecibo", observacoes,
+               retificadora, retificadora_de_id AS "retificadoraDeId", retificada_por_id AS "retificadaPorId",
+               serventia_nome AS "serventiaNome", codigo_serventia AS "codigoServentia", cnpj,
+               data_transmissao AS "dataTransmissao", codigo_recibo AS "codigoRecibo", observacoes,
                emolumento_apurado AS "emolumentoApurado",
                taxa_fiscalizacao_judiciaria_apurada AS "taxaFiscalizacaoJudiciariaApurada",
                taxa_fiscalizacao_judiciaria_paga AS "taxaFiscalizacaoJudiciariaPaga",
-               recompe_apurado AS "recompeApurado", recompe_depositado AS "recompeDepositado",
+               recompe_apurado AS "recompeApurado",
+               recompe_depositado AS "recompeDepositado",
                data_deposito_recompe AS "dataDepositoRecompe",
                valores_recebidos_recompe AS "valoresRecebidosRecompe",
                valores_recebidos_ferrfis AS "valoresRecebidosFerrfis",
@@ -564,6 +497,72 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
     } catch (error) {
       console.error('Erro ao criar DAP retificadora:', error);
       return res.status(500).json({ error: error.message || 'Erro ao criar DAP retificadora.' });
+    }
+  });
+// grafico 12 meses nacimento e obito
+  app.get('/api/dap/historico-nas-ob', guard, async (req, res) => {
+    try {
+      const codigoServentia = enforceServentia(req);
+      try { console.log('[historico-nas-ob] codigoServentia', codigoServentia); } catch (_) {}
+      const months = getLast12Months();
+      const monthThreshold = Math.min(...months.map((month) => month.year * 100 + month.month));
+      try { console.log('[historico-nas-ob] months window', months, 'threshold', monthThreshold); } catch (_) {}
+      const codes = Array.from(new Set(HISTORICO_CATEGORIES.map((category) => category.code)));
+      const tribs = Array.from(new Set(HISTORICO_CATEGORIES.map((category) => category.trib)));
+      try { console.log('[historico-nas-ob] codes', codes, 'tribs', tribs); } catch (_) {}
+
+      const sql = `
+        SELECT d.ano_referencia AS ano, d.mes_referencia AS mes,
+               ato.codigo, CAST(NULLIF(ato.tributacao, '') AS INTEGER) AS tributacao,
+               SUM(ato.quantidade) AS quantidade
+        FROM public.dap d
+        JOIN public.dap_periodo dp ON dp.dap_id = d.id
+        JOIN public.dap_periodo_ato_snapshot ato ON ato.periodo_id = dp.id
+        WHERE d.codigo_serventia = $1
+          AND (d.ano_referencia * 100 + d.mes_referencia) >= $2
+          AND ato.codigo = ANY($3)
+          AND CAST(NULLIF(ato.tributacao, '') AS INTEGER) = ANY($4)
+        GROUP BY d.ano_referencia, d.mes_referencia, ato.codigo, CAST(NULLIF(ato.tributacao, '') AS INTEGER)
+      `;
+      const { rows } = await db.query(sql, [codigoServentia, monthThreshold, codes, tribs]);
+      try { console.log('[historico-nas-ob] rows', rows); } catch (_) {}
+
+      const monthMap = new Map();
+      months.forEach((month) => {
+        monthMap.set(month.key, {
+          ...month,
+          totals: HISTORICO_CATEGORIES.reduce((acc, category) => ({
+            ...acc,
+            [category.id]: 0,
+          }), {}),
+        });
+      });
+
+      rows.forEach((row) => {
+        const key = buildMonthKey(row.ano, row.mes);
+        const entry = monthMap.get(key);
+        if (!entry) return;
+        const category = HISTORICO_CATEGORIES.find((cat) => cat.code === row.codigo && cat.trib === row.tributacao);
+        if (!category) return;
+        entry.totals[category.id] += Number(row.quantidade) || 0;
+      });
+
+      const responseMonths = months.map((month) => {
+        const entry = monthMap.get(month.key);
+        return {
+          key: month.key,
+          label: month.label,
+          year: month.year,
+          month: month.month,
+          totals: entry ? { ...entry.totals } : HISTORICO_CATEGORIES.reduce((acc, category) => ({ ...acc, [category.id]: 0 }), {}),
+        };
+      });
+
+      return res.json({ months: responseMonths });
+    } catch (error) {
+      console.error('Erro ao gerar histórico Nas/OB:', error);
+      const status = error.status && Number.isInteger(error.status) ? error.status : 500;
+      return res.status(status).json({ error: error.message || 'Erro ao carregar o histórico de registros.', debug: error.debug });
     }
   });
 
