@@ -1,7 +1,11 @@
-// Backend routes for DAP (Express + pg)
-// Usage: const initDapRoutes = require('./routes/dap'); initDapRoutes(app, pool, { ensureAuth, parseDapPdf });
+// routes/dap.js
+// Rotas da Declaração de Apuração (DAP)
+// Uso no server: const initDapRoutes = require('./routes/dap'); initDapRoutes(app, pool, { ensureAuth, parseDapPdf });
 
 const multer = require('multer');
+const pool = require('../db');
+const { ensureAuth } = require('../middlewares/auth');
+const { parseDapPdf } = require('../services/dapParser');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -16,8 +20,8 @@ function sanitizeMonetary(value) {
   return toNumber(normalized, 0);
 }
 
-async function withTransaction(pool, handler) {
-  const client = await pool.connect();
+async function withTransaction(poolArg, handler) {
+  const client = await poolArg.connect();
   try {
     await client.query('BEGIN');
     const result = await handler(client);
@@ -69,41 +73,31 @@ function normalizeHeader(raw = {}) {
 }
 
 function normalizePeriodos(rawPeriodos = []) {
-  const byOrder = new Map();
-  rawPeriodos.forEach((item) => {
-    const ordem = toNumber(item.ordem ?? item.periodo ?? item.ordem_periodo);
-    if (!ordem || ordem < 1 || ordem > 4) return;
-    const atos = Array.isArray(item.atos) ? item.atos : [];
-    const normalizedAtos = atos.map((ato) => ({
-      codigo: String(ato.codigo ?? '').padStart(4, '0'),
-      tributacao: String(ato.tributacao ?? ato.trib ?? '').padStart(1, '0'),
-      quantidade: toNumber(ato.quantidade ?? ato.qtde, 0),
-      tfj_valor: sanitizeMonetary(ato.tfjValor ?? ato.tfj_valor ?? ato.tfj),
-    })).filter((ato) => ato.codigo && ato.tributacao && ato.quantidade >= 0);
-
-    const quantidadeTotal = normalizedAtos.reduce((sum, ato) => sum + (ato.quantidade || 0), 0);
-    const tfjTotal = normalizedAtos.reduce((sum, ato) => sum + (ato.tfj_valor || 0), 0);
-
-    byOrder.set(ordem, {
-      ordem,
-      quantidade_total: quantidadeTotal,
-      tfj_total: tfjTotal,
-      atos: normalizedAtos,
-    });
-  });
-
-  for (let ordem = 1; ordem <= 4; ordem += 1) {
-    if (!byOrder.has(ordem)) {
-      byOrder.set(ordem, {
-        ordem,
-        quantidade_total: 0,
-        tfj_total: 0,
-        atos: [],
-      });
-    }
+  // Se vier um array plano de atos, cria um único período com todos os atos, sem alterar nada
+  if (Array.isArray(rawPeriodos) && rawPeriodos.length > 0 && !rawPeriodos[0].atos) {
+    console.log('[normalizePeriodos] Recebidos', rawPeriodos.length, 'atos');
+    // Apenas repassa todos os atos, sem nenhum tipo de transformação
+    return [{
+      ordem: 1,
+      quantidade_total: rawPeriodos.reduce((sum, ato) => sum + (ato.quantidade || 0), 0),
+      tfj_total: rawPeriodos.reduce((sum, ato) => sum + (ato.tfj_valor || 0), 0),
+      atos: rawPeriodos
+    }];
   }
 
-  return Array.from(byOrder.values()).sort((a, b) => a.ordem - b.ordem);
+  // Caso padrão: array de períodos, cada um com array de atos
+  if (Array.isArray(rawPeriodos) && rawPeriodos.length > 0 && Array.isArray(rawPeriodos[0].atos)) {
+    // Apenas repassa todos os períodos e seus atos, sem transformação
+    return rawPeriodos.map((periodo) => ({
+      ordem: periodo.ordem ?? periodo.periodo ?? periodo.ordem_periodo ?? periodo.numero ?? 1,
+      quantidade_total: Array.isArray(periodo.atos) ? periodo.atos.reduce((sum, ato) => sum + (ato.quantidade || 0), 0) : 0,
+      tfj_total: Array.isArray(periodo.atos) ? periodo.atos.reduce((sum, ato) => sum + (ato.tfj_valor || 0), 0) : 0,
+      atos: Array.isArray(periodo.atos) ? periodo.atos : []
+    }));
+  }
+
+  // Se não houver atos, retorna período vazio
+  return [{ ordem: 1, quantidade_total: 0, tfj_total: 0, atos: [] }];
 }
 
 async function persistDap(client, payload) {
@@ -115,6 +109,23 @@ async function persistDap(client, payload) {
     header.retificadora_de_id = payload.retificadoraDeId;
   }
 
+  // LOG: quantidade de atos recebidos no payload
+  let totalAtos = 0;
+  if (Array.isArray(payload.periodosDap)) {
+    if (payload.periodosDap.length > 0 && Array.isArray(payload.periodosDap[0].atos)) {
+      totalAtos = payload.periodosDap.reduce((acc, p) => acc + (Array.isArray(p.atos) ? p.atos.length : 0), 0);
+    } else {
+      totalAtos = payload.periodosDap.length;
+    }
+  } else if (Array.isArray(payload.periodos)) {
+    if (payload.periodos.length > 0 && Array.isArray(payload.periodos[0].atos)) {
+      totalAtos = payload.periodos.reduce((acc, p) => acc + (Array.isArray(p.atos) ? p.atos.length : 0), 0);
+    } else {
+      totalAtos = payload.periodos.length;
+    }
+  }
+  console.log(`==== [persistDap] Atos recebidos no payload: ${totalAtos}`);
+
   const insertColumns = [
     'mes_referencia', 'ano_referencia', 'retificadora', 'retificadora_de_id',
     'serventia_nome', 'codigo_serventia', 'cnpj', 'data_transmissao', 'codigo_recibo', 'observacoes',
@@ -122,7 +133,7 @@ async function persistDap(client, payload) {
     'recompe_apurado', 'recompe_depositado', 'data_deposito_recompe',
     'valores_recebidos_recompe', 'valores_recebidos_ferrfis', 'issqn_recebido_usuarios',
     'repasses_responsaveis_anteriores', 'saldo_deposito_previo', 'total_despesas_mes',
-    'estoque_selos_eletronicos_transmissao'
+    'estoque_selos_eletronicos_transmissao',
   ];
 
   const insertValues = insertColumns.map((col) => header[col] ?? null);
@@ -134,6 +145,13 @@ async function persistDap(client, payload) {
   );
   const dapId = dapResult.rows[0].id;
 
+  // Log the final serventia name that will be persisted (helpful for debugging)
+  try {
+    console.log(`==== [persistDap] Serventia a ser salva: ${header.serventia_nome}`);
+  } catch (e) {
+    // ignore logging errors
+  }
+
   if (header.retificadora_de_id) {
     await client.query('UPDATE public.dap SET retificada_por_id = $1 WHERE id = $2', [dapId, header.retificadora_de_id]);
   }
@@ -141,35 +159,36 @@ async function persistDap(client, payload) {
   const periodos = normalizePeriodos(payload.periodos || payload.periodosDap || []);
   const periodoIdMap = new Map();
 
+  console.log('==== PERSISTINDO PERÍODOS E ATOS ====');
+  console.log(`Total de períodos a persistir: ${periodos.length}`);
+
   for (const periodo of periodos) {
+    console.log(`\nPersistindo período ${periodo.ordem}: ${periodo.atos.length} atos`);
+    
     const periodoInsert = await client.query(
       'INSERT INTO public.dap_periodo (dap_id, ordem, quantidade_total, tfj_total) VALUES ($1, $2, $3, $4) RETURNING id',
       [dapId, periodo.ordem, periodo.quantidade_total, periodo.tfj_total],
     );
     const periodoId = periodoInsert.rows[0].id;
     periodoIdMap.set(periodo.ordem, periodoId);
+    console.log(`  → periodo_id criado: ${periodoId}`);
 
     for (const ato of periodo.atos) {
+      // Per-ato insertion logs are verbose; enable via env var DEBUG_DAP_PARSER
+      if (process.env.DEBUG_DAP_PARSER === 'true') {
+        console.log(`    Inserindo ato: codigo=${ato.codigo}, trib=${ato.tributacao}, qtd=${ato.quantidade}, tfj=${ato.tfj_valor}`);
+      }
       await client.query(
-        `INSERT INTO public.dap_periodo_ato_snapshot
-         (periodo_id, codigo, tributacao, quantidade, tfj_valor)
-         VALUES ($1, $2, $3, $4, $5)
-         ON CONFLICT (periodo_id, codigo, tributacao)
-         DO UPDATE SET quantidade = EXCLUDED.quantidade, tfj_valor = EXCLUDED.tfj_valor`,
+        `INSERT INTO public.dap_periodo_ato_snapshot (periodo_id, codigo, tributacao, quantidade, tfj_valor)
+         VALUES ($1, $2, $3, $4, $5)`,
         [periodoId, ato.codigo, ato.tributacao, ato.quantidade, ato.tfj_valor],
       );
     }
+    console.log(`  ✓ ${periodo.atos.length} atos inseridos`);
   }
+  console.log('==== FIM PERSISTÊNCIA ====\n');
 
   return { dapId, periodos: Array.from(periodoIdMap.entries()).map(([ordem, id]) => ({ ordem, id })) };
-}
-
-function buildListWhere(params, filters) {
-  if (filters.codigoServentia) {
-    params.push(filters.codigoServentia);
-    return 'WHERE codigo_serventia = $' + params.length;
-  }
-  return '';
 }
 
 function extractFilters(query = {}) {
@@ -207,6 +226,7 @@ function applyFiltersSQL(filters, params) {
   return clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
 }
 
+
 const HISTORICO_CATEGORIES = [
   { id: 'nascimentosProprios', label: 'Registros de Nascimento Próprios (9101, trib 26)', code: '9101', trib: 26 },
   { id: 'nascimentosUI', label: 'Registros de Nascimento UI (9101, trib 29)', code: '9101', trib: 29 },
@@ -239,22 +259,210 @@ function getLast12Months() {
   return months;
 }
 
-module.exports = function initDapRoutes(app, pool, options = {}) {
-  const ensureAuth = options.ensureAuth || ((req, res, next) => next());
-  const parseDapPdf = options.parseDapPdf;
+module.exports = function initDapRoutes(appArg = null, poolArg = null, options = {}) {
+  const app = appArg || require('express')();
+  const db = poolArg || pool;
+  const guard = options.ensureAuth || ensureAuth;
   const uploadMiddleware = upload.single('file');
+  const parsePdf = options.parseDapPdf || parseDapPdf;
 
-  // Helper para garantir isolamento por serventia
-  function enforceServentia(req, codigoServentia) {
-    if (!req.user || !req.user.codigo_serventia) {
-      throw new Error('Usuário sem serventia associada.');
-    }
-    if (codigoServentia && codigoServentia !== req.user.codigo_serventia) {
-      throw new Error('Acesso negado: DAP pertence a outra serventia.');
-    }
-    return req.user.codigo_serventia;
-  }
+  // Upload + parsing de PDF
+  app.post('/api/dap/upload', guard, uploadMiddleware, async (req, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ error: 'Arquivo da DAP é obrigatório.' });
+      if (!parsePdf) return res.status(501).json({ error: 'Parser de DAP não configurado.' });
 
+
+      const metadata = req.body && req.body.metadata ? JSON.parse(req.body.metadata) : {};
+      const parsed = await parsePdf({
+        buffer: req.file.buffer,
+        filename: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        metadata,
+      });
+
+      // LOG EXTRA: Inspecionar periodosDap do parser antes de normalizar
+      console.log('==== DEBUG: periodosDap do parser (antes de normalizePeriodos) ====');
+      if (parsed.periodosDap && parsed.periodosDap.length > 0 && Array.isArray(parsed.periodosDap[0].atos)) {
+        console.log('periodosDap[0].atos.length:', parsed.periodosDap[0].atos.length);
+      } else {
+        console.log('periodosDap:', Array.isArray(parsed.periodosDap) ? parsed.periodosDap.length : 0);
+      }
+
+      // LOG DETALHADO: Após extração do parser
+      let atosExtraidos = [];
+      if (Array.isArray(parsed.periodosDap)) {
+        if (parsed.periodosDap.length > 0 && Array.isArray(parsed.periodosDap[0].atos)) {
+          atosExtraidos = parsed.periodosDap.flatMap(p => Array.isArray(p.atos) ? p.atos : []);
+        } else {
+          atosExtraidos = parsed.periodosDap;
+        }
+      } else if (Array.isArray(parsed.periodos)) {
+        if (parsed.periodos.length > 0 && Array.isArray(parsed.periodos[0].atos)) {
+          atosExtraidos = parsed.periodos.flatMap(p => Array.isArray(p.atos) ? p.atos : []);
+        } else {
+          atosExtraidos = parsed.periodos;
+        }
+      }
+      console.log(`==== [dap.js] [DEBUG] Atos extraídos do parser: ${atosExtraidos.length}`);
+
+
+      // LOG: Antes do mapeamento para DB
+      let periodosParaDb;
+      if (parsed.periodosDap && parsed.periodosDap.length === 1 && Array.isArray(parsed.periodosDap[0].atos)) {
+        // Se só há um período, passar o array de atos diretamente para normalizar como período único
+        periodosParaDb = normalizePeriodos(parsed.periodosDap[0].atos);
+      } else {
+        periodosParaDb = normalizePeriodos(parsed.periodos || parsed.periodosDap || []);
+      }
+      let totalAtosParaDb = periodosParaDb.reduce((acc, p) => acc + (Array.isArray(p.atos) ? p.atos.length : 0), 0);
+      console.log(`==== [dap.js] Atos após normalizePeriodos: ${totalAtosParaDb}`);
+      if (periodosParaDb.length > 0 && Array.isArray(periodosParaDb[0].atos) && periodosParaDb[0].atos.length > 0) {
+        console.log('[dap.js] Exemplo de ato mapeado para DB:', JSON.stringify(periodosParaDb[0].atos[0], null, 2));
+      }
+
+      // LOG EXTRA: Antes de persistir, mostrar quantidade de atos e códigos dos primeiros 10
+      if (periodosParaDb.length > 0 && Array.isArray(periodosParaDb[0].atos)) {
+        const todosAtos = periodosParaDb.flatMap(p => Array.isArray(p.atos) ? p.atos : []);
+        console.log('==== [dap.js] [DEBUG] Atos prontos para persistir:', todosAtos.length);
+      }
+      const result = await withTransaction(db, (client) => persistDap(client, parsed));
+      return res.status(201).json({ id: result.dapId, status: 'processed' });
+    } catch (error) {
+      console.error('Erro no upload de DAP:', error);
+      if (error && error.name === 'DapParseError') {
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(500).json({ error: 'Erro ao processar DAP.' });
+    }
+  });
+
+  // Criação manual (para reprocessamentos)
+  app.post('/api/dap', guard, async (req, res) => {
+    try {
+      const payload = req.body || {};
+      const result = await withTransaction(db, (client) => persistDap(client, payload));
+      return res.status(201).json({ id: result.dapId });
+    } catch (error) {
+      console.error('Erro ao criar DAP:', error);
+      return res.status(500).json({ error: error.message || 'Erro ao criar DAP.' });
+    }
+  });
+
+  // Listagem
+  app.get('/api/dap', guard, async (req, res) => {
+    try {
+      const filters = extractFilters(req.query);
+      const params = [];
+      const where = applyFiltersSQL(filters, params);
+      const sql = `
+        SELECT id, mes_referencia AS "mesReferencia", ano_referencia AS "anoReferencia",
+               retificadora, retificadora_de_id AS "retificadoraDeId", retificada_por_id AS "retificadaPorId",
+               codigo_serventia AS "codigoServentia", serventia_nome AS "serventiaNome",
+               data_transmissao AS "dataTransmissao", codigo_recibo AS "codigoRecibo"
+        FROM public.dap
+        ${where}
+        ORDER BY ano_referencia DESC, mes_referencia DESC, codigo_serventia ASC
+        LIMIT 200
+      `;
+      const { rows } = await db.query(sql, params);
+      return res.json(rows);
+    } catch (error) {
+      console.error('Erro ao listar DAPs:', error);
+      return res.status(500).json({ error: 'Erro ao listar DAPs.' });
+    }
+  });
+
+  // Detalhe
+  app.get('/api/dap/:id', guard, async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      if (!Number.isInteger(id)) return res.status(400).json({ error: 'ID inválido.' });
+
+      const headerSql = `
+        SELECT id, mes_referencia AS "mesReferencia", ano_referencia AS "anoReferencia",
+               retificadora, retificadora_de_id AS "retificadoraDeId", retificada_por_id AS "retificadaPorId",
+               serventia_nome AS "serventiaNome", codigo_serventia AS "codigoServentia", cnpj,
+               data_transmissao AS "dataTransmissao", codigo_recibo AS "codigoRecibo", observacoes,
+               emolumento_apurado AS "emolumentoApurado",
+               taxa_fiscalizacao_judiciaria_apurada AS "taxaFiscalizacaoJudiciariaApurada",
+               taxa_fiscalizacao_judiciaria_paga AS "taxaFiscalizacaoJudiciariaPaga",
+               recompe_apurado AS "recompeApurado",
+               recompe_depositado AS "recompeDepositado",
+               data_deposito_recompe AS "dataDepositoRecompe",
+               valores_recebidos_recompe AS "valoresRecebidosRecompe",
+               valores_recebidos_ferrfis AS "valoresRecebidosFerrfis",
+               issqn_recebido_usuarios AS "issqnRecebidoUsuarios",
+               repasses_responsaveis_anteriores AS "repassesResponsaveisAnteriores",
+               saldo_deposito_previo AS "saldoDepositoPrevio",
+               total_despesas_mes AS "totalDespesasMes",
+               estoque_selos_eletronicos_transmissao AS "estoqueSelosEletronicosTransmissao"
+        FROM public.dap
+        WHERE id = $1
+      `;
+      const headerResult = await db.query(headerSql, [id]);
+      if (!headerResult.rowCount) return res.status(404).json({ error: 'DAP não encontrada.' });
+
+      const periodosSql = `
+        SELECT id, ordem, quantidade_total AS "quantidadeTotal", tfj_total AS "tfjTotal"
+        FROM public.dap_periodo
+        WHERE dap_id = $1
+        ORDER BY ordem
+      `;
+      const periodosResult = await db.query(periodosSql, [id]);
+      const periodoIds = periodosResult.rows.map((row) => row.id);
+
+      let atos = [];
+      if (periodoIds.length) {
+        const atosSql = `
+          SELECT periodo_id AS "periodoId", codigo, tributacao, quantidade, tfj_valor AS "tfjValor"
+          FROM public.dap_periodo_ato_snapshot
+          WHERE periodo_id = ANY($1)
+          ORDER BY codigo, tributacao
+        `;
+        const atosResult = await db.query(atosSql, [periodoIds]);
+        atos = atosResult.rows;
+      }
+
+      const periodoMap = periodosResult.rows.map((periodo) => ({
+        ...periodo,
+        atos: atos.filter((ato) => ato.periodoId === periodo.id),
+      }));
+
+      return res.json({
+        ...headerResult.rows[0],
+        periodos: periodoMap,
+      });
+    } catch (error) {
+      console.error('Erro ao obter DAP:', error);
+      return res.status(500).json({ error: 'Erro ao obter DAP.' });
+    }
+  });
+
+  // Retificação
+  app.post('/api/dap/:id/retificar', guard, async (req, res) => {
+    try {
+      const originalId = Number(req.params.id);
+      if (!Number.isInteger(originalId)) return res.status(400).json({ error: 'ID inválido.' });
+
+      const payload = req.body || {};
+      payload.retificadora = true;
+      payload.retificadoraDeId = originalId;
+
+      const result = await withTransaction(db, async (client) => {
+        const original = await client.query('SELECT id FROM public.dap WHERE id = $1', [originalId]);
+        if (!original.rowCount) throw new Error('DAP original não encontrada.');
+        return persistDap(client, payload);
+      });
+
+      return res.status(201).json({ id: result.dapId });
+    } catch (error) {
+      console.error('Erro ao criar DAP retificadora:', error);
+      return res.status(500).json({ error: error.message || 'Erro ao criar DAP retificadora.' });
+    }
+  });
+// grafico 12 meses nacimento e obito
   app.get('/api/dap/historico-nas-ob', ensureAuth, async (req, res) => {
     try {
       const codigoServentia = enforceServentia(req);
@@ -316,202 +524,20 @@ module.exports = function initDapRoutes(app, pool, options = {}) {
     }
   });
 
-  app.post('/api/dap/upload', ensureAuth, uploadMiddleware, async (req, res) => {
+  // Exclusão
+  app.delete('/api/dap/:id', guard, async (req, res) => {
     try {
-      if (!req.file) {
-        return res.status(400).json({ error: 'Arquivo da DAP é obrigatório.' });
-      }
-      if (!parseDapPdf) {
-        return res.status(501).json({ error: 'Parser de DAP não configurado.' });
-      }
-      const codigoServentia = enforceServentia(req);
-      const metadata = req.body && req.body.metadata ? JSON.parse(req.body.metadata) : {};
-      const parsed = await parseDapPdf({
-        buffer: req.file.buffer,
-        filename: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-        metadata,
-      });
-
-      // Forçar codigo_serventia do usuário logado
-      if (!parsed.codigoServentia && !parsed.codigo_serventia) {
-        parsed.codigoServentia = codigoServentia;
-      }
-      enforceServentia(req, parsed.codigoServentia ?? parsed.codigo_serventia);
-
-      const result = await withTransaction(pool, (client) => persistDap(client, parsed));
-      return res.status(201).json({ id: result.dapId, status: 'processed' });
-    } catch (error) {
-      console.error('Erro no upload de DAP:', error);
-      return res.status(500).json({ error: error.message || 'Erro ao processar DAP.' });
-    }
-  });
-
-  app.post('/api/dap', ensureAuth, async (req, res) => {
-    try {
-      const codigoServentia = enforceServentia(req);
-      const payload = req.body || {};
-      if (!payload.codigoServentia && !payload.codigo_serventia) {
-        payload.codigoServentia = codigoServentia;
-      }
-      enforceServentia(req, payload.codigoServentia ?? payload.codigo_serventia);
-      const result = await withTransaction(pool, (client) => persistDap(client, payload));
-      return res.status(201).json({ id: result.dapId });
-    } catch (error) {
-      console.error('Erro ao criar DAP:', error);
-      return res.status(500).json({ error: error.message || 'Erro ao criar DAP.' });
-    }
-  });
-
-  app.get('/api/dap', ensureAuth, async (req, res) => {
-    try {
-      const codigoServentia = enforceServentia(req);
-      const filters = extractFilters(req.query);
-      // Forçar filtro pela serventia do usuário logado
-      filters.codigoServentia = codigoServentia;
-      const params = [];
-      const where = applyFiltersSQL(filters, params);
-      const sql = `
-        SELECT id, mes_referencia AS "mesReferencia", ano_referencia AS "anoReferencia",
-               retificadora, retificadora_de_id AS "retificadoraDeId", retificada_por_id AS "retificadaPorId",
-               codigo_serventia AS "codigoServentia", serventia_nome AS "serventiaNome",
-               data_transmissao AS "dataTransmissao", codigo_recibo AS "codigoRecibo"
-        FROM public.dap
-        ${where}
-        ORDER BY ano_referencia DESC, mes_referencia DESC, codigo_serventia ASC
-        LIMIT 200
-      `;
-      const { rows } = await pool.query(sql, params);
-      return res.json(rows);
-    } catch (error) {
-      console.error('Erro ao listar DAPs:', error);
-      return res.status(500).json({ error: 'Erro ao listar DAPs.' });
-    }
-  });
-
-  app.get('/api/dap/:id', ensureAuth, async (req, res) => {
-    try {
-      const codigoServentia = enforceServentia(req);
       const id = Number(req.params.id);
-      if (!Number.isInteger(id)) {
-        return res.status(400).json({ error: 'ID inválido.' });
-      }
-      const headerSql = `
-        SELECT id, mes_referencia AS "mesReferencia", ano_referencia AS "anoReferencia",
-               retificadora, retificadora_de_id AS "retificadoraDeId", retificada_por_id AS "retificadaPorId",
-               serventia_nome AS "serventiaNome", codigo_serventia AS "codigoServentia", cnpj,
-               data_transmissao AS "dataTransmissao", codigo_recibo AS "codigoRecibo", observacoes,
-               emolumento_apurado AS "emolumentoApurado",
-               taxa_fiscalizacao_judiciaria_apurada AS "taxaFiscalizacaoJudiciariaApurada",
-               taxa_fiscalizacao_judiciaria_paga AS "taxaFiscalizacaoJudiciariaPaga",
-               recompe_apurado AS "recompeApurado",
-               recompe_depositado AS "recompeDepositado",
-               data_deposito_recompe AS "dataDepositoRecompe",
-               valores_recebidos_recompe AS "valoresRecebidosRecompe",
-               valores_recebidos_ferrfis AS "valoresRecebidosFerrfis",
-               issqn_recebido_usuarios AS "issqnRecebidoUsuarios",
-               repasses_responsaveis_anteriores AS "repassesResponsaveisAnteriores",
-               saldo_deposito_previo AS "saldoDepositoPrevio",
-               total_despesas_mes AS "totalDespesasMes",
-               estoque_selos_eletronicos_transmissao AS "estoqueSelosEletronicosTransmissao"
-        FROM public.dap
-        WHERE id = $1 AND codigo_serventia = $2
-      `;
-      const headerResult = await pool.query(headerSql, [id, codigoServentia]);
-      if (!headerResult.rowCount) {
-        return res.status(404).json({ error: 'DAP não encontrada.' });
-      }
+      if (!Number.isInteger(id)) return res.status(400).json({ error: 'ID inválido.' });
 
-      const periodosSql = `
-        SELECT id, ordem, quantidade_total AS "quantidadeTotal", tfj_total AS "tfjTotal"
-        FROM public.dap_periodo
-        WHERE dap_id = $1
-        ORDER BY ordem
-      `;
-      const periodosResult = await pool.query(periodosSql, [id]);
-      const periodoIds = periodosResult.rows.map((row) => row.id);
-
-      let atos = [];
-      if (periodoIds.length) {
-        const atosSql = `
-          SELECT periodo_id AS "periodoId", codigo, tributacao, quantidade, tfj_valor AS "tfjValor"
-          FROM public.dap_periodo_ato_snapshot
-          WHERE periodo_id = ANY($1)
-          ORDER BY codigo, tributacao
-        `;
-        const atosResult = await pool.query(atosSql, [periodoIds]);
-        atos = atosResult.rows;
-      }
-
-      const periodoMap = periodosResult.rows.map((periodo) => ({
-        ...periodo,
-        atos: atos.filter((ato) => ato.periodoId === periodo.id),
-      }));
-
-      return res.json({
-        ...headerResult.rows[0],
-        periodos: periodoMap,
-      });
-    } catch (error) {
-      console.error('Erro ao obter DAP:', error);
-      return res.status(500).json({ error: 'Erro ao obter DAP.' });
-    }
-  });
-
-  app.post('/api/dap/:id/retificar', ensureAuth, async (req, res) => {
-    try {
-      const codigoServentia = enforceServentia(req);
-      const originalId = Number(req.params.id);
-      if (!Number.isInteger(originalId)) {
-        return res.status(400).json({ error: 'ID inválido.' });
-      }
-
-      const payload = req.body || {};
-      payload.retificadora = true;
-      payload.retificadoraDeId = originalId;
-      if (!payload.codigoServentia && !payload.codigo_serventia) {
-        payload.codigoServentia = codigoServentia;
-      }
-
-      const result = await withTransaction(pool, async (client) => {
-        const original = await client.query(
-          'SELECT id, codigo_serventia FROM public.dap WHERE id = $1',
-          [originalId]
-        );
-        if (!original.rowCount) {
-          throw new Error('DAP original não encontrada.');
-        }
-        enforceServentia(req, original.rows[0].codigo_serventia);
-        return persistDap(client, payload);
-      });
-
-      return res.status(201).json({ id: result.dapId });
-    } catch (error) {
-      console.error('Erro ao criar DAP retificadora:', error);
-      return res.status(500).json({ error: error.message || 'Erro ao criar DAP retificadora.' });
-    }
-  });
-
-  app.delete('/api/dap/:id', ensureAuth, async (req, res) => {
-    try {
-      const codigoServentia = enforceServentia(req);
-      const id = Number(req.params.id);
-      if (!Number.isInteger(id)) {
-        return res.status(400).json({ error: 'ID inválido.' });
-      }
-
-      const deleted = await pool.query(
-        'DELETE FROM public.dap WHERE id = $1 AND codigo_serventia = $2 RETURNING id',
-        [id, codigoServentia]
-      );
-      if (!deleted.rowCount) {
-        return res.status(404).json({ error: 'DAP não encontrada.' });
-      }
+      const deleted = await db.query('DELETE FROM public.dap WHERE id = $1 RETURNING id', [id]);
+      if (!deleted.rowCount) return res.status(404).json({ error: 'DAP não encontrada.' });
       return res.json({ ok: true, id });
     } catch (error) {
       console.error('Erro ao excluir DAP:', error);
       return res.status(500).json({ error: 'Erro ao excluir DAP.' });
     }
   });
+
+  return app;
 };
