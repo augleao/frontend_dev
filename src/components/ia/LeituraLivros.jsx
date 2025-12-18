@@ -137,6 +137,40 @@ export default function LeituraLivros() {
     }
   }
 
+  async function handleCopyFullText() {
+    try {
+      const hasContent = !!(fullTextContent || fullTextInline || fullTextPreview);
+      if (!hasContent && fullTextAvailable) {
+        await fetchFullTextContent(fullTextDownloadUrl || '', fullTextJobId || jobId);
+      }
+      const text = fullTextContent || fullTextInline || fullTextPreview || '';
+      if (!text.trim()) {
+        logWarning('Nenhum conteúdo do inteiro teor disponível para copiar.');
+        return;
+      }
+      const copy = async (t) => {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(t);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = t;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+        }
+      };
+      await copy(text);
+      logSuccess('Inteiro teor copiado para a área de transferência.');
+    } catch (e) {
+      const msg = e?.message || 'Falha ao copiar inteiro teor';
+      logError(msg);
+    }
+  }
+
   // Handler para extrair imagens de arquivos .p7s via backend
   async function handleExtractP7s(filesList) {
     try {
@@ -1346,7 +1380,9 @@ export default function LeituraLivros() {
   }, []);
 
   async function startProcessing(options = {}) {
-    const fetchFullTextAfter = !!(options && options.fetchFullText);
+    const fetchFullTextAfter = options && Object.prototype.hasOwnProperty.call(options, 'fetchFullText')
+      ? !!options.fetchFullText
+      : true; // padrão: já buscar inteiro teor
     // Ao iniciar, rola a tela para centralizar o console/terminal na viewport (método robusto)
     try {
       const el = consoleRef.current;
@@ -1750,11 +1786,6 @@ export default function LeituraLivros() {
         </div>
       </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            onClick={() => startProcessing({ fetchFullText: true })}
-            disabled={running || (mode === 'upload' && files.length === 0)}
-            title={mode === 'upload' && files.length === 0 ? 'Selecione arquivos para enviar' : 'Enviar e recuperar o inteiro teor'}
-            style={{ background: '#fff', border: '1px solid #e5e7eb', color: '#374151', padding: '8px 12px', borderRadius: 10, fontWeight: 700, cursor: running || (mode === 'upload' && files.length === 0) ? 'not-allowed' : 'pointer' }}>Inteiro teor</button>
           <button onClick={() => handleExtractP7s(files)} disabled={running || files.length === 0}
             title={files.length === 0 ? 'Selecione arquivos primeiro' : 'Extrair imagens dos arquivos selecionados'}
             style={{ background: '#fff', border: '1px solid #e5e7eb', color: '#374151', padding: '8px 12px', borderRadius: 10, fontWeight: 700, cursor: running || files.length === 0 ? 'not-allowed' : 'pointer' }}>Extrair Imagem</button>
@@ -1943,13 +1974,21 @@ export default function LeituraLivros() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                   <h4 style={{ marginTop: 0, color: '#1f2937', marginBottom: 0 }}>Inteiro teor</h4>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    {fullTextAvailable && (
+                    {(fullTextAvailable || fullTextContent || fullTextInline || fullTextPreview) && (
                       <button
-                        onClick={() => fetchFullTextContent(fullTextDownloadUrl || '', fullTextJobId || jobId)}
-                        disabled={fullTextLoading}
-                        style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #e5e7eb', background: fullTextLoading ? '#f1f5f9' : '#fff', cursor: fullTextLoading ? 'not-allowed' : 'pointer' }}
+                        onClick={handleCopyFullText}
+                        disabled={fullTextLoading || (!fullTextAvailable && !fullTextContent && !fullTextInline && !fullTextPreview)}
+                        style={{
+                          background: fullTextLoading ? '#94a3b8' : 'linear-gradient(135deg,#10b981,#059669)',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '10px 16px',
+                          borderRadius: 10,
+                          fontWeight: 800,
+                          cursor: fullTextLoading ? 'not-allowed' : 'pointer'
+                        }}
                       >
-                        {fullTextLoading ? 'Carregando…' : 'Baixar inteiro teor'}
+                        {fullTextLoading ? 'Carregando…' : 'Copiar inteiro teor'}
                       </button>
                     )}
                   </div>
@@ -1967,7 +2006,7 @@ export default function LeituraLivros() {
                   <div style={{ color: '#64748b' }}>{fullTextLoading ? 'Carregando inteiro teor...' : 'Inteiro teor não disponível para este job.'}</div>
                 )}
                 {fullTextAvailable && !fullTextContent && !fullTextLoading && (
-                  <div style={{ marginTop: 8, color: '#475569', fontSize: 13 }}>Prévia exibida; clique em Baixar inteiro teor para o texto completo.</div>
+                  <div style={{ marginTop: 8, color: '#475569', fontSize: 13 }}>Prévia exibida; use "Copiar inteiro teor" para obter o texto completo.</div>
                 )}
               </div>
             </div>
