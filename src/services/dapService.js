@@ -111,25 +111,55 @@ export async function getHistoricoNasOb() {
   const headers = buildAuthHeaders();
   const tokenPreview = headers.Authorization ? `${String(headers.Authorization).slice(0, 18)}…` : null;
 
+  // Tenta passar codigoServentia explicitamente como fallback (enforceServentia aceita query/body)
+  const usuarioRaw = localStorage.getItem('usuario');
+  let codigoServentia = null;
+  try {
+    const usuario = usuarioRaw ? JSON.parse(usuarioRaw) : {};
+    codigoServentia = usuario.codigo_serventia
+      || usuario.codigoServentia
+      || usuario.serventia_codigo
+      || usuario.serventiaCodigo
+      || usuario.serventia_id
+      || usuario.serventiaId
+      || usuario.serventia
+      || usuario.codigo_serventia_serventia
+      || null;
+  } catch (_) {
+    codigoServentia = null;
+  }
+
+  const params = codigoServentia ? { codigoServentia } : undefined;
+
   console.log('[dapService] GET /dap/historico-nas-ob', {
     url,
     hasToken: !!headers.Authorization,
     tokenPreview,
+    codigoServentia,
   });
 
   try {
-    const response = await axios.get(url, { headers });
+    const response = await axios.get(url, { headers, params });
     console.log('[dapService] historico-nas-ob ok', {
       status: response.status,
       dataKeys: Object.keys(response.data || {}),
     });
     return response.data;
   } catch (error) {
+    const errStatus = error?.response?.status;
+    const errData = error?.response?.data;
+    const errMsg = error?.message;
     console.error('[dapService] historico-nas-ob erro', {
-      status: error?.response?.status,
-      data: error?.response?.data,
-      message: error?.message,
+      status: errStatus,
+      data: errData,
+      message: errMsg,
+      codigoServentia,
     });
+    try {
+      console.error('[dapService] historico-nas-ob erro (stringified)', JSON.stringify({ status: errStatus, data: errData, message: errMsg, codigoServentia }));
+    } catch (_) {
+      // ignore
+    }
     throw error;
   }
 }

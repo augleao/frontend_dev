@@ -166,7 +166,20 @@ export default function HistoricoNasObModal({ open, onClose }) {
         console.log('[HistoricoNasObModal] meses normalizados', months);
         setHistorico(months);
       } catch (err) {
-        console.error('[HistoricoNasObModal] erro ao carregar historico', err);
+        console.error('[HistoricoNasObModal] erro ao carregar historico', {
+          message: err?.message,
+          status: err?.response?.status,
+          data: err?.response?.data,
+        });
+        try {
+          console.error('[HistoricoNasObModal] erro stringified', JSON.stringify({
+            message: err?.message,
+            status: err?.response?.status,
+            data: err?.response?.data,
+          }));
+        } catch (_) {
+          // ignore
+        }
         if (!cancelled) {
           setError('Não foi possível carregar os registros dos últimos 12 meses.');
         }
