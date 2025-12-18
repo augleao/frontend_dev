@@ -292,6 +292,12 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
     if (!candidates.length) {
       const err = new Error('Serventia do usuário não encontrada.');
       err.status = 400;
+      err.candidates = candidates;
+      err.detail = {
+        userKeys: Object.keys(user || {}),
+        queryKeys: Object.keys(req.query || {}),
+        bodyKeys: Object.keys(req.body || {}),
+      };
       throw err;
     }
 
@@ -558,7 +564,11 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
       console.error('Erro ao gerar histórico Nas/OB:', error);
       const status = error.status && Number.isInteger(error.status) ? error.status : 500;
       const message = error.message || 'Erro ao carregar o histórico de registros.';
-      return res.status(status).json({ error: message });
+      const debug = {
+        candidates: error.candidates,
+        detail: error.detail,
+      };
+      return res.status(status).json({ error: message, debug });
     }
   });
 
