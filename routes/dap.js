@@ -281,7 +281,7 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
     ].filter((v) => v !== undefined && v !== null && String(v).trim() !== '');
 
     try {
-      console.log('[historico-nas-ob] enforceServentia candidates:', {
+      console.log('[historico-nas-ob] enforceServentia candidates', {
         user,
         query: req.query,
         body: req.body,
@@ -292,8 +292,7 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
     if (!candidates.length) {
       const err = new Error('Serventia do usuário não encontrada.');
       err.status = 400;
-      err.candidates = candidates;
-      err.detail = {
+      err.debug = {
         userKeys: Object.keys(user || {}),
         queryKeys: Object.keys(req.query || {}),
         bodyKeys: Object.keys(req.body || {}),
@@ -504,13 +503,13 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
   app.get('/api/dap/historico-nas-ob', guard, async (req, res) => {
     try {
       const codigoServentia = enforceServentia(req);
-      try { console.log('[historico-nas-ob] codigoServentia:', codigoServentia); } catch (_) {}
+      try { console.log('[historico-nas-ob] codigoServentia', codigoServentia); } catch (_) {}
       const months = getLast12Months();
       const monthThreshold = Math.min(...months.map((month) => month.year * 100 + month.month));
-      try { console.log('[historico-nas-ob] months window:', months, 'threshold:', monthThreshold); } catch (_) {}
+      try { console.log('[historico-nas-ob] months window', months, 'threshold', monthThreshold); } catch (_) {}
       const codes = Array.from(new Set(HISTORICO_CATEGORIES.map((category) => category.code)));
       const tribs = Array.from(new Set(HISTORICO_CATEGORIES.map((category) => category.trib)));
-      try { console.log('[historico-nas-ob] codes:', codes, 'tribs:', tribs); } catch (_) {}
+      try { console.log('[historico-nas-ob] codes', codes, 'tribs', tribs); } catch (_) {}
 
       const sql = `
         SELECT d.ano_referencia AS ano, d.mes_referencia AS mes,
@@ -526,7 +525,7 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
         GROUP BY d.ano_referencia, d.mes_referencia, ato.codigo, CAST(NULLIF(ato.tributacao, '') AS INTEGER)
       `;
       const { rows } = await db.query(sql, [codigoServentia, monthThreshold, codes, tribs]);
-      try { console.log('[historico-nas-ob] rows:', rows); } catch (_) {}
+      try { console.log('[historico-nas-ob] rows', rows); } catch (_) {}
 
       const monthMap = new Map();
       months.forEach((month) => {
@@ -563,12 +562,7 @@ module.exports = function initDapRoutes(appArg = null, poolArg = null, options =
     } catch (error) {
       console.error('Erro ao gerar histórico Nas/OB:', error);
       const status = error.status && Number.isInteger(error.status) ? error.status : 500;
-      const message = error.message || 'Erro ao carregar o histórico de registros.';
-      const debug = {
-        candidates: error.candidates,
-        detail: error.detail,
-      };
-      return res.status(status).json({ error: message, debug });
+      return res.status(status).json({ error: error.message || 'Erro ao carregar o histórico de registros.', debug: error.debug });
     }
   });
 
