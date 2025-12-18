@@ -105,3 +105,10 @@ export async function uploadDap({ file, metadata } = {}) {
 
   return response.data;
 }
+
+export async function getHistoricoNasOb() {
+  const response = await axios.get(`${apiURL}/dap/historico-nas-ob`, {
+    headers: buildAuthHeaders(),
+  });
+  return response.data;
+}

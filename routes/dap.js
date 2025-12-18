@@ -207,6 +207,38 @@ function applyFiltersSQL(filters, params) {
   return clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
 }
 
+const HISTORICO_CATEGORIES = [
+  { id: 'nascimentosProprios', label: 'Registros de Nascimento Próprios (9101, trib 26)', code: '9101', trib: 26 },
+  { id: 'nascimentosUI', label: 'Registros de Nascimento UI (9101, trib 29)', code: '9101', trib: 29 },
+  { id: 'obitosProprios', label: 'Registros de Óbito Próprios (9201, trib 26)', code: '9201', trib: 26 },
+  { id: 'obitosUI', label: 'Registros de Óbito UI (9201, trib 29)', code: '9201', trib: 29 },
+];
+
+function padMonthValue(value) {
+  return String(value).padStart(2, '0');
+}
+
+function buildMonthKey(year, month) {
+  return `${year}-${padMonthValue(month)}`;
+}
+
+function getLast12Months() {
+  const today = new Date();
+  const months = [];
+  for (let offset = 11; offset >= 0; offset -= 1) {
+    const cursor = new Date(today.getFullYear(), today.getMonth() - offset, 1);
+    const year = cursor.getFullYear();
+    const month = cursor.getMonth() + 1;
+    months.push({
+      year,
+      month,
+      key: buildMonthKey(year, month),
+      label: `${padMonthValue(month)}/${year}`,
+    });
+  }
+  return months;
+}
+
 module.exports = function initDapRoutes(app, pool, options = {}) {
   const ensureAuth = options.ensureAuth || ((req, res, next) => next());
   const parseDapPdf = options.parseDapPdf;
@@ -222,6 +254,67 @@ module.exports = function initDapRoutes(app, pool, options = {}) {
     }
     return req.user.codigo_serventia;
   }
+
+  app.get('/api/dap/historico-nas-ob', ensureAuth, async (req, res) => {
+    try {
+      const codigoServentia = enforceServentia(req);
+      const months = getLast12Months();
+      const monthThreshold = Math.min(...months.map((month) => month.year * 100 + month.month));
+      const codes = Array.from(new Set(HISTORICO_CATEGORIES.map((category) => category.code)));
+      const tribs = Array.from(new Set(HISTORICO_CATEGORIES.map((category) => category.trib)));
+
+      const sql = `
+        SELECT d.ano_referencia AS ano, d.mes_referencia AS mes,
+               ato.codigo, CAST(NULLIF(ato.tributacao, '') AS INTEGER) AS tributacao,
+               SUM(ato.quantidade) AS quantidade
+        FROM public.dap d
+        JOIN public.dap_periodo dp ON dp.dap_id = d.id
+        JOIN public.dap_periodo_ato_snapshot ato ON ato.periodo_id = dp.id
+        WHERE d.codigo_serventia = $1
+          AND (d.ano_referencia * 100 + d.mes_referencia) >= $2
+          AND ato.codigo = ANY($3)
+          AND CAST(NULLIF(ato.tributacao, '') AS INTEGER) = ANY($4)
+        GROUP BY d.ano_referencia, d.mes_referencia, ato.codigo, CAST(NULLIF(ato.tributacao, '') AS INTEGER)
+      `;
+      const { rows } = await pool.query(sql, [codigoServentia, monthThreshold, codes, tribs]);
+
+      const monthMap = new Map();
+      months.forEach((month) => {
+        monthMap.set(month.key, {
+          ...month,
+          totals: HISTORICO_CATEGORIES.reduce((acc, category) => ({
+            ...acc,
+            [category.id]: 0,
+          }), {}),
+        });
+      });
+
+      rows.forEach((row) => {
+        const key = buildMonthKey(row.ano, row.mes);
+        const entry = monthMap.get(key);
+        if (!entry) return;
+        const category = HISTORICO_CATEGORIES.find((cat) => cat.code === row.codigo && cat.trib === row.tributacao);
+        if (!category) return;
+        entry.totals[category.id] += Number(row.quantidade) || 0;
+      });
+
+      const responseMonths = months.map((month) => {
+        const entry = monthMap.get(month.key);
+        return {
+          key: month.key,
+          label: month.label,
+          year: month.year,
+          month: month.month,
+          totals: entry ? { ...entry.totals } : HISTORICO_CATEGORIES.reduce((acc, category) => ({ ...acc, [category.id]: 0 }), {}),
+        };
+      });
+
+      return res.json({ months: responseMonths });
+    } catch (error) {
+      console.error('Erro ao gerar histórico Nas/OB:', error);
+      return res.status(500).json({ error: 'Erro ao carregar o histórico de registros.' });
+    }
+  });
 
   app.post('/api/dap/upload', ensureAuth, uploadMiddleware, async (req, res) => {
     try {

@@ -58,6 +58,7 @@
 - `POST   /api/dap/:id/retificar`        → Cria DAP retificadora vinculada à original
 - `DELETE /api/dap/:id`                  → Exclui DAP (validar impacto em retificadoras relacionadas)
 - `GET    /api/dap/:id/download`         → (Opcional) devolve PDF armazenado do upload
+- `GET    /api/dap/historico-nas-ob`     → Retorna os totais mensais (últimos 12 meses) para os códigos 9101/9201
 
 ## Relatórios
 - `GET    /api/meus-relatorios`           → Lista relatórios do usuário

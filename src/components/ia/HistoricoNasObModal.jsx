@@ -1,39 +1,36 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { listDaps, getDapById } from '../../services/dapService';
+import { getHistoricoNasOb } from '../../services/dapService';
 
 const categories = [
   {
     id: 'nascimentosProprios',
     label: 'Registros de Nascimento Próprios (9101, trib 26)',
-    code: '9101',
-    trib: 26,
     color: '#f97316',
   },
   {
     id: 'nascimentosUI',
     label: 'Registros de Nascimento UI (9101, trib 29)',
-    code: '9101',
-    trib: 29,
     color: '#2563eb',
   },
   {
     id: 'obitosProprios',
     label: 'Registros de Óbito Próprios (9201, trib 26)',
-    code: '9201',
-    trib: 26,
     color: '#16a34a',
   },
   {
     id: 'obitosUI',
     label: 'Registros de Óbito UI (9201, trib 29)',
-    code: '9201',
-    trib: 29,
     color: '#c026d3',
   },
 ];
 
-function getMonthKey(year, month) {
-  return `${year}-${String(month).padStart(2, '0')}`;
+function padMonthValue(value) {
+  return String(value).padStart(2, '0');
+}
+
+function buildMonthKey(year, month) {
+  if (!year || !month) return '';
+  return `${year}-${padMonthValue(month)}`;
 }
 
 function getLast12Months() {
@@ -46,82 +43,39 @@ function getLast12Months() {
     months.push({
       year,
       month,
-      key: getMonthKey(year, month),
-      label: `${String(month).padStart(2, '0')}/${year}`,
+      key: buildMonthKey(year, month),
+      label: `${padMonthValue(month)}/${year}`,
     });
   }
   return months;
 }
 
-function parseDapReference(dap) {
-  if (!dap) return { year: null, month: null };
-  const yearCandidates = [
-    dap?.ano_referencia,
-    dap?.anoReferencia,
-    dap?.ano_ref,
-    dap?.ano,
-    dap?.ano_referente,
-  ];
-  const monthCandidates = [
-    dap?.mes_referencia,
-    dap?.mesReferencia,
-    dap?.mes_ref,
-    dap?.mes,
-    dap?.mes_referente,
-  ];
-  const normalizedYear = yearCandidates.map((value) => Number(value)).find((value) => Number.isFinite(value));
-  const normalizedMonth = monthCandidates.map((value) => Number(value)).find((value) => Number.isFinite(value));
-  return {
-    year: typeof normalizedYear === 'number' && Number.isFinite(normalizedYear) ? normalizedYear : null,
-    month: typeof normalizedMonth === 'number' && Number.isFinite(normalizedMonth) ? normalizedMonth : null,
-  };
+function buildEmptyHistory() {
+  return getLast12Months().map((month) => ({
+    ...month,
+    totals: categories.reduce((acc, category) => ({
+      ...acc,
+      [category.id]: 0,
+    }), {}),
+  }));
 }
 
-function aggregateByMonth(results, months) {
-  const map = new Map();
-  months.forEach((month) => {
-    map.set(month.key, {
-      label: month.label,
-      totals: categories.reduce((acc, category) => ({
-        ...acc,
-        [category.id]: 0,
-      }), {}),
-    });
-  });
-
-  results.forEach(({ dap, detail }) => {
-    const reference = parseDapReference(dap);
-    if (!reference.year || !reference.month) return;
-    const key = getMonthKey(reference.year, reference.month);
-    const entry = map.get(key);
-    if (!entry) return;
-    const periodos = detail?.periodos ?? detail?.dap_periodos ?? [];
-    periodos.forEach((periodo) => {
-      const atos = periodo?.atos ?? periodo?.dap_atos ?? [];
-      atos.forEach((ato) => {
-        const code = String(ato?.codigo ?? ato?.codigo_ato ?? ato?.ato_codigo ?? '').trim();
-        const tribRaw = ato?.tributacao ?? ato?.tributacao_codigo ?? ato?.trib ?? ato?.tributacao;
-        const tribNum = Number(String(tribRaw ?? '').replace(',', '.'));
-        const quantidadeRaw = ato?.quantidade ?? ato?.qtde ?? ato?.qtd ?? 0;
-        const quantidade = Number(String(quantidadeRaw ?? '0').replace(',', '.'));
-        if (!code || Number.isNaN(tribNum) || Number.isNaN(quantidade)) return;
-        categories.forEach((category) => {
-          if (code === category.code && tribNum === category.trib) {
-            entry.totals[category.id] += quantidade;
-          }
-        });
-      });
-    });
-  });
-
-  return months.map((month) => {
-    const entry = map.get(month.key);
-    return {
-      key: month.key,
-      label: month.label,
-      totals: entry ? { ...entry.totals } : categories.reduce((acc, category) => ({ ...acc, [category.id]: 0 }), {}),
-    };
-  });
+function normalizeMonthPayload(month = {}) {
+  const normalizedYear = Number(month.year);
+  const normalizedMonth = Number(month.month);
+  const hasYear = Number.isFinite(normalizedYear);
+  const hasMonth = Number.isFinite(normalizedMonth);
+  const totals = categories.reduce((acc, category) => ({
+    ...acc,
+    [category.id]: Number(month.totals?.[category.id]) || 0,
+  }), {});
+  return {
+    key: month.key || (hasYear && hasMonth ? buildMonthKey(normalizedYear, normalizedMonth) : ''),
+    label: month.label || (hasMonth && hasYear ? `${padMonthValue(normalizedMonth)}/${normalizedYear}` : '—'),
+    year: hasYear ? normalizedYear : null,
+    month: hasMonth ? normalizedMonth : null,
+    totals,
+  };
 }
 
 function SimpleLineChart({ data = [] }) {
@@ -191,41 +145,24 @@ function SimpleLineChart({ data = [] }) {
 }
 
 export default function HistoricoNasObModal({ open, onClose }) {
-  const [historico, setHistorico] = useState(() => getLast12Months().map((month) => ({ key: month.key, label: month.label, totals: categories.reduce((acc, category) => ({ ...acc, [category.id]: 0 }), {}) })));
+  const [historico, setHistorico] = useState(buildEmptyHistory);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (!open) return undefined;
     let cancelled = false;
-    const monthsRange = getLast12Months();
     setLoading(true);
     setError('');
-    const years = Array.from(new Set(monthsRange.map((month) => month.year)));
-
     (async () => {
       try {
-        const responses = await Promise.all(years.map((year) => listDaps({ ano: year })));
+        const payload = await getHistoricoNasOb();
         if (cancelled) return;
-        const items = responses.flatMap((res) => res?.items ?? []);
-        const keys = new Set(monthsRange.map((month) => month.key));
-        const relevant = items.filter((dap) => {
-          if (!dap?.id) return false;
-          const reference = parseDapReference(dap);
-          if (!reference.year || !reference.month) return false;
-          return keys.has(getMonthKey(reference.year, reference.month));
-        });
-        const unique = Array.from(new Map(relevant.map((dap) => [dap.id, dap])).values());
-        const detailPromises = unique.map((dap) =>
-          getDapById(dap.id)
-            .then((detail) => ({ dap, detail }))
-            .catch(() => null)
-        );
-        const results = (await Promise.all(detailPromises)).filter(Boolean);
-        if (cancelled) return;
-        const aggregated = aggregateByMonth(results, monthsRange);
-        setHistorico(aggregated);
-      } catch (e) {
+        const months = Array.isArray(payload?.months) && payload.months.length > 0
+          ? payload.months.map((month) => normalizeMonthPayload(month))
+          : buildEmptyHistory();
+        setHistorico(months);
+      } catch (err) {
         if (!cancelled) {
           setError('Não foi possível carregar os registros dos últimos 12 meses.');
         }
@@ -235,7 +172,6 @@ export default function HistoricoNasObModal({ open, onClose }) {
         }
       }
     })();
-
     return () => {
       cancelled = true;
     };
