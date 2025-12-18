@@ -52,6 +52,7 @@ export default function LeituraLivros() {
   const [fullTextError, setFullTextError] = useState('');
   const [fullTextRequested, setFullTextRequested] = useState(false);
   const [fullTextJobId, setFullTextJobId] = useState(null);
+  const [fullTextCopied, setFullTextCopied] = useState(false);
   const pollRef = useRef(null);
   const didMountTestRef = useRef(false);
   const lastProgressRef = useRef(0);
@@ -165,6 +166,8 @@ export default function LeituraLivros() {
       };
       await copy(text);
       logSuccess('Inteiro teor copiado para a área de transferência.');
+      setFullTextCopied(true);
+      setTimeout(() => setFullTextCopied(false), 2000);
     } catch (e) {
       const msg = e?.message || 'Falha ao copiar inteiro teor';
       logError(msg);
@@ -1990,6 +1993,9 @@ export default function LeituraLivros() {
                       >
                         {fullTextLoading ? 'Carregando…' : 'Copiar inteiro teor'}
                       </button>
+                    )}
+                    {fullTextCopied && (
+                      <span style={{ color: '#047857', fontWeight: 700, fontSize: 13 }}>Copiado!</span>
                     )}
                   </div>
                 </div>
