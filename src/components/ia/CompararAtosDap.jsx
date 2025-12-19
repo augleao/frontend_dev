@@ -49,39 +49,46 @@ export default function CompararAtosDap() {
       setLoading(true); setErro('');
       const months = getLastMonths(monthsRange);
       try {
-        // 1) DAPs por mês
-        const dapList = await listDaps({});
-        const items = Array.isArray(dapList.items) ? dapList.items : [];
-        const monthsSet = new Set(months.map((m) => m.key));
+        // 1) DAPs por mês (backend requer ano/mes na consulta)
+        const dapAgg = months.reduce((acc, m) => ({ ...acc, [m.key]: {} }), {});
         const parseYM = (dap) => {
           const ano = Number(dap?.ano_referencia ?? dap?.ano ?? dap?.ano_ref ?? 0) || 0;
           const mes = Number(dap?.mes_referencia ?? dap?.mes ?? dap?.mes_ref ?? 0) || 0;
           return { ano, mes };
         };
-        const dapsToFetch = items.filter((dap) => monthsSet.has(buildMonthKey(parseYM(dap).ano, parseYM(dap).mes)));
-        const dapPromises = dapsToFetch.map((dap) => getDapById(dap.id).then((full) => ({ dap, full })).catch((e) => ({ dap, error: e })));
-        const dapAgg = months.reduce((acc, m) => ({ ...acc, [m.key]: {} }), {});
-        dapPromises.forEach((p) => p.then((res) => {
-          if (cancel || !res || res.error || !res.full) return;
-          const meta = res.dap || res.full;
-          const { ano, mes } = parseYM(meta);
-          const key = buildMonthKey(ano, mes);
-          if (!monthsSet.has(key)) return;
-          const periodos = res.full.periodos ?? res.full.dap_periodos ?? [];
-          periodos.forEach((pItem) => {
-            const atos = pItem.atos ?? pItem.dap_atos ?? [];
-            atos.forEach((ato) => {
-              const codigo = String(ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '').trim();
-              const trib = Number(ato.tributacao ?? ato.tributacao_codigo ?? ato.trib ?? 0) || 0;
-              const qty = Number(ato.quantidade ?? ato.qtde ?? ato.qtd ?? 0) || 0;
-              if (trib === 1 && codigo) {
-                dapAgg[key][codigo] = (dapAgg[key][codigo] || 0) + qty;
-              }
-            });
-          });
-        }));
 
-        await Promise.allSettled(dapPromises);
+        for (const m of months) {
+          try {
+            const listResp = await listDaps({ ano: m.year, mes: m.month });
+            const items = Array.isArray(listResp.items) ? listResp.items : [];
+            const promises = items.map((dap) => getDapById(dap.id).then((full) => ({ dap, full })).catch((e) => ({ dap, error: e })));
+            const results = await Promise.allSettled(promises);
+            results.forEach((r) => {
+              if (r.status !== 'fulfilled') return;
+              const res = r.value;
+              if (!res || res.error || !res.full) return;
+              const meta = res.dap || res.full;
+              const { ano, mes } = parseYM(meta);
+              const key = buildMonthKey(ano, mes);
+              if (key !== m.key) return;
+              const periodos = res.full.periodos ?? res.full.dap_periodos ?? [];
+              periodos.forEach((pItem) => {
+                const atos = pItem.atos ?? pItem.dap_atos ?? [];
+                atos.forEach((ato) => {
+                  const codigo = String(ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '').trim();
+                  const trib = Number(ato.tributacao ?? ato.tributacao_codigo ?? ato.trib ?? 0) || 0;
+                  const qty = Number(ato.quantidade ?? ato.qtde ?? ato.qtd ?? 0) || 0;
+                  if (trib === 1 && codigo) {
+                    dapAgg[key][codigo] = (dapAgg[key][codigo] || 0) + qty;
+                  }
+                });
+              });
+            });
+          } catch (e) {
+            console.error('[CompararAtosDap] erro ao buscar DAP do mês', m, e);
+          }
+          if (cancel) break;
+        }
 
         // 2) Atos do sistema por mês (tributacao 01)
         const sistemaAgg = months.reduce((acc, m) => ({ ...acc, [m.key]: {} }), {});
