@@ -20,10 +20,16 @@ function getLastMonths(n) {
   return months;
 }
 
-async function fetchAtosMes({ year, month }) {
+function normalizeUser(u) {
+  return (u || '').toString().trim().toLowerCase();
+}
+
+function normalizeServentiaName(s) {
+  return (s || '').toString().trim().toLowerCase();
+}
+
+async function fetchAtosMes({ year, month, userToken, allowedUsuarios }) {
   const token = localStorage.getItem('token');
-  let usuario = {};
-  try { usuario = JSON.parse(localStorage.getItem('usuario') || '{}'); } catch (_) { usuario = {}; }
   const start = `${year}-${padMonthValue(month)}-01`;
   const end = `${year}-${padMonthValue(month)}-${padMonthValue(new Date(year, month, 0).getDate())}`;
   const params = new URLSearchParams({ dataInicial: start, dataFinal: end, tributacao: '01' });
@@ -33,18 +39,22 @@ async function fetchAtosMes({ year, month }) {
   const data = await res.json();
   if (!res.ok) throw new Error(data?.message || 'Erro ao buscar atos');
   const atos = Array.isArray(data.atos) ? data.atos : [];
-  const userToken = String(getFinalToken(usuario?.serventia || usuario?.nome_abreviado || usuario?.nomeAbreviado || usuario?.serventiaNome || '')).toLowerCase();
-  console.log('[CompararAtosDap] fetchAtosMes retorno bruto', { year, month, total: atos.length, userToken, sample: atos.slice(0, 3) });
-  const atosFiltrados = userToken
-    ? atos.filter((ato) => {
-        const servDisplay = ato?.serventia || ato?.serventia_nome || ato?.serventiaNome || ato?.serventiaAbreviada || ato?.cartorio || ato?.cartorio_nome || ato?.cartorioNome || '';
-        const finalToken = String(getFinalToken(servDisplay || '')).toLowerCase();
-        return finalToken && userToken.includes(finalToken);
-      })
-    : atos;
-  console.log('[CompararAtosDap] filtro serventia atos sistema', { total: atos.length, filtrados: atosFiltrados.length, userToken, sample: atosFiltrados.slice(0, 3) });
-  if (userToken && atos.length > 0 && atosFiltrados.length === 0) {
-    console.warn('[CompararAtosDap] nenhum ato ficou após filtro de serventia; verifique campos de serventia no payload');
+  console.log('[CompararAtosDap] fetchAtosMes retorno bruto', { year, month, total: atos.length, userToken, allowedUsuariosCount: (allowedUsuarios || []).length, sample: atos.slice(0, 3) });
+  let atosFiltrados = atos;
+  const allowedSet = new Set((allowedUsuarios || []).map((u) => normalizeUser(u))); // mesmos usuários da serventia
+  if (allowedSet.size > 0) {
+    atosFiltrados = atos.filter((ato) => allowedSet.has(normalizeUser(ato?.usuario)));
+    console.log('[CompararAtosDap] filtro por escrevente da mesma serventia', { total: atos.length, filtrados: atosFiltrados.length, allowedUsuarios: Array.from(allowedSet).slice(0, 5) });
+  } else if (userToken) {
+    atosFiltrados = atos.filter((ato) => {
+      const servDisplay = ato?.serventia || ato?.serventia_nome || ato?.serventiaNome || ato?.serventiaAbreviada || ato?.cartorio || ato?.cartorio_nome || ato?.cartorioNome || '';
+      const finalToken = String(getFinalToken(servDisplay || '')).toLowerCase();
+      return finalToken && userToken.includes(finalToken);
+    });
+    console.log('[CompararAtosDap] filtro serventia atos sistema (token)', { total: atos.length, filtrados: atosFiltrados.length, userToken, sample: atosFiltrados.slice(0, 3) });
+  }
+  if (atos.length > 0 && atosFiltrados.length === 0) {
+    console.warn('[CompararAtosDap] nenhum ato ficou após filtros; verifique campos usuario/serventia no payload');
   }
   const counts = {};
   atosFiltrados.forEach((ato) => {
@@ -61,12 +71,32 @@ async function fetchAtosMes({ year, month }) {
 export default function CompararAtosDap() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
+  const [usuarios, setUsuarios] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const today = new Date();
     const prev = new Date(today.getFullYear(), today.getMonth() - 1, 1);
     return { year: prev.getFullYear(), month: prev.getMonth() + 1, key: buildMonthKey(prev.getFullYear(), prev.getMonth() + 1), label: `${padMonthValue(prev.getMonth() + 1)}/${prev.getFullYear()}` };
   });
   const [dadosMes, setDadosMes] = useState({ key: '', label: '', sistema: {}, dap: {} });
+
+  // Carregar usuários para poder filtrar atos do sistema pela mesma serventia (igual lógica de pesquisaAtosPraticados)
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const run = async () => {
+      try {
+        const res = await fetch(`${apiURL}/users`, { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        const list = Array.isArray(data?.usuarios) ? data.usuarios : [];
+        setUsuarios(list);
+        console.log('[CompararAtosDap] usuarios carregados', { total: list.length, sample: list.slice(0, 3) });
+      } catch (e) {
+        console.error('[CompararAtosDap] erro ao carregar usuarios', e);
+        setUsuarios([]);
+      }
+    };
+    run();
+  }, []);
 
   useEffect(() => {
     let cancel = false;
@@ -78,6 +108,15 @@ export default function CompararAtosDap() {
         let usuario = {};
         try { usuario = JSON.parse(localStorage.getItem('usuario') || '{}'); } catch (_) { usuario = {}; }
         const userToken = String(getFinalToken(usuario?.serventia || usuario?.nome_abreviado || usuario?.nomeAbreviado || usuario?.serventiaNome || '')).toLowerCase();
+        const servRaw = usuario?.serventia || usuario?.serventiaNome || usuario?.nome_abreviado || usuario?.nomeAbreviado || '';
+        const servKey = normalizeServentiaName(servRaw);
+        const allowedUsuarios = Array.isArray(usuarios)
+          ? usuarios
+              .filter((u) => normalizeServentiaName(u?.serventia || u?.serventiaNome || u?.nome_abreviado || u?.nomeAbreviado || '') === servKey)
+              .map((u) => u.nome || u.email || '')
+              .filter((v) => v)
+          : [];
+        console.log('[CompararAtosDap] contexto filtro atos sistema', { userToken, servKey, allowedUsuarios: allowedUsuarios.slice(0, 5), totalUsuariosMesmaServentia: allowedUsuarios.length });
 
         // DAPs do mês selecionado
         const dapCounts = {};
@@ -126,7 +165,7 @@ export default function CompararAtosDap() {
         // Atos do sistema para o mês (tributacao 01)
         let sistemaCounts = {};
         try {
-          sistemaCounts = await fetchAtosMes({ year: m.year, month: m.month });
+          sistemaCounts = await fetchAtosMes({ year: m.year, month: m.month, userToken, allowedUsuarios });
         } catch (e) {
           console.error('[CompararAtosDap] erro fetch atos', e);
           sistemaCounts = {};
@@ -143,7 +182,7 @@ export default function CompararAtosDap() {
     };
     run();
     return () => { cancel = true; };
-  }, [selectedMonth]);
+  }, [selectedMonth, usuarios]);
 
   const resumoPorCodigo = useMemo(() => {
     const m = dadosMes;
