@@ -103,6 +103,21 @@ function SimpleLineChart({ data = [] }) {
     return { ...category, path, points };
   });
 
+  // extra series: sum of nascimentosProprios + obitosProprios (tributação 26)
+  const extraSeries = {
+    id: 'propriosTotal',
+    label: 'Nasc.+Óbitos Próprios',
+    color: '#ef4444',
+    points: data.map((entry, index) => {
+      const v1 = Number(entry.totals?.nascimentosProprios || 0) || 0;
+      const v2 = Number(entry.totals?.obitosProprios || 0) || 0;
+      const value = v1 + v2;
+      const x = padding + (data.length === 1 ? plotWidth / 2 : xStep * index);
+      const y = padding + plotHeight - (value / safeMax) * plotHeight;
+      return { x, y };
+    })
+  };
+
   const horizontalLines = [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
     const y = padding + plotHeight - ratio * plotHeight;
     const value = Math.round(safeMax * ratio);
@@ -150,6 +165,26 @@ function SimpleLineChart({ data = [] }) {
           ))}
         </g>
       ))}
+      {/* extra series rendering */}
+      <g key={extraSeries.id}>
+        <path d={extraSeries.points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')} fill="none" stroke={extraSeries.color} strokeWidth={2} strokeDasharray="6 4" strokeLinecap="round" />
+        {extraSeries.points.map((pt, idx) => (
+          <circle
+            key={`pt-${extraSeries.id}-${idx}`}
+            cx={pt.x}
+            cy={pt.y}
+            r={4}
+            fill={extraSeries.color}
+            stroke="#fff"
+            strokeWidth={1}
+            onMouseEnter={() => {
+              const value = (Number(data[idx].totals?.nascimentosProprios || 0) || 0) + (Number(data[idx].totals?.obitosProprios || 0) || 0);
+              setHover({ x: pt.x, y: pt.y, value, label: data[idx].label, color: extraSeries.color });
+            }}
+            onMouseLeave={() => setHover(null)}
+          />
+        ))}
+      </g>
       {data.map((entry, index) => {
         const x = padding + (data.length === 1 ? plotWidth / 2 : xStep * index);
         return (
@@ -391,6 +426,10 @@ export default function HistoricoNasObModal({ open, onClose }) {
                       <span>{category.label}</span>
                     </div>
                   ))}
+                  <div key="propriosTotal" style={legendItemStyle}>
+                    <span style={{ ...legendDotStyle, background: '#ef4444' }} />
+                    <span>Nasc.+Óbitos Próprios</span>
+                  </div>
                 </div>
               </div>
             </>
