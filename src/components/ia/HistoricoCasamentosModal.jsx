@@ -210,7 +210,15 @@ export default function HistoricoCasamentosModal({ open, onClose }) {
     return () => { cancelled = true; };
   }, [open, monthsRange]);
 
-  const summary = useMemo(() => categories.map((category) => ({ ...category, total: historico.reduce((acc, e) => acc + (e.totals[category.id] ?? 0), 0) })), [historico]);
+  const summary = useMemo(() => {
+    const windowSize = 3;
+    const n = Math.min(windowSize, historico.length);
+    const start = Math.max(0, historico.length - n);
+    return categories.map((category) => {
+      const total = historico.slice(start).reduce((acc, e) => acc + (e.totals[category.id] ?? 0), 0);
+      return { ...category, total };
+    });
+  }, [historico]);
 
   if (!open) return null;
 
