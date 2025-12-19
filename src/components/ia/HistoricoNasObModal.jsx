@@ -89,6 +89,8 @@ function SimpleLineChart({ data = [] }) {
   const safeMax = Math.max(maxValue, 1);
   const xStep = data.length > 1 ? plotWidth / (data.length - 1) : 0;
 
+  const [hover, setHover] = React.useState(null);
+
   const seriesPaths = categories.map((category) => {
     const points = data.map((entry, index) => {
       const value = entry.totals[category.id] ?? 0;
@@ -130,7 +132,22 @@ function SimpleLineChart({ data = [] }) {
         </g>
       ))}
       {seriesPaths.map((series) => (
-        <path key={series.id} d={series.path} fill="none" stroke={series.color} strokeWidth={2} strokeLinecap="round" />
+        <g key={series.id}>
+          <path d={series.path} fill="none" stroke={series.color} strokeWidth={2} strokeLinecap="round" />
+          {series.points.map((pt, idx) => (
+            <circle
+              key={`pt-${series.id}-${idx}`}
+              cx={pt.x}
+              cy={pt.y}
+              r={4}
+              fill={series.color}
+              stroke="#fff"
+              strokeWidth={1}
+              onMouseEnter={() => setHover({ x: pt.x, y: pt.y, value: data[idx].totals[series.id] ?? 0, label: data[idx].label, color: series.color })}
+              onMouseLeave={() => setHover(null)}
+            />
+          ))}
+        </g>
       ))}
       {data.map((entry, index) => {
         const x = padding + (data.length === 1 ? plotWidth / 2 : xStep * index);
@@ -140,6 +157,22 @@ function SimpleLineChart({ data = [] }) {
           </text>
         );
       })}
+      {hover && (
+        <g pointerEvents="none">
+          <rect
+            x={Math.max(padding, Math.min( width - padding - 80, hover.x - 40 ))}
+            y={hover.y - 36}
+            width={80}
+            height={28}
+            rx={6}
+            fill="#ffffff"
+            stroke="#0f172a"
+          />
+          <text x={Math.max(padding + 8, Math.min( width - padding - 16, hover.x ))} y={hover.y - 16} fontSize={12} fill="#0f172a" textAnchor="middle" fontWeight={700}>
+            {String(hover.value)}
+          </text>
+        </g>
+      )}
     </svg>
   );
 }
