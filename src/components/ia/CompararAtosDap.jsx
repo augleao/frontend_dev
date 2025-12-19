@@ -4,6 +4,12 @@ import { apiURL } from '../../config';
 
 function padMonthValue(value) { return String(value).padStart(2, '0'); }
 function buildMonthKey(year, month) { return `${year}-${padMonthValue(month)}`; }
+function getFinalToken(s) {
+  if (!s || typeof s !== 'string') return '';
+  const parts = s.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '';
+  return parts[parts.length - 1].replace(/[^\p{L}\p{N}_-]+/gu, '');
+}
 function getLastMonths(n) {
   const today = new Date();
   const months = [];
@@ -16,6 +22,8 @@ function getLastMonths(n) {
 
 async function fetchAtosMes({ year, month }) {
   const token = localStorage.getItem('token');
+  let usuario = {};
+  try { usuario = JSON.parse(localStorage.getItem('usuario') || '{}'); } catch (_) { usuario = {}; }
   const start = `${year}-${padMonthValue(month)}-01`;
   const end = `${year}-${padMonthValue(month)}-${padMonthValue(new Date(year, month, 0).getDate())}`;
   const params = new URLSearchParams({ dataInicial: start, dataFinal: end, tributacao: '01' });
@@ -25,8 +33,19 @@ async function fetchAtosMes({ year, month }) {
   const data = await res.json();
   if (!res.ok) throw new Error(data?.message || 'Erro ao buscar atos');
   const atos = Array.isArray(data.atos) ? data.atos : [];
+  const userToken = String(getFinalToken(usuario?.serventia || usuario?.nome_abreviado || usuario?.nomeAbreviado || usuario?.serventiaNome || '')).toLowerCase();
+  const atosFiltrados = userToken
+    ? atos.filter((ato) => {
+        const servDisplay = ato?.serventia || ato?.serventia_nome || ato?.serventiaNome || ato?.serventiaAbreviada || ato?.cartorio || ato?.cartorio_nome || ato?.cartorioNome || '';
+        const finalToken = String(getFinalToken(servDisplay || '')).toLowerCase();
+        return finalToken && userToken.includes(finalToken);
+      })
+    : atos;
+  if (userToken) {
+    console.log('[CompararAtosDap] filtro serventia atos sistema', { total: atos.length, filtrados: atosFiltrados.length, userToken, sample: atosFiltrados.slice(0, 3) });
+  }
   const counts = {};
-  atos.forEach((ato) => {
+  atosFiltrados.forEach((ato) => {
     const codigo = String(ato.codigo || ato.codigo_ato || '').trim();
     const trib = String(ato.tributacao || ato.tributacao_codigo || '').padStart(2, '0');
     const qty = Number(ato.quantidade || 0) || 0;
@@ -56,12 +75,6 @@ export default function CompararAtosDap() {
         // descobrir token de serventia do usuário logado (mesma lógica usada em outros componentes)
         let usuario = {};
         try { usuario = JSON.parse(localStorage.getItem('usuario') || '{}'); } catch (_) { usuario = {}; }
-        const getFinalToken = (s) => {
-          if (!s || typeof s !== 'string') return '';
-          const parts = s.trim().split(/\s+/).filter(Boolean);
-          if (parts.length === 0) return '';
-          return parts[parts.length - 1].replace(/[^\p{L}\p{N}_-]+/gu, '');
-        };
         const userToken = String(getFinalToken(usuario?.serventia || usuario?.nome_abreviado || usuario?.nomeAbreviado || usuario?.serventiaNome || '')).toLowerCase();
 
         // DAPs do mês selecionado
