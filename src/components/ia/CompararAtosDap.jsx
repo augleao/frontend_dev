@@ -61,17 +61,22 @@ export default function CompararAtosDap() {
           try {
             const listResp = await listDaps({ ano: m.year, mes: m.month });
             const items = Array.isArray(listResp.items) ? listResp.items : [];
+            console.log('[CompararAtosDap] listDaps mês', { ano: m.year, mes: m.month, total: items.length, sample: items.slice(0, 3) });
             const promises = items.map((dap) => getDapById(dap.id).then((full) => ({ dap, full })).catch((e) => ({ dap, error: e })));
             const results = await Promise.allSettled(promises);
             results.forEach((r) => {
               if (r.status !== 'fulfilled') return;
               const res = r.value;
-              if (!res || res.error || !res.full) return;
+              if (!res || res.error || !res.full) {
+                console.error('[CompararAtosDap] erro detalhe DAP', { dap: res?.dap, error: res?.error });
+                return;
+              }
               const meta = res.dap || res.full;
               const { ano, mes } = parseYM(meta);
               const key = buildMonthKey(ano, mes);
               if (key !== m.key) return;
               const periodos = res.full.periodos ?? res.full.dap_periodos ?? [];
+              console.log('[CompararAtosDap] detalhe DAP agregado', { dapId: meta?.id, key, periodos: periodos.length });
               periodos.forEach((pItem) => {
                 const atos = pItem.atos ?? pItem.dap_atos ?? [];
                 atos.forEach((ato) => {
