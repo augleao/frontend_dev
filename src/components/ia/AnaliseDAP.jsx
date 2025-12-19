@@ -8,6 +8,7 @@ import DapDetailsDrawer from '../dap/DapDetailsDrawer';
 import { identificarTipo, analisarExigencia, gerarTextoAverbacao } from '../servicos/IAWorkflowService';
 import ModalTerminalIA from './ModalTerminalIA';
 import HistoricoNasObModal from './HistoricoNasObModal';
+import HistoricoCasamentosModal from './HistoricoCasamentosModal';
 
 const currentYear = new Date().getFullYear();
 
@@ -30,6 +31,7 @@ function AnaliseDAP() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalIndexador, setModalIndexador] = useState('');
   const [historicoNasObOpen, setHistoricoNasObOpen] = useState(false);
+  const [historicoCasamentosOpen, setHistoricoCasamentosOpen] = useState(false);
   const selectedDaps = useMemo(() => (Array.isArray(daps) && Array.isArray(selectedIds) ? daps.filter((x) => selectedIds.includes(x.id)) : []), [daps, selectedIds]);
 
   useEffect(() => {
@@ -468,6 +470,13 @@ function AnaliseDAP() {
         >
           Histórico de Nas/OB
         </button>
+        <button
+          type="button"
+          onClick={() => setHistoricoCasamentosOpen(true)}
+          style={{ ...iaButtonStyle, background: 'linear-gradient(135deg,#0ea5e9,#0284c7)' }}
+        >
+          Casamentos
+        </button>
       </div>
 
       <DapTable
@@ -510,6 +519,10 @@ function AnaliseDAP() {
       <HistoricoNasObModal
         open={historicoNasObOpen}
         onClose={() => setHistoricoNasObOpen(false)}
+      />
+      <HistoricoCasamentosModal
+        open={historicoCasamentosOpen}
+        onClose={() => setHistoricoCasamentosOpen(false)}
       />
 
       <DapDetailsDrawer
