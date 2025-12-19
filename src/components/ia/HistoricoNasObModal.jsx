@@ -172,6 +172,26 @@ export default function HistoricoNasObModal({ open, onClose }) {
         const listResp = await listDaps({});
         const items = Array.isArray(listResp.items) ? listResp.items : [];
         console.log('[HistoricoNasObModal] listDaps result', { total: items.length, sample: items.slice(0, 5), rawMeta: listResp.meta });
+        // Filter by current user's serventia (same approach used in AnaliseDAP)
+        let usuario = {};
+        try { usuario = JSON.parse(localStorage.getItem('usuario') || '{}'); } catch (_) { usuario = {}; }
+        const userServentiaAbreviada = usuario?.serventia || usuario?.nome_abreviado || usuario?.nomeAbreviado || usuario?.serventiaNome || '';
+        const getFinalToken = (s) => {
+          if (!s || typeof s !== 'string') return '';
+          const parts = s.trim().split(/\s+/).filter(Boolean);
+          if (parts.length === 0) return '';
+          return parts[parts.length - 1].replace(/[^\p{L}\p{N}_-]+/gu, '');
+        };
+        const userToken = String(getFinalToken(userServentiaAbreviada || usuario?.serventia || '')).toLowerCase();
+        let filteredItems = items;
+        if (userToken) {
+          filteredItems = items.filter((dap) => {
+            const servDisplay = dap?.serventia_nome ?? dap?.serventiaNome ?? dap?.serventia ?? dap?.nome_serventia ?? dap?.nomeServentia ?? '';
+            const finalToken = String(getFinalToken(servDisplay || '')).toLowerCase();
+            return finalToken && userToken.includes(finalToken);
+          });
+          console.log('[HistoricoNasObModal] filtered DAPs by serventia', { userToken, before: items.length, after: filteredItems.length });
+        }
         // helper to parse year/month from dap record (similar to AnaliseDAP)
         const parseYearMonth = (dap) => {
           const anoCandidates = [dap?.ano_referencia, dap?.ano, dap?.ano_ref, dap?.anoReferencia, dap?.ano_referente];
@@ -191,7 +211,7 @@ export default function HistoricoNasObModal({ open, onClose }) {
           return set;
         }()));
 
-        const toFetch = items.filter((dap) => {
+        const toFetch = filteredItems.filter((dap) => {
           const pm = parseYearMonth(dap);
           const key = buildMonthKey(pm.ano, pm.mes);
           return monthsSet.has(key);
