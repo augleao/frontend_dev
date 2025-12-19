@@ -171,6 +171,7 @@ export default function HistoricoNasObModal({ open, onClose }) {
         // 1) get DAP list and filter by months we need
         const listResp = await listDaps({});
         const items = Array.isArray(listResp.items) ? listResp.items : [];
+        console.log('[HistoricoNasObModal] listDaps result', { total: items.length, sample: items.slice(0, 5), rawMeta: listResp.meta });
         // helper to parse year/month from dap record (similar to AnaliseDAP)
         const parseYearMonth = (dap) => {
           const anoCandidates = [dap?.ano_referencia, dap?.ano, dap?.ano_ref, dap?.anoReferencia, dap?.ano_referente];
@@ -195,6 +196,7 @@ export default function HistoricoNasObModal({ open, onClose }) {
           const key = buildMonthKey(pm.ano, pm.mes);
           return monthsSet.has(key);
         });
+        console.log('[HistoricoNasObModal] DAPs matching monthsRange', { monthsRange, candidates: toFetch.length, sample: toFetch.slice(0, 5) });
 
         // 2) for each DAP matching range, fetch full details and update aggregates progressively
         const promises = toFetch.map((dap) => getDapById(dap.id).then((full) => ({ dap, full })).catch((e) => ({ dap, error: e })));
@@ -229,6 +231,7 @@ export default function HistoricoNasObModal({ open, onClose }) {
                     }
                   });
                 });
+                console.log('[HistoricoNasObModal] dap details processed', { dapId: meta.id || meta?.dap_id || meta?.id, key, counts });
                 // apply counts to historico state
                 setHistorico((prev) => {
                   const next = prev.map((m) => ({ ...m, totals: { ...m.totals } }));
@@ -241,10 +244,14 @@ export default function HistoricoNasObModal({ open, onClose }) {
                   return next;
                 });
               } catch (e) {
-                // ignore per-dap errors
+                console.error('[HistoricoNasObModal] erro processando dap', { error: e, dap: res.dap });
               }
+            } else if (res && res.error) {
+              console.error('[HistoricoNasObModal] erro ao obter detalhes da DAP', { dap: res.dap, error: res.error });
             }
-          }).catch(() => {});
+          }).catch((err) => {
+            console.error('[HistoricoNasObModal] promise erro', err);
+          });
         });
 
         // wait all to finish to clear loading (but we updated progressively above)
