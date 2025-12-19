@@ -57,12 +57,31 @@ export default function CompararAtosDap() {
           return { ano, mes };
         };
 
+        // descobrir token de serventia do usuário logado (mesma lógica usada em outros componentes)
+        let usuario = {};
+        try { usuario = JSON.parse(localStorage.getItem('usuario') || '{}'); } catch (_) { usuario = {}; }
+        const getFinalToken = (s) => {
+          if (!s || typeof s !== 'string') return '';
+          const parts = s.trim().split(/\s+/).filter(Boolean);
+          if (parts.length === 0) return '';
+          return parts[parts.length - 1].replace(/[^\p{L}\p{N}_-]+/gu, '');
+        };
+        const userToken = String(getFinalToken(usuario?.serventia || usuario?.nome_abreviado || usuario?.nomeAbreviado || usuario?.serventiaNome || '')).toLowerCase();
+
         for (const m of months) {
           try {
             const listResp = await listDaps({ ano: m.year, mes: m.month });
             const items = Array.isArray(listResp.items) ? listResp.items : [];
-            console.log('[CompararAtosDap] listDaps mês', { ano: m.year, mes: m.month, total: items.length, sample: items.slice(0, 3) });
-            const promises = items.map((dap) => {
+            let filteredItems = items;
+            if (userToken) {
+              filteredItems = items.filter((dap) => {
+                const servDisplay = dap?.serventia_nome ?? dap?.serventiaNome ?? dap?.serventia ?? dap?.nome_serventia ?? dap?.nomeServentia ?? '';
+                const finalToken = String(getFinalToken(servDisplay || '')).toLowerCase();
+                return finalToken && userToken.includes(finalToken);
+              });
+            }
+            console.log('[CompararAtosDap] listDaps mês', { ano: m.year, mes: m.month, total: items.length, filtered: filteredItems.length, userToken, sample: filteredItems.slice(0, 3) });
+            const promises = filteredItems.map((dap) => {
               console.log('[CompararAtosDap] getDapById start', { dapId: dap.id, ano: m.year, mes: m.month });
               return getDapById(dap.id).then((full) => ({ dap, full })).catch((e) => ({ dap, error: e }));
             });
