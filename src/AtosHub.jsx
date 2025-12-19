@@ -30,6 +30,14 @@ function AtosHub() {
       route: '/pesquisa-atos-praticados'
     },
     {
+      id: 'comparar-atos-dap',
+      title: 'COMPARAR ATOS x DAP',
+      description: 'Compare atos pagos (tributação 01) lançados no sistema versus DAP por código/mês',
+      icon: '📊',
+      color: '#0ea5e9',
+      route: '/comparar-atos-dap'
+    },
+    {
       id: 'conciliacao',
       title: 'CONCILIAÇÃO ATOS PAGOS',
       description: 'Realize a conciliação e fechamento dos atos pagos',

@@ -48,6 +48,7 @@ import RelatoriosObrigatorios from './components/RelatoriosObrigatorios';
 import Relatorios from './Relatorios';
 import AnaliseDAP from './components/ia/AnaliseDAP';
 import AtosTabelaManager from './components/admin/AtosTabelaManager';
+import CompararAtosDap from './components/ia/CompararAtosDap';
 
 
 
@@ -153,6 +154,14 @@ function App() {
              <AtosPraticados />
            </PrivateRoute>
          }
+        />
+        <Route
+          path="/comparar-atos-dap"
+          element={
+            <PrivateRoute>
+              <CompararAtosDap />
+            </PrivateRoute>
+          }
         />
         <Route
           path="/relatorio-cnj"
