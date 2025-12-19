@@ -79,6 +79,7 @@ function normalizeMonthPayload(month = {}) {
 }
 
 function SimpleLineChart({ data = [] }) {
+  const [hover, setHover] = useState(null);
   if (!Array.isArray(data) || data.length === 0) return null;
   const width = 720;
   const height = 260;
@@ -89,7 +90,7 @@ function SimpleLineChart({ data = [] }) {
   const safeMax = Math.max(maxValue, 1);
   const xStep = data.length > 1 ? plotWidth / (data.length - 1) : 0;
 
-  const [hover, setHover] = React.useState(null);
+  
 
   const seriesPaths = categories.map((category) => {
     const points = data.map((entry, index) => {
