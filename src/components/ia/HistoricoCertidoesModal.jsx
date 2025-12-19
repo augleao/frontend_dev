@@ -6,6 +6,7 @@ const categories = [
   { id: 'certidoesGratis', label: 'Certidões Gratuitas (7802, trib 11)', color: '#2563eb' },
   { id: 'transmissaoPaga', label: 'Transmissão de Dados Paga (7140, trib 01)', color: '#16a34a' },
   { id: 'transmissaoGratis', label: 'Transmissão de Dados Gratuita (7140, trib 11)', color: '#c026d3' },
+  { id: 'certidoesInteiroPago', label: 'Certidões Inteiro Teor Pagas (7803, trib 01)', color: '#fb923c' },
 ];
 
 function padMonthValue(value) { return String(value).padStart(2, '0'); }
@@ -145,7 +146,7 @@ export default function HistoricoCertidoesModal({ open, onClose }) {
                 const full = res.full; const meta = res.dap || full;
                 const pm = parseYearMonth(meta); const key = buildMonthKey(pm.ano, pm.mes);
                 const periodos = full.periodos ?? full.dap_periodos ?? [];
-                const counts = { certidoesPago: 0, certidoesGratis: 0, transmissaoPaga: 0, transmissaoGratis: 0 };
+                const counts = { certidoesPago: 0, certidoesGratis: 0, transmissaoPaga: 0, transmissaoGratis: 0, certidoesInteiroPago: 0 };
                 periodos.forEach((pItem) => {
                   const atos = pItem.atos ?? pItem.dap_atos ?? [];
                   atos.forEach((ato) => {
@@ -155,6 +156,9 @@ export default function HistoricoCertidoesModal({ open, onClose }) {
                     if (code === '7802') {
                       if (tribNum === 1) counts.certidoesPago += qty;
                       if (tribNum === 11) counts.certidoesGratis += qty;
+                    }
+                    if (code === '7803') {
+                      if (tribNum === 1) counts.certidoesInteiroPago += qty;
                     }
                     if (code === '7140') {
                       if (tribNum === 1) counts.transmissaoPaga += qty;
@@ -168,6 +172,7 @@ export default function HistoricoCertidoesModal({ open, onClose }) {
                   if (idx === -1) return next;
                   next[idx].totals.certidoesPago = (next[idx].totals.certidoesPago || 0) + counts.certidoesPago;
                   next[idx].totals.certidoesGratis = (next[idx].totals.certidoesGratis || 0) + counts.certidoesGratis;
+                  next[idx].totals.certidoesInteiroPago = (next[idx].totals.certidoesInteiroPago || 0) + counts.certidoesInteiroPago;
                   next[idx].totals.transmissaoPaga = (next[idx].totals.transmissaoPaga || 0) + counts.transmissaoPaga;
                   next[idx].totals.transmissaoGratis = (next[idx].totals.transmissaoGratis || 0) + counts.transmissaoGratis;
                   return next;
