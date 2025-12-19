@@ -34,6 +34,7 @@ async function fetchAtosMes({ year, month }) {
   if (!res.ok) throw new Error(data?.message || 'Erro ao buscar atos');
   const atos = Array.isArray(data.atos) ? data.atos : [];
   const userToken = String(getFinalToken(usuario?.serventia || usuario?.nome_abreviado || usuario?.nomeAbreviado || usuario?.serventiaNome || '')).toLowerCase();
+  console.log('[CompararAtosDap] fetchAtosMes retorno bruto', { year, month, total: atos.length, userToken, sample: atos.slice(0, 3) });
   const atosFiltrados = userToken
     ? atos.filter((ato) => {
         const servDisplay = ato?.serventia || ato?.serventia_nome || ato?.serventiaNome || ato?.serventiaAbreviada || ato?.cartorio || ato?.cartorio_nome || ato?.cartorioNome || '';
@@ -41,8 +42,9 @@ async function fetchAtosMes({ year, month }) {
         return finalToken && userToken.includes(finalToken);
       })
     : atos;
-  if (userToken) {
-    console.log('[CompararAtosDap] filtro serventia atos sistema', { total: atos.length, filtrados: atosFiltrados.length, userToken, sample: atosFiltrados.slice(0, 3) });
+  console.log('[CompararAtosDap] filtro serventia atos sistema', { total: atos.length, filtrados: atosFiltrados.length, userToken, sample: atosFiltrados.slice(0, 3) });
+  if (userToken && atos.length > 0 && atosFiltrados.length === 0) {
+    console.warn('[CompararAtosDap] nenhum ato ficou após filtro de serventia; verifique campos de serventia no payload');
   }
   const counts = {};
   atosFiltrados.forEach((ato) => {
