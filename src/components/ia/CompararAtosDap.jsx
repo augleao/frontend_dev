@@ -52,8 +52,8 @@ export default function CompararAtosDap() {
         // 1) DAPs por mês (backend requer ano/mes na consulta)
         const dapAgg = months.reduce((acc, m) => ({ ...acc, [m.key]: {} }), {});
         const parseYM = (dap) => {
-          const ano = Number(dap?.ano_referencia ?? dap?.ano ?? dap?.ano_ref ?? 0) || 0;
-          const mes = Number(dap?.mes_referencia ?? dap?.mes ?? dap?.mes_ref ?? 0) || 0;
+          const ano = Number(dap?.ano_referencia ?? dap?.anoReferencia ?? dap?.ano ?? dap?.ano_ref ?? 0) || 0;
+          const mes = Number(dap?.mes_referencia ?? dap?.mesReferencia ?? dap?.mes ?? dap?.mes_ref ?? 0) || 0;
           return { ano, mes };
         };
 
@@ -62,7 +62,10 @@ export default function CompararAtosDap() {
             const listResp = await listDaps({ ano: m.year, mes: m.month });
             const items = Array.isArray(listResp.items) ? listResp.items : [];
             console.log('[CompararAtosDap] listDaps mês', { ano: m.year, mes: m.month, total: items.length, sample: items.slice(0, 3) });
-            const promises = items.map((dap) => getDapById(dap.id).then((full) => ({ dap, full })).catch((e) => ({ dap, error: e })));
+            const promises = items.map((dap) => {
+              console.log('[CompararAtosDap] getDapById start', { dapId: dap.id, ano: m.year, mes: m.month });
+              return getDapById(dap.id).then((full) => ({ dap, full })).catch((e) => ({ dap, error: e }));
+            });
             const results = await Promise.allSettled(promises);
             results.forEach((r) => {
               if (r.status !== 'fulfilled') return;
@@ -76,7 +79,7 @@ export default function CompararAtosDap() {
               const key = buildMonthKey(ano, mes);
               if (key !== m.key) return;
               const periodos = res.full.periodos ?? res.full.dap_periodos ?? [];
-              console.log('[CompararAtosDap] detalhe DAP agregado', { dapId: meta?.id, key, periodos: periodos.length });
+              console.log('[CompararAtosDap] detalhe DAP agregado', { dapId: meta?.id, key, periodos: periodos.length, atos: periodos.flatMap((p) => p.atos ?? p.dap_atos ?? []).length });
               periodos.forEach((pItem) => {
                 const atos = pItem.atos ?? pItem.dap_atos ?? [];
                 atos.forEach((ato) => {
