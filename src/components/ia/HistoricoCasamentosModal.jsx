@@ -173,9 +173,22 @@ export default function HistoricoCasamentosModal({ open, onClose }) {
                   next[idx].totals.casamentosGratis = (next[idx].totals.casamentosGratis || 0) + counts.casamentosGratis;
                   next[idx].totals.habilitacaoPaga = (next[idx].totals.habilitacaoPaga || 0) + counts.habilitacaoPaga;
                   next[idx].totals.habilitacaoGratis = (next[idx].totals.habilitacaoGratis || 0) + counts.habilitacaoGratis;
-                  // derived: casamentos a realizar = habilitacoes acumuladas - registros acumulados (clamped to 0)
-                  next[idx].totals.casamentosARealizarPago = Math.max(0, (next[idx].totals.habilitacaoPaga || 0) - (next[idx].totals.casamentosPago || 0));
-                  next[idx].totals.casamentosARealizarGratis = Math.max(0, (next[idx].totals.habilitacaoGratis || 0) - (next[idx].totals.casamentosGratis || 0));
+
+                  // recompute derived series using a 3-month rolling window ending at each month
+                  const windowSize = 3;
+                  for (let i = 0; i < next.length; i += 1) {
+                    const start = Math.max(0, i - (windowSize - 1));
+                    let sumHabilPaga = 0; let sumHabilGratis = 0; let sumRegPago = 0; let sumRegGratis = 0;
+                    for (let j = start; j <= i; j += 1) {
+                      sumHabilPaga += Number(next[j].totals.habilitacaoPaga || 0) || 0;
+                      sumHabilGratis += Number(next[j].totals.habilitacaoGratis || 0) || 0;
+                      sumRegPago += Number(next[j].totals.casamentosPago || 0) || 0;
+                      sumRegGratis += Number(next[j].totals.casamentosGratis || 0) || 0;
+                    }
+                    next[i].totals.casamentosARealizarPago = Math.max(0, sumHabilPaga - sumRegPago);
+                    next[i].totals.casamentosARealizarGratis = Math.max(0, sumHabilGratis - sumRegGratis);
+                  }
+
                   return next;
                 });
               } catch (e) {
