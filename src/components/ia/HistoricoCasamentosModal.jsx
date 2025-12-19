@@ -6,6 +6,9 @@ const categories = [
   { id: 'casamentosGratis', label: 'Registros de Casamento Gratuito (7701, trib 11)', color: '#2563eb' },
   { id: 'habilitacaoPaga', label: 'Habilitação Casamento Paga (7101, trib 01)', color: '#16a34a' },
   { id: 'habilitacaoGratis', label: 'Habilitação Casamento Gratuita (7101, trib 11)', color: '#c026d3' },
+  // derived series: habilitacoes acumuladas - registros acumulados (clamped >= 0)
+  { id: 'casamentosARealizarPago', label: 'Casamentos a realizar (trib 01)', color: '#ef4444', dashed: true },
+  { id: 'casamentosARealizarGratis', label: 'Casamentos a realizar (trib 11)', color: '#fb7185', dashed: true },
 ];
 
 function padMonthValue(value) { return String(value).padStart(2, '0'); }
@@ -32,14 +35,7 @@ function SimpleLineChart({ data = [] }) {
   const width = 720; const height = 260; const padding = 40;
   const plotWidth = width - padding * 2; const plotHeight = height - padding * 2;
   const rawMax = Math.max(...data.flatMap((entry) => categories.map((c) => entry.totals[c.id] ?? 0)), 0);
-  const extraMax = Math.max(...data.map((entry) => {
-    const v1 = Number(entry.totals?.casamentosPago || 0) || 0;
-    const v2 = Number(entry.totals?.casamentosGratis || 0) || 0;
-    const v3 = Number(entry.totals?.habilitacaoPaga || 0) || 0;
-    const v4 = Number(entry.totals?.habilitacaoGratis || 0) || 0;
-    return Math.max(v1, v2, v3, v4);
-  }), 0);
-  const combinedMax = Math.max(rawMax, extraMax, 1);
+  const combinedMax = Math.max(rawMax, 1);
   const paddedMax = Math.ceil(combinedMax * 1.12);
   const xStep = data.length > 1 ? plotWidth / (data.length - 1) : 0;
 
@@ -67,7 +63,7 @@ function SimpleLineChart({ data = [] }) {
       ))}
       {seriesPaths.map((series) => (
         <g key={series.id}>
-          <path d={series.path} fill="none" stroke={series.color} strokeWidth={2} strokeLinecap="round" />
+          <path d={series.path} fill="none" stroke={series.color} strokeWidth={2} strokeLinecap="round" strokeDasharray={series.dashed ? '6 4' : undefined} />
           {series.points.map((pt, idx) => (
             <circle key={`pt-${series.id}-${idx}`} cx={pt.x} cy={pt.y} r={4} fill={series.color} stroke="#fff" strokeWidth={1}
               onMouseEnter={() => setHover({ x: pt.x, y: pt.y, value: data[idx].totals[series.id] ?? 0, label: data[idx].label, color: series.color })}
@@ -177,6 +173,9 @@ export default function HistoricoCasamentosModal({ open, onClose }) {
                   next[idx].totals.casamentosGratis = (next[idx].totals.casamentosGratis || 0) + counts.casamentosGratis;
                   next[idx].totals.habilitacaoPaga = (next[idx].totals.habilitacaoPaga || 0) + counts.habilitacaoPaga;
                   next[idx].totals.habilitacaoGratis = (next[idx].totals.habilitacaoGratis || 0) + counts.habilitacaoGratis;
+                  // derived: casamentos a realizar = habilitacoes acumuladas - registros acumulados (clamped to 0)
+                  next[idx].totals.casamentosARealizarPago = Math.max(0, (next[idx].totals.habilitacaoPaga || 0) - (next[idx].totals.casamentosPago || 0));
+                  next[idx].totals.casamentosARealizarGratis = Math.max(0, (next[idx].totals.habilitacaoGratis || 0) - (next[idx].totals.casamentosGratis || 0));
                   return next;
                 });
               } catch (e) {
