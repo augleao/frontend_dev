@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getHistoricoNasOb } from '../../services/dapService';
+import { listDaps, getDapById } from '../../services/dapService';
 
 const categories = [
   {
@@ -146,6 +146,7 @@ function SimpleLineChart({ data = [] }) {
 
 export default function HistoricoNasObModal({ open, onClose }) {
   const [historico, setHistorico] = useState(buildEmptyHistory);
+  const [monthsRange, setMonthsRange] = useState(12);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -154,46 +155,113 @@ export default function HistoricoNasObModal({ open, onClose }) {
     let cancelled = false;
     setLoading(true);
     setError('');
-    console.log('[HistoricoNasObModal] aberto -> fetch historico');
+    setHistorico(() => {
+      // build months array according to monthsRange
+      const today = new Date();
+      const months = [];
+      for (let offset = monthsRange - 1; offset >= 0; offset -= 1) {
+        const cursor = new Date(today.getFullYear(), today.getMonth() - offset, 1);
+        months.push({ year: cursor.getFullYear(), month: cursor.getMonth() + 1, key: buildMonthKey(cursor.getFullYear(), cursor.getMonth() + 1), label: `${padMonthValue(cursor.getMonth() + 1)}/${cursor.getFullYear()}`, totals: categories.reduce((acc, c) => ({ ...acc, [c.id]: 0 }), {}) });
+      }
+      return months;
+    });
+
     (async () => {
       try {
-        const payload = await getHistoricoNasOb();
-        console.log('[HistoricoNasObModal] payload bruto', payload);
-        if (cancelled) return;
-        const months = Array.isArray(payload?.months) && payload.months.length > 0
-          ? payload.months.map((month) => normalizeMonthPayload(month))
-          : buildEmptyHistory();
-        console.log('[HistoricoNasObModal] meses normalizados', months);
-        setHistorico(months);
-      } catch (err) {
-        console.error('[HistoricoNasObModal] erro ao carregar historico', {
-          message: err?.message,
-          status: err?.response?.status,
-          data: err?.response?.data,
+        // 1) get DAP list and filter by months we need
+        const listResp = await listDaps({});
+        const items = Array.isArray(listResp.items) ? listResp.items : [];
+        // helper to parse year/month from dap record (similar to AnaliseDAP)
+        const parseYearMonth = (dap) => {
+          const anoCandidates = [dap?.ano_referencia, dap?.ano, dap?.ano_ref, dap?.anoReferencia, dap?.ano_referente];
+          const mesCandidates = [dap?.mes_referencia, dap?.mes, dap?.mes_ref, dap?.mesReferencia, dap?.mes_referente];
+          const anoVal = Number(anoCandidates.find((v) => v !== undefined && v !== null && v !== '') ?? 0) || 0;
+          const mesVal = Number(mesCandidates.find((v) => v !== undefined && v !== null && v !== '') ?? 0) || 0;
+          return { ano: anoVal, mes: mesVal };
+        };
+
+        const monthsSet = new Set((function buildSet() {
+          const set = new Set();
+          const today = new Date();
+          for (let offset = monthsRange - 1; offset >= 0; offset -= 1) {
+            const cursor = new Date(today.getFullYear(), today.getMonth() - offset, 1);
+            set.add(buildMonthKey(cursor.getFullYear(), cursor.getMonth() + 1));
+          }
+          return set;
+        }()));
+
+        const toFetch = items.filter((dap) => {
+          const pm = parseYearMonth(dap);
+          const key = buildMonthKey(pm.ano, pm.mes);
+          return monthsSet.has(key);
         });
-        try {
-          console.error('[HistoricoNasObModal] erro stringified', JSON.stringify({
-            message: err?.message,
-            status: err?.response?.status,
-            data: err?.response?.data,
-          }));
-        } catch (_) {
-          // ignore
-        }
-        if (!cancelled) {
-          setError('Não foi possível carregar os registros dos últimos 12 meses.');
-        }
+
+        // 2) for each DAP matching range, fetch full details and update aggregates progressively
+        const promises = toFetch.map((dap) => getDapById(dap.id).then((full) => ({ dap, full })).catch((e) => ({ dap, error: e })));
+
+        // process each promise as it resolves
+        promises.forEach((p) => {
+          p.then((res) => {
+            if (cancelled) return;
+            if (res && res.full) {
+              try {
+                const full = res.full;
+                const meta = res.dap || full;
+                const pm = parseYearMonth(meta);
+                const key = buildMonthKey(pm.ano, pm.mes);
+                // compute category counts from full.dap / full.periodos
+                const periodos = full.periodos ?? full.dap_periodos ?? [];
+                const counts = { nascimentosProprios: 0, nascimentosUI: 0, obitosProprios: 0, obitosUI: 0 };
+                periodos.forEach((pItem) => {
+                  const atos = pItem.atos ?? pItem.dap_atos ?? [];
+                  atos.forEach((ato) => {
+                    const code = String(ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '').trim();
+                    const tribRaw = ato.tributacao ?? ato.tributacao_codigo ?? ato.trib ?? ato.tributacao;
+                    const tribNum = Number(tribRaw);
+                    const qty = Number(ato.quantidade ?? ato.qtde ?? ato.qtd ?? 0) || 0;
+                    if (code === '9101') {
+                      if (tribNum === 26) counts.nascimentosProprios += qty;
+                      if (tribNum === 29) counts.nascimentosUI += qty;
+                    }
+                    if (code === '9201') {
+                      if (tribNum === 26) counts.obitosProprios += qty;
+                      if (tribNum === 29) counts.obitosUI += qty;
+                    }
+                  });
+                });
+                // apply counts to historico state
+                setHistorico((prev) => {
+                  const next = prev.map((m) => ({ ...m, totals: { ...m.totals } }));
+                  const idx = next.findIndex((m) => m.key === key);
+                  if (idx === -1) return next;
+                  next[idx].totals.nascimentosProprios = (next[idx].totals.nascimentosProprios || 0) + counts.nascimentosProprios;
+                  next[idx].totals.nascimentosUI = (next[idx].totals.nascimentosUI || 0) + counts.nascimentosUI;
+                  next[idx].totals.obitosProprios = (next[idx].totals.obitosProprios || 0) + counts.obitosProprios;
+                  next[idx].totals.obitosUI = (next[idx].totals.obitosUI || 0) + counts.obitosUI;
+                  return next;
+                });
+              } catch (e) {
+                // ignore per-dap errors
+              }
+            }
+          }).catch(() => {});
+        });
+
+        // wait all to finish to clear loading (but we updated progressively above)
+        await Promise.allSettled(promises);
+      } catch (err) {
+        console.error('[HistoricoNasObModal] erro ao carregar historico via DAPs', err);
+        if (!cancelled) setError('Não foi possível carregar os registros solicitados.');
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     })();
+
     return () => {
       cancelled = true;
       console.log('[HistoricoNasObModal] efeito encerrado, requests cancelados');
     };
-  }, [open]);
+  }, [open, monthsRange]);
 
   const summary = useMemo(() => categories.map((category) => ({
     ...category,
@@ -208,8 +276,28 @@ export default function HistoricoNasObModal({ open, onClose }) {
         <div style={modalHeaderStyle}>
           <div>
             <h3 style={{ margin: 0 }}>Histórico Nas/OB</h3>
-            <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>
-              Últimos 12 meses de registros de nascimento e óbito por tipo de tributação.
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6 }}>
+              <div style={{ fontSize: 12, color: '#94a3b8' }}>Período:</div>
+              {[6, 12, 24, 48].map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMonthsRange(m)}
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: 6,
+                    border: monthsRange === m ? '2px solid #0f172a' : '1px solid #e2e8f0',
+                    background: monthsRange === m ? '#0f172a' : 'white',
+                    color: monthsRange === m ? 'white' : '#0f172a',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {m} meses
+                </button>
+              ))}
+            </div>
+            <p style={{ margin: '8px 0 0 0', fontSize: 12, color: '#94a3b8' }}>
+              Últimos {monthsRange} meses de registros de nascimento e óbito por tipo de tributação.
             </p>
           </div>
           <button type="button" onClick={onClose} style={closeButtonStyle}>
