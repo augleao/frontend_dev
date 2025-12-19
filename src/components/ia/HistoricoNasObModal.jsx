@@ -86,8 +86,15 @@ function SimpleLineChart({ data = [] }) {
   const padding = 40;
   const plotWidth = width - padding * 2;
   const plotHeight = height - padding * 2;
-  const maxValue = Math.max(...data.flatMap((entry) => categories.map((category) => entry.totals[category.id] ?? 0)));
-  const safeMax = Math.max(maxValue, 1);
+  const rawMax = Math.max(...data.flatMap((entry) => categories.map((category) => entry.totals[category.id] ?? 0)), 0);
+  const extraMax = Math.max(...data.map((entry) => {
+    const v1 = Number(entry.totals?.nascimentosProprios || 0) || 0;
+    const v2 = Number(entry.totals?.obitosProprios || 0) || 0;
+    return v1 + v2;
+  }), 0);
+  const combinedMax = Math.max(rawMax, extraMax, 1);
+  // add a little headroom so lines and markers never touch the top edge
+  const paddedMax = Math.ceil(combinedMax * 1.12);
   const xStep = data.length > 1 ? plotWidth / (data.length - 1) : 0;
 
   
@@ -96,7 +103,7 @@ function SimpleLineChart({ data = [] }) {
     const points = data.map((entry, index) => {
       const value = entry.totals[category.id] ?? 0;
       const x = padding + (data.length === 1 ? plotWidth / 2 : xStep * index);
-      const y = padding + plotHeight - (value / safeMax) * plotHeight;
+      const y = padding + plotHeight - (value / paddedMax) * plotHeight;
       return { x, y };
     });
     const path = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
@@ -113,14 +120,14 @@ function SimpleLineChart({ data = [] }) {
       const v2 = Number(entry.totals?.obitosProprios || 0) || 0;
       const value = v1 + v2;
       const x = padding + (data.length === 1 ? plotWidth / 2 : xStep * index);
-      const y = padding + plotHeight - (value / safeMax) * plotHeight;
+      const y = padding + plotHeight - (value / paddedMax) * plotHeight;
       return { x, y };
     })
   };
 
   const horizontalLines = [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
     const y = padding + plotHeight - ratio * plotHeight;
-    const value = Math.round(safeMax * ratio);
+    const value = Math.round(paddedMax * ratio);
     return { y, value };
   });
 
