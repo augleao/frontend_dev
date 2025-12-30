@@ -284,17 +284,27 @@ module.exports = function initAtosTabelasRoutes(app, pool, middlewares = {}) {
         await client.query('ROLLBACK');
         return res.status(404).json({ error: 'Não existem registros para a origem solicitada.' });
       }
-      await client.query('DELETE FROM public.atos');
-      const insertSql = `
+
+      // Em vez de apagar public.atos (que quebra FKs), promovemos via upsert.
+      const upsertSql = `
         INSERT INTO public.atos
           (codigo, descricao, emol_bruto, recompe, emol_liquido, issqn, taxa_fiscal, valor_final, origem)
         SELECT codigo, descricao, emol_bruto, recompe, emol_liquido, issqn, taxa_fiscal, valor_final, origem
         FROM public.atos_tabelas
         WHERE origem = $1
+        ON CONFLICT (codigo) DO UPDATE
+          SET descricao = EXCLUDED.descricao,
+              emol_bruto = EXCLUDED.emol_bruto,
+              recompe = EXCLUDED.recompe,
+              emol_liquido = EXCLUDED.emol_liquido,
+              issqn = EXCLUDED.issqn,
+              taxa_fiscal = EXCLUDED.taxa_fiscal,
+              valor_final = EXCLUDED.valor_final,
+              origem = EXCLUDED.origem
       `;
-      const inserted = await client.query(insertSql, [origem]);
+      const upserted = await client.query(upsertSql, [origem]);
       await client.query('COMMIT');
-      return res.json({ ok: true, origem, registros: inserted.rowCount });
+      return res.json({ ok: true, origem, registros: upserted.rowCount });
     } catch (err) {
       await client.query('ROLLBACK');
       console.error('[atos/versoes/:origem/ativar][POST] erro ao promover origem', err);
