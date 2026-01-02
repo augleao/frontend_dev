@@ -49,6 +49,7 @@ import Relatorios from './Relatorios';
 import AnaliseDAP from './components/ia/AnaliseDAP';
 import AtosTabelaManager from './components/admin/AtosTabelaManager';
 import CompararAtosDap from './components/ia/CompararAtosDap';
+import CookieConsent from './components/CookieConsent';
 
 
 
@@ -77,6 +78,7 @@ function App() {
       {/* Always scroll to top on route change to avoid new pages loading scrolled down */}
       <ScrollToTop />
       <NavBar />
+      <CookieConsent />
       <Routes>
         <Route
           path="/atos"
