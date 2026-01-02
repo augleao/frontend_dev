@@ -50,6 +50,7 @@ import AnaliseDAP from './components/ia/AnaliseDAP';
 import AtosTabelaManager from './components/admin/AtosTabelaManager';
 import CompararAtosDap from './components/ia/CompararAtosDap';
 import CookieConsent from './components/CookieConsent';
+import { trackEvent, isConsentGiven } from './utils/tracker';
 
 
 
@@ -75,6 +76,8 @@ function App() {
   return (
     <AuthProvider>
       <HashRedirector />
+      {/* Track pageviews when consent given */}
+      <TrackPageviews />
       {/* Always scroll to top on route change to avoid new pages loading scrolled down */}
       <ScrollToTop />
       <NavBar />
@@ -423,6 +426,21 @@ function App() {
       </Routes>
     </AuthProvider>
   );
+}
+
+function TrackPageviews() {
+  const location = useLocation();
+  useEffect(() => {
+    try {
+      if (isConsentGiven && isConsentGiven()) {
+        trackEvent('pageview', { path: location.pathname });
+      }
+    } catch (e) {
+      // swallow
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+  return null;
 }
 
 export default App;
