@@ -1,20 +1,7 @@
 // Simple tracker endpoint: POST /api/tracker/events
 // - Pseudonimiza `uid` com HMAC-SHA256 usando TRACKER_SALT
-// - Armazena linhas JSON em um arquivo local (TRACKER_DATA_DIR) para processamento posterior
-// IMPORTANT: revise retenção/anonymization policy in production and consider DB or analytics platform.
+// - Persiste eventos em Postgres (tabela tracker_events)
 
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-
-const router = express.Router();
-
-const DATA_DIR = process.env.TRACKER_DATA_DIR || path.join(__dirname, 'tracker_data');
-const LOG_FILE = path.join(DATA_DIR, 'events.log');
-const SALT = process.env.TRACKER_SALT || 'please-change-this-salt';
-
-// ensure data dir exists
 const express = require('express');
 const crypto = require('crypto');
 
@@ -28,10 +15,15 @@ try {
     pool = require('../db');
   } catch (e2) {
     // fallback to creating our own pool when DATABASE_URL is provided
-    const { Pool } = require('pg');
-    const DATABASE_URL = process.env.DATABASE_URL || null;
-    if (DATABASE_URL) {
-      pool = new Pool({ connectionString: DATABASE_URL, ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false });
+    try {
+      const { Pool } = require('pg');
+      const DATABASE_URL = process.env.DATABASE_URL || null;
+      if (DATABASE_URL) {
+        pool = new Pool({ connectionString: DATABASE_URL, ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false });
+      }
+    } catch (pgErr) {
+      // pg not available or no DATABASE_URL; pool remains null
+      pool = null;
     }
   }
 }
