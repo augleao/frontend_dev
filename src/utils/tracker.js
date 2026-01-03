@@ -51,30 +51,25 @@ export function initTracker() {
 export async function trackEvent(name, data = {}) {
   if (doNotTrackEnabled()) return;
   if (!isConsentGiven()) return;
-  let uid;
-  try {
-    uid = localStorage.getItem(UID_KEY) || null;
-  } catch (e) {
-    uid = null;
-  }
-
   const payload = {
-    uid,
     event: name,
     path: window.location.pathname,
     ts: new Date().toISOString(),
     data
   };
 
-  // Best-effort fire-and-forget; backend should validate and anonymize
+  // Best-effort fire-and-forget; backend should read cookie (e.g. track_uid)
   try {
-    navigator.sendBeacon && typeof navigator.sendBeacon === 'function'
-      ? navigator.sendBeacon('/api/tracker/events', JSON.stringify(payload))
-      : fetch('/api/tracker/events', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }).catch(() => {});
+    if (navigator.sendBeacon && typeof navigator.sendBeacon === 'function') {
+      navigator.sendBeacon('/api/tracker/events', JSON.stringify(payload));
+    } else {
+      fetch('/api/tracker/events', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).catch(() => {});
+    }
   } catch (e) {
     // swallow errors
   }
