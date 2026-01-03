@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
+import { trackEvent, getUid } from './utils/tracker';
 import config from './config';
 
 async function checarAlertasRelatorios(token) {
@@ -61,6 +62,12 @@ function Login() {
         localStorage.setItem('token', data.token);
 
         login(data.user, data.token);
+
+        try {
+          trackEvent('login', { uid: getUid(), method: 'password' });
+        } catch (e) {
+          // ignore tracking errors
+        }
 
         await checarAlertasRelatorios(data.token);
 

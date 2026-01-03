@@ -58,6 +58,14 @@ export async function trackEvent(name, data = {}) {
     data
   };
 
+  // Log payload in devtools for login events to aid debugging
+  try {
+    if (typeof name === 'string' && name.toLowerCase().includes('login')) {
+      console.debug('tracker payload', payload);
+    }
+  } catch (e) {
+    // ignore logging errors
+  }
   // Best-effort fire-and-forget; backend should read cookie (e.g. track_uid)
   try {
     if (navigator.sendBeacon && typeof navigator.sendBeacon === 'function') {
