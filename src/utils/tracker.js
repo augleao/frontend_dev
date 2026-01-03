@@ -5,6 +5,8 @@
    - This file does NOT send any personal data; implement server-side anonymization/retention.
 */
 
+import config from '../config';
+
 const CONSENT_KEY = 'biblio_consent';
 const UID_KEY = 'biblio_uid';
 
@@ -68,10 +70,21 @@ export async function trackEvent(name, data = {}) {
   }
   // Best-effort fire-and-forget; backend should read cookie (e.g. track_uid)
   try {
+    const url = `${config.apiURL}/tracker/events`;
     if (navigator.sendBeacon && typeof navigator.sendBeacon === 'function') {
-      navigator.sendBeacon('/api/tracker/events', JSON.stringify(payload));
+      try {
+        navigator.sendBeacon(url, JSON.stringify(payload));
+      } catch (e) {
+        // if sendBeacon fails, fall back to fetch
+        fetch(url, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }).catch(() => {});
+      }
     } else {
-      fetch('/api/tracker/events', {
+      fetch(url, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
