@@ -244,7 +244,7 @@ export default function TrackerAuditoria() {
                         borderColor: color,
                         position: 'absolute',
                         width: 340,
-                        transform: `translateX(${idx * 28}px) translateY(${idx * 2}px) ${isActive ? 'scale(1)' : 'scale(0.96)'}`,
+                        transform: `translateX(${idx * 48}px) translateY(${idx * 2}px) ${isActive ? 'scale(1)' : 'scale(0.96)'}`,
                         zIndex: sortedCards.length - idx,
                         opacity: isActive ? 1 : 0.75,
                         cursor: 'pointer',
@@ -255,20 +255,23 @@ export default function TrackerAuditoria() {
                       tabIndex={0}
                     >
                       <div style={cardTop}>
-                        <div>
+                        <div style={{ fontWeight: 600, fontSize: '15px' }}>{row.user_name || '—'}</div>
+                        <div style={{ textAlign: 'right' }}>
                           <span style={{ ...pill, background: color, color: '#fff' }}>{row.event || 'evento'}</span>
-                          <div style={{ fontWeight: 600, fontSize: '15px', marginTop: 6 }}>{row.path || '-'}</div>
-                          <div style={{ color: '#6b7280', fontSize: '13px' }}>{formatDate(row.ts || row.created_at)}</div>
-                        </div>
-                        <div style={{ textAlign: 'right', minWidth: 120 }}>
-                          <div style={{ fontWeight: 600 }}>{row.user_name || '—'}</div>
-                          <div style={{ color: '#6b7280', fontSize: '12px' }}>{truncate(row.hashed_uid || (row.data && row.data.uid))}</div>
-                          <div style={{ color: '#6b7280', fontSize: '12px', marginTop: 4 }}>{row.ip || '-'}</div>
+                          <div style={{ color: '#6b7280', fontSize: '12px', marginTop: 6 }}>
+                            {row.ts ? new Date(row.ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—'}
+                          </div>
                         </div>
                       </div>
 
                       {isActive && (
                         <>
+                          <div style={{ fontSize: '13px', color: '#6b7280', borderTop: '1px solid #f1f5f9', paddingTop: 8, marginBottom: 10 }}>
+                            <div style={{ marginBottom: 6 }}><strong>Path:</strong> {row.path || '-'}</div>
+                            <div style={{ marginBottom: 6 }}><strong>Data:</strong> {formatDate(row.ts || row.created_at)}</div>
+                            <div style={{ marginBottom: 6 }}><strong>UID:</strong> {truncate(row.hashed_uid || (row.data && row.data.uid))}</div>
+                            <div><strong>IP:</strong> {row.ip || '-'}</div>
+                          </div>
                           <div style={rowLine}>UA: <span style={{ color: '#111827' }}>{truncate(row.ua, 120)}</span></div>
 
                           <button
