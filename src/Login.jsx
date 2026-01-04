@@ -71,11 +71,13 @@ function Login() {
 
         try {
           const uid = data.track_uid || getUid();
+          const userId = data?.user?.id;
+          const userName = data?.user?.nome;
           const payload = {
             event: 'login',
             path: '/login',
             ts: new Date().toISOString(),
-            data: { method: 'password', uid }
+            data: { method: 'password', uid, userId, userName }
           };
           console.debug('[tracker][login] sending', payload);
           fetch(`${config.apiURL}/tracker/events`, {
