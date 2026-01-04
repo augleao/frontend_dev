@@ -28,6 +28,20 @@ function genUid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
+function getUserInfo() {
+  try {
+    const raw = localStorage.getItem('usuario');
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return {
+      userId: parsed?.id,
+      userName: parsed?.nome,
+    };
+  } catch (e) {
+    return {};
+  }
+}
+
 export function isConsentGiven() {
   try {
     return localStorage.getItem(CONSENT_KEY) === 'true';
@@ -53,11 +67,12 @@ export function initTracker() {
 export async function trackEvent(name, data = {}) {
   if (doNotTrackEnabled()) return;
   if (!isConsentGiven()) return;
+  const userInfo = getUserInfo();
   const payload = {
     event: name,
     path: window.location.pathname,
     ts: new Date().toISOString(),
-    data: data || {}
+    data: { ...data, ...userInfo }
   };
 
   // ensure UID is present when available (helps cross-origin/beacon cases)
