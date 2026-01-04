@@ -76,12 +76,13 @@ class Tracker {
   async _sendBatch(batch) {
     // Map internal event shape to backend expected shape
     const mapped = batch.map((evt) => ({
-      // prefer a stable user identifier; fallback to sessionId to avoid backend 400 when anonymous disallowed
-      uid: evt.userId || evt.sessionId || null,
+      // identifier moved into data.uid to match backend expectations
       event: evt.eventType,
       path: evt.url || (evt.metadata && evt.metadata.route) || null,
       ts: evt.timestamp,
       data: {
+        uid: evt.userId || evt.sessionId || null,
+        email: (evt.metadata && evt.metadata.email) || null,
         sessionId: evt.sessionId,
         eventId: evt.eventId,
         metadata: evt.metadata || null,
@@ -93,28 +94,55 @@ class Tracker {
     const payload = JSON.stringify({ events: mapped });
     // prefer sendBeacon for reliability on unload
     if (navigator.sendBeacon) {
-      const blob = new Blob([payload], { type: 'application/json' });
-      const ok = navigator.sendBeacon(this.endpoint, blob);
-      if (ok) return;
+      try {
+        const blob = new Blob([payload], { type: 'application/json' });
+        const ok = navigator.sendBeacon(this.endpoint, blob);
+        if (ok) return;
+        console.warn('[tracker] sendBeacon failed, falling back to fetch');
+      } catch (e) {
+        console.warn('[tracker] sendBeacon error', e && e.message ? e.message : e);
+      }
     }
-    // fallback to fetch
-    const res = await fetch(this.endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: payload,
-      keepalive: true,
-    });
-    if (!res.ok) throw new Error('failed to send analytics');
+
+    // fallback to fetch and log server response on error for easier debugging
+    try {
+      const res = await fetch(this.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: true,
+      });
+      if (!res.ok) {
+        let bodyText = null;
+        try {
+          bodyText = await res.text();
+          try {
+            const parsed = JSON.parse(bodyText);
+            console.error('[tracker] server error', res.status, parsed);
+          } catch (e) {
+            console.error('[tracker] server error', res.status, bodyText);
+          }
+        } catch (e) {
+          console.error('[tracker] server error - unable to read body', res.status, e && e.message ? e.message : e);
+        }
+        throw new Error('failed to send analytics: ' + res.status);
+      }
+      return res;
+    } catch (err) {
+      console.error('[tracker] _sendBatch error', err && err.message ? err.message : err);
+      throw err;
+    }
   }
 
   _flushOnUnload() {
     if (this.queue.length === 0) return;
     const mapped = this.queue.map((evt) => ({
-      uid: evt.userId || evt.sessionId || null,
       event: evt.eventType,
       path: evt.url || (evt.metadata && evt.metadata.route) || null,
       ts: evt.timestamp,
       data: {
+        uid: evt.userId || evt.sessionId || null,
+        email: (evt.metadata && evt.metadata.email) || null,
         sessionId: evt.sessionId,
         eventId: evt.eventId,
         metadata: evt.metadata || null,
@@ -125,9 +153,14 @@ class Tracker {
     }));
     const payload = JSON.stringify({ events: mapped });
     if (navigator.sendBeacon) {
-      const blob = new Blob([payload], { type: 'application/json' });
-      navigator.sendBeacon(this.endpoint, blob);
-      this.queue = [];
+      try {
+        const blob = new Blob([payload], { type: 'application/json' });
+        const ok = navigator.sendBeacon(this.endpoint, blob);
+        if (!ok) console.warn('[tracker] sendBeacon returned false on unload');
+        this.queue = [];
+      } catch (e) {
+        console.warn('[tracker] sendBeacon error on unload', e && e.message ? e.message : e);
+      }
     } else {
       // best-effort synchronous XHR fallback (deprecated but may help)
       try {
