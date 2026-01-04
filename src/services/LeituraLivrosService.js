@@ -19,7 +19,6 @@ export default {
         acao: opts.acao,
         cns: opts.cns,
         tipoRegistro: opts.tipoRegistro,
-        maxPorArquivo: opts.maxPorArquivo,
         inclusaoPrimeiro: opts.inclusaoPrimeiro,
         // Prompts de IA (indexadores e conteúdos)
         promptTipoEscritaIndexador: opts.promptTipoEscritaIndexador,
@@ -40,8 +39,9 @@ export default {
     if (opts.acao) fd.append('acao', opts.acao);
     if (opts.cns) fd.append('cns', opts.cns);
     if (opts.tipoRegistro) fd.append('tipoRegistro', opts.tipoRegistro);
-    if (opts.maxPorArquivo != null) fd.append('maxPorArquivo', String(opts.maxPorArquivo));
+    // maxPorArquivo removed — server defaults to 2500
     if (opts.inclusaoPrimeiro != null) fd.append('inclusaoPrimeiro', String(!!opts.inclusaoPrimeiro));
+    if (opts.tipoEscrita) fd.append('tipoEscrita', opts.tipoEscrita);
     // Prompts de IA (indexadores e conteúdos)
     if (opts.promptTipoEscritaIndexador) fd.append('promptTipoEscritaIndexador', opts.promptTipoEscritaIndexador);
     if (opts.promptTipoEscrita) fd.append('promptTipoEscrita', opts.promptTipoEscrita);

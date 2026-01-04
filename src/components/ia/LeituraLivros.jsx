@@ -73,6 +73,7 @@ export default function LeituraLivros() {
   const [maxPorArquivo, setMaxPorArquivo] = useState(2500);
   const [numeroLivro, setNumeroLivro] = useState('');
   const [acervoGlobal, setAcervoGlobal] = useState('01');
+  const [tipoEscrita, setTipoEscrita] = useState('digitado');
 
   useEffect(() => {
     if (consoleRef.current) {
@@ -84,7 +85,7 @@ export default function LeituraLivros() {
   useEffect(() => {
     try {
       console.debug('LeituraLivros mounted', {
-        mode, versao, acao, cns, tipoRegistro, tipoLivroCode, numeroLivro, maxPorArquivo
+        mode, versao, acao, cns, tipoRegistro, tipoLivroCode, numeroLivro
       });
     } catch (_) {}
   }, []);
@@ -108,7 +109,7 @@ export default function LeituraLivros() {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', recompute);
     };
-  }, [mode, versao, acao, tipoRegistro, maxPorArquivo, folderPath, files.length]);
+  }, [mode, versao, acao, tipoRegistro, folderPath, files.length]);
 
   function pushConsole(line) {
     setConsoleLines(prev => [...prev, typeof line === 'string' ? line : JSON.stringify(line)]);
@@ -1429,7 +1430,7 @@ export default function LeituraLivros() {
       logTitle('Preparando processamento para CRC Nacional');
       // Formata número do livro como inteiro (sem casas decimais) antes de enviar ao backend
       const numeroLivroFormatted = numeroLivro ? String(Number(numeroLivro)) : '';
-      logInfo(`Parâmetros: VERSAO=${versao}, ACAO=${acao}, CNS=${cns}, TIPO=${tipoRegistro}, Nº_LIVRO=${numeroLivroFormatted || '—'}, MAX_POR_ARQUIVO=${maxPorArquivo}`);
+      logInfo(`Parâmetros: VERSAO=${versao}, ACAO=${acao}, CNS=${cns}, TIPO=${tipoRegistro}, Nº_LIVRO=${numeroLivroFormatted || '—'}`);
       logInfo('O XML será gerado com tags em MAIÚSCULAS, Inclusões antes de Alterações, e grupos FILIACAONASCIMENTO e DOCUMENTOS agrupados.');
       let resp;
       if (mode === 'folder') {
@@ -1448,7 +1449,7 @@ export default function LeituraLivros() {
   // Note: do not show the IA prompt content in the console for privacy/security
 
         resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), {
-          versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
+          versao, acao, cns, tipoRegistro, tipoEscrita, inclusaoPrimeiro: true,
           promptTipoEscritaIndexador: 'tipo_escrita',
           promptTipoEscrita: pTipo?.prompt || '',
           numeroLivro: numeroLivroFormatted
@@ -1484,7 +1485,7 @@ export default function LeituraLivros() {
   // Note: do not show the IA prompt content in the console for privacy/security
 
         resp = await LeituraLivrosService.uploadFiles(files, {
-          versao, acao, cns, tipoRegistro, maxPorArquivo, inclusaoPrimeiro: true,
+          versao, acao, cns, tipoRegistro, tipoEscrita, inclusaoPrimeiro: true,
           promptTipoEscritaIndexador: 'tipo_escrita',
           promptTipoEscrita: pTipo?.prompt || '',
           numeroLivro: numeroLivroFormatted
@@ -1762,10 +1763,13 @@ export default function LeituraLivros() {
       </select>
     </div>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>MAX/ARQUIVO</label>
-      <input type="number" min={1} value={maxPorArquivo}
-        onChange={e => setMaxPorArquivo(Number(e.target.value || 2500))}
-        style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }} />
+      <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>TIPO DE ESCRITA</label>
+      <select value={tipoEscrita} onChange={e => setTipoEscrita(e.target.value)}
+        style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }}>
+        <option value="digitado">Digitado</option>
+        <option value="manuscrito">Manuscrito</option>
+        <option value="misto">Misto</option>
+      </select>
     </div>
     
     </div>
