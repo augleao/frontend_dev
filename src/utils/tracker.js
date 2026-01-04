@@ -57,8 +57,17 @@ export async function trackEvent(name, data = {}) {
     event: name,
     path: window.location.pathname,
     ts: new Date().toISOString(),
-    data
+    data: data || {}
   };
+
+  // ensure UID is present when available (helps cross-origin/beacon cases)
+  try {
+    const localUid = getUid();
+    if (localUid && (!payload.data || !payload.data.uid)) {
+      payload.data = payload.data || {};
+      payload.data.uid = payload.data.uid || localUid;
+    }
+  } catch (e) {}
 
   // Log payload in devtools for login events to aid debugging
   try {
