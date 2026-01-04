@@ -20,6 +20,7 @@ export default function TrackerAuditoria() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ event: '', uid: '', path: '', from: '', to: '' });
+  const [expanded, setExpanded] = useState({});
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -31,6 +32,25 @@ export default function TrackerAuditoria() {
     params.append('limit', '200');
     return params.toString();
   }, [filters]);
+
+  const stats = useMemo(() => {
+    const total = rows.length;
+    const uniqueUsers = new Set(rows.map((r) => r.user_name || r.hashed_uid || (r.data && r.data.uid))).size;
+    const byEvent = rows.reduce((acc, r) => {
+      const k = r.event || 'unknown';
+      acc[k] = (acc[k] || 0) + 1;
+      return acc;
+    }, {});
+    return { total, uniqueUsers, byEvent };
+  }, [rows]);
+
+  const palette = {
+    login: '#10b981',
+    pageview: '#3b82f6',
+    click: '#f97316',
+    error: '#ef4444',
+    default: '#6366f1'
+  };
 
   useEffect(() => {
     let aborted = false;
@@ -62,97 +82,129 @@ export default function TrackerAuditoria() {
   }, [queryString]);
 
   return (
-    <div style={{ padding: '24px' }}>
-      <h2 style={{ marginBottom: '12px' }}>Atividades dos colaboradores</h2>
-      <p style={{ marginTop: 0, marginBottom: '16px', color: '#555' }}>
-        Eventos coletados pelo tracker (cookies/UID). Ajuste filtros para refinar resultados. Limite: 200.
-      </p>
+    <div style={pageStyle}>
+      <h2 style={titleStyle}>Atividades dos colaboradores</h2>
+      <p style={subtitleStyle}>Eventos coletados pelo tracker. Ajuste filtros e explore rapidamente.</p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+      <div style={statsGrid}>
+        <StatCard label="Eventos" value={stats.total} accent="#3b82f6" />
+        <StatCard label="Usuários únicos" value={stats.uniqueUsers} accent="#10b981" />
+        <StatCard label="Logins" value={stats.byEvent.login || 0} accent="#f97316" />
+        <StatCard label="Pageviews" value={stats.byEvent.pageview || 0} accent="#6366f1" />
+      </div>
+
+      <div style={filtersGrid}>
         <input
           placeholder="Evento (ex: login, pageview)"
           value={filters.event}
           onChange={(e) => setFilters((f) => ({ ...f, event: e.target.value }))}
-          style={{ padding: '8px', border: '1px solid #ccc', borderRadius: 4 }}
+          style={inputStyle}
         />
         <input
           placeholder="UID ou hash"
           value={filters.uid}
           onChange={(e) => setFilters((f) => ({ ...f, uid: e.target.value }))}
-          style={{ padding: '8px', border: '1px solid #ccc', borderRadius: 4 }}
+          style={inputStyle}
         />
         <input
           placeholder="Path contém..."
           value={filters.path}
           onChange={(e) => setFilters((f) => ({ ...f, path: e.target.value }))}
-          style={{ padding: '8px', border: '1px solid #ccc', borderRadius: 4 }}
+          style={inputStyle}
         />
         <input
           type="datetime-local"
           value={filters.from}
           onChange={(e) => setFilters((f) => ({ ...f, from: e.target.value }))}
-          style={{ padding: '8px', border: '1px solid #ccc', borderRadius: 4 }}
+          style={inputStyle}
         />
         <input
           type="datetime-local"
           value={filters.to}
           onChange={(e) => setFilters((f) => ({ ...f, to: e.target.value }))}
-          style={{ padding: '8px', border: '1px solid #ccc', borderRadius: 4 }}
+          style={inputStyle}
         />
         <button
           type="button"
           onClick={() => setFilters({ event: '', uid: '', path: '', from: '', to: '' })}
-          style={{ padding: '10px', borderRadius: 4, border: '1px solid #ccc', background: '#f5f5f5', cursor: 'pointer' }}
+          style={ghostButton}
         >
           Limpar filtros
         </button>
       </div>
 
-      {error && <div style={{ color: 'red', marginBottom: '12px' }}>{error}</div>}
-      {loading && <div style={{ marginBottom: '12px' }}>Carregando…</div>}
+      {error && <div style={errorStyle}>{error}</div>}
+      {loading && <div style={infoStyle}>Carregando…</div>}
 
-      <div style={{ overflowX: 'auto', border: '1px solid #e0e0e0', borderRadius: 8 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-          <thead style={{ background: '#fafafa' }}>
-            <tr>
-              <th style={thStyle}>TS</th>
-              <th style={thStyle}>Evento</th>
-              <th style={thStyle}>Path</th>
-              <th style={thStyle}>Usuário</th>
-              <th style={thStyle}>UID (hash)</th>
-              <th style={thStyle}>Data (JSON)</th>
-              <th style={thStyle}>IP</th>
-              <th style={thStyle}>UA</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && !loading && (
-              <tr>
-                <td colSpan={8} style={{ padding: '12px', textAlign: 'center', color: '#777' }}>
-                  Nenhum evento encontrado.
-                </td>
-              </tr>
-            )}
-            {rows.map((row) => (
-              <tr key={row.id} style={{ borderTop: '1px solid #f0f0f0' }}>
-                <td style={tdStyle}>{formatDate(row.ts || row.created_at)}</td>
-                <td style={tdStyle}>{row.event || '-'}</td>
-                <td style={tdStyle}>{row.path || '-'}</td>
-                <td style={tdStyle}>{row.user_name || '-'}</td>
-                <td style={tdStyle}>{truncate(row.hashed_uid || (row.data && row.data.uid))}</td>
-                <td style={{ ...tdStyle, maxWidth: 520 }}>
-                  <code style={{ fontSize: '12px', whiteSpace: 'pre-wrap' }}>{row.data ? JSON.stringify(row.data) : '-'}</code>
-                </td>
-                <td style={tdStyle}>{row.ip || '-'}</td>
-                <td style={{ ...tdStyle, maxWidth: 240 }}>{truncate(row.ua, 60)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {!loading && rows.length === 0 && <div style={infoStyle}>Nenhum evento encontrado.</div>}
+
+      <div style={cardsWrap}>
+        {rows.map((row) => {
+          const color = palette[row.event] || palette.default;
+          const isOpen = expanded[row.id];
+          const dataStr = row.data ? JSON.stringify(row.data, null, 2) : '-';
+          return (
+            <div key={row.id} style={{ ...card, borderColor: color }}>
+              <div style={cardTop}>
+                <div>
+                  <span style={{ ...pill, background: color, color: '#fff' }}>{row.event || 'evento'}</span>
+                  <div style={{ fontWeight: 600, fontSize: '15px', marginTop: 6 }}>{row.path || '-'}</div>
+                  <div style={{ color: '#6b7280', fontSize: '13px' }}>{formatDate(row.ts || row.created_at)}</div>
+                </div>
+                <div style={{ textAlign: 'right', minWidth: 180 }}>
+                  <div style={{ fontWeight: 600 }}>{row.user_name || '—'}</div>
+                  <div style={{ color: '#6b7280', fontSize: '12px' }}>{truncate(row.hashed_uid || (row.data && row.data.uid))}</div>
+                  <div style={{ color: '#6b7280', fontSize: '12px', marginTop: 4 }}>{row.ip || '-'}</div>
+                </div>
+              </div>
+
+              <div style={rowLine}>UA: <span style={{ color: '#111827' }}>{truncate(row.ua, 120)}</span></div>
+
+              <button
+                type="button"
+                onClick={() => setExpanded((m) => ({ ...m, [row.id]: !isOpen }))}
+                style={expandBtn}
+              >
+                {isOpen ? 'Esconder dados' : 'Ver dados'}
+              </button>
+
+              {isOpen && (
+                <pre style={jsonBox}>{dataStr}</pre>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-const thStyle = { textAlign: 'left', padding: '10px', borderBottom: '1px solid #eee', fontWeight: 600 };
-const tdStyle = { padding: '10px', verticalAlign: 'top' };
+function StatCard({ label, value, accent }) {
+  return (
+    <div style={{ ...statCard, borderColor: accent }}>
+      <div style={{ color: '#6b7280', fontSize: '13px' }}>{label}</div>
+      <div style={{ fontSize: '28px', fontWeight: 700, color: '#0f172a' }}>{value}</div>
+      <div style={{ width: '100%', height: 4, background: `${accent}33`, borderRadius: 999, marginTop: 8 }}>
+        <div style={{ width: '100%', height: '100%', background: accent, borderRadius: 999 }} />
+      </div>
+    </div>
+  );
+}
+
+const pageStyle = { padding: '24px', fontFamily: '"Manrope", "Segoe UI", sans-serif', background: '#f8fafc' };
+const titleStyle = { marginBottom: '4px', color: '#0f172a' };
+const subtitleStyle = { marginTop: 0, marginBottom: '20px', color: '#475569' };
+const statsGrid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: 16 };
+const filtersGrid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' };
+const inputStyle = { padding: '10px', border: '1px solid #d1d5db', borderRadius: 6, background: '#fff' };
+const ghostButton = { padding: '10px', borderRadius: 6, border: '1px solid #d1d5db', background: '#f8fafc', cursor: 'pointer' };
+const errorStyle = { color: '#dc2626', marginBottom: '12px' };
+const infoStyle = { color: '#475569', marginBottom: '12px' };
+const cardsWrap = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '12px' };
+const card = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: 14, boxShadow: '0 8px 24px rgba(15, 23, 42, 0.06)', display: 'flex', flexDirection: 'column', gap: 10 };
+const cardTop = { display: 'flex', justifyContent: 'space-between', gap: 12 };
+const pill = { display: 'inline-block', padding: '4px 10px', borderRadius: 999, fontSize: '12px', fontWeight: 700, letterSpacing: '0.3px' };
+const rowLine = { fontSize: '13px', color: '#6b7280', borderTop: '1px solid #f1f5f9', paddingTop: 8 };
+const expandBtn = { alignSelf: 'flex-start', border: '1px solid #e2e8f0', background: '#f8fafc', borderRadius: 6, padding: '6px 10px', cursor: 'pointer', fontSize: '13px' };
+const jsonBox = { background: '#0f172a', color: '#e2e8f0', padding: 12, borderRadius: 8, fontSize: '12px', maxHeight: 240, overflow: 'auto' };
+const statCard = { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12, boxShadow: '0 8px 16px rgba(15, 23, 42, 0.04)' };
