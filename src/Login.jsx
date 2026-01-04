@@ -65,7 +65,18 @@ function Login() {
         login(data.user, data.token);
 
         try {
-          trackEvent('login', { uid: getUid(), method: 'password' });
+          // send login event using fetch so cookies (track_uid) are included
+          fetch(`${config.apiURL}/tracker/events`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              event: 'login',
+              path: '/login',
+              ts: new Date().toISOString(),
+              data: { method: 'password' }
+            })
+          }).catch(() => {});
         } catch (e) {
           // ignore tracking errors
         }
