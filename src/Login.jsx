@@ -62,9 +62,15 @@ function Login() {
         localStorage.setItem('usuario', JSON.stringify(data.user));
         localStorage.setItem('token', data.token);
 
+        // persist track_uid locally to send in tracker payloads (cookies podem ser bloqueados)
+        if (data.track_uid) {
+          try { localStorage.setItem('biblio_uid', data.track_uid); } catch (e) {}
+        }
+
         login(data.user, data.token);
 
         try {
+          const uid = data.track_uid || getUid();
           // send login event using fetch so cookies (track_uid) are included
           fetch(`${config.apiURL}/tracker/events`, {
             method: 'POST',
@@ -74,7 +80,7 @@ function Login() {
               event: 'login',
               path: '/login',
               ts: new Date().toISOString(),
-              data: { method: 'password' }
+              data: { method: 'password', uid }
             })
           }).catch(() => {});
         } catch (e) {
