@@ -6,6 +6,7 @@ import { apiURL } from './config';
 
 function UploadForm() {
   const [file, setFile] = useState(null);
+  const [tipoEscrita, setTipoEscrita] = useState('digitado');
   const [message, setMessage] = useState('');
   const [textoExtraido, setTextoExtraido] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -28,6 +29,7 @@ function UploadForm() {
 
     const formData = new FormData();
     formData.append('file', file);
+    if (tipoEscrita) formData.append('tipoEscrita', tipoEscrita);
 
     // Pegue o token do localStorage (ou do seu contexto de autenticação, se preferir)
     const token = localStorage.getItem('token');
@@ -60,6 +62,12 @@ function UploadForm() {
   return (
     <div className="upload-form-container">
       <form onSubmit={handleSubmit}>
+        <label style={{ marginRight: 8 }}>Tipo de escrita:</label>
+        <select value={tipoEscrita} onChange={(e) => setTipoEscrita(e.target.value)} style={{ marginRight: 12 }}>
+          <option value="digitado">Digitado</option>
+          <option value="manuscrito">Manuscrito</option>
+          <option value="misto">Misto</option>
+        </select>
         <label htmlFor="fileInput" className="custom-file-button" style={{ marginRight: 12, marginBottom: 0 }}>
           {file ? file.name : 'Escolher Arquivo PDF'}
         </label>
