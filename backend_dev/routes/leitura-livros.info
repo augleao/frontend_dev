@@ -1,0 +1,213 @@
+/*
+Visão Geral
+
+Objetivo: documentar o fluxo de trabalho do componente de leitura de livros (extração de registros a partir
+de uploads: imagens, PDFs e arquivos assinados), desde o recebimento até o envio do payload estruturado
+ao frontend.
+
+Local: `routes/leitura-livros.js` (orquestrador principal). Outras funções de apoio:
+- `identifyEscritaWithGeminiImage(...)` — classificação digitado vs manuscrito.
+- `transcribeImageWithGemini(...)` — transcrição por página para manuscritos.
+- `analyzeAggregatedManuscriptWithGemini(...)` — extração única a partir do texto agregado do manuscrito.
+- `analyzeRecordWithGemini(...)` / `analyzeRecordFromImageWithGemini(...)` — extração por página/arquivo para digitado.
+- `mapIaRegistroToNormalized(...)`, `normalizeRecordOutput(...)` — normalização/validação.
+- `jobPaths(status.jobId)`, `pushMessage(status, ...)`, `IA_RAW_STORE` — persistência temporária / logs / auditoria.
+
+Indexadores usados (mapeamento função -> `indexador` consultado em `ia_prompts`)
+- `identifyEscritaWithGeminiImage(imagePath, status, ctx)` → `tipo_escrita`
+- `analyzeRecordFromImageWithGemini(imagePath, params, status, opts, ctx)` → `leitura_manuscrito` (fallback/typo: `leitura_manuscito` also checked)
+- `analyzeRecordWithGemini(text, params, status, opts, ctx)` → `leitura_manuscrito` (manuscrito) or `leitura_digitado` (digitado)
+- `buildXmlFilesViaIa(records, params, jobDir, status, ctx)` → `xml_nascimento` | `xml_casamento` | `xml_obito` (chosen by `params.tipoRegistro`)
+
+Observação: os valores acima são resolvidos via `getPromptByIndexador(indexador)` no código; se o prompt não existir o código aplica um template fallback.
+
+Fluxo de trabalho (resumo passo a passo)
+
+1) Recebimento do upload
+- Endpoint em `leitura-livros.js` recebe upload multipart (imagens, PDFs, .p7s, etc.).
+- Cria/atualiza um objeto `status` e um `jobId`, persiste os arquivos originais em `jobPaths(status.jobId)`.
+- Persiste metadados iniciais e envia progresso com `pushMessage(status, '...')`.
+
+2) Classificação inicial / roteamento
+- Se `filePaths.length > 1` e os arquivos representam o mesmo livro, o orquestrador tenta inferir o tipo
+  (digitado vs manuscrito) a partir do PRIMEIRO arquivo e reutiliza essa inferência para os demais,
+  evitando chamadas IA redundantes.
+- Se não for possível inferir a partir do primeiro, processa arquivo-a-arquivo.
+
+3) Pré-processamento por arquivo
+- Identificação do tipo: PDF (possível texto embutido), imagem (jpeg/png/bmp/webp), ou .p7s (extrair payload se for o caso).
+- PDFs: extrair texto com `pdf-parse` quando aplicável; se texto extraído for confiável, seguir rota "digitado".
+- Imagens: aplicar `preprocessImage` (deskew, grayscale, denoise, resize/normalize). Gerar versão para OCR e
+  versão para IA multimodal (se necessário).
+
+4) Identificação da escrita
+- Para imagens chama-se `identifyEscritaWithGeminiImage(imagePath, status, ctx)` que combina:
+  - Classificação multimodal (Gemini) → retorna `writingType` + `confidence`.
+  - OCR rápido (Tesseract) → métricas heurísticas: wordCount, longWordRatio, avgTokenLen.
+- Regras aplicadas:
+  - Se confiança IA alta -> respeitar classificação.
+  - Se confiança IA baixa e OCR indicar baixa qualidade -> forçar manuscrito (mais seguro que tratar manuscrito como digitado).
+
+5) Rota de processamento — Digitado
+- Extrair texto (pdf-parse / OCR) e possivelmente chamar `analyzeRecordWithGemini` para extrair registros por página.
+- Mapear a saída IA com `mapIaRegistroToNormalized`, executar `normalizeRecordOutput`, validações e adicionar a `records`.
+
+6) Rota de processamento — Manuscrito (fluxo otimizado)
+- Em vez de extrair por página individualmente (muitas chamadas IA), acumular imagens manuscritas em `manuscriptImages`.
+- Para cada página em `manuscriptImages` chamar `transcribeImageWithGemini(imagePath, status, ctx)` para obter
+  transcrição por página (JSON ou texto). Salvar transcrições brutas em `IA_RAW_STORE` e atualizar `status`.
+- Concatenar transcrições em `aggregatedText` (inserir separadores de página/índice).
+- Chamar `analyzeAggregatedManuscriptWithGemini(aggregatedText, metas, params, status, ctx)` com prompt adequado
+  para extrair todos os registros do manuscrito em uma única chamada IA.
+- Mapear cada registro retornado via `mapIaRegistroToNormalized`, validar e adicionar a `records`.
+
+7) Normalização e heurísticas pós-extração
+- Conversões: moeda (`toNumber`), datas (`normalizeDate`), inteiros, máscaras (`onlyDigits`, `padLeftDigits`).
+- Aplicar `minimalHeuristicExtract` / `enforceStrictEvidence` para filtrar/ajustar campos com baixa evidência.
+- Regras de merge/dedup: remover registros idênticos, reconciliar quantidades/valores conflitantes.
+
+8) Persistência temporária e auditoria
+- Escrever `result.json` em `jobPaths(status.jobId)` com:
+  - `records` (array normalizado), `meta` (arquivos, páginas, avisos), `status` (logs/resumos), `errors`.
+- Registrar invocações IA com prefixos (ex.: `[AI-INVOKE] id=... fn=...`) e armazenar respostas brutas em `IA_RAW_STORE`.
+- Atualizar progresso via `pushMessage(status, message)` para manter frontend informado (se fluxo assíncrono).
+
+9) Entrega do payload ao frontend
+- Se o processamento é síncrono: devolver o `payload` final na resposta HTTP.
+- Se assíncrono: retornar `jobId` e expor endpoint de status/result (o frontend consulta `GET /.../status/:jobId` e
+  recebe `result.json` quando pronto).
+
+Payload (estrutura mínima esperada)
+- `records`: [ { codigo, tributacao, quantidade, valores: { emol, tfj, ... }, evidencias: [...], paginas: [...] } ]
+- `meta`: { jobId, files: [{ name, path, pages }], inferred: { writingType, tipoRegistro }, totalPages }
+- `status`: { state: 'done'|'processing'|'error', warnings: [], errors: [] }
+
+10) Erros, fallback e retries
+- Em caso de falha na IA, utilizar OCR fallback (Tesseract) e documentar a limitação no campo `warnings`.
+- Para timeouts/erro de rede, registrar e permitir requeue/retry controlado.
+
+11) Observações operacionais e recomendações
+- Grandes manuscritos: fazer chunking do `aggregatedText` se exceder limites do modelo; priorizar prompts que
+  pedem saída JSON compacta (menos tokens).
+- Ajustar thresholds heurísticos (confidence, longWordRatio) em ambiente real para reduzir falsos positivos.
+- Manter prompts em `ia_prompts` para permitir atualização sem mudança de código.
+- Auditar `IA_RAW_STORE` apenas quando necessário (dados sensíveis) e controlar retenção por política.
+
+Pontos de verificação (debug)
+
+FIM
+Pontos de verificação (debug)
+ Verificar `jobPaths(status.jobId)/result.json` para payload final.
+ Procurar logs `[AI-INVOKE]` para contar chamadas IA.
+ Verificar transcrições por página em `IA_RAW_STORE` quando resultados não batem com expectativas.
+
+Indexador de prompts (prompt indexer)
+ Finalidade: o indexador seleciona a versão/variante do prompt a ser usada em cada chamada do agente de IA
+  (ex.: `extracao_manuscrito_v2`, `dados_manuscrito_chunked_2025-12`). Ele garante reprodutibilidade, auditoria e
+  possibilidade de rollback de prompts sem alteração de código.
+ Como é usado:
+  - Antes de invocar o agente, o orquestrador resolve um `promptIndex` (string ou objeto com `id` + `version`).
+  - O `promptIndex` é passado como metadado na chamada IA e gravado junto com a resposta bruta em `IA_RAW_STORE`.
+  - Em logs de auditoria e invocações IA aparece algo como: `[AI-INVOKE] id=<callId> fn=transcribeImage promptIndex=extracao_manuscrito_v2`.
+ Onde armazenar/consultar:
+  - Prompts e suas versões podem ser mantidos em `ia_prompts` (arquivo ou armazenamento configurável).
+  - O orquestrador consulta `ia_prompts` pelo `promptIndex` para obter o template do prompt e eventuais
+    parâmetros de execução (max_tokens, temperature, chunk_size).
+ Metadados registrados por chamada IA:
+  - `callId`: identificador único da invocação.
+  - `promptIndex`: id da variante do prompt (ex.: `extracao_manuscrito_v2`).
+  - `promptSnapshot`: (opcional) texto efetivo do prompt usado (pode ser gravado para auditoria quando necessário).
+  - `model`: nome/versão do modelo (ex.: `gemini-1.0-multimodal`).
+  - `ctx`: contexto adicional (pageNumber, filePath, jobId).
+
+ Boas práticas:
+  - Registrar `promptIndex` em todas as chamadas IA para permitir reprovação de regressões por prompt.
+  - Evitar gravar prompt completo em produção por questões de sensibilidade; use `promptSnapshot` apenas quando
+    necessário para auditoria, e controle retenção/criptografia.
+  - Quando alterar um prompt, criar nova `promptIndex` com `version` e atualizar `ia_prompts` — o histórico
+    permite comparar saídas entre versões.
+
+FIM
+*/
+/*
+Visão Geral
+
+Objetivo: Processar uploads (imagens/PDFs) para extrair registros (atos/linhas) e retornar um payload estruturado ao frontend.
+Local principal: leitura-livros.js (orquestra upload → OCR/IA → normalização → resultado).
+Componentes envolvidos: upload handler, job/status files, identificação de escrita (IA + OCR heurísticas), transcrição (Gemini ou OCR), extração (IA), normalizadores/heurísticas, armazenamento temporário (result.json/jobPaths) e resposta ao frontend.
+Fluxo de Trabalho (passo a passo)
+
+Recebimento do upload:
+
+Um endpoint em leitura-livros.js recebe o upload (múltiplos arquivos/imagens/PDF).
+O upload é gravado no diretório do job (JOBS_ROOT / via jobPaths(status.jobId)), e um objeto status é criado/atualizado com metadados do job.
+O processo atualiza o status através de pushMessage(status, "...") para refletir progresso.
+Pré-processamento por arquivo:
+
+Por padrão o orquestrador analisa os arquivos enviados e determina o tipo (PDF, imagem, .p7s) para decidir a rota de processamento.
+Importante alteração de fluxo: quando o upload contém múltiplos arquivos que representam o mesmo livro, o orquestrador **infere o tipo apenas a partir do PRIMEIRO arquivo** e reutiliza essa classificação para todos os demais. Isso evita classificações inconsistentes e várias chamadas IA redundantes.
+
+Comportamento detalhado:
+- Se `filePaths.length > 1`: o sistema tenta inferir o tipo (digitado/manuscrito) analisando o primeiro arquivo (tratando `.p7s` extraindo o payload quando necessário). A inferência popula `inferred.writingType` e `inferred.tipoRegistro` e será reutilizada para os arquivos subsequentes.
+- Se a inferência falhar (nenhum tipo determinado), o sistema recai ao comportamento por-arquivo (classificação individual por imagem/PDF).
+
+PDFs: pode-se extrair texto com pdf-parse (fluxo "digitado") — se texto extraído, pode seguir rota de análise textual.
+Imagens: são passadas por uma função de identificação de escrita identifyEscritaWithGeminiImage(imagePath, status, ctx) que:
+Chama o modelo multimodal (Gemini) para classificar digitado vs manuscrito (retorna tipo + confiança).
+Executa uma OCR rápida (tesseract/ocrImage) para calcular métricas simples (contagem de palavras, razão de palavras longas, avg token length).
+Se a confiança IA for baixa OU a OCR indicar baixa qualidade, aplica heurística conservadora e força manuscrito (evita tratar manuscritos como digitados).
+Rota de processamento — Digitado vs Manuscrito:
+
+Se arquivo é considerado digitado:
+Pode-se extrair texto diretamente e chamar analyzeRecordWithGemini (ou analyzeRecordFromImageWithGemini se precisar multimodal) para obter registros estruturados por arquivo/página.
+Os resultados são normalizados via mapIaRegistroToNormalized, normalizeRecordOutput e possivelmente enforceStrictEvidence.
+Esses registros são imediatamente adicionados ao array records.
+
+Se arquivo é considerado manuscrito (Option A - o fluxo implementado):
+Em vez de chamar a extração IA por cada página (que gera duplicação/erros), o orquestrador acumula metadados de imagens manuscritas em manuscriptImages (fila).
+Após processar todos os arquivos, o sistema:
+Para cada imagem em manuscriptImages chama transcribeImageWithGemini(imagePath, status, ctx) que:
+Envia prompt extracao_manuscrito (ou usa OCR fallback se IA indisponível) para obter transcrição JSON por página (texto por página e metadados).
+Armazena/loga a resposta bruta (ex.: em IA_RAW_STORE) e atualiza status.
+Concatena as transcrições em aggregatedText (inserindo separadores de página/numeração) para formar o texto agregado de todo o manuscrito.
+Chama analyzeAggregatedManuscriptWithGemini(aggregatedText, metas, params, status, ctx) com o prompt dados_manuscrito para extrair todos os registros do manuscrito numa única chamada IA.
+A resposta IA (array de registros) é mapeada por mapIaRegistroToNormalized e cada registro é normalizado e validado antes de ser pushado para records.
+Normalização e heurísticas pós-extração:
+
+Cada registro passa por validação/normalização:
+preenchimento de zeros, máscaras (padLeftDigits, tipoLivro width), onlyDigits, DV (mod11TwoDigits), conversão monetária (toNumber), datas (normalizeDate) etc.
+minimalHeuristicExtract e enforceStrictEvidence podem filtrar ou ajustar campos quando evidências são fracas.
+Se houver conflitos ou registros duplicados, aplicam-se regras de merge/eliminação conforme as heurísticas definidas.
+Persistência temporária e logs:
+
+O job grava um result.json (ou similar) em jobPaths(status.jobId) contendo records, meta, e eventuais mensagens de erro/aviso.
+Invocações IA são logadas com prefixos tipo [AI-INVOKE] id=... fn=... para facilitar auditoria. Respostas IA brutas podem ficar em IA_RAW_STORE durante a execução.
+Envio do payload final ao frontend:
+
+Ao final do processamento, o orquestrador monta o payload final contendo:
+records: array de registros normalizados (cada um com campos: código, tributação, quantidade, valores, evidências, páginas/origem).
+meta: informações do job (arquivos processados, número de páginas, avisos).
+status: resumo de sucesso/erros e logs relevantes.
+O payload é retornado ao frontend pela resposta HTTP do endpoint (ou, se o fluxo for assíncrono, fica disponível via um endpoint de status/result onde o frontend consulta jobId e recupera result.json).
+Pontos de controle e mensagens de debug a checar
+
+Identificação de escrita: procure logs com [Escrita->Heur] ou mensagens onde OCR heurística sobrepõe a classificação IA (indicam quando manuscrito foi forçado).
+Chamadas IA: logs [AI-INVOKE] mostram quantas vezes o modelo foi chamado e quais funções (útil para confirmar que Option A reduziu chamadas por página).
+Transcrições: verificar transcrições por página produzidas por transcribeImageWithGemini (podem estar em IA_RAW_STORE ou jobPaths).
+Resultado intermediário: result.json no diretório do job contém o payload que será retornado ao frontend (verifique campos records / meta).
+Erros de parsing: mensagens com DapParseError ou similar indicam campos obrigatórios ausentes.
+Mapeamento rápido de funções/arquivos chave
+
+leitura-livros.js: orquestra upload → classificação → transcrição/extração → normalização → gravação do result.json e resposta.
+identifyEscritaWithGeminiImage(...): classificação multimodal + heurística OCR.
+transcribeImageWithGemini(...): transcreve cada página manuscrita (prompt extracao_manuscrito).
+analyzeAggregatedManuscriptWithGemini(...): extrai registros do texto agregado (prompt dados_manuscrito).
+analyzeRecordWithGemini(...) / analyzeRecordFromImageWithGemini(...): extração por página/arquivo para casos digitados.
+mapIaRegistroToNormalized(...), normalizeRecordOutput(...), minimalHeuristicExtract(...): normalização e garantias de qualidade.
+jobPaths(status.jobId) / pushMessage(...): gerenciamento de arquivos de job e notificações de progresso.
+IA_RAW_STORE: armazenamento temporário de respostas IA (para auditoria).
+Riscos conhecidos / recomendações rápidas
+
+Grandes manuscritos podem gerar aggregatedText muito longo — pode ser preciso chunking antes de dados_manuscrito.
+Limiares heurísticos (confidence, longWordRatio, avgLen) estão hard-coded; ajuste sutil pode reduzir falsos positivos/negativos.
+Verifique se prompts extracao_manuscrito e dados_manuscrito estão carregados no armazenamento de prompts (ia_prompts) ou passados inline às chamadas IA.
