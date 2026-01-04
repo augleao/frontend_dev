@@ -71,20 +71,32 @@ function Login() {
 
         try {
           const uid = data.track_uid || getUid();
-          // send login event using fetch so cookies (track_uid) are included
+          const payload = {
+            event: 'login',
+            path: '/login',
+            ts: new Date().toISOString(),
+            data: { method: 'password', uid }
+          };
+          console.debug('[tracker][login] sending', payload);
           fetch(`${config.apiURL}/tracker/events`, {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              event: 'login',
-              path: '/login',
-              ts: new Date().toISOString(),
-              data: { method: 'password', uid }
+            body: JSON.stringify(payload)
+          })
+            .then(async (res) => {
+              if (!res.ok) {
+                const body = await res.text().catch(() => '');
+                console.error('[tracker][login] server error', res.status, body);
+              } else {
+                console.debug('[tracker][login] ok', res.status);
+              }
             })
-          }).catch(() => {});
+            .catch((err) => {
+              console.error('[tracker][login] fetch error', err && err.message ? err.message : err);
+            });
         } catch (e) {
-          // ignore tracking errors
+          console.error('[tracker][login] unexpected error', e && e.message ? e.message : e);
         }
 
         await checarAlertasRelatorios(data.token);

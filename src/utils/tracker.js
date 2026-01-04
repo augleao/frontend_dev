@@ -78,6 +78,7 @@ export async function trackEvent(name, data = {}) {
     // ignore logging errors
   }
   // Best-effort fire-and-forget; backend should read cookie (e.g. track_uid)
+  console.debug('[tracker] send', payload);
   try {
     const url = `${config.apiURL}/tracker/events`;
     if (navigator.sendBeacon && typeof navigator.sendBeacon === 'function') {
