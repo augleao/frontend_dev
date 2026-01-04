@@ -1752,7 +1752,7 @@ export default function LeituraLivros() {
           const labelMap = { '1': 'NASCIMENTO', '2': 'CASAMENTO', '3': 'CASAMENTO_RELIGIOSO', '4': 'OBITO', '5': 'NATIMORTO', '6': 'PROCLAMAS', '7': 'LIVRO_E' };
           setTipoRegistro(labelMap[code] || 'NASCIMENTO');
         }}
-        style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }}>
+        style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14, minWidth: 220 }}>
         <option value="1">Nascimento</option>
         <option value="2">Casamento</option>
         <option value="3">Casamento Religioso</option>
@@ -1765,7 +1765,7 @@ export default function LeituraLivros() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>ESCRITA</label>
       <select value={tipoEscrita} onChange={e => setTipoEscrita(e.target.value)}
-        style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }}>
+        style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14, minWidth: 220 }}>
         <option value="digitado">Digitado</option>
         <option value="manuscrito">Manuscrito</option>
         <option value="misto">Misto</option>

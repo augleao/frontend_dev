@@ -63,7 +63,7 @@ function UploadForm() {
     <div className="upload-form-container">
       <form onSubmit={handleSubmit}>
         <label style={{ marginRight: 8 }}>Tipo de escrita:</label>
-        <select value={tipoEscrita} onChange={(e) => setTipoEscrita(e.target.value)} style={{ marginRight: 12 }}>
+        <select value={tipoEscrita} onChange={(e) => setTipoEscrita(e.target.value)} style={{ marginRight: 12, minWidth: 200 }}>
           <option value="digitado">Digitado</option>
           <option value="manuscrito">Manuscrito</option>
           <option value="misto">Misto</option>
