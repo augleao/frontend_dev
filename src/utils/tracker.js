@@ -73,7 +73,18 @@ export async function trackEvent(name, data = {}) {
     const url = `${config.apiURL}/tracker/events`;
     if (navigator.sendBeacon && typeof navigator.sendBeacon === 'function') {
       try {
-        navigator.sendBeacon(url, JSON.stringify(payload));
+        // Use a Blob with explicit JSON mime type so servers see application/json
+        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+        const ok = navigator.sendBeacon(url, blob);
+        if (!ok) {
+          // fallback to fetch if sendBeacon returns false
+          fetch(url, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          }).catch(() => {});
+        }
       } catch (e) {
         // if sendBeacon fails, fall back to fetch
         fetch(url, {
