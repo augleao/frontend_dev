@@ -21,6 +21,8 @@ export default function TrackerAuditoria() {
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ event: '', uid: '', path: '', from: '', to: '' });
   const [expanded, setExpanded] = useState({});
+  const [users, setUsers] = useState([]);
+  const [purging, setPurging] = useState(false);
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -29,6 +31,7 @@ export default function TrackerAuditoria() {
     if (filters.path) params.append('path', filters.path);
     if (filters.from) params.append('from', filters.from);
     if (filters.to) params.append('to', filters.to);
+    if (filters.userId) params.append('userId', filters.userId);
     params.append('limit', '200');
     return params.toString();
   }, [filters]);
@@ -81,6 +84,46 @@ export default function TrackerAuditoria() {
     };
   }, [queryString]);
 
+  // load users for dropdown
+  useEffect(() => {
+    let aborted = false;
+    (async () => {
+      try {
+        const res = await fetch(`${config.apiURL}/tracker/users`, { credentials: 'include' });
+        if (!res.ok) throw new Error('Falha ao carregar usuários');
+        const data = await res.json();
+        if (!aborted) setUsers(Array.isArray(data.rows) ? data.rows : []);
+      } catch (e) {
+        if (!aborted) setUsers([]);
+      }
+    })();
+    return () => {
+      aborted = true;
+    };
+  }, []);
+
+  async function purgeAll() {
+    if (purging) return;
+    const sure = window.confirm('Excluir todos os registros de tracker? Esta ação não pode ser desfeita.');
+    if (!sure) return;
+    setPurging(true);
+    setError('');
+    try {
+      const res = await fetch(`${config.apiURL}/tracker/events`, { method: 'DELETE', credentials: 'include' });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || 'Falha ao excluir');
+      }
+      await res.json();
+      // reload
+      setFilters((f) => ({ ...f }));
+    } catch (e) {
+      setError(e && e.message ? e.message : 'Erro ao excluir');
+    } finally {
+      setPurging(false);
+    }
+  }
+
   return (
     <div style={pageStyle}>
       <h2 style={titleStyle}>Atividades dos colaboradores</h2>
@@ -112,6 +155,16 @@ export default function TrackerAuditoria() {
           onChange={(e) => setFilters((f) => ({ ...f, path: e.target.value }))}
           style={inputStyle}
         />
+        <select
+          value={filters.userId || ''}
+          onChange={(e) => setFilters((f) => ({ ...f, userId: e.target.value || undefined }))}
+          style={inputStyle}
+        >
+          <option value="">Todos os usuários</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>{u.nome}</option>
+          ))}
+        </select>
         <input
           type="datetime-local"
           value={filters.from}
@@ -130,6 +183,14 @@ export default function TrackerAuditoria() {
           style={ghostButton}
         >
           Limpar filtros
+        </button>
+        <button
+          type="button"
+          onClick={purgeAll}
+          disabled={purging}
+          style={{ ...ghostButton, borderColor: '#dc2626', color: '#dc2626' }}
+        >
+          {purging ? 'Excluindo...' : 'Excluir tudo'}
         </button>
       </div>
 
