@@ -14,7 +14,7 @@ class Tracker {
   }
 
   init({ endpoint, clientVersion }) {
-    this.endpoint = endpoint;
+    this.endpoint = endpoint || '/api/tracker/events';
     this.clientVersion = clientVersion || 'unknown';
     this._startTimer();
     window.addEventListener('beforeunload', () => this._flushOnUnload());
@@ -74,7 +74,22 @@ class Tracker {
   }
 
   async _sendBatch(batch) {
-    const payload = JSON.stringify({ events: batch });
+    // Map internal event shape to backend expected shape
+    const mapped = batch.map((evt) => ({
+      uid: evt.userId || null,
+      event: evt.eventType,
+      path: evt.url || (evt.metadata && evt.metadata.route) || null,
+      ts: evt.timestamp,
+      data: {
+        sessionId: evt.sessionId,
+        eventId: evt.eventId,
+        metadata: evt.metadata || null,
+        clientVersion: evt.clientVersion,
+        sequence: evt.sequence,
+        referrer: evt.referrer || null,
+      },
+    }));
+    const payload = JSON.stringify({ events: mapped });
     // prefer sendBeacon for reliability on unload
     if (navigator.sendBeacon) {
       const blob = new Blob([payload], { type: 'application/json' });
@@ -93,7 +108,21 @@ class Tracker {
 
   _flushOnUnload() {
     if (this.queue.length === 0) return;
-    const payload = JSON.stringify({ events: this.queue });
+    const mapped = this.queue.map((evt) => ({
+      uid: evt.userId || null,
+      event: evt.eventType,
+      path: evt.url || (evt.metadata && evt.metadata.route) || null,
+      ts: evt.timestamp,
+      data: {
+        sessionId: evt.sessionId,
+        eventId: evt.eventId,
+        metadata: evt.metadata || null,
+        clientVersion: evt.clientVersion,
+        sequence: evt.sequence,
+        referrer: evt.referrer || null,
+      },
+    }));
+    const payload = JSON.stringify({ events: mapped });
     if (navigator.sendBeacon) {
       const blob = new Blob([payload], { type: 'application/json' });
       navigator.sendBeacon(this.endpoint, blob);
