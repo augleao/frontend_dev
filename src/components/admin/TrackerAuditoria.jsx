@@ -59,6 +59,19 @@ export default function TrackerAuditoria() {
     Object.keys(groups).forEach((user) => {
       groups[user].sort((a, b) => new Date(b.ts || b.created_at) - new Date(a.ts || a.created_at));
     });
+    // Initialize activeCard with first (newest) card of each user
+    const initActive = {};
+    Object.keys(groups).forEach((user) => {
+      if (groups[user].length > 0) {
+        initActive[user] = groups[user][0].id;
+      }
+    });
+    if (Object.keys(initActive).length > 0) {
+      setActiveCard((prev) => {
+        const merged = { ...initActive, ...prev };
+        return merged;
+      });
+    }
     return groups;
   }, [rows]);
 
@@ -253,7 +266,10 @@ export default function TrackerAuditoria() {
                         <div style={{ fontWeight: 600, fontSize: '15px' }}>{row.user_name || '—'}</div>
                         <div style={{ textAlign: 'right' }}>
                           <span style={{ ...pill, background: color, color: '#fff' }}>{row.event || 'evento'}</span>
-                          <div style={{ color: '#6b7280', fontSize: '12px', marginTop: 6 }}>
+                          {row.event === 'pageview' && (
+                            <div style={{ color: '#6b7280', fontSize: '11px', marginTop: 4 }}>{truncate(row.path, 28)}</div>
+                          )}
+                          <div style={{ color: '#6b7280', fontSize: '12px', marginTop: row.event === 'pageview' ? 2 : 6 }}>
                             {row.ts ? new Date(row.ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—'}
                           </div>
                         </div>
