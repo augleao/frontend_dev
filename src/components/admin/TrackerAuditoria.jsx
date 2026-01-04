@@ -219,12 +219,7 @@ export default function TrackerAuditoria() {
       <div style={cardsWrap}>
         {Object.entries(groupedByUser).map(([userName, userRows]) => {
           const currentActive = activeCard[userName];
-          let sortedCards = [...userRows];
-          const activeIdx = sortedCards.findIndex((r) => r.id === currentActive);
-          if (activeIdx > 0) {
-            const [active] = sortedCards.splice(activeIdx, 1);
-            sortedCards.unshift(active);
-          }
+          const sortedCards = [...userRows];
           return (
             <div key={userName} style={{ marginBottom: 24 }}>
               <div style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a', marginBottom: 12 }}>
@@ -232,7 +227,7 @@ export default function TrackerAuditoria() {
               </div>
               <div style={stackContainer}>
                 {sortedCards.map((row, idx) => {
-                  const isActive = idx === 0;
+                  const isActive = row.id === currentActive;
                   const color = palette[row.event] || palette.default;
                   const isOpen = expanded[row.id];
                   const dataStr = row.data ? JSON.stringify(row.data, null, 2) : '-';
@@ -245,12 +240,12 @@ export default function TrackerAuditoria() {
                         position: 'absolute',
                         width: 340,
                         transform: `translateX(${idx * 48}px) translateY(${idx * 2}px) ${isActive ? 'scale(1)' : 'scale(0.96)'}`,
-                        zIndex: sortedCards.length - idx,
+                        zIndex: isActive ? 999 : sortedCards.length - idx,
                         opacity: isActive ? 1 : 0.75,
                         cursor: 'pointer',
                         transition: 'all 0.3s ease'
                       }}
-                      onClick={() => { if (!isActive) setActiveCard((prev) => ({ ...prev, [userName]: row.id })); }}
+                      onClick={() => setActiveCard((prev) => ({ ...prev, [userName]: isActive ? null : row.id }))}
                       role="button"
                       tabIndex={0}
                     >
