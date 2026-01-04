@@ -1763,7 +1763,7 @@ export default function LeituraLivros() {
       </select>
     </div>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>TIPO DE ESCRITA</label>
+      <label style={{ fontSize: 12, fontWeight: 800, color: '#1f2937' }}>ESCRITA</label>
       <select value={tipoEscrita} onChange={e => setTipoEscrita(e.target.value)}
         style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14 }}>
         <option value="digitado">Digitado</option>
