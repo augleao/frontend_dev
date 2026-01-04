@@ -76,7 +76,8 @@ class Tracker {
   async _sendBatch(batch) {
     // Map internal event shape to backend expected shape
     const mapped = batch.map((evt) => ({
-      uid: evt.userId || null,
+      // prefer a stable user identifier; fallback to sessionId to avoid backend 400 when anonymous disallowed
+      uid: evt.userId || evt.sessionId || null,
       event: evt.eventType,
       path: evt.url || (evt.metadata && evt.metadata.route) || null,
       ts: evt.timestamp,
@@ -109,7 +110,7 @@ class Tracker {
   _flushOnUnload() {
     if (this.queue.length === 0) return;
     const mapped = this.queue.map((evt) => ({
-      uid: evt.userId || null,
+      uid: evt.userId || evt.sessionId || null,
       event: evt.eventType,
       path: evt.url || (evt.metadata && evt.metadata.route) || null,
       ts: evt.timestamp,
