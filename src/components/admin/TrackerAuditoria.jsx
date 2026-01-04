@@ -115,8 +115,10 @@ export default function TrackerAuditoria() {
         throw new Error(txt || 'Falha ao excluir');
       }
       await res.json();
-      // reload
+      // reload: bump a filter change to refetch immediately
       setFilters((f) => ({ ...f }));
+      // also refresh data by calling load again via changing queryString dependency
+      setRows([]);
     } catch (e) {
       setError(e && e.message ? e.message : 'Erro ao excluir');
     } finally {
