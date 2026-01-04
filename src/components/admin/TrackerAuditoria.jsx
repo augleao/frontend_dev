@@ -118,6 +118,7 @@ export default function TrackerAuditoria() {
               <th style={thStyle}>TS</th>
               <th style={thStyle}>Evento</th>
               <th style={thStyle}>Path</th>
+              <th style={thStyle}>Usuário</th>
               <th style={thStyle}>UID (hash)</th>
               <th style={thStyle}>Data (JSON)</th>
               <th style={thStyle}>IP</th>
@@ -127,7 +128,7 @@ export default function TrackerAuditoria() {
           <tbody>
             {rows.length === 0 && !loading && (
               <tr>
-                <td colSpan={7} style={{ padding: '12px', textAlign: 'center', color: '#777' }}>
+                <td colSpan={8} style={{ padding: '12px', textAlign: 'center', color: '#777' }}>
                   Nenhum evento encontrado.
                 </td>
               </tr>
@@ -137,8 +138,9 @@ export default function TrackerAuditoria() {
                 <td style={tdStyle}>{formatDate(row.ts || row.created_at)}</td>
                 <td style={tdStyle}>{row.event || '-'}</td>
                 <td style={tdStyle}>{row.path || '-'}</td>
+                <td style={tdStyle}>{row.user_name || '-'}</td>
                 <td style={tdStyle}>{truncate(row.hashed_uid || (row.data && row.data.uid))}</td>
-                <td style={{ ...tdStyle, maxWidth: 240 }}>
+                <td style={{ ...tdStyle, maxWidth: 520 }}>
                   <code style={{ fontSize: '12px', whiteSpace: 'pre-wrap' }}>{row.data ? JSON.stringify(row.data) : '-'}</code>
                 </td>
                 <td style={tdStyle}>{row.ip || '-'}</td>
