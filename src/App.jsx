@@ -31,6 +31,7 @@ import PromptsIAAdmin from './components/admin/PromptsIAAdmin';
 import OnedriveConfig from './components/admin/OnedriveConfig';
 import BackblazeConfig from './components/admin/BackblazeConfig';
 import OnedriveOAuthCallback from './components/admin/OnedriveOAuthCallback';
+import TrackerAuditoria from './components/admin/TrackerAuditoria';
 import ProtocoloAcesso from './ProtocoloAcesso';
 import AtosGratuitos from './AtosGratuitos';
 import GerenciadorArquivosPDF from './components/arquivos/GerenciadorArquivosPDF';
@@ -229,6 +230,14 @@ function App() {
           element={
             <AdminRoute>
               <RenderBackupManager />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/tracker"
+          element={
+            <AdminRoute>
+              <TrackerAuditoria />
             </AdminRoute>
           }
         />

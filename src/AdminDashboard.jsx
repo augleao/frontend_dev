@@ -33,6 +33,7 @@ export default function AdminDashboard() {
     { label: 'Importar Atos', icon: FaFileUpload, to: '/admin/importar-atos' },
     { label: 'Versões TJMG', icon: FaLayerGroup, to: '/admin/atos-tabelas' },
     { label: 'Usuários', icon: FaUsers, to: '/admin/usuarios' },
+    { label: 'Atividades (tracker)', icon: FaChartArea, to: '/admin/tracker' },
     { label: 'Relatórios', icon: FaChartBar, to: '/relatorios' },
     { label: 'Legislação', icon: FaBalanceScale, to: '/admin/legislacao' },
     { label: 'Backup', icon: FaArchive, to: '/admin/backup' },
