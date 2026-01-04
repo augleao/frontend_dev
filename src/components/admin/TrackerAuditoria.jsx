@@ -23,6 +23,7 @@ export default function TrackerAuditoria() {
   const [expanded, setExpanded] = useState({});
   const [users, setUsers] = useState([]);
   const [purging, setPurging] = useState(false);
+  const [activeCard, setActiveCard] = useState({});
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -45,6 +46,20 @@ export default function TrackerAuditoria() {
       return acc;
     }, {});
     return { total, uniqueUsers, byEvent };
+  }, [rows]);
+
+  const groupedByUser = useMemo(() => {
+    const groups = {};
+    rows.forEach((row) => {
+      const user = row.user_name || row.hashed_uid || (row.data && row.data.uid) || 'Anônimo';
+      if (!groups[user]) groups[user] = [];
+      groups[user].push(row);
+    });
+    // Sort within each user: newest first (DESC)
+    Object.keys(groups).forEach((user) => {
+      groups[user].sort((a, b) => new Date(b.ts || b.created_at) - new Date(a.ts || a.created_at));
+    });
+    return groups;
   }, [rows]);
 
   const palette = {
@@ -202,38 +217,80 @@ export default function TrackerAuditoria() {
       {!loading && rows.length === 0 && <div style={infoStyle}>Nenhum evento encontrado.</div>}
 
       <div style={cardsWrap}>
-        {rows.map((row) => {
-          const color = palette[row.event] || palette.default;
-          const isOpen = expanded[row.id];
-          const dataStr = row.data ? JSON.stringify(row.data, null, 2) : '-';
+        {Object.entries(groupedByUser).map(([userName, userRows]) => {
+          const currentActive = activeCard[userName];
+          let sortedCards = [...userRows];
+          const activeIdx = sortedCards.findIndex((r) => r.id === currentActive);
+          if (activeIdx > 0) {
+            const [active] = sortedCards.splice(activeIdx, 1);
+            sortedCards.unshift(active);
+          }
           return (
-            <div key={row.id} style={{ ...card, borderColor: color }}>
-              <div style={cardTop}>
-                <div>
-                  <span style={{ ...pill, background: color, color: '#fff' }}>{row.event || 'evento'}</span>
-                  <div style={{ fontWeight: 600, fontSize: '15px', marginTop: 6 }}>{row.path || '-'}</div>
-                  <div style={{ color: '#6b7280', fontSize: '13px' }}>{formatDate(row.ts || row.created_at)}</div>
-                </div>
-                <div style={{ textAlign: 'right', minWidth: 180 }}>
-                  <div style={{ fontWeight: 600 }}>{row.user_name || '—'}</div>
-                  <div style={{ color: '#6b7280', fontSize: '12px' }}>{truncate(row.hashed_uid || (row.data && row.data.uid))}</div>
-                  <div style={{ color: '#6b7280', fontSize: '12px', marginTop: 4 }}>{row.ip || '-'}</div>
-                </div>
+            <div key={userName} style={{ marginBottom: 24 }}>
+              <div style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a', marginBottom: 12 }}>
+                {userName} ({sortedCards.length})
               </div>
+              <div style={stackContainer}>
+                {sortedCards.map((row, idx) => {
+                  const isActive = idx === 0;
+                  const color = palette[row.event] || palette.default;
+                  const isOpen = expanded[row.id];
+                  const dataStr = row.data ? JSON.stringify(row.data, null, 2) : '-';
+                  return (
+                    <div
+                      key={row.id}
+                      style={{
+                        ...card,
+                        borderColor: color,
+                        position: 'absolute',
+                        width: 340,
+                        transform: `translateX(${idx * 28}px) translateY(${idx * 2}px) ${isActive ? 'scale(1)' : 'scale(0.96)'}`,
+                        zIndex: sortedCards.length - idx,
+                        opacity: isActive ? 1 : 0.75,
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onClick={() => { if (!isActive) setActiveCard((prev) => ({ ...prev, [userName]: row.id })); }}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div style={cardTop}>
+                        <div>
+                          <span style={{ ...pill, background: color, color: '#fff' }}>{row.event || 'evento'}</span>
+                          <div style={{ fontWeight: 600, fontSize: '15px', marginTop: 6 }}>{row.path || '-'}</div>
+                          <div style={{ color: '#6b7280', fontSize: '13px' }}>{formatDate(row.ts || row.created_at)}</div>
+                        </div>
+                        <div style={{ textAlign: 'right', minWidth: 120 }}>
+                          <div style={{ fontWeight: 600 }}>{row.user_name || '—'}</div>
+                          <div style={{ color: '#6b7280', fontSize: '12px' }}>{truncate(row.hashed_uid || (row.data && row.data.uid))}</div>
+                          <div style={{ color: '#6b7280', fontSize: '12px', marginTop: 4 }}>{row.ip || '-'}</div>
+                        </div>
+                      </div>
 
-              <div style={rowLine}>UA: <span style={{ color: '#111827' }}>{truncate(row.ua, 120)}</span></div>
+                      {isActive && (
+                        <>
+                          <div style={rowLine}>UA: <span style={{ color: '#111827' }}>{truncate(row.ua, 120)}</span></div>
 
-              <button
-                type="button"
-                onClick={() => setExpanded((m) => ({ ...m, [row.id]: !isOpen }))}
-                style={expandBtn}
-              >
-                {isOpen ? 'Esconder dados' : 'Ver dados'}
-              </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpanded((m) => ({ ...m, [row.id]: !isOpen }));
+                            }}
+                            style={expandBtn}
+                          >
+                            {isOpen ? 'Esconder dados' : 'Ver dados'}
+                          </button>
 
-              {isOpen && (
-                <pre style={jsonBox}>{dataStr}</pre>
-              )}
+                          {isOpen && (
+                            <pre style={jsonBox}>{dataStr}</pre>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           );
         })}
@@ -263,7 +320,8 @@ const inputStyle = { padding: '10px', border: '1px solid #d1d5db', borderRadius:
 const ghostButton = { padding: '10px', borderRadius: 6, border: '1px solid #d1d5db', background: '#f8fafc', cursor: 'pointer' };
 const errorStyle = { color: '#dc2626', marginBottom: '12px' };
 const infoStyle = { color: '#475569', marginBottom: '12px' };
-const cardsWrap = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '12px' };
+const cardsWrap = { display: 'flex', flexDirection: 'column', gap: '24px' };
+const stackContainer = { position: 'relative', height: 320, minHeight: 320 };
 const card = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: 14, boxShadow: '0 8px 24px rgba(15, 23, 42, 0.06)', display: 'flex', flexDirection: 'column', gap: 10 };
 const cardTop = { display: 'flex', justifyContent: 'space-between', gap: 12 };
 const pill = { display: 'inline-block', padding: '4px 10px', borderRadius: 999, fontSize: '12px', fontWeight: 700, letterSpacing: '0.3px' };
