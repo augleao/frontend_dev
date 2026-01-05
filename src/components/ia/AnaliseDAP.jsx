@@ -324,10 +324,21 @@ function AnaliseDAP() {
   const anosDisponiveis = useMemo(() => {
     const anos = new Set([currentYear]);
     daps.forEach((dap) => {
-      if (dap.ano) anos.add(dap.ano);
+      const candidates = [
+        dap?.ano,
+        dap?.ano_referencia,
+        dap?.ano_ref,
+        dap?.anoReferencia,
+        dap?.ano_referente,
+      ];
+      const found = candidates.find((v) => v !== undefined && v !== null && v !== '');
+      if (found !== undefined && found !== null && found !== '') {
+        const n = Number(found);
+        if (!Number.isNaN(n) && n > 0) anos.add(n);
+      }
     });
     return Array.from(anos).sort((a, b) => b - a);
-  }, [daps]);
+  }, [daps, currentYear]);
 
   return (
     <div style={pageWrapperStyle}>
