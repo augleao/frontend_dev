@@ -1436,22 +1436,25 @@ export default function LeituraLivros() {
       if (mode === 'folder') {
         if (!folderPath.trim()) { logError('Informe o caminho da pasta no servidor.'); setRunning(false); return; }
         logInfo(`Solicitando processamento da pasta: ${folderPath}`);
-        // Busca prompts (mesma lógica do Assistente, via /ia/prompts)
-        logInfo('Carregando prompts de IA: tipo_escrita, leitura_manuscrito, leitura_digitado...');
-        const pMap = await PromptsService.getManyByIndexadores(['tipo_escrita', 'leitura_manuscrito', 'leitura_digitado']);
-        const pTipo = pMap['tipo_escrita'];
-        const pManu = pMap['leitura_manuscrito'];
-        const pDigi = pMap['leitura_digitado'];
-        if (!pTipo) logWarning('Prompt tipo_escrita não encontrado.'); else logSuccess('Prompt tipo_escrita OK');
-        if (!pManu) logWarning('Prompt leitura_manuscrito não encontrado.'); else logSuccess('Prompt leitura_manuscrito OK');
-        if (!pDigi) logWarning('Prompt leitura_digitado não encontrado.'); else logSuccess('Prompt leitura_digitado OK');
+        // Busca prompt específico para o par tipoEscrita+tipoRegistro
+        const normalizeKey = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        const tipoRegistroKey = normalizeKey(tipoRegistro);
+        const promptIndexador = `leitura_${tipoEscrita}_${tipoRegistroKey}`;
+        logInfo(`Carregando prompt específico de IA: ${promptIndexador}`);
+        const pMap = await PromptsService.getManyByIndexadores([promptIndexador]);
+        const pPrompt = pMap[promptIndexador];
+        if (!pPrompt) {
+          logWarning(`Prompt específico '${promptIndexador}' não encontrado. Nenhum fallback será usado.`);
+        } else {
+          logSuccess(`Prompt ${promptIndexador} encontrado.`);
+        }
 
-  // Note: do not show the IA prompt content in the console for privacy/security
+        // Note: do not show the IA prompt content in the console for privacy/security
 
         resp = await LeituraLivrosService.startFolderProcessing(folderPath.trim(), {
           versao, acao, cns, tipoRegistro, tipoEscrita, inclusaoPrimeiro: true,
-          promptTipoEscritaIndexador: 'tipo_escrita',
-          promptTipoEscrita: pTipo?.prompt || '',
+          promptTipoEscritaIndexador: promptIndexador,
+          promptTipoEscrita: pPrompt?.prompt || '',
           numeroLivro: numeroLivroFormatted
         });
         // Debug: response do backend ao iniciar processamento (visível no DevTools)
@@ -1469,25 +1472,28 @@ export default function LeituraLivros() {
           const mb = (totalSize / (1024 * 1024)).toFixed(2);
           logInfo(`Tamanho total do upload: ${mb}MB`);
         }
-        // Busca prompts (mesma lógica do Assistente, via /ia/prompts)
-        logInfo('Carregando prompts de IA: tipo_escrita, leitura_manuscrito, leitura_digitado...');
-        const pMap = await PromptsService.getManyByIndexadores(['tipo_escrita', 'leitura_manuscrito', 'leitura_digitado']);
-        const pTipo = pMap['tipo_escrita'];
-        const pManu = pMap['leitura_manuscrito'];
-        const pDigi = pMap['leitura_digitado'];
-        if (!pTipo) logWarning('Prompt tipo_escrita não encontrado.'); else logSuccess('Prompt tipo_escrita OK');
-        if (!pManu) logWarning('Prompt leitura_manuscrito não encontrado.'); else logSuccess('Prompt leitura_manuscrito OK');
-        if (!pDigi) logWarning('Prompt leitura_digitado não encontrado.'); else logSuccess('Prompt leitura_digitado OK');
+        // Busca prompt específico para o par tipoEscrita+tipoRegistro
+        const normalizeKey = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        const tipoRegistroKey = normalizeKey(tipoRegistro);
+        const promptIndexador = `leitura_${tipoEscrita}_${tipoRegistroKey}`;
+        logInfo(`Carregando prompt específico de IA: ${promptIndexador}`);
+        const pMap = await PromptsService.getManyByIndexadores([promptIndexador]);
+        const pPrompt = pMap[promptIndexador];
+        if (!pPrompt) {
+          logWarning(`Prompt específico '${promptIndexador}' não encontrado. Nenhum fallback será usado.`);
+        } else {
+          logSuccess(`Prompt ${promptIndexador} encontrado.`);
+        }
 
-        // Deixa a classificação manuscrito/digitado a cargo do backend usando o prompt tipo_escrita.
-        logInfo('Classificação manuscrito/digitado será executada no backend com base no prompt tipo_escrita.');
+        // Deixa a classificação manuscrito/digitado a cargo do backend usando o prompt específico selecionado
+        logInfo('Classificação manuscrito/digitado será executada no backend com base no prompt específico selecionado.');
 
-  // Note: do not show the IA prompt content in the console for privacy/security
+        // Note: do not show the IA prompt content in the console for privacy/security
 
         resp = await LeituraLivrosService.uploadFiles(files, {
           versao, acao, cns, tipoRegistro, tipoEscrita, inclusaoPrimeiro: true,
-          promptTipoEscritaIndexador: 'tipo_escrita',
-          promptTipoEscrita: pTipo?.prompt || '',
+          promptTipoEscritaIndexador: promptIndexador,
+          promptTipoEscrita: pPrompt?.prompt || '',
           numeroLivro: numeroLivroFormatted
         });
       }
@@ -1752,7 +1758,7 @@ export default function LeituraLivros() {
           const labelMap = { '1': 'NASCIMENTO', '2': 'CASAMENTO', '3': 'CASAMENTO_RELIGIOSO', '4': 'OBITO', '5': 'NATIMORTO', '6': 'PROCLAMAS', '7': 'LIVRO_E' };
           setTipoRegistro(labelMap[code] || 'NASCIMENTO');
         }}
-        style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14, minWidth: 220 }}>
+        style={{ border: '1.5px solid #d0d7de', borderRadius: 10, padding: '10px 12px', fontSize: 14, minWidth: 200 }}>
         <option value="1">Nascimento</option>
         <option value="2">Casamento</option>
         <option value="3">Casamento Religioso</option>
