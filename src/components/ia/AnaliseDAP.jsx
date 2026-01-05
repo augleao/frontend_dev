@@ -22,6 +22,7 @@ function AnaliseDAP() {
     status: 'todos',
   });
   const [daps, setDaps] = useState([]);
+  const [allDaps, setAllDaps] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputRef = useRef(null);
@@ -53,9 +54,13 @@ function AnaliseDAP() {
         delete apiFilters.tipo;
       }
 
-      const resposta = await listDaps(apiFilters);
+      // Fetch all DAPs without year filter to populate the years dropdown
+      const apiFiltersAll = { ...apiFilters };
+      delete apiFiltersAll.ano;
+      const respostaAll = await listDaps(apiFiltersAll);
       // eslint-disable-next-line no-console
-      console.debug('DAPs normalizadas', resposta);
+      console.debug('DAPs (all years) normalizadas', respostaAll);
+      let allItems = respostaAll.items || [];
 
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
       const token = localStorage.getItem('token');
@@ -108,6 +113,10 @@ function AnaliseDAP() {
         return parts[parts.length - 1].replace(/[^\p{L}\p{N}_-]+/gu, '');
       };
 
+      const resposta = await listDaps(apiFilters);
+      // eslint-disable-next-line no-console
+      console.debug('DAPs normalizadas (filtro atual)', resposta);
+
       let items = resposta.items || [];
       if (userServentiaAbreviada) {
         const userLower = String(userServentiaAbreviada).toLowerCase();
@@ -122,10 +131,18 @@ function AnaliseDAP() {
         // eslint-disable-next-line no-console
         console.debug('[Filtro DAP] DAPs finais exibidas:', filtered);
         items = filtered;
+        // apply same filter to allItems so anos list matches visible serventia
+        allItems = allItems.filter((dap) => {
+          const servDisplay = String(getServentiaDisplay(dap) || '').trim();
+          const finalToken = String(getFinalToken(servDisplay) || '').toLowerCase();
+          return finalToken && userLower.includes(finalToken);
+        });
       } else {
         // eslint-disable-next-line no-console
         console.warn('[Filtro DAP] usuário sem serventia abreviada definida; exibindo todas as DAPs temporariamente');
       }
+
+      setAllDaps(allItems);
 
       const parseYearMonth = (dap) => {
         const anoCandidates = [dap?.ano_referencia, dap?.ano, dap?.ano_ref, dap?.anoReferencia, dap?.ano_referente];
@@ -323,7 +340,7 @@ function AnaliseDAP() {
 
   const anosDisponiveis = useMemo(() => {
     const anos = new Set([currentYear]);
-    daps.forEach((dap) => {
+    allDaps.forEach((dap) => {
       const candidates = [
         dap?.ano,
         dap?.ano_referencia,
@@ -338,7 +355,7 @@ function AnaliseDAP() {
       }
     });
     return Array.from(anos).sort((a, b) => b - a);
-  }, [daps, currentYear]);
+  }, [allDaps, currentYear]);
 
   return (
     <div style={pageWrapperStyle}>
