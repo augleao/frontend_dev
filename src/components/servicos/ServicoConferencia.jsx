@@ -3,6 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 import './servicos.css';
 
+const palette = {
+  primary: '#1d4ed8',
+  primaryDark: '#1e3a8a',
+  softBg: '#eef5ff',
+  softBorder: '#d6e4ff',
+  text: '#0f172a'
+};
+
 export default function ServicoConferencia({ protocolo, atosPedido = [], onAvancarEtapa, onVoltarEtapa, onStatusChange }) {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState('');
@@ -174,29 +182,29 @@ export default function ServicoConferencia({ protocolo, atosPedido = [], onAvanc
 
   return (
     <div className="servico-section">
-      <div className="servico-header">
-        <h3 className="servico-title">Conferência</h3>
+      <div className="servico-header" style={{ background: palette.softBg, border: `1px solid ${palette.softBorder}`, borderRadius: 10, padding: '10px 12px' }}>
+        <h3 className="servico-title" style={{ color: palette.primary, margin: 0 }}>Conferência</h3>
       </div>
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <label style={{ color: '#e67e22', fontWeight: 600 }}>Usuário responsável:</label><br />
-          <span style={{ fontWeight: 600 }}>{usuario}</span>
+          <label style={{ color: palette.primary, fontWeight: 600 }}>Usuário responsável:</label><br />
+          <span style={{ fontWeight: 600, color: palette.text }}>{usuario}</span>
         </div>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <label style={{ color: '#e67e22', fontWeight: 600 }}>Status da conferência:</label><br />
-          <select value={status} onChange={e => setStatus(e.target.value)} style={{ width: '100%', border: '1.5px solid #f9e79f', borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box', background: '#fffbe6' }}>
+          <label style={{ color: palette.primary, fontWeight: 600 }}>Status da conferência:</label><br />
+          <select value={status} onChange={e => setStatus(e.target.value)} style={{ width: '100%', border: `1.5px solid ${palette.softBorder}`, borderRadius: 6, padding: '8px 12px', fontSize: 16, boxSizing: 'border-box', background: '#fff', color: palette.text }}>
             <option value="Conferido">Conferido</option>
             <option value="Retificado">Retificado</option>
             <option value="Recusado">Recusado</option>
           </select>
         </div>
         <div style={{ flex: 2, minWidth: 200 }}>
-          <label style={{ color: '#e67e22', fontWeight: 600 }}>Observações:</label><br />
+          <label style={{ color: palette.primary, fontWeight: 600 }}>Observações:</label><br />
           <textarea
             value={observacao}
             onChange={e => setObservacao(e.target.value)}
             maxLength={200}
-            style={{ width: '100%', border: '1.5px solid #f9e79f', borderRadius: 6, padding: '8px 12px', fontSize: 16, minHeight: 40, boxSizing: 'border-box', background: '#fffbe6' }}
+            style={{ width: '100%', border: `1.5px solid ${palette.softBorder}`, borderRadius: 6, padding: '8px 12px', fontSize: 16, minHeight: 40, boxSizing: 'border-box', background: '#fff', color: palette.text }}
             placeholder="Observações da conferência..."
           />
         </div>
@@ -207,24 +215,24 @@ export default function ServicoConferencia({ protocolo, atosPedido = [], onAvanc
         </div>
       </div>
       {erro && <div style={{ color: 'red', marginBottom: 8 }}>{erro}</div>}
-      <h4 style={{ color: '#e67e22', fontWeight: 600, fontSize: 16, margin: '12px 0 8px 0' }}>Histórico de Conferências</h4>
+      <h4 style={{ color: palette.primaryDark, fontWeight: 700, fontSize: 16, margin: '12px 0 8px 0' }}>Histórico de Conferências</h4>
       <div className="servico-table-container">
         <table className="servico-table">
           <thead>
-            <tr style={{ background: '#ffe5b4' }}>
-              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Data/Hora</th>
-              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Usuário</th>
-              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Status</th>
-              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Observação</th>
-              <th style={{ padding: 6, color: '#e67e22', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Ações</th>
+            <tr style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)' }}>
+              <th style={{ padding: 6, color: '#ffffff', fontWeight: 700, fontSize: 12, textAlign: 'left', background: '#1d4ed8' }}>Data/Hora</th>
+              <th style={{ padding: 6, color: '#ffffff', fontWeight: 700, fontSize: 12, textAlign: 'left', background: '#1d4ed8' }}>Usuário</th>
+              <th style={{ padding: 6, color: '#ffffff', fontWeight: 700, fontSize: 12, textAlign: 'left', background: '#1d4ed8' }}>Status</th>
+              <th style={{ padding: 6, color: '#ffffff', fontWeight: 700, fontSize: 12, textAlign: 'left', background: '#1d4ed8' }}>Observação</th>
+              <th style={{ padding: 6, color: '#ffffff', fontWeight: 700, fontSize: 12, textAlign: 'left', background: '#1d4ed8' }}>Ações</th>
             </tr>
           </thead>
           <tbody>
             {conferencias.length === 0 ? (
-              <tr><td colSpan={5} style={{ textAlign: 'center', color: '#aaa', padding: 12 }}>Nenhuma conferência registrada.</td></tr>
+              <tr><td colSpan={5} style={{ textAlign: 'center', color: '#64748b', padding: 12 }}>Nenhuma conferência registrada.</td></tr>
             ) : (
               conferencias.map((c, idx) => (
-                <tr key={c.id || idx} style={{ background: idx % 2 === 0 ? '#fff3e0' : 'transparent' }}>
+                <tr key={c.id || idx} style={{ background: idx % 2 === 0 ? palette.softBg : '#fff' }}>
                   <td style={{ padding: 6 }}>
                     {c.dataHora
                       ? new Date(c.dataHora).toLocaleString()
@@ -232,11 +240,11 @@ export default function ServicoConferencia({ protocolo, atosPedido = [], onAvanc
                         ? new Date(c.data_hora).toLocaleString()
                         : '-'}
                   </td>
-                  <td style={{ padding: 6 }}>{c.usuario}</td>
+                  <td style={{ padding: 6, color: palette.text }}>{c.usuario}</td>
                   <td style={{ padding: 6 }}>
                     {c.status === 'Conferido' ? 'Conferido' : c.status === 'Retificado' ? 'Retificado' : c.status === 'Recusado' ? 'Recusado' : c.status}
                   </td>
-                  <td style={{ padding: 6 }}>{c.observacao}</td>
+                  <td style={{ padding: 6, color: palette.text }}>{c.observacao}</td>
                   <td style={{ padding: 6 }}>
                     <button type="button" onClick={() => handleApagarConferencia(c)} className="btn btn-danger">Apagar</button>
                   </td>

@@ -1,10 +1,18 @@
-  import React, { useState, useEffect } from 'react';
-  import { atualizarSeloExecucaoServico } from './ServicoSeloService';
+import React, { useState, useEffect } from 'react';
+import { atualizarSeloExecucaoServico } from './ServicoSeloService';
 
 import ClipboardImageUpload from './ClipboardImageUpload';
 import SeloFileUpload from './SeloFileUpload';
 import config from '../../config';
-  import './servicos.css';
+import './servicos.css';
+
+const palette = {
+    primary: '#1d4ed8',
+    primaryDark: '#1e3a8a',
+    softBg: '#eef5ff',
+    softBorder: '#d6e4ff',
+    text: '#0f172a'
+  };
 
 const statusExecucao = [
   { value: 'em_andamento', label: 'Em andamento' },
@@ -191,15 +199,15 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
 
   return (
     <div className="servico-section">
-      <div className="servico-header">
-        <h3 className="servico-title">Execução do Serviço</h3>
+      <div className="servico-header" style={{ background: palette.softBg, border: `1px solid ${palette.softBorder}`, borderRadius: 10, padding: '10px 12px' }}>
+        <h3 className="servico-title" style={{ color: palette.primary, margin: 0 }}>Execução do Serviço</h3>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, margin: 0 }}>Responsável:</label>
+          <label style={{ color: palette.primary, fontWeight: 600, fontSize: 13, margin: 0 }}>Responsável:</label>
           <span
             style={{
-              color: '#2471a3',
+              color: palette.primary,
               fontWeight: 600,
               fontSize: 13,
               background: 'transparent'
@@ -212,27 +220,27 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 16 }}>
-          <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, margin: 0 }}>Data:</label>
+          <label style={{ color: palette.primary, fontWeight: 600, fontSize: 13, margin: 0 }}>Data:</label>
           <input
             type="date"
             value={getDataExecucao()}
             onChange={e => onChange('data', e.target.value)}
             style={{
               width: 140,
-              border: '1.5px solid #aed6f1',
+              border: `1.5px solid ${palette.softBorder}`,
               borderRadius: 6,
               padding: '4px 8px',
               fontSize: 13,
               height: 32,
               boxSizing: 'border-box',
               background: '#fff',
-              color: '#154360',
+              color: palette.text,
               fontWeight: 500
             }}
           />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 16 }}>
-          <label style={{ color: '#2471a3', fontWeight: 600, fontSize: 13, margin: 0 }}>Observações:</label>
+          <label style={{ color: palette.primary, fontWeight: 600, fontSize: 13, margin: 0 }}>Observações:</label>
           <textarea
             value={form.execucao.observacoes}
             onChange={e => onChange('observacoes', e.target.value)}
@@ -240,14 +248,14 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
             style={{
               width: 220,
               minHeight: 32,
-              border: '1.5px solid #aed6f1',
+              border: `1.5px solid ${palette.softBorder}`,
               borderRadius: 6,
               padding: '4px 8px',
               fontSize: 13,
               resize: 'vertical',
               boxSizing: 'border-box',
               background: '#fff',
-              color: '#154360',
+              color: palette.text,
               fontWeight: 500
             }}
           />
@@ -352,25 +360,25 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
       {/* Tabela de selos utilizada neste pedido - sempre no final do componente */}
       {form.execucao && form.execucao.id && selos.length > 0 && (
         <div style={{ marginTop: 16 }}>
-          <h4 style={{ color: '#6c3483', marginBottom: 2 }}>Selos Utilizados neste Pedido</h4>
+          <h4 style={{ color: palette.primaryDark, marginBottom: 2 }}>Selos Utilizados neste Pedido</h4>
           <div className="servico-table-container">
           <table className="servico-table" style={{ background: '#fff' }}>
             <thead>
-              <tr style={{ background: '#ede1f7' }}>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Selo Consulta</th>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Código de Segurança</th>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Qtd. Atos</th>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Atos praticados por</th>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Valores</th>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Data/Hora</th>
-                <th style={{ padding: 6, fontSize: 12, color: '#6c3483' }}>Ações</th>
+              <tr style={{ background: '#e1e9ff' }}>
+                <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Selo Consulta</th>
+                <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Código de Segurança</th>
+                <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Qtd. Atos</th>
+                <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Atos praticados por</th>
+                <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Valores</th>
+                <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Data/Hora</th>
+                <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Ações</th>
               </tr>
             </thead>
             <tbody>
               {selos.map((selo, idx) => {
                 const isEditing = editingSeloId === selo.id;
                 return (
-                  <tr key={selo.id || idx} style={{ background: idx % 2 === 0 ? '#f8f4fc' : '#fff' }}>
+                  <tr key={selo.id || idx} style={{ background: idx % 2 === 0 ? palette.softBg : '#fff' }}>
                     <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
                       {isEditing ? (
                         <input value={editSelo.selo_consulta || ''} onChange={e => setEditSelo({ ...editSelo, selo_consulta: e.target.value })} style={{ width: 80, fontSize: 9, padding: '1px 2px' }} placeholder="Selo" />

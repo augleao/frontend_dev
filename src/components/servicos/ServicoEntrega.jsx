@@ -4,6 +4,14 @@ import { useState } from 'react';
 import config from '../../config';
 import './servicos.css';
 
+const palette = {
+  primary: '#1d4ed8',
+  primaryDark: '#1e3a8a',
+  softBg: '#eef5ff',
+  softBorder: '#d6e4ff',
+  text: '#0f172a'
+};
+
 
 export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista, onStatusChange }) {
   const [salvando, setSalvando] = useState(false);
@@ -143,8 +151,8 @@ export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista
   return (
     <div className="servico-section">
         {/* Header */}
-        <div className="servico-header">
-          <h2 className="servico-title">Entrega</h2>
+        <div className="servico-header" style={{ background: palette.softBg, border: `1px solid ${palette.softBorder}`, borderRadius: 10, padding: '10px 12px' }}>
+          <h2 className="servico-title" style={{ color: palette.primary, margin: 0 }}>Entrega</h2>
         </div>
 
         {/* Linha única com todos os campos de entrega */}
@@ -157,8 +165,8 @@ export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista
         }}>
           {/* Responsável */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 13, marginRight: 4 }}>Responsável:</label>
-            <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13 }}>
+            <label style={{ color: palette.primary, fontWeight: 600, fontSize: 13, marginRight: 4 }}>Responsável:</label>
+            <span style={{ color: palette.text, fontWeight: 600, fontSize: 13 }}>
               {(() => {
                 const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
                 return usuario.nome || usuario.email || 'Usuário';
@@ -167,9 +175,9 @@ export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista
           </div>
           {/* Data da Entrega */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 14, marginRight: 4 }}>Data da entrega:</label>
+            <label style={{ color: palette.primary, fontWeight: 600, fontSize: 14, marginRight: 4 }}>Data da entrega:</label>
             {form.entrega && form.entrega.id ? (
-              <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13 }}>
+              <span style={{ color: palette.text, fontWeight: 600, fontSize: 13 }}>
                 {form.entrega.data
                   ? (typeof form.entrega.data === 'string' && form.entrega.data.includes('T')
                       ? form.entrega.data.slice(0, 10)
@@ -182,7 +190,7 @@ export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista
                 value={form.entrega.data} 
                 onChange={e => onChange('data', e.target.value)} 
                 style={{
-                  border: '1.5px solid #a9dfbf',
+                  border: `1.5px solid ${palette.softBorder}`,
                   borderRadius: 6,
                   padding: '8px 12px',
                   fontSize: 13,
@@ -193,9 +201,9 @@ export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista
           </div>
           {/* Hora da Entrega */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 13, marginRight: 4 }}>Hora da entrega:</label>
+            <label style={{ color: palette.primary, fontWeight: 600, fontSize: 13, marginRight: 4 }}>Hora da entrega:</label>
             {form.entrega && form.entrega.id ? (
-              <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13 }}>
+              <span style={{ color: palette.text, fontWeight: 600, fontSize: 13 }}>
                 {form.entrega.hora || '-'}
               </span>
             ) : (
@@ -204,7 +212,7 @@ export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista
                 value={form.entrega.hora} 
                 onChange={e => onChange('hora', e.target.value)} 
                 style={{
-                  border: '1.5px solid #a9dfbf',
+                  border: `1.5px solid ${palette.softBorder}`,
                   borderRadius: 6,
                   padding: '8px 12px',
                   fontSize: 13,
@@ -215,9 +223,9 @@ export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista
           </div>
           {/* Método de Entrega */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <label style={{ color: '#1e8449', fontWeight: 600, fontSize: 13, marginRight: 4 }}>Método de Entrega:</label>
+            <label style={{ color: palette.primary, fontWeight: 600, fontSize: 13, marginRight: 4 }}>Método de Entrega:</label>
             {form.entrega && form.entrega.id ? (
-              <span style={{ color: '#1e8449', fontWeight: 600, fontSize: 13 }}>
+              <span style={{ color: palette.text, fontWeight: 600, fontSize: 13 }}>
                 {form.entrega.retiradoPor || '-'}
               </span>
             ) : (
@@ -226,7 +234,7 @@ export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista
                 value={form.entrega.retiradoPor} 
                 onChange={e => onChange('retiradoPor', e.target.value)} 
                 style={{
-                  border: '1.5px solid #a9dfbf',
+                  border: `1.5px solid ${palette.softBorder}`,
                   borderRadius: 6,
                   padding: '8px 12px',
                   fontSize: 13,
@@ -244,7 +252,7 @@ export default function ServicoEntrega({ form, onChange, pedidoId, onVoltarLista
               Cancelar Entrega
             </button>
           ) : (
-            <button type="button" onClick={salvarEntrega} disabled={salvando} className="btn btn-success">{salvando ? 'Salvando...' : 'Salvar Entrega'}</button>
+            <button type="button" onClick={salvarEntrega} disabled={salvando} className="btn btn-primary">{salvando ? 'Salvando...' : 'Salvar Entrega'}</button>
           )}
           {erro && <span style={{ color: 'red', marginLeft: 16 }}>{erro}</span>}
         </div>

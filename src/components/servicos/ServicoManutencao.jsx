@@ -11,7 +11,7 @@ import config from '../../config';
 import { fetchComAuth } from '../../utils';
 
 const palette = {
-  pageGradient: 'linear-gradient(135deg, #0b1f3b 0%, #0f3e7b 40%, #0a234f 100%)',
+  pageGradient: 'linear-gradient(135deg, #030712 0%, #0a1833 45%, #0b2652 100%)',
   panelBg: '#f7fbff',
   softCard: '#eef5ff',
   softBorder: '#d6e4ff',

@@ -3,6 +3,14 @@ import React, { useState, useMemo } from 'react';
 import config from '../../config';
 import './servicos.css';
 
+const palette = {
+  primary: '#1d4ed8',
+  primaryDark: '#1e3a8a',
+  softBg: '#eef5ff',
+  softBorder: '#d6e4ff',
+  text: '#0f172a'
+};
+
 
 const statusPagamento = [
   { value: 'pendente', label: 'Pendente' },
@@ -189,13 +197,13 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       <div style={{
         marginBottom: 20,
         padding: 16,
-        background: '#fffbe5',
-        border: '2px solid #f6ad55',
+        background: palette.softBg,
+        border: `2px solid ${palette.softBorder}`,
         borderRadius: 8
       }}>
         <h4 style={{
           margin: '0 0 12px 0',
-          color: '#b7791f',
+          color: palette.primary,
           fontSize: '16px',
           fontWeight: '600'
         }}>➕ Complementos de Pagamento</h4>
@@ -205,39 +213,39 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           fontSize: '14px'
         }}>
           <thead>
-            <tr style={{ background: '#fffbe5' }}>
+            <tr style={{ background: palette.softBg }}>
               <th style={{
                 padding: '2px 2px 2px 2px',
                 textAlign: 'left',
-                color: '#b7791f',
+                color: palette.primary,
                 fontWeight: '600',
-                border: '1px solid #f6ad55'
+                border: `1px solid ${palette.softBorder}`
               }}>Valor</th>
               <th style={{
                 padding: '8px 12px',
                 textAlign: 'left',
-                color: '#b7791f',
+                color: palette.primary,
                 fontWeight: '600',
-                border: '1px solid #f6ad55'
+                border: `1px solid ${palette.softBorder}`
               }}>Forma de Pagamento</th>
             </tr>
           </thead>
           <tbody>
             {complementos.map((item, idx) => (
-              <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fffbe5' }}>
+              <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : palette.softBg }}>
                 <td style={{
                   padding: '8px 12px',
-                  border: '1px solid #f6ad55',
+                  border: `1px solid ${palette.softBorder}`,
                   fontFamily: 'monospace',
                   fontWeight: '600',
-                  color: '#b7791f'
+                  color: palette.text
                 }}>
                   R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </td>
                 <td style={{
                   padding: '8px 12px',
-                  border: '1px solid #f6ad55',
-                  color: '#b7791f'
+                  border: `1px solid ${palette.softBorder}`,
+                  color: palette.text
                 }}>{item.forma}</td>
               </tr>
             ))}
@@ -1082,7 +1090,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               statusStyle = { background: '#e8f5e8', border: '2px solid #38a169', color: '#2d5016' };
             } else {
               statusMessage = `⚠️ Valor insuficiente para pagamento. Restam: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-              statusStyle = { background: '#fef5e7', border: '2px solid #f6ad55', color: '#b7791f' };
+              statusStyle = { background: palette.softBg, border: `2px solid ${palette.softBorder}`, color: palette.primary };
             }
 
             return (
@@ -1167,9 +1175,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           justifyContent: 'center'
         }}>
           <div className="servico-section" style={{ minWidth: 320 }}>
-            <h3 style={{ color: '#b7791f', marginBottom: 18, textAlign: 'center' }}>Adicionar Complemento</h3>
+            <h3 style={{ color: palette.primary, marginBottom: 18, textAlign: 'center' }}>Adicionar Complemento</h3>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 18, justifyContent: 'center' }}>
-              <select value={modalFormaComplemento} onChange={e => setModalFormaComplemento(e.target.value)} style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', minWidth: 140 }}>
+              <select value={modalFormaComplemento} onChange={e => setModalFormaComplemento(e.target.value)} style={{ padding: '10px', borderRadius: 6, border: `1.5px solid ${palette.softBorder}`, fontSize: '16px', minWidth: 140 }}>
                 <option value="">Selecione a forma</option>
                 <option value="Dinheiro">Dinheiro</option>
                 <option value="Cartão de Débito">Cartão de Débito</option>
@@ -1184,7 +1192,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                 value={modalValorComplemento}
                 onChange={e => setModalValorComplemento(e.target.value)}
                 placeholder="Valor"
-                style={{ padding: '10px', borderRadius: 6, border: '1.5px solid #f6ad55', fontSize: '16px', width: 120 }}
+                style={{ padding: '10px', borderRadius: 6, border: `1.5px solid ${palette.softBorder}`, fontSize: '16px', width: 120 }}
               />
             </div>
             <div className="servico-actions">
