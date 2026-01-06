@@ -11,19 +11,19 @@ import config from '../../config';
 import { fetchComAuth } from '../../utils';
 
 const clientesMock = [
-  { id: 1, nome: 'João Silva', cpf: '123.456.789-00', endereco: 'Rua A, 123', telefone: '99999-9999', email: 'joao@email.com' },
+  { id: 1, nome: 'Joao Silva', cpf: '123.456.789-00', endereco: 'Rua A, 123', telefone: '99999-9999', email: 'joao@email.com' },
   { id: 2, nome: 'Maria Souza', cpf: '987.654.321-00', endereco: 'Rua B, 456', telefone: '88888-8888', email: 'maria@email.com' }
 ];
 const tiposServico = [
-  'Certidão de Nascimento',
-  'Certidão de Casamento',
+  'Certidao de Nascimento',
+  'Certidao de Casamento',
   'Reconhecimento de Firma',
-  'Autenticação de Documento'
+  'Autenticacao de Documento'
 ];
 const statusExecucao = [
   { value: 'em_andamento', label: 'Em andamento', color: '#3498db' },
   { value: 'aguardando', label: 'Aguardando documentos', color: '#f39c12' },
-  { value: 'concluido', label: 'Concluído', color: '#27ae60' },
+  { value: 'concluido', label: 'Concluido', color: '#27ae60' },
   { value: 'cancelado', label: 'Cancelado', color: '#e74c3c' }
 ];
 const statusPagamento = [
@@ -37,12 +37,10 @@ function gerarProtocolo() {
 
 export default function ServicoManutencao() {
   const [servicos, setServicos] = useState([]);
-  // Fallback: garante que o form sempre tenha serventiaId se o usuário logado possuir
   useEffect(() => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     if (usuario && usuario.serventiaId) {
       setForm(f => {
-        // Só seta se não houver nenhum id de serventia já presente
         if (!f.serventiaId && !f.serventia_id && !f.serventia) {
           return { ...f, serventiaId: usuario.serventiaId };
         }
@@ -55,7 +53,6 @@ export default function ServicoManutencao() {
   const [pedidos, setPedidos] = useState([]);
   const [atosPedido, setAtosPedido] = useState([]);
   const [historicoStatus, setHistoricoStatus] = useState([]);
-  // Inicializa o form já tentando pegar o serventiaId do usuário logado
   const usuarioLocal = JSON.parse(localStorage.getItem('usuario') || '{}');
   const [form, setForm] = useState({
     protocolo: '',
@@ -74,7 +71,6 @@ export default function ServicoManutencao() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Função para extrair o protocolo da query string
   function getProtocoloFromQuery() {
     const params = new URLSearchParams(location.search);
     return params.get('protocolo');
@@ -84,10 +80,8 @@ export default function ServicoManutencao() {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
   }
 
-  // Função para buscar histórico de status
   const buscarHistoricoStatus = async (protocolo) => {
     if (!protocolo) return;
-    
     try {
       const response = await fetchComAuth(`${config.apiURL}/pedidoshistoricostatus/${encodeURIComponent(protocolo)}/historico-status`);
       if (response && response.ok) {
@@ -96,10 +90,9 @@ export default function ServicoManutencao() {
         }
         setHistoricoStatus(data.historico || []);
       } else {
-        // Se não houver endpoint específico, simula histórico básico
         setHistoricoStatus([
           {
-            status: form.status || 'Em Análise',
+            status: form.status || 'Em Analise',
             data_alteracao: new Date().toISOString(),
             responsavel: 'Sistema',
             observacoes: 'Status atual do pedido'
@@ -107,10 +100,9 @@ export default function ServicoManutencao() {
         ]);
       }
     } catch (error) {
-      // Fallback com dados básicos
       setHistoricoStatus([
         {
-          status: form.status || 'Em Análise',
+          status: form.status || 'Em Analise',
           data_alteracao: new Date().toISOString(),
           responsavel: 'Sistema',
           observacoes: 'Status atual do pedido'
@@ -119,11 +111,8 @@ export default function ServicoManutencao() {
     }
   };
 
-
   useEffect(() => {
     const protocolo = getProtocoloFromQuery();
-    
-    // Se não há protocolo, limpa o estado e sai
     if (!protocolo) {
       if (pedidoCarregado) {
         setPedidoCarregado(false);
@@ -132,8 +121,6 @@ export default function ServicoManutencao() {
       }
       return;
     }
-    
-    // Se já carregou este protocolo específico, não recarrega
     if (form.protocolo === protocolo && pedidoCarregado) {
       return;
     }
@@ -148,12 +135,10 @@ export default function ServicoManutencao() {
             const d = new Date(data.pedido.prazo);
             prazoFormatado = d.toISOString().slice(0, 10);
           }
-          // Compatibiliza o nome do campo vindo do backend
           const valorAdiantadoDetalhes =
             data.pedido.valorAdiantadoDetalhes ||
             data.pedido.valor_adiantado_detalhes ||
             [{ valor: '', forma: '' }];
-          // LOGS DE DEPURAÇÃO PARA SERVANTIA
           setForm(f => ({
             ...f,
             ...data.pedido,
@@ -161,8 +146,8 @@ export default function ServicoManutencao() {
             valorAdiantado: data.pedido.valor_adiantado || 0,
             valorAdiantadoDetalhes,
             observacao: data.pedido.observacao ?? '',
-            clienteId: data.pedido.cliente?.id || null, // Use null ao invés de string vazia
-            novoCliente: false, // Define como cliente existente
+            clienteId: data.pedido.cliente?.id || null,
+            novoCliente: false,
             cliente: { ...f.cliente, ...data.pedido.cliente },
             pagamento: { ...f.pagamento, ...data.pedido.pagamento },
             execucao: {
@@ -177,7 +162,6 @@ export default function ServicoManutencao() {
               ...data.pedido.entrega,
               ...(data.pedido.entrega?.retirado_por ? { retiradoPor: data.pedido.entrega.retirado_por } : {})
             },
-            // Garante que o id da serventia esteja presente para o ServicoEntrada
             serventiaId: (
               data.pedido.serventiaId ||
               data.pedido.serventia_id ||
@@ -187,9 +171,7 @@ export default function ServicoManutencao() {
             )
           }));
 
-          // Após carregar o pedido, buscar conferências salvas (se existirem) e atualizar o form
           if (data.pedido && data.pedido.protocolo) {
-            // Buscar conferências
             fetchComAuth(`${config.apiURL}/conferencias?protocolo=${encodeURIComponent(data.pedido.protocolo)}`)
               .then(confRes => {
                 if (!confRes || !confRes.ok) return null;
@@ -206,7 +188,6 @@ export default function ServicoManutencao() {
                 }
               });
 
-            // Buscar pagamento salvo
             fetchComAuth(`${config.apiURL}/pedido_pagamento/${encodeURIComponent(data.pedido.protocolo)}`)
               .then(pagRes => {
                 if (!pagRes || !pagRes.ok) return null;
@@ -224,7 +205,6 @@ export default function ServicoManutencao() {
                 }
               });
 
-            // Buscar execução salva
             fetchComAuth(`${config.apiURL}/execucao-servico/${encodeURIComponent(data.pedido.protocolo)}`)
               .then(execRes => {
                 if (!execRes || !execRes.ok) return null;
@@ -244,7 +224,6 @@ export default function ServicoManutencao() {
                 }
               });
 
-            // Buscar entrega salva
             fetchComAuth(`${config.apiURL}/entrega-servico/${encodeURIComponent(data.pedido.protocolo)}`)
               .then(entregaRes => {
                 if (!entregaRes || !entregaRes.ok) return null;
@@ -263,8 +242,7 @@ export default function ServicoManutencao() {
                 }
               });
           }
-          // Mapeia os combos do backend para o formato esperado pelo frontend
-          const combosFormatados = Array.isArray(data.pedido.combos) 
+          const combosFormatados = Array.isArray(data.pedido.combos)
             ? data.pedido.combos.map(combo => ({
                 comboId: combo.combo_id,
                 comboNome: combo.combo_nome,
@@ -273,20 +251,18 @@ export default function ServicoManutencao() {
                 atoDescricao: combo.ato_descricao,
                 quantidade: combo.quantidade || 1,
                 codigoTributario: combo.codigo_tributario || '',
-                valor_final: combo.valor_final // Garante que o valor_final venha para o frontend
+                valor_final: combo.valor_final
               }))
             : [];
           setAtosPedido(combosFormatados);
           setPedidoCarregado(true);
-          
-          // Busca o histórico de status após carregar o pedido
           buscarHistoricoStatus(protocolo);
         }
       })
       .catch(err => {
         setPedidoCarregado(true);
       });
-  }, [location.search, form.protocolo]); // Adiciona form.protocolo às dependências
+  }, [location.search, form.protocolo]);
 
   useEffect(() => {
     async function fetchCombos() {
@@ -309,7 +285,6 @@ export default function ServicoManutencao() {
   const handleFormChange = useCallback((field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
   }, []);
-  
   function handleClienteChange(field, value) {
     setForm(f => ({
       ...f,
@@ -323,7 +298,6 @@ export default function ServicoManutencao() {
     }));
   }
   function handleExecucaoChange(field, value) {
-    // Se o field for 'execucao' (vindo do backend), substitui o objeto inteiro
     if (field === 'execucao' && value && typeof value === 'object') {
       setForm(f => ({
         ...f,
@@ -349,33 +323,26 @@ export default function ServicoManutencao() {
       }));
     }
   }
+  function handleConferenciaChange(field, value) {
+    setForm(f => ({
+      ...f,
+      conferencia: { ...f.conferencia, [field]: value }
+    }));
+  }
 
-    // Função para tratar mudanças na conferência
-    function handleConferenciaChange(field, value) {
-      setForm(f => ({
-        ...f,
-        conferencia: { ...f.conferencia, [field]: value }
-      }));
-    }
-
-  // Função para excluir pedido
   const excluirPedido = async () => {
     if (!form.protocolo) {
       return;
     }
-
-    const confirmacao = window.confirm(`Tem certeza que deseja excluir o pedido ${form.protocolo}? Esta ação não pode ser desfeita.`);
+    const confirmacao = window.confirm(`Tem certeza que deseja excluir o pedido ${form.protocolo}? Esta acao nao pode ser desfeita.`);
     if (!confirmacao) return;
-
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${config.apiURL}/pedidos/${encodeURIComponent(form.protocolo)}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
-
       if (res.ok) {
-        // Limpa o formulário e redireciona
         setForm({
           protocolo: '',
           tipo: '',
@@ -390,8 +357,7 @@ export default function ServicoManutencao() {
         });
         setAtosPedido([]);
         setPedidoCarregado(false);
-  // Redireciona para a lista de pedidos (ServicoLista)
-  navigate('/lista-servicos');
+        navigate('/lista-servicos');
       } else {
         const errorText = await res.text();
       }
@@ -399,7 +365,6 @@ export default function ServicoManutencao() {
     }
   };
 
-  // Função para calcular o total dos atos pagos (código tributário "01")
   const calcularTotalAtosPagos = () => {
     const atosFiltrados = atosPedido.filter(ato => ato.codigoTributario === '01');
     const total = atosFiltrados.reduce((total, ato) => {
@@ -428,7 +393,7 @@ export default function ServicoManutencao() {
       tipo: '',
       descricao: '',
       prazo: '',
-      clienteId: null, // Use null ao invés de string vazia
+      clienteId: null,
       novoCliente: false,
       cliente: { nome: '', cpf: '', endereco: '', telefone: '', email: '' },
       pagamento: { status: 'pendente', valorTotal: '', valorPago: '', data: '', forma: '' },
@@ -437,19 +402,142 @@ export default function ServicoManutencao() {
     });
   }
 
-  // Removido: alertas de atraso de serviço a pedido do usuário
-
-  // Efeito para atualizar histórico quando o status mudar
   useEffect(() => {
     if (form.protocolo && form.status) {
       buscarHistoricoStatus(form.protocolo);
     }
   }, [form.status, form.protocolo]);
 
-
-
-  // Estado para abas
   const [aba, setAba] = useState('cliente');
+  const stepDefs = [
+    { key: 'cliente', label: 'Cliente', color: '#2563eb' },
+    { key: 'entrada', label: 'Entrada', color: '#7c3aed' },
+    { key: 'conferencia', label: 'Conferencia', color: '#f59e0b' },
+    { key: 'pagamento', label: 'Pagamento', color: '#d97706' },
+    { key: 'execucao', label: 'Execucao', color: '#0ea5e9' },
+    { key: 'entrega', label: 'Entrega', color: '#16a34a' },
+    { key: 'historico', label: 'Historico', color: '#6b7280' }
+  ];
+  const isStepFilled = (key) => {
+    if (key === 'cliente') return !!(form.cliente && form.cliente.nome && form.cliente.cpf);
+    if (key === 'entrada') return Array.isArray(atosPedido) && atosPedido.length > 0;
+    if (key === 'conferencia') return !!(form.conferencia && typeof form.conferencia === 'object' && Object.values(form.conferencia).some(v => v && v !== ''));
+    if (key === 'pagamento') {
+      const p = form.pagamento;
+      if (!p) return false;
+      return (
+        (p.status && p.status !== 'pendente') ||
+        (p.valorPago && parseFloat(p.valorPago) > 0) ||
+        (p.valorTotal && parseFloat(p.valorTotal) > 0) ||
+        (p.data && p.data !== '') ||
+        (p.forma && p.forma !== '')
+      );
+    }
+    if (key === 'execucao') {
+      const e = form.execucao;
+      if (!e) return false;
+      return !!(e.id || e.status === 'concluido' || e.status === 'concluido');
+    }
+    if (key === 'entrega') return !!(form.entrega && (form.entrega.data || form.entrega.retiradoPor || form.entrega.retirado_por));
+    if (key === 'historico') return Array.isArray(historicoStatus) && historicoStatus.length > 0;
+    return false;
+  };
+  const stepStates = [];
+  let prevFilled = true;
+  stepDefs.forEach((step, idx) => {
+    const filled = isStepFilled(step.key);
+    const locked = idx === 0 ? false : !prevFilled;
+    stepStates.push({ ...step, filled, locked });
+    prevFilled = filled;
+  });
+  const currentIdx = stepDefs.findIndex(s => s.key === aba);
+  const goPrev = () => {
+    if (currentIdx > 0) setAba(stepDefs[currentIdx - 1].key);
+  };
+  const goNext = () => {
+    if (currentIdx < stepDefs.length - 1 && !stepStates[currentIdx + 1].locked) {
+      setAba(stepDefs[currentIdx + 1].key);
+    }
+  };
+  const renderResumo = () => {
+    const cardBase = {
+      background: '#f8fafc',
+      border: '1px solid #e2e8f0',
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 16,
+      boxShadow: '0 2px 10px rgba(15,23,42,0.05)'
+    };
+    if (aba === 'cliente') {
+      return (
+        <div style={cardBase}>
+          <strong style={{ color: '#2563eb' }}>Cliente</strong>
+          <div>Nome: {form.cliente?.nome || ''}</div>
+          <div>CPF/CNPJ: {form.cliente?.cpf || ''}</div>
+          <div>Contato: {form.cliente?.telefone || ''}</div>
+        </div>
+      );
+    }
+    if (aba === 'entrada') {
+      return (
+        <div style={cardBase}>
+          <strong style={{ color: '#7c3aed' }}>Entrada</strong>
+          <div>Atos selecionados: {Array.isArray(atosPedido) ? atosPedido.length : 0}</div>
+          <div>Total atos pagos: R$ {calcularTotalAtosPagos().toFixed(2)}</div>
+        </div>
+      );
+    }
+    if (aba === 'conferencia') {
+      return (
+        <div style={cardBase}>
+          <strong style={{ color: '#f59e0b' }}>Conferencia</strong>
+          <div>Status: {form.conferencia?.status || ''}</div>
+          <div>Observacao: {form.conferencia?.observacao || ''}</div>
+        </div>
+      );
+    }
+    if (aba === 'pagamento') {
+      const p = form.pagamento || {};
+      return (
+        <div style={cardBase}>
+          <strong style={{ color: '#d97706' }}>Pagamento</strong>
+          <div>Status: {p.status || 'pendente'}</div>
+          <div>Valor total: R$ {(p.valorTotal || 0).toString()}</div>
+          <div>Valor pago: R$ {(p.valorPago || 0).toString()}</div>
+        </div>
+      );
+    }
+    if (aba === 'execucao') {
+      const e = form.execucao || {};
+      return (
+        <div style={cardBase}>
+          <strong style={{ color: '#0ea5e9' }}>Execucao</strong>
+          <div>Status: {e.status || ''}</div>
+          <div>Responsavel: {e.responsavel || e.usuario || ''}</div>
+        </div>
+      );
+    }
+    if (aba === 'entrega') {
+      const ent = form.entrega || {};
+      return (
+        <div style={cardBase}>
+          <strong style={{ color: '#16a34a' }}>Entrega</strong>
+          <div>Data: {ent.data || ''}</div>
+          <div>Hora: {ent.hora || ''}</div>
+          <div>Retirado por: {ent.retiradoPor || ent.retirado_por || ''}</div>
+        </div>
+      );
+    }
+    if (aba === 'historico') {
+      return (
+        <div style={cardBase}>
+          <strong style={{ color: '#6b7280' }}>Historico</strong>
+          <div>Eventos: {Array.isArray(historicoStatus) ? historicoStatus.length : 0}</div>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div style={{
@@ -459,393 +547,312 @@ export default function ServicoManutencao() {
       fontFamily: 'Arial, sans-serif'
     }}>
       <div style={{
-        maxWidth: "98%",
+        maxWidth: '98%',
         margin: '0 auto',
-        padding: '12px 24px 0 24px' // <-- alterado de '48px 24px 0 24px' para diminuir o espaçamento superior
+        padding: '12px 24px 0 24px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10, gap: 16 }}>
-          <span style={{
-            background: '#f5f5f5',
-            borderRadius: 8,
-            padding: '2px 16px',
-            color: '#6c3483',
-            fontWeight: 700,
-            fontSize: 18,
-            fontFamily: 'monospace',
-            display: 'inline-block',
-            boxShadow: '0 1px 4px #eee',
-            letterSpacing: 1
-          }}>
-            Protocolo: {form.protocolo || 'Novo Pedido'}
-          </span>
-          {form.status && (
-            <span style={{
-              background: '#f5f5f5',
-              borderRadius: 8,
-              padding: '2px 16px',
-              color: (form.status === 'Concluído' || form.status === 'concluido') ? '#27ae60' : (form.status === 'Cancelado' || form.status === 'cancelado') ? '#e74c3c' : (form.status === 'Aguardando documentos' || form.status === 'aguardando') ? '#f39c12' : '#3498db',
-              fontWeight: 700,
-              fontSize: 18,
-              fontFamily: 'monospace',
-              display: 'inline-block',
-              boxShadow: '0 1px 4px #eee',
-              letterSpacing: 1
-            }}>
-              Status: {form.status}
-            </span>
-          )}
-        </div>
-  {/* Alertas de atraso removidos */}
         <form
           onSubmit={registrarServico}
           style={{
             background: 'white',
             borderRadius: 16,
             boxShadow: '0 4px 24px rgba(44,62,80,0.08)',
-            padding: 32,
+            padding: 24,
             marginBottom: 32
           }}
         >
-          {/* Abas de navegação dos serviços */}
-          <div style={{ display: 'flex', borderBottom: '2px solid #e3eaf5', marginBottom: 24 }}>
-            {[
-              { key: 'cliente', label: 'Cliente' },
-              { key: 'entrada', label: 'Entrada' },
-              { key: 'conferencia', label: 'Conferência' },
-              { key: 'pagamento', label: 'Pagamento' },
-              { key: 'execucao', label: 'Execução' },
-              { key: 'entrega', label: 'Entrega' },
-              { key: 'historico', label: 'Histórico' }
-            ].map(tab => {
-              // Lógica para definir se cada aba está "preenchida"
-              let isFilled = false;
-              if (tab.key === 'cliente') {
-                isFilled = !!(form.cliente && form.cliente.nome && form.cliente.cpf);
-              } else if (tab.key === 'entrada') {
-                isFilled = Array.isArray(atosPedido) && atosPedido.length > 0;
-              } else if (tab.key === 'conferencia') {
-                // Só fica verde se houver dados salvos em form.conferencia
-                isFilled = !!(form.conferencia && (
-                  (typeof form.conferencia === 'object' && Object.values(form.conferencia).some(v => v && v !== ''))
-                ));
-              } else if (tab.key === 'pagamento') {
-                let pagamentoDebug = form.pagamento;
-                let pagamentoFilled = false;
-                if (pagamentoDebug) {
-                  pagamentoFilled = (
-                    (pagamentoDebug.status && pagamentoDebug.status !== 'pendente') ||
-                    (pagamentoDebug.valorPago && parseFloat(pagamentoDebug.valorPago) > 0) ||
-                    (pagamentoDebug.valorTotal && parseFloat(pagamentoDebug.valorTotal) > 0) ||
-                    (pagamentoDebug.data && pagamentoDebug.data !== '') ||
-                    (pagamentoDebug.forma && pagamentoDebug.forma !== '')
-                  );
-                }
-                isFilled = !!pagamentoFilled;
-              } else if (tab.key === 'execucao') {
-                let execucaoDebug = form.execucao;
-                let execucaoFilled = false;
-                if (execucaoDebug) {
-                  execucaoFilled = (
-                    execucaoDebug.id ||
-                    execucaoDebug.status === 'concluido' ||
-                    execucaoDebug.status === 'concluído'
-                  );
-                }
-                isFilled = !!execucaoFilled;
-              } else if (tab.key === 'entrega') {
-                isFilled = !!(form.entrega && (form.entrega.data || form.entrega.retiradoPor || form.entrega.retirado_por));
-              } else if (tab.key === 'historico') {
-                isFilled = historicoStatus && historicoStatus.length > 0;
-              }
-              return (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => setAba(tab.key)}
-                  style={{
-                    background: aba === tab.key ? '#fff' : 'transparent',
-                    border: 'none',
-                    borderBottom: aba === tab.key ? '3px solid #3498db' : '3px solid transparent',
-                    color: aba === tab.key ? '#3498db' : (isFilled ? '#27ae60' : '#e74c3c'),
-                    fontWeight: 700,
-                    fontSize: 16,
-                    padding: '10px 28px',
-                    cursor: aba === tab.key ? 'default' : 'pointer',
-                    outline: 'none',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-          {/* Conteúdo das abas */}
-          {aba === 'cliente' && (
-            <ServicoCliente
-              form={form}
-              clientes={clientes}
-              onChange={handleFormChange}
-              onClienteChange={handleClienteChange}
-              onAvancarEtapa={() => setAba('entrada')}
-            />
-          )}
-          {aba === 'entrada' && (
-            <ServicoEntrada
-              form={form}
-              tiposServico={tiposServico}
-              onChange={handleFormChange}
-              combosDisponiveis={combosDisponiveis}
-              atosPedido={atosPedido}
-              setAtosPedido={setAtosPedido}
-              onAvancarEtapa={() => setAba('conferencia')}
-            />
-          )}
-          {aba === 'conferencia' && (
-            <ServicoConferencia 
-              protocolo={form.protocolo} 
-              atosPedido={atosPedido} 
-              disabled={false}
-              onAvancarEtapa={() => setAba('pagamento')}
-              onVoltarEtapa={() => setAba('entrada')}
-              onStatusChange={status => handleFormChange('status', status)}
-            />
-          )}
-          {aba === 'pagamento' && (
-            <ServicoPagamento
-              form={form}
-              onChange={handlePagamentoChange}
-              valorTotal={calcularTotalAtosPagos()}
-              valorAdiantadoDetalhes={form.valorAdiantadoDetalhes || []}
-              disabled={false}
-              onAvancarEtapa={() => setAba('entrega')}
-              onVoltarEtapa={() => setAba('conferencia')}
-            />
-          )}
-          {aba === 'execucao' && (
-            <ServicoExecucao
-              form={form}
-              onChange={handleExecucaoChange}
-              pedidoId={form.protocolo}
-              disabled={false}
-              onStatusChange={status => handleFormChange('status', status)}
-            />
-          )}
-          {aba === 'entrega' && (
-            <ServicoEntrega
-              form={form}
-              onChange={handleEntregaChange}
-              pedidoId={form.protocolo}
-              disabled={false}
-              onVoltarLista={() => navigate('/lista-servicos')}
-              onStatusChange={status => handleFormChange('status', status)}
-            />
-          )}
-          {aba === 'historico' && form.protocolo && historicoStatus.length > 0 && (
-            <div style={{
-              background: 'white',
-              borderRadius: 16,
-              boxShadow: '0 4px 24px rgba(44,62,80,0.08)',
-              padding: 32,
-              marginBottom: 32
+          <div style={{ display: 'flex', gap: 24, alignItems: 'stretch' }}>
+            <aside style={{
+              width: 260,
+              borderRight: '1px solid #e5e7eb',
+              paddingRight: 16,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8
             }}>
-              <h3 style={{
-                color: '#2c3e50',
-                fontSize: 24,
-                fontWeight: 700,
-                marginBottom: 24,
-                borderBottom: '3px solid #9b59b6',
-                paddingBottom: 12,
-                display: 'flex',
-                alignItems: 'center'
-              }}>
-                📊 Histórico de Status - Protocolo: {form.protocolo}
-              </h3>
               <div style={{
-                border: '2px solid #9b59b6',
-                borderRadius: 12,
-                overflow: 'hidden',
-                boxShadow: '0 2px 12px rgba(155,89,182,0.15)'
+                padding: '8px 10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: 10,
+                background: '#f9fafb'
               }}>
-                <table style={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                  fontSize: '14px'
+                <div style={{ fontWeight: 700, color: '#374151', marginBottom: 4 }}>Protocolo</div>
+                <div style={{ fontFamily: 'monospace', color: '#6b21a8' }}>{form.protocolo || 'Novo Pedido'}</div>
+                {form.status && (
+                  <div style={{ marginTop: 8, display: 'inline-block', padding: '4px 10px', borderRadius: 8, background: '#eef2ff', color: '#4338ca', fontWeight: 700 }}>
+                    Status: {form.status}
+                  </div>
+                )}
+              </div>
+              {stepStates.map(step => {
+                const isActive = aba === step.key;
+                const canClick = !step.locked || isActive;
+                return (
+                  <button
+                    key={step.key}
+                    type="button"
+                    disabled={!canClick}
+                    onClick={() => canClick && setAba(step.key)}
+                    style={{
+                      textAlign: 'left',
+                      border: '1px solid ' + (isActive ? step.color : '#e5e7eb'),
+                      background: isActive ? step.color + '15' : '#fff',
+                      color: step.locked ? '#9ca3af' : step.color,
+                      borderRadius: 10,
+                      padding: '10px 12px',
+                      cursor: canClick ? 'pointer' : 'not-allowed',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <span style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: '50%',
+                      background: step.filled ? step.color : '#e5e7eb',
+                      border: '2px solid ' + (isActive ? step.color : '#e5e7eb')
+                    }} />
+                    {step.label}
+                  </button>
+                );
+              })}
+            </aside>
+
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingBottom: 8, borderBottom: '1px solid #e5e7eb' }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <button type="button" onClick={goPrev} disabled={currentIdx === 0} style={{ border: '1px solid #e5e7eb', background: '#fff', borderRadius: 8, padding: '8px 12px', cursor: currentIdx === 0 ? 'not-allowed' : 'pointer' }}>Voltar</button>
+                  <button type="button" onClick={goNext} disabled={currentIdx === stepDefs.length - 1 || stepStates[currentIdx + 1]?.locked} style={{ border: '1px solid #e5e7eb', background: '#2563eb', color: 'white', borderRadius: 8, padding: '8px 14px', cursor: currentIdx === stepDefs.length - 1 || stepStates[currentIdx + 1]?.locked ? 'not-allowed' : 'pointer' }}>Salvar e continuar</button>
+                  <button type="button" onClick={() => setAba('historico')} style={{ border: '1px solid #e5e7eb', background: '#f3f4f6', color: '#111827', borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}>Ver historico</button>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" onClick={() => navigate('/lista-servicos')} style={{ border: '1px solid #e5e7eb', background: '#fff', borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}>Voltar para lista</button>
+                  <button type="button" onClick={excluirPedido} style={{ border: '1px solid #fee2e2', background: '#fef2f2', color: '#b91c1c', borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}>Excluir pedido</button>
+                </div>
+              </div>
+
+              {renderResumo()}
+
+              {aba === 'cliente' && (
+                <ServicoCliente
+                  form={form}
+                  clientes={clientes}
+                  onChange={handleFormChange}
+                  onClienteChange={handleClienteChange}
+                  onAvancarEtapa={() => setAba('entrada')}
+                />
+              )}
+              {aba === 'entrada' && (
+                <ServicoEntrada
+                  form={form}
+                  tiposServico={tiposServico}
+                  onChange={handleFormChange}
+                  combosDisponiveis={combosDisponiveis}
+                  atosPedido={atosPedido}
+                  setAtosPedido={setAtosPedido}
+                  onAvancarEtapa={() => setAba('conferencia')}
+                />
+              )}
+              {aba === 'conferencia' && (
+                <ServicoConferencia
+                  protocolo={form.protocolo}
+                  atosPedido={atosPedido}
+                  disabled={false}
+                  onAvancarEtapa={() => setAba('pagamento')}
+                  onVoltarEtapa={() => setAba('entrada')}
+                  onStatusChange={status => handleFormChange('status', status)}
+                />
+              )}
+              {aba === 'pagamento' && (
+                <ServicoPagamento
+                  form={form}
+                  onChange={handlePagamentoChange}
+                  valorTotal={calcularTotalAtosPagos()}
+                  valorAdiantadoDetalhes={form.valorAdiantadoDetalhes || []}
+                  disabled={false}
+                  onAvancarEtapa={() => setAba('entrega')}
+                  onVoltarEtapa={() => setAba('conferencia')}
+                />
+              )}
+              {aba === 'execucao' && (
+                <ServicoExecucao
+                  form={form}
+                  onChange={handleExecucaoChange}
+                  pedidoId={form.protocolo}
+                  disabled={false}
+                  onStatusChange={status => handleFormChange('status', status)}
+                />
+              )}
+              {aba === 'entrega' && (
+                <ServicoEntrega
+                  form={form}
+                  onChange={handleEntregaChange}
+                  pedidoId={form.protocolo}
+                  disabled={false}
+                  onVoltarLista={() => navigate('/lista-servicos')}
+                  onStatusChange={status => handleFormChange('status', status)}
+                />
+              )}
+              {aba === 'historico' && form.protocolo && historicoStatus.length > 0 && (
+                <div style={{
+                  background: 'white',
+                  borderRadius: 16,
+                  boxShadow: '0 4px 24px rgba(44,62,80,0.08)',
+                  padding: 32,
+                  marginBottom: 32
                 }}>
-                  <thead>
-                    <tr style={{ 
-                      background: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
-                      color: 'white'
+                  <h3 style={{
+                    color: '#2c3e50',
+                    fontSize: 24,
+                    fontWeight: 700,
+                    marginBottom: 24,
+                    borderBottom: '3px solid #9b59b6',
+                    paddingBottom: 12,
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                     Historico de Status - Protocolo: {form.protocolo}
+                  </h3>
+                  <div style={{
+                    border: '2px solid #9b59b6',
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    boxShadow: '0 2px 12px rgba(155,89,182,0.15)'
+                  }}>
+                    <table style={{
+                      width: '100%',
+                      borderCollapse: 'collapse',
+                      fontSize: '14px'
                     }}>
-                      <th style={{
-                        padding: '16px 20px',
-                        textAlign: 'left',
-                        fontWeight: '700',
-                        fontSize: '16px',
-                        borderRight: '1px solid rgba(255,255,255,0.2)'
-                      }}>
-                        📅 Data/Hora
-                      </th>
-                      <th style={{
-                        padding: '16px 20px',
-                        textAlign: 'left',
-                        fontWeight: '700',
-                        fontSize: '16px',
-                        borderRight: '1px solid rgba(255,255,255,0.2)'
-                      }}>
-                        📋 Status
-                      </th>
-                      <th style={{
-                        padding: '16px 20px',
-                        textAlign: 'left',
-                        fontWeight: '700',
-                        fontSize: '16px',
-                        borderRight: '1px solid rgba(255,255,255,0.2)'
-                      }}>
-                        👤 Responsável
-                      </th>
-                      <th style={{
-                        padding: '16px 20px',
-                        textAlign: 'left',
-                        fontWeight: '700',
-                        fontSize: '16px'
-                      }}>
-                        📝 Observações
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {historicoStatus.map((item, index) => {
-                      const dataFormatada = new Date(item.data_alteracao).toLocaleString('pt-BR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                      });
-                      const getStatusColor = (status) => {
-                        switch (status?.toLowerCase()) {
-                          case 'pago': return '#27ae60';
-                          case 'conferido': return '#3498db';
-                          case 'em análise': return '#f39c12';
-                          case 'cancelado': return '#e74c3c';
-                          case 'concluído': return '#2ecc71';
-                          default: return '#7f8c8d';
-                        }
-                      };
-                      return (
-                        <tr key={index} style={{ 
-                          background: index % 2 === 0 ? '#fafafa' : '#ffffff',
-                          borderBottom: index < historicoStatus.length - 1 ? '1px solid #ecf0f1' : 'none',
-                          transition: 'background-color 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => e.target.parentElement.style.backgroundColor = '#f8f9fa'}
-                        onMouseLeave={(e) => e.target.parentElement.style.backgroundColor = index % 2 === 0 ? '#fafafa' : '#ffffff'}
-                        >
-                          <td style={{
+                      <thead>
+                        <tr style={{
+                          background: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
+                          color: 'white'
+                        }}>
+                          <th style={{
                             padding: '16px 20px',
-                            borderRight: '1px solid #ecf0f1',
-                            fontFamily: 'monospace',
-                            fontWeight: '600',
-                            color: '#2c3e50'
-                          }}>
-                            {dataFormatada}
-                          </td>
-                          <td style={{
-                            padding: '16px 20px',
-                            borderRight: '1px solid #ecf0f1',
+                            textAlign: 'left',
                             fontWeight: '700',
-                            color: getStatusColor(item.status)
+                            fontSize: '16px',
+                            borderRight: '1px solid rgba(255,255,255,0.2)'
                           }}>
-                            <span style={{
-                              display: 'inline-block',
-                              padding: '4px 12px',
-                              borderRadius: '20px',
-                              backgroundColor: `${getStatusColor(item.status)}20`,
-                              border: `2px solid ${getStatusColor(item.status)}`,
-                              fontSize: '13px',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.5px'
-                            }}>
-                              {item.status}
-                            </span>
-                          </td>
-                          <td style={{
+                             Data/Hora
+                          </th>
+                          <th style={{
                             padding: '16px 20px',
-                            borderRight: '1px solid #ecf0f1',
-                            color: '#2c3e50',
-                            fontWeight: '600'
+                            textAlign: 'left',
+                            fontWeight: '700',
+                            fontSize: '16px',
+                            borderRight: '1px solid rgba(255,255,255,0.2)'
                           }}>
-                            {item.responsavel || 'Sistema'}
-                          </td>
-                          <td style={{
+                             Status
+                          </th>
+                          <th style={{
                             padding: '16px 20px',
-                            color: '#7f8c8d',
-                            fontStyle: item.observacoes ? 'normal' : 'italic'
+                            textAlign: 'left',
+                            fontWeight: '700',
+                            fontSize: '16px',
+                            borderRight: '1px solid rgba(255,255,255,0.2)'
                           }}>
-                            {item.observacoes || 'Nenhuma observação'}
-                          </td>
+                             Responsavel
+                          </th>
+                          <th style={{
+                            padding: '16px 20px',
+                            textAlign: 'left',
+                            fontWeight: '700',
+                            fontSize: '16px'
+                          }}>
+                             Observacoes
+                          </th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              {/* Resumo estatístico */}
-              <div style={{
-                marginTop: 20,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '16px 20px',
-                background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                borderRadius: 8,
-                border: '1px solid #dee2e6'
-              }}>
-                <div style={{
-                  fontSize: '14px',
-                  color: '#6c757d',
-                  fontWeight: '600'
-                }}>
-                  📈 Total de alterações de status: <strong style={{ color: '#2c3e50' }}>{historicoStatus.length}</strong>
+                      </thead>
+                      <tbody>
+                        {historicoStatus.map((item, index) => {
+                          const dataFormatada = new Date(item.data_alteracao).toLocaleString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                          });
+                          const getStatusColor = (status) => {
+                            switch (status?.toLowerCase()) {
+                              case 'pago': return '#27ae60';
+                              case 'conferido': return '#3498db';
+                              case 'em analise': return '#f39c12';
+                              case 'cancelado': return '#e74c3c';
+                              case 'concluido': return '#2ecc71';
+                              default: return '#7f8c8d';
+                            }
+                          };
+                          return (
+                            <tr
+                              key={index}
+                              style={{
+                                background: index % 2 === 0 ? '#fafafa' : '#ffffff',
+                                borderBottom: index < historicoStatus.length - 1 ? '1px solid #ecf0f1' : 'none',
+                                transition: 'background-color 0.2s ease'
+                              }}
+                              onMouseEnter={(e) => e.target.parentElement.style.backgroundColor = '#f8f9fa'}
+                              onMouseLeave={(e) => e.target.parentElement.style.backgroundColor = index % 2 === 0 ? '#fafafa' : '#ffffff'}
+                            >
+                              <td style={{
+                                padding: '16px 20px',
+                                borderRight: '1px solid #ecf0f1',
+                                fontFamily: 'monospace',
+                                fontWeight: '600',
+                                color: '#2c3e50'
+                              }}>
+                                {dataFormatada}
+                              </td>
+                              <td style={{
+                                padding: '16px 20px',
+                                borderRight: '1px solid #ecf0f1',
+                                fontWeight: '700',
+                                color: getStatusColor(item.status)
+                              }}>
+                                <span style={{
+                                  display: 'inline-block',
+                                  padding: '4px 12px',
+                                  borderRadius: '20px',
+                                  backgroundColor: `${getStatusColor(item.status)}20`,
+                                  border: `2px solid ${getStatusColor(item.status)}`,
+                                  fontSize: '13px',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px'
+                                }}>
+                                  {item.status}
+                                </span>
+                              </td>
+                              <td style={{
+                                padding: '16px 20px',
+                                borderRight: '1px solid #ecf0f1',
+                                color: '#2c3e50',
+                                fontWeight: '600'
+                              }}>
+                                {item.responsavel || 'Sistema'}
+                              </td>
+                              <td style={{
+                                padding: '16px 20px',
+                                color: '#2c3e50'
+                              }}>
+                                {item.observacoes || ''}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                <div style={{
-                  fontSize: '14px',
-                  color: '#6c757d',
-                  fontWeight: '600'
-                }}>
-                  🕒 Última atualização: <strong style={{ color: '#2c3e50' }}>
-                    {historicoStatus.length > 0 ? new Date(historicoStatus[historicoStatus.length - 1].data_alteracao).toLocaleString('pt-BR') : 'N/A'}
-                  </strong>
-                </div>
-              </div>
+              )}
             </div>
-          )}
-          {/* Só mostra o botão de excluir se há um pedido carregado */}
-          {form.protocolo && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
-              <button
-                type="button"
-                onClick={excluirPedido}
-                style={{
-                  padding: '12px 32px',
-                  background: '#e74c3c',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(231,76,60,0.3)'
-                }}
-              >
-                🗑️ Excluir Pedido
-              </button>
-            </div>
-          )}
+          </div>
         </form>
- 
       </div>
     </div>
   );
