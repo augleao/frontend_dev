@@ -4,6 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 import './servicos.css';
 
+const palette = {
+  primary: '#1d4ed8',
+  primaryDark: '#1e3a8a',
+  softBg: '#eef5ff',
+  softBorder: '#d6e4ff'
+};
+
 export default function ServicoEntrada({ form, tiposServico, onChange, combosDisponiveis, atosPedido, setAtosPedido, onAvancarEtapa }) {
   // Estado para controlar popup/modal de adicionar atos
   const [showAdicionarAtosModal, setShowAdicionarAtosModal] = useState(false);
@@ -510,9 +517,12 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           display: 'flex',
           alignItems: 'center',
           gap: 6,
-          flexWrap: 'wrap'
+          flexWrap: 'wrap',
+          background: palette.softBg,
+          border: `1px solid ${palette.softBorder}`,
+          borderRadius: 10
         }}>
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 100, margin: 0 }}>Descrição do Serviço:</label>
+          <label style={{ color: palette.primaryDark, fontWeight: 600, fontSize: 13, minWidth: 100, margin: 0 }}>Descrição do Serviço:</label>
           <input
             type="text"
             value={form.descricao || ''}
@@ -520,7 +530,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             maxLength={260}
             style={{
               width: 260,
-              border: '1.5px solid #d6d6f5',
+              border: `1.5px solid ${palette.softBorder}`,
               borderRadius: 6,
               padding: '4px 2px',
               fontSize: 13,
@@ -529,13 +539,13 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             }}
             placeholder="Descreva o serviço..."
           />
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 50, margin: 0 }}>Origem:</label>
+          <label style={{ color: palette.primaryDark, fontWeight: 600, fontSize: 13, minWidth: 50, margin: 0 }}>Origem:</label>
           <select
             value={form.origem || ''}
             onChange={e => onChange('origem', e.target.value)}
             style={{
               width: 110,
-              border: '1.5px solid #d6d6f5',
+              border: `1.5px solid ${palette.softBorder}`,
               borderRadius: 6,
               padding: '4px 2px',
               fontSize: 13,
@@ -554,7 +564,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           {/* Campo condicional logo após Origem, exceto para Balcão */}
           {form.origem && form.origem !== 'Balcão' && (
             <>
-              <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 50, margin: 0 }}>
+              <label style={{ color: palette.primaryDark, fontWeight: 600, fontSize: 13, minWidth: 50, margin: 0 }}>
                 {form.origem === 'CRC' ? 'Protocolo CRC:' :
                   form.origem === 'email' ? 'E-mail:' :
                   form.origem === 'Whatsapp' ? 'Telefone Whatsapp:' :
@@ -567,7 +577,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 onChange={e => onChange('origemInfo', e.target.value)}
                 style={{
                   width: 180,
-                  border: '1.5px solid #d6d6f5',
+                  border: `1.5px solid ${palette.softBorder}`,
                   borderRadius: 6,
                   padding: '4px 2px',
                   fontSize: 13,
@@ -584,14 +594,14 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               />
             </>
           )}
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 65, margin: 0 }}>Prazo estimado:</label>
+          <label style={{ color: palette.primaryDark, fontWeight: 600, fontSize: 13, minWidth: 65, margin: 0 }}>Prazo estimado:</label>
           <input
             type="date"
             value={form.prazo}
             onChange={e => onChange('prazo', e.target.value)}
             style={{
               width: 120,
-              border: '1.5px solid #d6d6f5',
+              border: `1.5px solid ${palette.softBorder}`,
               borderRadius: 6,
               padding: '4px 2px',
               fontSize: 13,
@@ -599,7 +609,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               boxSizing: 'border-box',
             }}
           />
-          <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>Obs.:</label>
+          <label style={{ color: palette.primaryDark, fontWeight: 600, fontSize: 13, minWidth: 70, margin: 0 }}>Obs.:</label>
           <input
             type="text"
             value={form.observacao || ''}
@@ -607,7 +617,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             maxLength={150}
             style={{
               width: 200,
-              border: '1.5px solid #d6d6f5',
+              border: `1.5px solid ${palette.softBorder}`,
               borderRadius: 6,
               padding: '4px 2px',
               fontSize: 13,
@@ -651,7 +661,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             width: '100%'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-              <label style={{ color: '#6c3483', fontWeight: 600, fontSize: 14 }}>💰 Valores Adiantados pelo Usuário:</label>
+              <label style={{ color: palette.primaryDark, fontWeight: 600, fontSize: 14 }}>💰 Valores Adiantados pelo Usuário:</label>
             </div>
             
             {/* Tabela de Pagamentos */}
@@ -659,17 +669,17 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               <div className="servico-table-container">
                 <table className="servico-table">
                   <thead>
-                    <tr style={{ background: '#d1ecf1' }}>
-                      <th style={{ padding: 8, color: '#2874a6', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Valor</th>
-                      <th style={{ padding: 8, color: '#2874a6', fontWeight: 700, fontSize: 12, textAlign: 'left' }}>Forma de Pagamento</th>
-                      <th style={{ padding: 8, color: '#2874a6', fontWeight: 700, fontSize: 12, textAlign: 'center' }}>Ações</th>
+                    <tr style={{ background: palette.softBg }}>
+                      <th style={{ padding: 8, color: palette.primaryDark, fontWeight: 700, fontSize: 12, textAlign: 'left', border: `1px solid ${palette.softBorder}` }}>Valor</th>
+                      <th style={{ padding: 8, color: palette.primaryDark, fontWeight: 700, fontSize: 12, textAlign: 'left', border: `1px solid ${palette.softBorder}` }}>Forma de Pagamento</th>
+                      <th style={{ padding: 8, color: palette.primaryDark, fontWeight: 700, fontSize: 12, textAlign: 'center', border: `1px solid ${palette.softBorder}` }}>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
                     {valorAdiantadoDetalhes
                       .filter(item => item.valor && item.forma)
                       .map((item, idx) => (
-                        <tr key={idx} style={{ background: idx % 2 === 0 ? '#f8fcff' : 'transparent' }}>
+                        <tr key={idx} style={{ background: idx % 2 === 0 ? palette.softBg : 'transparent' }}>
                           <td style={{ padding: 8, fontSize: 12 }}>
                             R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
@@ -685,7 +695,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                                   handleRemoveValorAdiantadoDetalhe(originalIndex);
                                 }
                               }}
-                              className="btn btn-danger"
+                              className="btn"
+                              style={{ background: palette.primaryDark, color: '#fff', border: 'none' }}
                             >
                               Remover
                             </button>
@@ -702,10 +713,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               <div style={{
                 padding: 16,
                 textAlign: 'center',
-                color: '#6c757d',
-                background: '#f8f9fa',
+                color: palette.primaryDark,
+                background: palette.softBg,
                 borderRadius: 8,
-                border: '1px dashed #dee2e6',
+                border: `1px dashed ${palette.softBorder}`,
                 fontSize: 12
               }}>
                 Nenhum pagamento adiantado adicionado ainda. Clique em "Adicionar Pagamento" para começar.
@@ -739,7 +750,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               display: 'flex',
               flexDirection: 'column',
               gap: 16,
-              position: 'relative'
+              position: 'relative',
+              border: `1px solid ${palette.softBorder}`
             }}>
               <button
                 onClick={() => setShowAdicionarPagamentoModal(false)}
@@ -750,16 +762,16 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                   background: 'transparent',
                   border: 'none',
                   fontSize: 22,
-                  color: '#2874a6',
+                  color: palette.primaryDark,
                   cursor: 'pointer',
                   fontWeight: 'bold'
                 }}
                 title="Fechar"
               >×</button>
-              <h2 style={{ color: '#2874a6', fontWeight: 700, fontSize: 18, margin: 0 }}>💰 Adicionar Pagamento Adiantado</h2>
+              <h2 style={{ color: palette.primaryDark, fontWeight: 700, fontSize: 18, margin: 0 }}>💰 Adicionar Pagamento Adiantado</h2>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <label style={{ fontWeight: 600, color: '#2874a6', fontSize: 13 }}>Valor:</label>
+                <label style={{ fontWeight: 600, color: palette.primaryDark, fontSize: 13 }}>Valor:</label>
                 <input 
                   type="number" 
                   min={0}
@@ -770,7 +782,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                     width: '100%', 
                     borderRadius: 6, 
                     padding: '8px 12px', 
-                    border: '1.5px solid #aed6f1', 
+                    border: `1.5px solid ${palette.softBorder}`, 
                     fontSize: 14, 
                     boxSizing: 'border-box', 
                     height: 40 
@@ -780,7 +792,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               </div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <label style={{ fontWeight: 600, color: '#2874a6', fontSize: 13 }}>Forma de Pagamento:</label>
+                <label style={{ fontWeight: 600, color: palette.primaryDark, fontSize: 13 }}>Forma de Pagamento:</label>
                 <select 
                   value={modalFormaPagamento} 
                   onChange={e => setModalFormaPagamento(e.target.value)} 
@@ -788,7 +800,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                     width: '100%', 
                     borderRadius: 6, 
                     padding: '8px 12px', 
-                    border: '1.5px solid #aed6f1', 
+                    border: `1.5px solid ${palette.softBorder}`, 
                     fontSize: 14, 
                     boxSizing: 'border-box', 
                     height: 40 
@@ -812,7 +824,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 style={{
                   marginTop: 18,
                   padding: '12px 0',
-                  background: modalValorPagamento && modalFormaPagamento ? '#28a745' : '#ccc',
+                  background: modalValorPagamento && modalFormaPagamento ? palette.primary : '#ccc',
                   color: '#fff',
                   border: 'none',
                   borderRadius: 8,
@@ -854,7 +866,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               display: 'flex',
               flexDirection: 'column',
               gap: 16,
-              position: 'relative'
+              position: 'relative',
+              border: `1px solid ${palette.softBorder}`
             }}>
               <button
                 onClick={() => setShowAdicionarAtosModal(false)}
@@ -865,16 +878,16 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                   background: 'transparent',
                   border: 'none',
                   fontSize: 22,
-                  color: '#9b59b6',
+                  color: palette.primaryDark,
                   cursor: 'pointer',
                   fontWeight: 'bold'
                 }}
                 title="Fechar"
               >×</button>
-              <h2 style={{ color: '#6c3483', fontWeight: 700, fontSize: 18, margin: 0 }}>Adicionar Ato do Combo</h2>
+              <h2 style={{ color: palette.primaryDark, fontWeight: 700, fontSize: 18, margin: 0 }}>Adicionar Ato do Combo</h2>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Adicionar Ato:</label>
+                <label style={{ fontWeight: 600, color: palette.primaryDark, fontSize: 13, minWidth: 120 }}>Adicionar Ato:</label>
                 <div style={{ position: 'relative', width: 'calc(100% - 132px)' }}>
                   <input
                     type="text"
@@ -884,7 +897,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                       width: '100%', 
                       borderRadius: 6, 
                       padding: '6px 8px', 
-                      border: '1.5px solid #d6d6f5', 
+                      border: `1.5px solid ${palette.softBorder}`, 
                       fontSize: 13, 
                       boxSizing: 'border-box', 
                       height: 32 
@@ -932,12 +945,12 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               </div>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Adicionar Combo:</label>
+                <label style={{ fontWeight: 600, color: palette.primaryDark, fontSize: 13, minWidth: 120 }}>Adicionar Combo:</label>
                 <select value={modalComboSelecionado} onChange={e => {
                   setModalComboSelecionado(e.target.value);
                   // Limpa ato selecionado se combo for selecionado
                   if (e.target.value) setModalAtoSelecionado('');
-                }} style={{ width: 'calc(100% - 132px)', borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
+                }} style={{ width: 'calc(100% - 132px)', borderRadius: 6, padding: '6px 8px', border: `1.5px solid ${palette.softBorder}`, fontSize: 13, boxSizing: 'border-box', height: 32 }}>
                   <option value="">Selecione um combo...</option>
                   {combosDisponiveis.map(c => (
                     <option key={c.id} value={c.id}>{c.nome}</option>
@@ -946,7 +959,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               </div>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Código Tributário:</label>
+                <label style={{ fontWeight: 600, color: palette.primaryDark, fontSize: 13, minWidth: 120 }}>Código Tributário:</label>
                 <div style={{ position: 'relative', flex: 1 }}>
                   <input 
                     type="text" 
@@ -979,7 +992,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                       width: '100%', 
                       borderRadius: 6, 
                       padding: '6px 8px', 
-                      border: '1.5px solid #d6d6f5', 
+                      border: `1.5px solid ${palette.softBorder}`, 
                       fontSize: 13, 
                       boxSizing: 'border-box', 
                       height: 32 
@@ -1031,8 +1044,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               </div>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Tipo de Registro:</label>
-                <select value={modalTipoRegistro} onChange={e => setModalTipoRegistro(e.target.value)} style={{ flex: 1, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }}>
+                <label style={{ fontWeight: 600, color: palette.primaryDark, fontSize: 13, minWidth: 120 }}>Tipo de Registro:</label>
+                <select value={modalTipoRegistro} onChange={e => setModalTipoRegistro(e.target.value)} style={{ flex: 1, borderRadius: 6, padding: '6px 8px', border: `1.5px solid ${palette.softBorder}`, fontSize: 13, boxSizing: 'border-box', height: 32 }}>
                   <option value="">Selecione...</option>
                   <option value="Livro E">Livro E</option>
                   <option value="Nascimento">Nascimento</option>
@@ -1044,17 +1057,17 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               </div>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Nome do(s) Registrado(s):</label>
-                <input type="text" value={modalNomeRegistrados} onChange={e => setModalNomeRegistrados(e.target.value)} style={{ flex: 1, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Nome(s)" />
+                <label style={{ fontWeight: 600, color: palette.primaryDark, fontSize: 13, minWidth: 120 }}>Nome do(s) Registrado(s):</label>
+                <input type="text" value={modalNomeRegistrados} onChange={e => setModalNomeRegistrados(e.target.value)} style={{ flex: 1, borderRadius: 6, padding: '6px 8px', border: `1.5px solid ${palette.softBorder}`, fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Nome(s)" />
               </div>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, minWidth: 120 }}>Livro:</label>
-                <input type="text" value={modalLivro} onChange={e => setModalLivro(e.target.value)} style={{ width: 80, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Livro" />
-                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, marginLeft: 16 }}>Folha:</label>
-                <input type="text" value={modalFolha} onChange={e => setModalFolha(e.target.value)} style={{ width: 80, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Folha" />
-                <label style={{ fontWeight: 600, color: '#6c3483', fontSize: 13, marginLeft: 16 }}>Termo:</label>
-                <input type="text" value={modalTermo} onChange={e => setModalTermo(e.target.value)} style={{ width: 80, borderRadius: 6, padding: '6px 8px', border: '1.5px solid #d6d6f5', fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Termo" />
+                <label style={{ fontWeight: 600, color: palette.primaryDark, fontSize: 13, minWidth: 120 }}>Livro:</label>
+                <input type="text" value={modalLivro} onChange={e => setModalLivro(e.target.value)} style={{ width: 80, borderRadius: 6, padding: '6px 8px', border: `1.5px solid ${palette.softBorder}`, fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Livro" />
+                <label style={{ fontWeight: 600, color: palette.primaryDark, fontSize: 13, marginLeft: 16 }}>Folha:</label>
+                <input type="text" value={modalFolha} onChange={e => setModalFolha(e.target.value)} style={{ width: 80, borderRadius: 6, padding: '6px 8px', border: `1.5px solid ${palette.softBorder}`, fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Folha" />
+                <label style={{ fontWeight: 600, color: palette.primaryDark, fontSize: 13, marginLeft: 16 }}>Termo:</label>
+                <input type="text" value={modalTermo} onChange={e => setModalTermo(e.target.value)} style={{ width: 80, borderRadius: 6, padding: '6px 8px', border: `1.5px solid ${palette.softBorder}`, fontSize: 13, boxSizing: 'border-box', height: 32 }} placeholder="Termo" />
               </div>
               <button
                 type="button"
@@ -1063,7 +1076,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 style={{
                   marginTop: 18,
                   padding: '8px 0',
-                  background: (modalAtoSelecionado || modalComboSelecionado) ? '#2ecc71' : '#ccc',
+                  background: (modalAtoSelecionado || modalComboSelecionado) ? palette.primary : '#ccc',
                   color: '#fff',
                   border: 'none',
                   borderRadius: 8,
@@ -1085,6 +1098,9 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           <div style={{
             padding: '16px',
             marginBottom: '16px',
+            background: palette.softBg,
+            border: `1px solid ${palette.softBorder}`,
+            borderRadius: 10
           }}>
             <div style={{
               display: 'flex',
@@ -1093,10 +1109,10 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
               margin: '0 0 4px 0',
               paddingBottom: '10px',
             }}>
-              <h3 style={{color: '#6c3483', fontWeight: 600, fontSize: 14 }}>
+              <h3 style={{color: palette.primaryDark, fontWeight: 600, fontSize: 14 }}>
                 📋 Atos adicionados ao pedido
               </h3>
-              <span style={{color: '#6c3483', fontWeight: 600, fontSize: 14  }}>
+              <span style={{color: palette.primaryDark, fontWeight: 600, fontSize: 14  }}>
                 Valor dos atos: {(() => {
                   const total = calcularTotalAtosPagos();
                   return `R$${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -1106,23 +1122,23 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             <div className="servico-table-container">
               <table className="servico-table" style={{ tableLayout: 'fixed' }}>
                 <thead>
-                  <tr style={{ background: '#ede1f7' }}>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Combo</th>
-                    <th style={{ padding: 6, width: 70, minWidth: 50, maxWidth: 80, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Código do Ato</th>
-                    <th style={{ padding: 6, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Descrição do Ato</th>
-                    <th style={{ padding: 6, width: 40, minWidth: 40, maxWidth: 40, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Quantidade</th>
-                    <th style={{ padding: 6, width: 60, minWidth: 60, maxWidth: 60, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Código Tributário</th>
-                    <th style={{ padding: 6, width: 100, minWidth: 100, maxWidth: 100, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Tipo de Registro</th>
-                    <th style={{ padding: 6, width: 220, minWidth: 210, maxWidth: 280, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Nome do(s) Registrado(s)</th>
-                    <th style={{ padding: 6, width: 40, minWidth: 40, maxWidth: 40, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Livro</th>
-                    <th style={{ padding: 6, width: 40, minWidth: 40, maxWidth: 40, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Folha</th>
-                    <th style={{ padding: 6, width: 40, minWidth: 40, maxWidth: 40, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Termo</th>
-                    <th style={{ padding: 6, width: 70, minWidth: 70, maxWidth: 70, color: '#6c3483', fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>Ações</th>
+                  <tr style={{ background: palette.softBg }}>
+                    <th style={{ padding: 6, color: palette.primaryDark, fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle', border: `1px solid ${palette.softBorder}` }}>Combo</th>
+                    <th style={{ padding: 6, width: 70, minWidth: 50, maxWidth: 80, color: palette.primaryDark, fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle', border: `1px solid ${palette.softBorder}` }}>Código do Ato</th>
+                    <th style={{ padding: 6, color: palette.primaryDark, fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle', border: `1px solid ${palette.softBorder}` }}>Descrição do Ato</th>
+                    <th style={{ padding: 6, width: 40, minWidth: 40, maxWidth: 40, color: palette.primaryDark, fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle', border: `1px solid ${palette.softBorder}` }}>Quantidade</th>
+                    <th style={{ padding: 6, width: 60, minWidth: 60, maxWidth: 60, color: palette.primaryDark, fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle', border: `1px solid ${palette.softBorder}` }}>Código Tributário</th>
+                    <th style={{ padding: 6, width: 100, minWidth: 100, maxWidth: 100, color: palette.primaryDark, fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle', border: `1px solid ${palette.softBorder}` }}>Tipo de Registro</th>
+                    <th style={{ padding: 6, width: 220, minWidth: 210, maxWidth: 280, color: palette.primaryDark, fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle', border: `1px solid ${palette.softBorder}` }}>Nome do(s) Registrado(s)</th>
+                    <th style={{ padding: 6, width: 40, minWidth: 40, maxWidth: 40, color: palette.primaryDark, fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle', border: `1px solid ${palette.softBorder}` }}>Livro</th>
+                    <th style={{ padding: 6, width: 40, minWidth: 40, maxWidth: 40, color: palette.primaryDark, fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle', border: `1px solid ${palette.softBorder}` }}>Folha</th>
+                    <th style={{ padding: 6, width: 40, minWidth: 40, maxWidth: 40, color: palette.primaryDark, fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle', border: `1px solid ${palette.softBorder}` }}>Termo</th>
+                    <th style={{ padding: 6, width: 70, minWidth: 70, maxWidth: 70, color: palette.primaryDark, fontWeight: 700, fontSize: 10, textAlign: 'center', verticalAlign: 'middle', border: `1px solid ${palette.softBorder}` }}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {atosPedido.map((ato, idx) => (
-                  <tr key={`${ato.comboId}-${ato.atoId}-${idx}`} style={{ background: idx % 2 === 0 ? '#f8f4fc' : 'transparent', fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>
+                  <tr key={`${ato.comboId}-${ato.atoId}-${idx}`} style={{ background: idx % 2 === 0 ? palette.softBg : 'transparent', fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>
                       <td style={{ padding: 6, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>{ato.comboNome}</td>
                       <td style={{ padding: 6, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>{ato.atoCodigo}</td>
                       <td style={{ padding: 6, fontSize: 10, textAlign: 'center', verticalAlign: 'middle' }}>{ato.atoDescricao ? ato.atoDescricao.slice(0, 15) : ''}</td>
@@ -1132,7 +1148,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           min={1}
                           value={ato.quantidade}
                           onChange={e => handleAtoChange(idx, 'quantidade', Number(e.target.value))}
-                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
+                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: `1.5px solid ${palette.softBorder}`, padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
                         />
                       </td>
                       <td style={{ padding: 6, position: 'relative', fontSize: 10 }}>
@@ -1140,7 +1156,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           type="text"
                           value={ato.codigoTributario}
                           onChange={e => handleCodigoTributarioInput(idx, e.target.value)}
-                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
+                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: `1.5px solid ${palette.softBorder}`, padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
                           autoComplete="off"
                         />
                         {codigoTributarioIdx === idx && codigoTributarioSuggestions.length > 0 && (
@@ -1179,7 +1195,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                         <select
                           value={ato.tipoRegistro || ''}
                           onChange={e => handleAtoChange(idx, 'tipoRegistro', e.target.value)}
-                          style={{ width: '100%', maxWidth: 156, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
+                          style={{ width: '100%', maxWidth: 156, borderRadius: 6, border: `1.5px solid ${palette.softBorder}`, padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
                         >
                           <option value="">Selecione...</option>
                           <option value="Livro E">Livro E</option>
@@ -1195,7 +1211,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           type="text"
                           value={ato.nomeRegistrados || ''}
                           onChange={e => handleAtoChange(idx, 'nomeRegistrados', e.target.value)}
-                          style={{ width: '100%', maxWidth: 640, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
+                          style={{ width: '100%', maxWidth: 640, borderRadius: 6, border: `1.5px solid ${palette.softBorder}`, padding: '2px 6px', fontSize: 10, boxSizing: 'border-box' }}
                           placeholder="Nome(s)"
                         />
                       </td>
@@ -1204,7 +1220,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           type="text"
                           value={ato.livro || ''}
                           onChange={e => handleAtoChange(idx, 'livro', e.target.value)}
-                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
+                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: `1.5px solid ${palette.softBorder}`, padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
                           placeholder="Livro"
                         />
                       </td>
@@ -1213,7 +1229,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           type="text"
                           value={ato.folha || ''}
                           onChange={e => handleAtoChange(idx, 'folha', e.target.value)}
-                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
+                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: `1.5px solid ${palette.softBorder}`, padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
                           placeholder="Folha"
                         />
                       </td>
@@ -1222,7 +1238,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                           type="text"
                           value={ato.termo || ''}
                           onChange={e => handleAtoChange(idx, 'termo', e.target.value)}
-                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: '1.5px solid #d6d6f5', padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
+                          style={{ width: 50, maxWidth: 60, borderRadius: 6, border: `1.5px solid ${palette.softBorder}`, padding: '2px 6px', fontSize: 10, boxSizing: 'border-box', textAlign: 'center' }}
                           placeholder="Termo"
                         />
                       </td>
@@ -1230,7 +1246,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                         <button
                           type="button"
                           onClick={() => handleRemoverAto(idx)}
-                          className="btn btn-danger"
+                          className="btn"
+                          style={{ background: palette.primaryDark, color: '#fff', border: 'none' }}
                         >
                           Remover
                         </button>
@@ -1245,7 +1262,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
         {/* Salvar/Atualizar Button e Imprimir Protocolo */}
         <div className="servico-actions">
-          <button onClick={handleSubmit} className="btn btn-success">
+          <button onClick={handleSubmit} className="btn" style={{ background: palette.primary, color: '#fff', border: 'none' }}>
             {form.protocolo && form.protocolo.trim() !== '' ? 'Atualizar Pedido' : 'Salvar Pedido'}
           </button>
           {/* <ReciboProtocolo removido conforme solicitado */}
