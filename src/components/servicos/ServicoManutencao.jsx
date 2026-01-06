@@ -10,6 +10,16 @@ import ServicoLista from './ServicoLista';
 import config from '../../config';
 import { fetchComAuth } from '../../utils';
 
+const palette = {
+  pageGradient: 'linear-gradient(135deg, #0b1f3b 0%, #0f3e7b 40%, #0a234f 100%)',
+  panelBg: '#f7fbff',
+  softCard: '#eef5ff',
+  softBorder: '#d6e4ff',
+  primary: '#1d4ed8',
+  primarySoft: '#e1e9ff',
+  neutralText: '#0f172a'
+};
+
 const clientesMock = [
   { id: 1, nome: 'Joao Silva', cpf: '123.456.789-00', endereco: 'Rua A, 123', telefone: '99999-9999', email: 'joao@email.com' },
   { id: 2, nome: 'Maria Souza', cpf: '987.654.321-00', endereco: 'Rua B, 456', telefone: '88888-8888', email: 'maria@email.com' }
@@ -410,13 +420,13 @@ export default function ServicoManutencao() {
 
   const [aba, setAba] = useState('cliente');
   const stepDefs = [
-    { key: 'cliente', label: 'Cliente', color: '#2563eb' },
-    { key: 'entrada', label: 'Entrada', color: '#7c3aed' },
-    { key: 'conferencia', label: 'Conferencia', color: '#f59e0b' },
-    { key: 'pagamento', label: 'Pagamento', color: '#d97706' },
-    { key: 'execucao', label: 'Execucao', color: '#0ea5e9' },
-    { key: 'entrega', label: 'Entrega', color: '#16a34a' },
-    { key: 'historico', label: 'Historico', color: '#6b7280' }
+    { key: 'cliente', label: 'Cliente', color: '#1d4ed8' },
+    { key: 'entrada', label: 'Entrada', color: '#1e3a8a' },
+    { key: 'conferencia', label: 'Conferencia', color: '#0ea5e9' },
+    { key: 'pagamento', label: 'Pagamento', color: '#2563eb' },
+    { key: 'execucao', label: 'Execucao', color: '#1e40af' },
+    { key: 'entrega', label: 'Entrega', color: '#0b74d3' },
+    { key: 'historico', label: 'Historico', color: '#0f172a' }
   ];
   const isStepFilled = (key) => {
     if (key === 'cliente') return !!(form.cliente && form.cliente.nome && form.cliente.cpf);
@@ -460,9 +470,10 @@ export default function ServicoManutencao() {
     }
   };
   const renderResumo = () => {
+    const getStepColor = (key) => stepDefs.find(s => s.key === key)?.color || palette.primary;
     const cardBase = {
-      background: '#f8fafc',
-      border: '1px solid #e2e8f0',
+      background: palette.softCard,
+      border: `1px solid ${palette.softBorder}`,
       borderRadius: 12,
       padding: 16,
       marginBottom: 16,
@@ -471,7 +482,7 @@ export default function ServicoManutencao() {
     if (aba === 'cliente') {
       return (
         <div style={cardBase}>
-          <strong style={{ color: '#2563eb' }}>Cliente</strong>
+          <strong style={{ color: getStepColor('cliente') }}>Cliente</strong>
           <div>Nome: {form.cliente?.nome || ''}</div>
           <div>CPF/CNPJ: {form.cliente?.cpf || ''}</div>
           <div>Contato: {form.cliente?.telefone || ''}</div>
@@ -481,7 +492,7 @@ export default function ServicoManutencao() {
     if (aba === 'entrada') {
       return (
         <div style={cardBase}>
-          <strong style={{ color: '#7c3aed' }}>Entrada</strong>
+          <strong style={{ color: getStepColor('entrada') }}>Entrada</strong>
           <div>Atos selecionados: {Array.isArray(atosPedido) ? atosPedido.length : 0}</div>
           <div>Total atos pagos: R$ {calcularTotalAtosPagos().toFixed(2)}</div>
         </div>
@@ -490,7 +501,7 @@ export default function ServicoManutencao() {
     if (aba === 'conferencia') {
       return (
         <div style={cardBase}>
-          <strong style={{ color: '#f59e0b' }}>Conferencia</strong>
+          <strong style={{ color: getStepColor('conferencia') }}>Conferencia</strong>
           <div>Status: {form.conferencia?.status || ''}</div>
           <div>Observacao: {form.conferencia?.observacao || ''}</div>
         </div>
@@ -500,7 +511,7 @@ export default function ServicoManutencao() {
       const p = form.pagamento || {};
       return (
         <div style={cardBase}>
-          <strong style={{ color: '#d97706' }}>Pagamento</strong>
+          <strong style={{ color: getStepColor('pagamento') }}>Pagamento</strong>
           <div>Status: {p.status || 'pendente'}</div>
           <div>Valor total: R$ {(p.valorTotal || 0).toString()}</div>
           <div>Valor pago: R$ {(p.valorPago || 0).toString()}</div>
@@ -511,7 +522,7 @@ export default function ServicoManutencao() {
       const e = form.execucao || {};
       return (
         <div style={cardBase}>
-          <strong style={{ color: '#0ea5e9' }}>Execucao</strong>
+          <strong style={{ color: getStepColor('execucao') }}>Execucao</strong>
           <div>Status: {e.status || ''}</div>
           <div>Responsavel: {e.responsavel || e.usuario || ''}</div>
         </div>
@@ -521,7 +532,7 @@ export default function ServicoManutencao() {
       const ent = form.entrega || {};
       return (
         <div style={cardBase}>
-          <strong style={{ color: '#16a34a' }}>Entrega</strong>
+          <strong style={{ color: getStepColor('entrega') }}>Entrega</strong>
           <div>Data: {ent.data || ''}</div>
           <div>Hora: {ent.hora || ''}</div>
           <div>Retirado por: {ent.retiradoPor || ent.retirado_por || ''}</div>
@@ -531,7 +542,7 @@ export default function ServicoManutencao() {
     if (aba === 'historico') {
       return (
         <div style={cardBase}>
-          <strong style={{ color: '#6b7280' }}>Historico</strong>
+          <strong style={{ color: getStepColor('historico') }}>Historico</strong>
           <div>Eventos: {Array.isArray(historicoStatus) ? historicoStatus.length : 0}</div>
         </div>
       );
@@ -542,7 +553,7 @@ export default function ServicoManutencao() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: palette.pageGradient,
       padding: '0 0 60px 0',
       fontFamily: 'Arial, sans-serif'
     }}>
@@ -554,9 +565,10 @@ export default function ServicoManutencao() {
         <form
           onSubmit={registrarServico}
           style={{
-            background: 'white',
+            background: palette.panelBg,
             borderRadius: 16,
-            boxShadow: '0 4px 24px rgba(44,62,80,0.08)',
+            boxShadow: '0 4px 24px rgba(15,23,42,0.15)',
+            border: `1px solid ${palette.softBorder}`,
             padding: 24,
             marginBottom: 32
           }}
@@ -564,22 +576,22 @@ export default function ServicoManutencao() {
           <div style={{ display: 'flex', gap: 24, alignItems: 'stretch' }}>
             <aside style={{
               width: 260,
-              borderRight: '1px solid #e5e7eb',
+              borderRight: `1px solid ${palette.softBorder}`,
               paddingRight: 16,
               display: 'flex',
               flexDirection: 'column',
               gap: 8
             }}>
               <div style={{
-                padding: '8px 10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: 10,
-                background: '#f9fafb'
+                padding: '10px 12px',
+                border: `1px solid ${palette.softBorder}`,
+                borderRadius: 12,
+                background: palette.softCard
               }}>
-                <div style={{ fontWeight: 700, color: '#374151', marginBottom: 4 }}>Protocolo</div>
-                <div style={{ fontFamily: 'monospace', color: '#6b21a8' }}>{form.protocolo || 'Novo Pedido'}</div>
+                <div style={{ fontWeight: 700, color: palette.neutralText, marginBottom: 4 }}>Protocolo</div>
+                <div style={{ fontFamily: 'monospace', color: palette.primary }}>{form.protocolo || 'Novo Pedido'}</div>
                 {form.status && (
-                  <div style={{ marginTop: 8, display: 'inline-block', padding: '4px 10px', borderRadius: 8, background: '#eef2ff', color: '#4338ca', fontWeight: 700 }}>
+                  <div style={{ marginTop: 8, display: 'inline-block', padding: '4px 10px', borderRadius: 8, background: palette.primarySoft, color: palette.primary, fontWeight: 700 }}>
                     Status: {form.status}
                   </div>
                 )}
@@ -595,9 +607,9 @@ export default function ServicoManutencao() {
                     onClick={() => canClick && setAba(step.key)}
                     style={{
                       textAlign: 'left',
-                      border: '1px solid ' + (isActive ? step.color : '#e5e7eb'),
-                      background: isActive ? step.color + '15' : '#fff',
-                      color: step.locked ? '#9ca3af' : step.color,
+                      border: `1px solid ${isActive ? step.color : palette.softBorder}`,
+                      background: isActive ? `${step.color}22` : '#fff',
+                      color: step.locked ? '#94a3b8' : step.color,
                       borderRadius: 10,
                       padding: '10px 12px',
                       cursor: canClick ? 'pointer' : 'not-allowed',
@@ -612,8 +624,8 @@ export default function ServicoManutencao() {
                       width: 10,
                       height: 10,
                       borderRadius: '50%',
-                      background: step.filled ? step.color : '#e5e7eb',
-                      border: '2px solid ' + (isActive ? step.color : '#e5e7eb')
+                      background: step.filled ? step.color : palette.softBorder,
+                      border: `2px solid ${isActive ? step.color : palette.softBorder}`
                     }} />
                     {step.label}
                   </button>
@@ -622,14 +634,14 @@ export default function ServicoManutencao() {
             </aside>
 
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingBottom: 8, borderBottom: '1px solid #e5e7eb' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingBottom: 8, borderBottom: `1px solid ${palette.softBorder}` }}>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <button type="button" onClick={goPrev} disabled={currentIdx === 0} style={{ border: '1px solid #e5e7eb', background: '#fff', borderRadius: 8, padding: '8px 12px', cursor: currentIdx === 0 ? 'not-allowed' : 'pointer' }}>Voltar</button>
-                  <button type="button" onClick={goNext} disabled={currentIdx === stepDefs.length - 1 || stepStates[currentIdx + 1]?.locked} style={{ border: '1px solid #e5e7eb', background: '#2563eb', color: 'white', borderRadius: 8, padding: '8px 14px', cursor: currentIdx === stepDefs.length - 1 || stepStates[currentIdx + 1]?.locked ? 'not-allowed' : 'pointer' }}>Salvar e continuar</button>
-                  <button type="button" onClick={() => setAba('historico')} style={{ border: '1px solid #e5e7eb', background: '#f3f4f6', color: '#111827', borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}>Ver historico</button>
+                  <button type="button" onClick={goPrev} disabled={currentIdx === 0} style={{ border: `1px solid ${palette.softBorder}`, background: '#fff', borderRadius: 8, padding: '8px 12px', cursor: currentIdx === 0 ? 'not-allowed' : 'pointer', color: palette.neutralText }}>Voltar</button>
+                  <button type="button" onClick={goNext} disabled={currentIdx === stepDefs.length - 1 || stepStates[currentIdx + 1]?.locked} style={{ border: `1px solid ${palette.primary}`, background: palette.primary, color: 'white', borderRadius: 8, padding: '8px 14px', cursor: currentIdx === stepDefs.length - 1 || stepStates[currentIdx + 1]?.locked ? 'not-allowed' : 'pointer' }}>Salvar e continuar</button>
+                  <button type="button" onClick={() => setAba('historico')} style={{ border: `1px solid ${palette.softBorder}`, background: palette.primarySoft, color: palette.neutralText, borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}>Ver historico</button>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button type="button" onClick={() => navigate('/lista-servicos')} style={{ border: '1px solid #e5e7eb', background: '#fff', borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}>Voltar para lista</button>
+                  <button type="button" onClick={() => navigate('/lista-servicos')} style={{ border: `1px solid ${palette.softBorder}`, background: '#fff', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', color: palette.neutralText }}>Voltar para lista</button>
                   <button type="button" onClick={excluirPedido} style={{ border: '1px solid #fee2e2', background: '#fef2f2', color: '#b91c1c', borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}>Excluir pedido</button>
                 </div>
               </div>
@@ -698,18 +710,19 @@ export default function ServicoManutencao() {
               )}
               {aba === 'historico' && form.protocolo && historicoStatus.length > 0 && (
                 <div style={{
-                  background: 'white',
+                  background: palette.panelBg,
                   borderRadius: 16,
-                  boxShadow: '0 4px 24px rgba(44,62,80,0.08)',
+                  boxShadow: '0 4px 24px rgba(15,23,42,0.12)',
                   padding: 32,
-                  marginBottom: 32
+                  marginBottom: 32,
+                  border: `1px solid ${palette.softBorder}`
                 }}>
                   <h3 style={{
-                    color: '#2c3e50',
+                    color: palette.neutralText,
                     fontSize: 24,
                     fontWeight: 700,
                     marginBottom: 24,
-                    borderBottom: '3px solid #9b59b6',
+                    borderBottom: `3px solid ${palette.primary}`,
                     paddingBottom: 12,
                     display: 'flex',
                     alignItems: 'center'
@@ -717,10 +730,10 @@ export default function ServicoManutencao() {
                      Historico de Status - Protocolo: {form.protocolo}
                   </h3>
                   <div style={{
-                    border: '2px solid #9b59b6',
+                    border: `2px solid ${palette.primary}`,
                     borderRadius: 12,
                     overflow: 'hidden',
-                    boxShadow: '0 2px 12px rgba(155,89,182,0.15)'
+                    boxShadow: '0 2px 12px rgba(29,78,216,0.2)'
                   }}>
                     <table style={{
                       width: '100%',
@@ -729,7 +742,7 @@ export default function ServicoManutencao() {
                     }}>
                       <thead>
                         <tr style={{
-                          background: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
+                          background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)',
                           color: 'white'
                         }}>
                           <th style={{
@@ -781,37 +794,37 @@ export default function ServicoManutencao() {
                           });
                           const getStatusColor = (status) => {
                             switch (status?.toLowerCase()) {
-                              case 'pago': return '#27ae60';
-                              case 'conferido': return '#3498db';
-                              case 'em analise': return '#f39c12';
-                              case 'cancelado': return '#e74c3c';
-                              case 'concluido': return '#2ecc71';
-                              default: return '#7f8c8d';
+                              case 'pago': return '#16a34a';
+                              case 'conferido': return '#0ea5e9';
+                              case 'em analise': return '#2563eb';
+                              case 'cancelado': return '#b91c1c';
+                              case 'concluido': return '#1d4ed8';
+                              default: return '#0f172a';
                             }
                           };
                           return (
                             <tr
                               key={index}
                               style={{
-                                background: index % 2 === 0 ? '#fafafa' : '#ffffff',
-                                borderBottom: index < historicoStatus.length - 1 ? '1px solid #ecf0f1' : 'none',
+                                background: index % 2 === 0 ? '#f7fbff' : '#ffffff',
+                                borderBottom: index < historicoStatus.length - 1 ? `1px solid ${palette.softBorder}` : 'none',
                                 transition: 'background-color 0.2s ease'
                               }}
-                              onMouseEnter={(e) => e.target.parentElement.style.backgroundColor = '#f8f9fa'}
-                              onMouseLeave={(e) => e.target.parentElement.style.backgroundColor = index % 2 === 0 ? '#fafafa' : '#ffffff'}
+                              onMouseEnter={(e) => e.target.parentElement.style.backgroundColor = '#eef5ff'}
+                              onMouseLeave={(e) => e.target.parentElement.style.backgroundColor = index % 2 === 0 ? '#f7fbff' : '#ffffff'}
                             >
                               <td style={{
                                 padding: '16px 20px',
-                                borderRight: '1px solid #ecf0f1',
+                                borderRight: `1px solid ${palette.softBorder}`,
                                 fontFamily: 'monospace',
                                 fontWeight: '600',
-                                color: '#2c3e50'
+                                color: palette.neutralText
                               }}>
                                 {dataFormatada}
                               </td>
                               <td style={{
                                 padding: '16px 20px',
-                                borderRight: '1px solid #ecf0f1',
+                                borderRight: `1px solid ${palette.softBorder}`,
                                 fontWeight: '700',
                                 color: getStatusColor(item.status)
                               }}>
@@ -819,7 +832,7 @@ export default function ServicoManutencao() {
                                   display: 'inline-block',
                                   padding: '4px 12px',
                                   borderRadius: '20px',
-                                  backgroundColor: `${getStatusColor(item.status)}20`,
+                                  backgroundColor: `${getStatusColor(item.status)}15`,
                                   border: `2px solid ${getStatusColor(item.status)}`,
                                   fontSize: '13px',
                                   textTransform: 'uppercase',
@@ -830,15 +843,15 @@ export default function ServicoManutencao() {
                               </td>
                               <td style={{
                                 padding: '16px 20px',
-                                borderRight: '1px solid #ecf0f1',
-                                color: '#2c3e50',
+                                borderRight: `1px solid ${palette.softBorder}`,
+                                color: palette.neutralText,
                                 fontWeight: '600'
                               }}>
                                 {item.responsavel || 'Sistema'}
                               </td>
                               <td style={{
                                 padding: '16px 20px',
-                                color: '#2c3e50'
+                                color: palette.neutralText
                               }}>
                                 {item.observacoes || ''}
                               </td>
