@@ -548,7 +548,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             .linha-info { display: flex; justify-content: space-between; margin: 3px 0; border-bottom: 1px dotted #888; padding-bottom: 1.5px; }
             .label { font-weight: bold; width: 40%; }
             .valor { text-align: right; width: 55%; }
-            .destaque-excesso { border: 2px double black; padding: 7px; text-align: center; margin: 10px 0; background-color: #f9f9f9; }
+            .destaque-excesso { border: 2px double black; padding: 7px; text-align: center; margin: 10px 0; background-color: #eef5ff; }
             .valor-excesso { font-size: 15pt; font-weight: bold; margin: 5px 0; }
             .assinatura { margin-top: 12px; display: flex; justify-content: space-between; }
             .campo-assinatura { width: 45%; text-align: center; border-top: 1px solid black; padding-top: 2px; margin-top: 15px; }
@@ -770,21 +770,16 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
     width: '100%', 
     padding: '12px 16px',
     borderRadius: 8,
-    border: '3px solid #b30202ff',
+    border: `2px solid ${palette.softBorder}`,
     fontSize: '14px',
     backgroundColor: 'white',
     transition: 'border-color 0.2s ease',
-    marginBottom: 16,
-    '&:focus': {
-      borderColor: '#e53e3e',
-      outline: 'none',
-      boxShadow: '0 0 0 3px rgba(229,62,62,0.1)'
-    }
+    marginBottom: 16
   };
 
   const labelStyle = {
     fontWeight: '600', 
-    color: '#742a2a',
+    color: palette.primaryDark,
     fontSize: '14px',
     display: 'block',
     marginBottom: 6
@@ -796,9 +791,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
   };
 
   return (
-    <div className="servico-section">
+    <div className="servico-section" style={{ background: palette.softBg, border: `1px solid ${palette.softBorder}` }}>
       <div className="servico-header">
-        <h3 className="servico-title">💳 Informações de Pagamento</h3>
+        <h3 className="servico-title" style={{ color: palette.primaryDark }}>💳 Informações de Pagamento</h3>
       </div>
       {/* Valor a ser pago (incluindo ISS, igual ServicoEntrada) */}
       <div style={{
@@ -808,7 +803,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         <span style={{
           fontSize: '16px',
           fontWeight: 'bold',
-          color: '#742a2a',
+          color: palette.primaryDark,
           marginRight: 12
         }}>
           Valor dos Atos:
@@ -816,7 +811,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         <span style={{
           fontSize: '16px',
           fontWeight: 'bold',
-          color: '#e53e3e',
+          color: palette.primary,
           fontFamily: 'monospace'
         }}>
           {(() => {
@@ -851,7 +846,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       alignItems: 'center',
       gap: 6,
       flexWrap: 'wrap' }}>
-          <label style={{ fontWeight: 'bold', color: '#742a2a', marginRight: 12 }} htmlFor="valorAdicionalInput">
+          <label style={{ fontWeight: 'bold', color: palette.primaryDark, marginRight: 12 }} htmlFor="valorAdicionalInput">
             Valor Adicional:
           </label>
           <input
@@ -885,10 +880,10 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               width: 120,
               padding: '1px 1px',
               borderRadius: 6,
-              border: '1px solid #e0b9b9ff',
+              border: `1px solid ${palette.softBorder}`,
               fontSize: '16px',
               fontWeight: 'bold',
-              color: '#e53e3e',
+              color: palette.primary,
               fontFamily: 'monospace',
               marginLeft: 0,
               textAlign: 'left'
@@ -900,7 +895,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         <span style={{
           fontSize: '16px',
           fontWeight: 'bold',
-          color: '#742a2a',
+          color: palette.primaryDark,
           marginRight: 12
         }}>
           Subtotal deste pedido:
@@ -908,7 +903,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         <span style={{
           fontSize: '16px',
           fontWeight: 'bold',
-          color: '#e53e3e',
+          color: palette.primary,
           fontFamily: 'monospace'
         }}>
           {`R$ ${subtotalPedido.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
@@ -924,28 +919,28 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           <div className="servico-table-container">
           <h4 style={{
             margin: '0 0 12px 0',
-            color: '#742a2a',
+            color: palette.primaryDark,
             fontSize: '16px',
             fontWeight: '600'
           }}>💰 Valores Adiantados pelo Usuário</h4>
           <table className="servico-table">
             <thead>
-              <tr style={{ background: '#fdf2f8' }}>
+              <tr style={{ background: palette.softBg }}>
                 <th style={{
                   padding: '2px 2px 2px 2px',
                   textAlign: 'left',
-                  color: '#742a2a',
+                  color: palette.primaryDark,
                   fontWeight: '600',
-                  border: '1px solid #feb2b2'
+                  border: `1px solid ${palette.softBorder}`
                 }}>
                   Valor
                 </th>
                 <th style={{
                   padding: '8px 12px',
                   textAlign: 'left',
-                  color: '#742a2a',
+                  color: palette.primaryDark,
                   fontWeight: '600',
-                  border: '1px solid #feb2b2'
+                  border: `1px solid ${palette.softBorder}`
                 }}>
                   Forma de Pagamento
                 </th>
@@ -955,42 +950,42 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               {valorAdiantadoDetalhes
                 .filter(item => item.valor && item.forma)
                 .map((item, idx) => (
-                <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fef5f5' }}>
+                <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : palette.softBg }}>
                   <td style={{
                     padding: '8px 12px',
-                    border: '1px solid #feb2b2',
+                    border: `1px solid ${palette.softBorder}`,
                     fontFamily: 'monospace',
                     fontWeight: '600',
-                    color: '#e53e3e'
+                    color: palette.primary
                   }}>
                     R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td style={{
                     padding: '8px 12px',
-                    border: '1px solid #feb2b2',
-                    color: '#742a2a'
+                    border: `1px solid ${palette.softBorder}`,
+                    color: palette.primaryDark
                   }}>
                     {item.forma}
                   </td>
                 </tr>
               ))}
               {/* Linha de Total */}
-              <tr style={{ background: '#f3d5d5', fontWeight: 'bold' }}>
+              <tr style={{ background: palette.softBg, fontWeight: 'bold' }}>
                 <td style={{
                   padding: '10px 12px',
-                  border: '2px solid #e53e3e',
+                  border: `2px solid ${palette.primary}`,
                   fontFamily: 'monospace',
                   fontWeight: 'bold',
-                  color: '#8b1a1a',
+                  color: palette.primaryDark,
                   fontSize: '16px'
                 }}>
                   R$ {calcularTotalAdiantado().toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </td>
                 <td style={{
                   padding: '10px 12px',
-                  border: '2px solid #e53e3e',
+                  border: `2px solid ${palette.primary}`,
                   fontWeight: 'bold',
-                  color: '#8b1a1a'
+                  color: palette.primaryDark
                 }}>
                   TOTAL ADIANTADO
                 </td>
@@ -1006,33 +1001,33 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         <div className="servico-table-container">
         <h4 style={{
           margin: '0 0 12px 0',
-          color: '#2f855a',
+          color: palette.primaryDark,
           fontSize: '16px',
           fontWeight: '600'
         }}>📝 Distribuição Final do Pagamento</h4>
         <table className="servico-table" style={{ fontSize: '15px', marginBottom: 18 }}>
           <thead>
-            <tr style={{ background: '#b2f5ea' }}>
-              <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Valor</th>
-              <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Forma</th>
-              <th style={{ padding: '8px', border: '1px solid #38a169', color: '#2f855a' }}>Ações</th>
+            <tr style={{ background: palette.softBg }}>
+              <th style={{ padding: '8px', border: `1px solid ${palette.softBorder}`, color: palette.primaryDark }}>Valor</th>
+              <th style={{ padding: '8px', border: `1px solid ${palette.softBorder}`, color: palette.primaryDark }}>Forma</th>
+              <th style={{ padding: '8px', border: `1px solid ${palette.softBorder}`, color: palette.primaryDark }}>Ações</th>
             </tr>
           </thead>
           <tbody>
             {pagamentoFinal.map((item, idx) => (
-              <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#e6fffa' }}>
-                <td style={{ padding: '8px', border: '1px solid #38a169' }}>
+              <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : palette.softBg }}>
+                <td style={{ padding: '8px', border: `1px solid ${palette.softBorder}` }}>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={item.valor}
                     onChange={e => handleEditPagamentoFinal(idx, 'valor', e.target.value)}
-                    style={{ width: 90, padding: '4px', borderRadius: 4, border: '1px solid #38a169', fontSize: '15px' }}
+                    style={{ width: 90, padding: '4px', borderRadius: 4, border: `1px solid ${palette.softBorder}`, fontSize: '15px' }}
                   />
                 </td>
-                <td style={{ padding: '8px', border: '1px solid #38a169' }}>
-                  <select value={item.forma} onChange={e => handleEditPagamentoFinal(idx, 'forma', e.target.value)} style={{ width: 140, padding: '4px', borderRadius: 4, border: '1px solid #38a169', fontSize: '15px' }}>
+                <td style={{ padding: '8px', border: `1px solid ${palette.softBorder}` }}>
+                  <select value={item.forma} onChange={e => handleEditPagamentoFinal(idx, 'forma', e.target.value)} style={{ width: 140, padding: '4px', borderRadius: 4, border: `1px solid ${palette.softBorder}`, fontSize: '15px' }}>
                     <option value="">Selecione</option>
                     <option value="Dinheiro">Dinheiro</option>
                     <option value="PIX">PIX</option>
@@ -1042,8 +1037,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                     <option value="Depósito Prévio">Depósito Prévio</option>
                   </select>
                 </td>
-                <td style={{ padding: '8px', border: '1px solid #38a169', textAlign: 'center' }}>
-                  <button type="button" onClick={() => handleRemoverPagamentoFinal(idx)} style={{ background: '#e53e3e', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontWeight: 'bold', cursor: 'pointer' }}>Remover</button>
+                <td style={{ padding: '8px', border: `1px solid ${palette.softBorder}`, textAlign: 'center' }}>
+                  <button type="button" onClick={() => handleRemoverPagamentoFinal(idx)} style={{ background: palette.primaryDark, color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontWeight: 'bold', cursor: 'pointer' }}>Remover</button>
                 </td>
               </tr>
             ))}
@@ -1051,7 +1046,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         </table>
         </div>
         <div className="servico-actions">
-          <button type="button" onClick={handleAdicionarPagamentoFinal} className="btn btn-secondary">Adicionar Forma</button>
+          <button type="button" onClick={handleAdicionarPagamentoFinal} className="btn" style={{ background: palette.primary, color: '#fff', border: 'none' }}>Adicionar Forma</button>
         </div>
       </div>
 
@@ -1084,10 +1079,10 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             
             if (pagamentoSalvo) {
               statusMessage = '✅ Pagamento salvo com sucesso!';
-              statusStyle = { background: '#e8f5e8', border: '2px solid #38a169', color: '#2d5016' };
+              statusStyle = { background: palette.softBg, border: `2px solid ${palette.softBorder}`, color: palette.primaryDark };
             } else if (totalAdiantado >= subtotalPedido) {
               statusMessage = '✅ Valor adiantado suficiente para pagamento!';
-              statusStyle = { background: '#e8f5e8', border: '2px solid #38a169', color: '#2d5016' };
+              statusStyle = { background: palette.softBg, border: `2px solid ${palette.softBorder}`, color: palette.primaryDark };
             } else {
               statusMessage = `⚠️ Valor insuficiente para pagamento. Restam: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
               statusStyle = { background: palette.softBg, border: `2px solid ${palette.softBorder}`, color: palette.primary };
@@ -1118,7 +1113,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                         handleSalvarPagamentoFinal();
                       }}
                       disabled={processando}
-                      className="btn btn-success"
+                      className="btn"
+                      style={{ background: palette.primary, color: '#fff', border: 'none' }}
                     >
                       {processando ? '⏳ Salvando...' : '💾 Salvar Pagamento'}
                     </button>
@@ -1126,14 +1122,14 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
 
                   {/* Botão Excluir/Cancelar Pagamento - aparece se foi salvo */}
                   {pagamentoSalvo && (
-                    <button type="button" onClick={handleCancelarPagamento} disabled={processando} className="btn btn-danger">
+                    <button type="button" onClick={handleCancelarPagamento} disabled={processando} className="btn" style={{ background: palette.primaryDark, color: '#fff', border: 'none' }}>
                       {processando ? '⏳ Processando...' : '❌ Excluir Pagamento'}
                     </button>
                   )}
 
                   {/* Botão Adicionar Complemento - aparece se valor é insuficiente e não foi salvo */}
                   {!pagamentoSalvo && totalAdiantado < subtotalPedido && (
-                    <button type="button" onClick={abrirComplementoModal} className="btn btn-warning">
+                    <button type="button" onClick={abrirComplementoModal} className="btn" style={{ background: palette.softBorder, color: palette.primaryDark, border: 'none' }}>
                       ➕ Adicionar Complemento
                     </button>
                   )}
@@ -1146,7 +1142,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                         console.log('[FRONTEND][LOG] Gerando recibo do troco para excesso de:', excesso);
                         gerarReciboExcesso(excesso);
                       }}
-                      className="btn btn-secondary"
+                      className="btn"
+                      style={{ background: palette.primary, color: '#fff', border: 'none' }}
                     >
                       📄 Gerar Recibo do Troco
                     </button>
@@ -1196,8 +1193,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               />
             </div>
             <div className="servico-actions">
-              <button type="button" onClick={handleAdicionarComplementoModal} className="btn btn-success">Adicionar</button>
-              <button type="button" onClick={fecharComplementoModal} className="btn btn-danger">Cancelar</button>
+              <button type="button" onClick={handleAdicionarComplementoModal} className="btn" style={{ background: palette.primary, color: '#fff', border: 'none' }}>Adicionar</button>
+              <button type="button" onClick={fecharComplementoModal} className="btn" style={{ background: palette.primaryDark, color: '#fff', border: 'none' }}>Cancelar</button>
             </div>
           </div>
         </div>
@@ -1207,12 +1204,12 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         <div style={{ 
           marginTop: 20, 
           padding: 16,
-          background: 'linear-gradient(135deg, #c53030 0%, #9b2c2c 100%)',
+          background: 'linear-gradient(135deg, #1e3a8a 0%, #0b2f6a 100%)',
           color: '#fff',
           borderRadius: 8,
           fontWeight: '600',
           textAlign: 'center',
-          boxShadow: '0 2px 8px rgba(197,48,48,0.3)'
+          boxShadow: '0 2px 8px rgba(30,62,138,0.35)'
         }}>
           ✅ Recibo digital gerado para protocolo {form.protocolo}
         </div>
@@ -1223,13 +1220,13 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         <div style={{
           marginTop: 20,
           padding: 16,
-          background: '#fff5f5',
-          border: '1px solid #feb2b2',
+          background: palette.softBg,
+          border: `1px solid ${palette.softBorder}`,
           borderRadius: 8
         }}>
           <div style={{ 
             fontSize: '14px', 
-            color: '#742a2a',
+            color: palette.primaryDark,
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
@@ -1239,7 +1236,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           </div>
           <div style={{ 
             fontSize: '14px', 
-            color: '#742a2a',
+            color: palette.primaryDark,
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -1248,10 +1245,10 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             <span><strong>Valor Pago:</strong></span>
             <span style={{ fontWeight: 'bold' }}>R$ {parseFloat(form.pagamento.valorPago || 0).toFixed(2)}</span>
           </div>
-          <hr style={{ margin: '12px 0', border: '1px solid #feb2b2' }} />
+          <hr style={{ margin: '12px 0', border: `1px solid ${palette.softBorder}` }} />
           <div style={{ 
             fontSize: '16px', 
-            color: '#742a2a',
+            color: palette.primaryDark,
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -1259,7 +1256,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           }}>
             <span>Valor Pendente:</span>
             <span style={{ 
-              color: parseFloat(form.pagamento.valorTotal || 0) - parseFloat(form.pagamento.valorPago || 0) <= 0 ? '#38a169' : '#e53e3e'
+              color: parseFloat(form.pagamento.valorTotal || 0) - parseFloat(form.pagamento.valorPago || 0) <= 0 ? palette.primaryDark : palette.primary
             }}>
               R$ {(parseFloat(form.pagamento.valorTotal || 0) - parseFloat(form.pagamento.valorPago || 0)).toFixed(2)}
             </span>
