@@ -666,7 +666,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
             
             {/* Tabela de Pagamentos */}
             {valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
-              <div className="servico-table-container">
+              <div className="servico-table-container" style={{ border: `1px solid ${palette.softBorder}`, background: palette.softBg }}>
                 <table className="servico-table">
                   <thead>
                     <tr style={{ background: palette.softBg }}>
@@ -1119,7 +1119,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 })()}
               </span>
             </div>
-            <div className="servico-table-container">
+            <div className="servico-table-container" style={{ border: `1px solid ${palette.softBorder}`, background: palette.softBg }}>
               <table className="servico-table" style={{ tableLayout: 'fixed' }}>
                 <thead>
                   <tr style={{ background: palette.softBg }}>
