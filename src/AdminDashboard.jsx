@@ -20,7 +20,8 @@ import {
   FaUsers
 } from 'react-icons/fa';
 import ConfigurarServentia from './ConfigurarServentia';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import config from './config';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
@@ -28,6 +29,7 @@ export default function AdminDashboard() {
   const [showConfigurar, setShowConfigurar] = useState(false);
   const [configModalFocus, setConfigModalFocus] = useState(null);
   const [configOpenAgents, setConfigOpenAgents] = useState(false);
+  const [earning, setEarning] = useState(null);
 
   const sidebarLinks = [
     { label: 'Visão Geral', icon: FaTachometerAlt, to: '/admin' },
@@ -47,8 +49,8 @@ export default function AdminDashboard() {
   const kpiCards = [
     {
       label: 'Earning',
-      value: '$ 628',
-      caption: 'Atualizado há 5 min',
+      value: earning == null ? '—' : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(earning),
+      caption: 'Atualizado há poucos instantes',
       icon: FaMoneyBillWave
     },
     {
@@ -183,7 +185,7 @@ export default function AdminDashboard() {
         </div>
 
         <section className="dashboard-cards">
-          {kpiCards.map((card) => {
+            {kpiCards.map((card) => {
             const Icon = card.icon;
             return (
               <div key={card.label} className="dashboard-card">
@@ -192,13 +194,16 @@ export default function AdminDashboard() {
                 </div>
                 <div className="card-info">
                   <span className="card-label">{card.label}</span>
-                  <span className="card-value">{card.value}</span>
+                    <span className="card-value">{card.value}</span>
                   <span className="card-description">{card.caption}</span>
                 </div>
               </div>
             );
           })}
         </section>
+
+          {/* Fetch earning on mount */}
+          <EarningFetcher setEarning={setEarning} />
 
         <section className="chart-grid">
           <div className="chart-card">
@@ -367,4 +372,26 @@ export default function AdminDashboard() {
       )}
     </div>
   );
+}
+
+function EarningFetcher({ setEarning }) {
+  useEffect(() => {
+    let mounted = true;
+    async function fetchEarning() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${config.apiURL}/dashboard/earning`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (mounted) setEarning(Number(data.totalToday || 0));
+      } catch (e) {
+        // ignore
+      }
+    }
+    fetchEarning();
+    return () => { mounted = false; };
+  }, [setEarning]);
+  return null;
 }
