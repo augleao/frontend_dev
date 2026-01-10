@@ -143,43 +143,32 @@ export default function ConfigurarServentia({ onClose }) {
   };
 
   return (
-    <div style={{ padding: 32, maxWidth: 500 }}>
-      <h2 style={{ marginBottom: 24 }}>Configurar Serventia</h2>
+    <div style={{ padding: 20, width: '100%', maxWidth: 820, boxSizing: 'border-box' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800 }}>Configurar Serventia</h2>
+        <button onClick={onClose} aria-label="Fechar modal" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 20, color: '#374151' }}>✕</button>
+      </div>
       {loading ? (
         <div>Carregando...</div>
       ) : (
         <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-            <label style={{ fontWeight: 600, fontSize: 16 }}>
-              Caixa Unificado?
-            </label>
-            <span
-              style={{
-                background: '#eee',
-                borderRadius: '50%',
-                width: 22,
-                height: 22,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 16,
-                cursor: 'pointer',
-                marginLeft: 4
-              }}
-              title="Caso esta opção esteja marcada, todos os lançamentos feitos pelos escreventes serão lançados em um único caixa. Caso esteja desmarcado, cada escrevente terá seu próprio caixa."
-            >
-              ?
-            </span>
-            <input
-              type="checkbox"
-              checked={caixaUnificado}
-              onChange={e => setCaixaUnificado(e.target.checked)}
-              style={{ marginLeft: 12, width: 20, height: 20 }}
-              disabled={saving}
-            />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <label style={{ fontWeight: 700, fontSize: 14 }}>Caixa Unificado?</label>
+              <small style={{ color: '#6b7280' }}>Se marcado, todos os lançamentos irão para um único caixa.</small>
+            </div>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={caixaUnificado}
+                onChange={e => setCaixaUnificado(e.target.checked)}
+                style={{ width: 20, height: 20 }}
+                disabled={saving}
+              />
+            </div>
           </div>
           <div style={{ marginBottom: 18 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <label style={{ fontWeight: 700, display: 'block' }}>IA Agent (primário)</label>
               <button
                 type="button"
@@ -187,13 +176,14 @@ export default function ConfigurarServentia({ onClose }) {
                 disabled={loadingAgents || saving}
                 style={{
                   marginLeft: 'auto',
-                  padding: '6px 10px',
-                  borderRadius: 6,
-                  background: '#10b981',
+                  padding: '8px 12px',
+                  borderRadius: 10,
+                  background: '#0ea5a3',
                   color: 'white',
                   border: 'none',
                   cursor: loadingAgents || saving ? 'not-allowed' : 'pointer',
-                  fontWeight: 700
+                  fontWeight: 700,
+                  boxShadow: '0 6px 18px rgba(14,165,163,0.12)'
                 }}
                 title="Buscar agentes IA disponíveis"
               >
@@ -205,7 +195,7 @@ export default function ConfigurarServentia({ onClose }) {
               onChange={e => setIaAgent(e.target.value)}
               placeholder="ID ou configuração do agente IA (ex.: 'google-gemini')"
               rows={3}
-              style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #ccc', resize: 'vertical' }}
+              style={{ width: '100%', padding: 10, borderRadius: 12, border: '1px solid #e6eef6', background: '#fbfdff', resize: 'vertical', fontSize: 14 }}
               disabled={saving}
             />
             <small style={{ color: '#666' }}>Valor salvo em `ia_agent` na tabela `serventia`. Use "Buscar agentes IA" para selecionar.</small>
@@ -236,41 +226,35 @@ export default function ConfigurarServentia({ onClose }) {
           {success && <div style={{ color: 'green', marginBottom: 12 }}>Configuração salva com sucesso!</div>}
           {/* Agents modal */}
           {agentsModalOpen && (
-            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-              <div style={{ width: '720px', maxWidth: '95%', maxHeight: '80%', overflow: 'auto', background: 'white', borderRadius: 8, padding: 18 }}>
-                <h3 style={{ marginTop: 0 }}>Agentes IA disponíveis</h3>
-                <div style={{ marginBottom: 12 }}>
-                  <button type="button" onClick={() => setAgentsModalOpen(false)} style={{ marginRight: 8 }}>Fechar</button>
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 16 }}>
+              <div style={{ width: '820px', maxWidth: '100%', maxHeight: '85%', overflow: 'auto', background: '#fff', borderRadius: 12, padding: 18, boxShadow: '0 20px 60px rgba(2,6,23,0.2)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <h3 style={{ margin: 0 }}>Agentes IA disponíveis</h3>
+                  <button type="button" onClick={() => setAgentsModalOpen(false)} aria-label="Fechar agentes" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 18 }}>✕</button>
                 </div>
-                {agentsList.length === 0 ? (
-                  <div>Nenhum agente encontrado.</div>
-                ) : (
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr>
-                        <th style={{ textAlign: 'left', padding: 8 }}>ID / Nome</th>
-                        <th style={{ textAlign: 'left', padding: 8 }}>Descrição</th>
-                        <th style={{ padding: 8 }}>Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <div style={{ flex: 1, color: '#6b7280' }}>{agentsList.length === 0 ? 'Nenhum agente encontrado.' : `${agentsList.length} agentes encontrados`}</div>
+                </div>
+                <div style={{ width: '100%', overflow: 'auto' }}>
+                  {agentsList.length > 0 && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
                       {agentsList.map((a, idx) => (
-                        <tr key={idx} style={{ borderTop: '1px solid #eee' }}>
-                          <td style={{ padding: 8, verticalAlign: 'top' }}>{a.id ?? a.name ?? a.agentId ?? a}</td>
-                          <td style={{ padding: 8, verticalAlign: 'top', color: '#444' }}>{a.description ?? a.desc ?? ''}</td>
-                          <td style={{ padding: 8, verticalAlign: 'top' }}>
-                            <button type="button" onClick={() => { handleUseAgent(a.id ?? a.name ?? a.agentId ?? a, 'primary'); }} style={{ marginRight: 6 }}>Usar como primário</button>
-                            <button type="button" onClick={() => { handleUseAgent(a.id ?? a.name ?? a.agentId ?? a, 'fb1'); }} style={{ marginRight: 6 }}>Usar como fallback 1</button>
-                            <button type="button" onClick={() => { handleUseAgent(a.id ?? a.name ?? a.agentId ?? a, 'fb2'); }}>Usar como fallback 2</button>
-                          </td>
-                        </tr>
+                        <div key={idx} style={{ borderRadius: 10, padding: 12, background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <div style={{ fontWeight: 700, color: '#0f172a', fontSize: 14 }}>{a.id ?? a.name ?? a.agentId ?? a}</div>
+                          <div style={{ color: '#475569', fontSize: 13, minHeight: 36 }}>{a.description ?? a.desc ?? ''}</div>
+                          <div style={{ marginTop: 'auto', display: 'flex', gap: 8 }}>
+                            <button type="button" onClick={() => { handleUseAgent(a.id ?? a.name ?? a.agentId ?? a, 'primary'); }} style={{ flex: 1, padding: '8px 10px', borderRadius: 8, background: '#0ea5a3', color: '#fff', border: 'none' }}>Primário</button>
+                            <button type="button" onClick={() => { handleUseAgent(a.id ?? a.name ?? a.agentId ?? a, 'fb1'); }} style={{ flex: 1, padding: '8px 10px', borderRadius: 8, background: '#94a3b8', color: '#fff', border: 'none' }}>Fallback 1</button>
+                            <button type="button" onClick={() => { handleUseAgent(a.id ?? a.name ?? a.agentId ?? a, 'fb2'); }} style={{ flex: 1, padding: '8px 10px', borderRadius: 8, background: '#64748b', color: '#fff', border: 'none' }}>Fallback 2</button>
+                          </div>
+                        </div>
                       ))}
-                    </tbody>
-                  </table>
-                )}
-                <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                  <button type="button" onClick={() => { setAgentsModalOpen(false); setSuccess(false); }} style={{ padding: '8px 12px' }}>Fechar</button>
-                  <button type="button" onClick={() => { setAgentsModalOpen(false); setSuccess(false); handleSalvar(); }} style={{ padding: '8px 12px', background: '#1976d2', color: 'white', border: 'none', borderRadius: 6 }}>Salvar alterações</button>
+                    </div>
+                  )}
+                </div>
+                <div style={{ marginTop: 8, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                  <button type="button" onClick={() => { setAgentsModalOpen(false); setSuccess(false); }} style={{ padding: '8px 12px', borderRadius: 8, background: '#e5e7eb', border: 'none' }}>Fechar</button>
+                  <button type="button" onClick={() => { setAgentsModalOpen(false); setSuccess(false); handleSalvar(); }} style={{ padding: '8px 12px', background: '#1976d2', color: 'white', border: 'none', borderRadius: 8 }}>Salvar alterações</button>
                 </div>
               </div>
             </div>

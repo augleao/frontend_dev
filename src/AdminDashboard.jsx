@@ -165,12 +165,12 @@ export default function AdminDashboard() {
       <main className="dashboard-main">
         <div className="dashboard-topbar">
           <div>
-            <div className="topbar-subtitle">Dashboard User</div>
+            <div className="topbar-subtitle">Dashboard</div>
             <h1>Painel Administrativo</h1>
           </div>
           <button type="button" className="topbar-action-btn" onClick={() => setShowConfigurar(true)}>
             <FaCog size={16} />
-            Check Now
+            Agentes de IA
           </button>
         </div>
 
@@ -246,7 +246,7 @@ export default function AdminDashboard() {
               <li>Lorem ipsum</li>
               <li>Lorem ipsum</li>
             </ul>
-            <button type="button" className="pill-btn secondary">Check Now</button>
+            <button type="button" className="pill-btn secondary">Agentes de IA</button>
           </div>
         </section>
 
