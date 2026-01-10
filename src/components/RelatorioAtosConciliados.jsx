@@ -145,11 +145,18 @@ function RelatorioAtosConciliados() {
       relatorios
         .filter(relatorio => {
           const dataGeracao = obterDataGeracao(relatorio);
-          if (periodo.inicio && dataGeracao && dataGeracao < new Date(periodo.inicio)) return false;
-          if (periodo.fim && dataGeracao) {
-            const dataFim = new Date(periodo.fim);
-            dataFim.setHours(23, 59, 59, 999);
-            if (dataGeracao > dataFim) return false;
+          if (!dataGeracao) return true;
+          const dataGer = dateOnly(dataGeracao);
+          if (periodo.inicio) {
+            const inicio = parseIsoDateAsLocal(periodo.inicio);
+            if (inicio && dataGer < inicio) return false;
+          }
+          if (periodo.fim) {
+            const dataFim = parseIsoDateAsLocal(periodo.fim);
+            if (dataFim) {
+              dataFim.setHours(23, 59, 59, 999);
+              if (dataGer > dataFim) return false;
+            }
           }
           return true;
         })
@@ -285,17 +292,19 @@ function RelatorioAtosConciliados() {
         const atosMap = new Map();
         (data.relatorios || [])
           .filter(rel => {
-            // Filtro de período pelo campo Data de Geração (tratando YYYY-MM-DD como data local)
+            // Filtro de período pelo campo Data de Geração (usar apenas data local)
             const dataGeracao = obterDataGeracao(rel);
-            if (periodo.inicio && dataGeracao) {
+            if (!dataGeracao) return true;
+            const dataGer = dateOnly(dataGeracao);
+            if (periodo.inicio) {
               const inicio = parseIsoDateAsLocal(periodo.inicio);
-              if (inicio && dataGeracao < inicio) return false;
+              if (inicio && dataGer < inicio) return false;
             }
-            if (periodo.fim && dataGeracao) {
+            if (periodo.fim) {
               const dataFim = parseIsoDateAsLocal(periodo.fim);
               if (dataFim) {
                 dataFim.setHours(23, 59, 59, 999);
-                if (dataGeracao > dataFim) return false;
+                if (dataGer > dataFim) return false;
               }
             }
             return true;
@@ -382,6 +391,18 @@ function RelatorioAtosConciliados() {
     return isNaN(d) ? null : d;
   };
 
+  // Return a date with only year/month/day (local) from a Date object
+  const dateOnly = (d) => {
+    if (!d) return null;
+    try {
+      const dt = d instanceof Date ? d : new Date(d);
+      if (isNaN(dt)) return null;
+      return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+    } catch {
+      return null;
+    }
+  };
+
   const formatarDataHora = (valor) => {
     if (!valor) return '--';
     const dt = valor instanceof Date ? valor : (parseDataBr(valor) || new Date(valor));
@@ -447,15 +468,18 @@ function RelatorioAtosConciliados() {
       relatorios
         .filter(relatorio => {
           const dataGeracao = obterDataGeracao(relatorio);
-          if (periodo.inicio && dataGeracao) {
+          if (!dataGeracao) return true;
+          const dataGer = dateOnly(dataGeracao);
+          if (periodo.inicio) {
             const inicio = parseIsoDateAsLocal(periodo.inicio);
-            if (inicio && dataGeracao < inicio) return false;
+            if (inicio && dataGer < inicio) return false;
           }
-          if (periodo.fim && dataGeracao) {
+          if (periodo.fim) {
             const dataFim = parseIsoDateAsLocal(periodo.fim);
             if (dataFim) {
               dataFim.setHours(23, 59, 59, 999);
-              if (dataGeracao > dataFim) return false;
+              const dataGerEnd = dateOnly(dataGer);
+              if (dataGerEnd > dataFim) return false;
             }
           }
           return true;
@@ -755,17 +779,24 @@ function RelatorioAtosConciliados() {
             <div style={{ color: '#888', fontWeight: 500, fontSize: 18, textAlign: 'center', padding: 32 }}>Nenhum relatório encontrado.</div>
           ) : (
             relatorios
-              .filter(relatorio => {
-                // Filtro de período pelo campo Data de Geração
-                const dataGeracao = obterDataGeracao(relatorio);
-                if (periodo.inicio && dataGeracao && dataGeracao < new Date(periodo.inicio)) return false;
-                if (periodo.fim && dataGeracao) {
-                  const dataFim = new Date(periodo.fim);
-                  dataFim.setHours(23, 59, 59, 999);
-                  if (dataGeracao > dataFim) return false;
-                }
-                return true;
-              })
+                .filter(relatorio => {
+                  // Filtro de período pelo campo Data de Geração (usar apenas data local)
+                  const dataGeracao = obterDataGeracao(relatorio);
+                  if (!dataGeracao) return true;
+                  const dataGer = dateOnly(dataGeracao);
+                  if (periodo.inicio) {
+                    const inicio = parseIsoDateAsLocal(periodo.inicio);
+                    if (inicio && dataGer < inicio) return false;
+                  }
+                  if (periodo.fim) {
+                    const dataFim = parseIsoDateAsLocal(periodo.fim);
+                    if (dataFim) {
+                      dataFim.setHours(23, 59, 59, 999);
+                      if (dataGer > dataFim) return false;
+                    }
+                  }
+                  return true;
+                })
               .map(relatorio => {
               let dados;
               try {
