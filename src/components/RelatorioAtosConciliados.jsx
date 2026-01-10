@@ -285,13 +285,18 @@ function RelatorioAtosConciliados() {
         const atosMap = new Map();
         (data.relatorios || [])
           .filter(rel => {
-            // Filtro de período pelo campo Data de Geração
+            // Filtro de período pelo campo Data de Geração (tratando YYYY-MM-DD como data local)
             const dataGeracao = obterDataGeracao(rel);
-            if (periodo.inicio && dataGeracao && dataGeracao < new Date(periodo.inicio)) return false;
+            if (periodo.inicio && dataGeracao) {
+              const inicio = parseIsoDateAsLocal(periodo.inicio);
+              if (inicio && dataGeracao < inicio) return false;
+            }
             if (periodo.fim && dataGeracao) {
-              const dataFim = new Date(periodo.fim);
-              dataFim.setHours(23, 59, 59, 999);
-              if (dataGeracao > dataFim) return false;
+              const dataFim = parseIsoDateAsLocal(periodo.fim);
+              if (dataFim) {
+                dataFim.setHours(23, 59, 59, 999);
+                if (dataGeracao > dataFim) return false;
+              }
             }
             return true;
           })
@@ -362,6 +367,21 @@ function RelatorioAtosConciliados() {
     return isNaN(dt) ? null : dt;
   };
 
+  // Parse date-only ISO (YYYY-MM-DD) as local date (no timezone shift)
+  const parseIsoDateAsLocal = (s) => {
+    if (!s) return null;
+    const str = String(s).trim();
+    const m = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m) {
+      const ano = Number(m[1]);
+      const mes = Number(m[2]);
+      const dia = Number(m[3]);
+      return new Date(ano, mes - 1, dia);
+    }
+    const d = new Date(s);
+    return isNaN(d) ? null : d;
+  };
+
   const formatarDataHora = (valor) => {
     if (!valor) return '--';
     const dt = valor instanceof Date ? valor : (parseDataBr(valor) || new Date(valor));
@@ -424,18 +444,23 @@ function RelatorioAtosConciliados() {
 
   // Calcular somatório dos valores filtrados, respeitando filtro de forma de pagamento
   let totalDinheiro = 0, totalCartao = 0, totalPix = 0, totalCrc = 0, totalDepositoPrevio = 0, totalAtos = 0;
-  relatorios
-    .filter(relatorio => {
-      const dataGeracao = obterDataGeracao(relatorio);
-      if (periodo.inicio && dataGeracao && dataGeracao < new Date(periodo.inicio)) return false;
-      if (periodo.fim && dataGeracao) {
-        const dataFim = new Date(periodo.fim);
-        dataFim.setHours(23, 59, 59, 999);
-        if (dataGeracao > dataFim) return false;
-      }
-      return true;
-    })
-    .forEach(relatorio => {
+      relatorios
+        .filter(relatorio => {
+          const dataGeracao = obterDataGeracao(relatorio);
+          if (periodo.inicio && dataGeracao) {
+            const inicio = parseIsoDateAsLocal(periodo.inicio);
+            if (inicio && dataGeracao < inicio) return false;
+          }
+          if (periodo.fim && dataGeracao) {
+            const dataFim = parseIsoDateAsLocal(periodo.fim);
+            if (dataFim) {
+              dataFim.setHours(23, 59, 59, 999);
+              if (dataGeracao > dataFim) return false;
+            }
+          }
+          return true;
+        })
+        .forEach(relatorio => {
       let dados;
       try {
         dados = typeof relatorio.dados_relatorio === 'string' ? JSON.parse(relatorio.dados_relatorio) : relatorio.dados_relatorio;
