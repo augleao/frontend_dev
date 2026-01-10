@@ -166,9 +166,13 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
   }, [openAgents]);
 
   const handleUseAgent = (agentId, target) => {
-    if (target === 'primary') setIaAgent(agentId || '');
-    else if (target === 'fb1') setIaAgentFallback1(agentId || '');
-    else if (target === 'fb2') setIaAgentFallback2(agentId || '');
+    if (target === 'primary') {
+      setIaAgent(prev => (String(prev) === String(agentId) ? '' : (agentId || '')));
+    } else if (target === 'fb1') {
+      setIaAgentFallback1(prev => (String(prev) === String(agentId) ? '' : (agentId || '')));
+    } else if (target === 'fb2') {
+      setIaAgentFallback2(prev => (String(prev) === String(agentId) ? '' : (agentId || '')));
+    }
     // keep modal open for quick multi-selects; close only on explicit close
   };
 
@@ -201,6 +205,7 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
           <div style={{ marginBottom: 18 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <label style={{ fontWeight: 700, display: 'block' }}>IA Agent (primário)</label>
+              <div style={{ marginLeft: 8, color: iaAgent ? '#0f172a' : '#6b7280', fontWeight: iaAgent ? 700 : 400 }}>{iaAgent || '— nenhum —'}</div>
               <button
                 type="button"
                 onClick={handleFetchAgents}
@@ -221,14 +226,6 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
                 {loadingAgents ? 'Buscando...' : 'Buscar agentes IA'}
               </button>
             </div>
-            <textarea
-              value={iaAgent}
-              onChange={e => setIaAgent(e.target.value)}
-              placeholder="ID ou configuração do agente IA (ex.: 'google-gemini')"
-              rows={3}
-              style={{ width: '100%', padding: 10, borderRadius: 12, border: '1px solid #e6eef6', background: '#fbfdff', resize: 'vertical', fontSize: 14 }}
-              disabled={saving}
-            />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
               <small style={{ color: '#666' }}>Valor salvo em</small>
               <span
@@ -250,26 +247,12 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
             </div>
           </div>
           <div style={{ marginBottom: 18 }}>
-            <label style={{ fontWeight: 700, display: 'block', marginBottom: 6 }}>IA Agent Fallback 1</label>
-            <textarea
-              value={iaAgentFallback1}
-              onChange={e => setIaAgentFallback1(e.target.value)}
-              placeholder="Fallback 1 para IA (ex.: 'openai-gpt')"
-              rows={2}
-              style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #ccc', resize: 'vertical' }}
-              disabled={saving}
-            />
+            <label style={{ fontWeight: 700, display: 'inline-block', marginRight: 12 }}>IA Agent Fallback 1</label>
+            <div style={{ display: 'inline-block', minWidth: 240, padding: 8, borderRadius: 8, border: '1px solid #e6eef6', background: '#fbfdff', color: iaAgentFallback1 ? '#0f172a' : '#6b7280' }}>{iaAgentFallback1 || '— nenhum —'}</div>
           </div>
           <div style={{ marginBottom: 18 }}>
-            <label style={{ fontWeight: 700, display: 'block', marginBottom: 6 }}>IA Agent Fallback 2</label>
-            <textarea
-              value={iaAgentFallback2}
-              onChange={e => setIaAgentFallback2(e.target.value)}
-              placeholder="Fallback 2 para IA"
-              rows={2}
-              style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #ccc', resize: 'vertical' }}
-              disabled={saving}
-            />
+            <label style={{ fontWeight: 700, display: 'inline-block', marginRight: 12 }}>IA Agent Fallback 2</label>
+            <div style={{ display: 'inline-block', minWidth: 240, padding: 8, borderRadius: 8, border: '1px solid #e6eef6', background: '#fbfdff', color: iaAgentFallback2 ? '#0f172a' : '#6b7280' }}>{iaAgentFallback2 || '— nenhum —'}</div>
           </div>
           {error && <div style={{ color: 'red', marginBottom: 12 }}>{error}</div>}
           {success && <div style={{ color: 'green', marginBottom: 12 }}>Configuração salva com sucesso!</div>}
@@ -279,7 +262,7 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
               <div style={{ width: '820px', maxWidth: '100%', maxHeight: '85%', overflow: 'auto', background: '#fff', borderRadius: 12, padding: 18, boxShadow: '0 20px 60px rgba(2,6,23,0.2)', display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <h3 style={{ margin: 0 }}>Agentes IA disponíveis</h3>
-                  <button type="button" onClick={() => setAgentsModalOpen(false)} aria-label="Fechar agentes" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 18 }}>✕</button>
+                  <button type="button" onClick={() => { setAgentsModalOpen(false); if (typeof onClose === 'function') onClose(); }} aria-label="Fechar agentes" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 18 }}>✕</button>
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <div style={{ flex: 1, color: '#6b7280' }}>{agentsList.length === 0 ? 'Nenhum agente encontrado.' : `${agentsList.length} agentes encontrados`}</div>
@@ -366,7 +349,7 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
                   )}
                 </div>
                 <div style={{ marginTop: 8, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                  <button type="button" onClick={() => { setAgentsModalOpen(false); setSuccess(false); }} style={{ padding: '8px 12px', borderRadius: 8, background: '#e5e7eb', border: 'none' }}>Fechar</button>
+                  <button type="button" onClick={() => { setAgentsModalOpen(false); setSuccess(false); if (typeof onClose === 'function') onClose(); }} style={{ padding: '8px 12px', borderRadius: 8, background: '#e5e7eb', border: 'none' }}>Fechar</button>
                   <button type="button" onClick={() => { setAgentsModalOpen(false); setSuccess(false); handleSalvar(); }} style={{ padding: '8px 12px', background: '#1976d2', color: 'white', border: 'none', borderRadius: 8 }}>Salvar alterações</button>
                 </div>
               </div>
