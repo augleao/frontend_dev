@@ -3,7 +3,7 @@ import { AuthContext } from './AuthContext';
 import config from './config';
 
 
-export default function ConfigurarServentia({ onClose, focusField }) {
+export default function ConfigurarServentia({ onClose, focusField, openAgents }) {
   const { user } = useContext(AuthContext);
   const [caixaUnificado, setCaixaUnificado] = useState(false);
   const [iaAgent, setIaAgent] = useState('');
@@ -154,6 +154,17 @@ export default function ConfigurarServentia({ onClose, focusField }) {
     }
   };
 
+  useEffect(() => {
+    if (openAgents) {
+      // trigger agents fetch/modal when requested from parent
+      try {
+        handleFetchAgents();
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [openAgents]);
+
   const handleUseAgent = (agentId, target) => {
     if (target === 'primary') setIaAgent(agentId || '');
     else if (target === 'fb1') setIaAgentFallback1(agentId || '');
@@ -218,7 +229,25 @@ export default function ConfigurarServentia({ onClose, focusField }) {
               style={{ width: '100%', padding: 10, borderRadius: 12, border: '1px solid #e6eef6', background: '#fbfdff', resize: 'vertical', fontSize: 14 }}
               disabled={saving}
             />
-            <small style={{ color: '#666' }}>Valor salvo em `ia_agent` na tabela `serventia`. Use "Buscar agentes IA" para selecionar.</small>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+              <small style={{ color: '#666' }}>Valor salvo em</small>
+              <span
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 999,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  background: iaAgent ? '#065f46' : '#e6eef6',
+                  color: iaAgent ? '#fff' : '#475569',
+                  boxShadow: iaAgent ? 'inset 0 2px 6px rgba(0,0,0,0.14)' : '0 1px 2px rgba(2,6,23,0.04)',
+                  transform: iaAgent ? 'translateY(1px)' : 'none',
+                  transition: 'transform 120ms ease, box-shadow 120ms ease, background 120ms ease'
+                }}
+              >
+                ia_agent
+              </span>
+              <small style={{ color: '#666' }}>na tabela serventia. Use "Buscar agentes IA" para selecionar.</small>
+            </div>
           </div>
           <div style={{ marginBottom: 18 }}>
             <label style={{ fontWeight: 700, display: 'block', marginBottom: 6 }}>IA Agent Fallback 1</label>
@@ -286,7 +315,9 @@ export default function ConfigurarServentia({ onClose, focusField }) {
                                   background: isPrimary ? '#065f46' : '#0ea5a3',
                                   color: '#fff',
                                   border: isPrimary ? '2px solid rgba(0,0,0,0.06)' : 'none',
-                                  boxShadow: isPrimary ? 'inset 0 2px 4px rgba(0,0,0,0.12)' : 'none'
+                                  boxShadow: isPrimary ? 'inset 0 2px 6px rgba(0,0,0,0.14)' : '0 2px 6px rgba(2,6,23,0.06)',
+                                  transform: isPrimary ? 'translateY(1px)' : 'none',
+                                  transition: 'transform 120ms ease, box-shadow 120ms ease, background 120ms ease'
                                 }}
                               >
                                 Primário
@@ -302,7 +333,9 @@ export default function ConfigurarServentia({ onClose, focusField }) {
                                   background: isFb1 ? '#3f3f46' : '#94a3b8',
                                   color: '#fff',
                                   border: isFb1 ? '2px solid rgba(0,0,0,0.06)' : 'none',
-                                  boxShadow: isFb1 ? 'inset 0 2px 4px rgba(0,0,0,0.12)' : 'none'
+                                  boxShadow: isFb1 ? 'inset 0 2px 6px rgba(0,0,0,0.14)' : '0 2px 6px rgba(2,6,23,0.06)',
+                                  transform: isFb1 ? 'translateY(1px)' : 'none',
+                                  transition: 'transform 120ms ease, box-shadow 120ms ease, background 120ms ease'
                                 }}
                               >
                                 Fallback 1
@@ -318,7 +351,9 @@ export default function ConfigurarServentia({ onClose, focusField }) {
                                   background: isFb2 ? '#1f2937' : '#64748b',
                                   color: '#fff',
                                   border: isFb2 ? '2px solid rgba(0,0,0,0.06)' : 'none',
-                                  boxShadow: isFb2 ? 'inset 0 2px 4px rgba(0,0,0,0.12)' : 'none'
+                                  boxShadow: isFb2 ? 'inset 0 2px 6px rgba(0,0,0,0.14)' : '0 2px 6px rgba(2,6,23,0.06)',
+                                  transform: isFb2 ? 'translateY(1px)' : 'none',
+                                  transition: 'transform 120ms ease, box-shadow 120ms ease, background 120ms ease'
                                 }}
                               >
                                 Fallback 2

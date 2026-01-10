@@ -27,6 +27,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [showConfigurar, setShowConfigurar] = useState(false);
   const [configModalFocus, setConfigModalFocus] = useState(null);
+  const [configOpenAgents, setConfigOpenAgents] = useState(false);
 
   const sidebarLinks = [
     { label: 'Visão Geral', icon: FaTachometerAlt, to: '/admin' },
@@ -101,7 +102,7 @@ export default function AdminDashboard() {
       label: 'Configurar Serventia',
       description: 'Atualize dados institucionais e branding.',
       icon: FaCog,
-      onClick: () => { setShowConfigurar(true); setConfigModalFocus(null); }
+      onClick: () => { setShowConfigurar(true); setConfigModalFocus(null); setConfigOpenAgents(false); }
     },
     {
       label: 'Importar Atos',
@@ -170,11 +171,11 @@ export default function AdminDashboard() {
             <h1>Painel Administrativo</h1>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button type="button" className="topbar-action-btn" onClick={() => { setShowConfigurar(true); setConfigModalFocus('caixa'); }}>
+            <button type="button" className="topbar-action-btn" onClick={() => { setShowConfigurar(true); setConfigModalFocus('caixa'); setConfigOpenAgents(false); }}>
               <FaMoneyBillWave size={16} />
               Tipo de Caixa
             </button>
-            <button type="button" className="topbar-action-btn" onClick={() => { setShowConfigurar(true); setConfigModalFocus(null); }}>
+            <button type="button" className="topbar-action-btn" onClick={() => { setShowConfigurar(true); setConfigModalFocus(null); setConfigOpenAgents(true); }}>
               <FaCog size={16} />
               Agentes de IA
             </button>
@@ -360,7 +361,7 @@ export default function AdminDashboard() {
       {showConfigurar && (
         <div className="dashboard-modal-overlay">
           <div className="dashboard-modal">
-            <ConfigurarServentia onClose={() => { setShowConfigurar(false); setConfigModalFocus(null); }} focusField={configModalFocus} />
+            <ConfigurarServentia onClose={() => { setShowConfigurar(false); setConfigModalFocus(null); setConfigOpenAgents(false); }} focusField={configModalFocus} openAgents={configOpenAgents} />
           </div>
         </div>
       )}
