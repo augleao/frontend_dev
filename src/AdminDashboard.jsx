@@ -26,6 +26,7 @@ import { Link, useNavigate } from 'react-router-dom';
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [showConfigurar, setShowConfigurar] = useState(false);
+  const [configModalFocus, setConfigModalFocus] = useState(null);
 
   const sidebarLinks = [
     { label: 'Visão Geral', icon: FaTachometerAlt, to: '/admin' },
@@ -95,12 +96,12 @@ export default function AdminDashboard() {
     [27, 28, 29, 30, null, null, null]
   ];
 
-  const quickActions = [
+    const quickActions = [
     {
       label: 'Configurar Serventia',
       description: 'Atualize dados institucionais e branding.',
       icon: FaCog,
-      onClick: () => setShowConfigurar(true)
+      onClick: () => { setShowConfigurar(true); setConfigModalFocus(null); }
     },
     {
       label: 'Importar Atos',
@@ -168,10 +169,16 @@ export default function AdminDashboard() {
             <div className="topbar-subtitle">Dashboard</div>
             <h1>Painel Administrativo</h1>
           </div>
-          <button type="button" className="topbar-action-btn" onClick={() => setShowConfigurar(true)}>
-            <FaCog size={16} />
-            Agentes de IA
-          </button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button type="button" className="topbar-action-btn" onClick={() => { setShowConfigurar(true); setConfigModalFocus('caixa'); }}>
+              <FaMoneyBillWave size={16} />
+              Tipo de Caixa
+            </button>
+            <button type="button" className="topbar-action-btn" onClick={() => { setShowConfigurar(true); setConfigModalFocus(null); }}>
+              <FaCog size={16} />
+              Agentes de IA
+            </button>
+          </div>
         </div>
 
         <section className="dashboard-cards">
@@ -353,7 +360,7 @@ export default function AdminDashboard() {
       {showConfigurar && (
         <div className="dashboard-modal-overlay">
           <div className="dashboard-modal">
-            <ConfigurarServentia onClose={() => setShowConfigurar(false)} />
+            <ConfigurarServentia onClose={() => { setShowConfigurar(false); setConfigModalFocus(null); }} focusField={configModalFocus} />
           </div>
         </div>
       )}

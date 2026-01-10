@@ -238,17 +238,75 @@ export default function ConfigurarServentia({ onClose }) {
                 <div style={{ width: '100%', overflow: 'auto' }}>
                   {agentsList.length > 0 && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
-                      {agentsList.map((a, idx) => (
-                        <div key={idx} style={{ borderRadius: 10, padding: 12, background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          <div style={{ fontWeight: 700, color: '#0f172a', fontSize: 14 }}>{a.id ?? a.name ?? a.agentId ?? a}</div>
-                          <div style={{ color: '#475569', fontSize: 13, minHeight: 36 }}>{a.description ?? a.desc ?? ''}</div>
-                          <div style={{ marginTop: 'auto', display: 'flex', gap: 8 }}>
-                            <button type="button" onClick={() => { handleUseAgent(a.id ?? a.name ?? a.agentId ?? a, 'primary'); }} style={{ flex: 1, padding: '8px 10px', borderRadius: 8, background: '#0ea5a3', color: '#fff', border: 'none' }}>Primário</button>
-                            <button type="button" onClick={() => { handleUseAgent(a.id ?? a.name ?? a.agentId ?? a, 'fb1'); }} style={{ flex: 1, padding: '8px 10px', borderRadius: 8, background: '#94a3b8', color: '#fff', border: 'none' }}>Fallback 1</button>
-                            <button type="button" onClick={() => { handleUseAgent(a.id ?? a.name ?? a.agentId ?? a, 'fb2'); }} style={{ flex: 1, padding: '8px 10px', borderRadius: 8, background: '#64748b', color: '#fff', border: 'none' }}>Fallback 2</button>
+                      {agentsList.map((a, idx) => {
+                        const agentKey = a.id ?? a.name ?? a.agentId ?? a;
+                        const isPrimary = String(agentKey) === String(iaAgent);
+                        const isFb1 = String(agentKey) === String(iaAgentFallback1);
+                        const isFb2 = String(agentKey) === String(iaAgentFallback2);
+                        return (
+                          <div key={idx} style={{ borderRadius: 10, padding: 12, background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <div style={{ fontWeight: 700, color: '#0f172a', fontSize: 14 }}>{agentKey}</div>
+                              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                {isPrimary && <span style={{ background: '#065f46', color: '#fff', padding: '2px 8px', borderRadius: 999, fontSize: 12 }}>Primário</span>}
+                                {isFb1 && <span style={{ background: '#3f3f46', color: '#fff', padding: '2px 8px', borderRadius: 999, fontSize: 12 }}>Fallback 1</span>}
+                                {isFb2 && <span style={{ background: '#1f2937', color: '#fff', padding: '2px 8px', borderRadius: 999, fontSize: 12 }}>Fallback 2</span>}
+                              </div>
+                            </div>
+                            <div style={{ color: '#475569', fontSize: 13, minHeight: 36 }}>{a.description ?? a.desc ?? ''}</div>
+                            <div style={{ marginTop: 'auto', display: 'flex', gap: 8 }}>
+                              <button
+                                type="button"
+                                onClick={() => { handleUseAgent(agentKey, 'primary'); }}
+                                aria-pressed={isPrimary}
+                                style={{
+                                  flex: 1,
+                                  padding: '8px 10px',
+                                  borderRadius: 8,
+                                  background: isPrimary ? '#065f46' : '#0ea5a3',
+                                  color: '#fff',
+                                  border: isPrimary ? '2px solid rgba(0,0,0,0.06)' : 'none',
+                                  boxShadow: isPrimary ? 'inset 0 2px 4px rgba(0,0,0,0.12)' : 'none'
+                                }}
+                              >
+                                Primário
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => { handleUseAgent(agentKey, 'fb1'); }}
+                                aria-pressed={isFb1}
+                                style={{
+                                  flex: 1,
+                                  padding: '8px 10px',
+                                  borderRadius: 8,
+                                  background: isFb1 ? '#3f3f46' : '#94a3b8',
+                                  color: '#fff',
+                                  border: isFb1 ? '2px solid rgba(0,0,0,0.06)' : 'none',
+                                  boxShadow: isFb1 ? 'inset 0 2px 4px rgba(0,0,0,0.12)' : 'none'
+                                }}
+                              >
+                                Fallback 1
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => { handleUseAgent(agentKey, 'fb2'); }}
+                                aria-pressed={isFb2}
+                                style={{
+                                  flex: 1,
+                                  padding: '8px 10px',
+                                  borderRadius: 8,
+                                  background: isFb2 ? '#1f2937' : '#64748b',
+                                  color: '#fff',
+                                  border: isFb2 ? '2px solid rgba(0,0,0,0.06)' : 'none',
+                                  boxShadow: isFb2 ? 'inset 0 2px 4px rgba(0,0,0,0.12)' : 'none'
+                                }}
+                              >
+                                Fallback 2
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
