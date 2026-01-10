@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from './AuthContext';
 import config from './config';
 
 
-export default function ConfigurarServentia({ onClose }) {
+export default function ConfigurarServentia({ onClose, focusField }) {
   const { user } = useContext(AuthContext);
   const [caixaUnificado, setCaixaUnificado] = useState(false);
   const [iaAgent, setIaAgent] = useState('');
@@ -16,6 +16,25 @@ export default function ConfigurarServentia({ onClose }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const caixaRef = useRef(null);
+
+  useEffect(() => {
+    if (focusField === 'caixa' && !loading) {
+      // small timeout to ensure element is mounted and visible
+      setTimeout(() => {
+        try {
+          if (caixaRef.current && typeof caixaRef.current.focus === 'function') {
+            caixaRef.current.focus();
+            if (typeof caixaRef.current.scrollIntoView === 'function') {
+              caixaRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
+      }, 80);
+    }
+  }, [focusField, loading]);
 
   // Fetch config on mount
   useEffect(() => {
@@ -159,6 +178,7 @@ export default function ConfigurarServentia({ onClose }) {
             </div>
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
               <input
+                ref={caixaRef}
                 type="checkbox"
                 checked={caixaUnificado}
                 onChange={e => setCaixaUnificado(e.target.checked)}
