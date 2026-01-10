@@ -226,25 +226,7 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
                 {loadingAgents ? 'Buscando...' : 'Buscar agentes IA'}
               </button>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-              <small style={{ color: '#666' }}>Valor salvo em</small>
-              <span
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: 999,
-                  fontSize: 12,
-                  fontWeight: 700,
-                  background: iaAgent ? '#065f46' : '#e6eef6',
-                  color: iaAgent ? '#fff' : '#475569',
-                  boxShadow: iaAgent ? 'inset 0 2px 6px rgba(0,0,0,0.14)' : '0 1px 2px rgba(2,6,23,0.04)',
-                  transform: iaAgent ? 'translateY(1px)' : 'none',
-                  transition: 'transform 120ms ease, box-shadow 120ms ease, background 120ms ease'
-                }}
-              >
-                ia_agent
-              </span>
-              <small style={{ color: '#666' }}>na tabela serventia. Use "Buscar agentes IA" para selecionar.</small>
-            </div>
+            
           </div>
           <div style={{ marginBottom: 18 }}>
             <label style={{ fontWeight: 700, display: 'inline-block', marginRight: 12 }}>IA Agent Fallback 1</label>
@@ -350,7 +332,7 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
                 </div>
                 <div style={{ marginTop: 8, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                   <button type="button" onClick={() => { setAgentsModalOpen(false); setSuccess(false); if (typeof onClose === 'function') onClose(); }} style={{ padding: '8px 12px', borderRadius: 8, background: '#e5e7eb', border: 'none' }}>Fechar</button>
-                  <button type="button" onClick={() => { setAgentsModalOpen(false); setSuccess(false); handleSalvar(); }} style={{ padding: '8px 12px', background: '#1976d2', color: 'white', border: 'none', borderRadius: 8 }}>Salvar alterações</button>
+                  <button type="button" onClick={() => { setAgentsModalOpen(false); setSuccess(false); handleSalvar(); if (typeof onClose === 'function') onClose(); }} style={{ padding: '8px 12px', background: '#1976d2', color: 'white', border: 'none', borderRadius: 8 }}>Salvar alterações</button>
                 </div>
               </div>
             </div>
