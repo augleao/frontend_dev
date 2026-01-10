@@ -228,13 +228,13 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
             </div>
             
           </div>
-          <div style={{ marginBottom: 18 }}>
-            <label style={{ fontWeight: 700, display: 'inline-block', marginRight: 12 }}>IA Agent Fallback 1</label>
-            <div style={{ display: 'inline-block', minWidth: 240, padding: 8, borderRadius: 8, border: '1px solid #e6eef6', background: '#fbfdff', color: iaAgentFallback1 ? '#0f172a' : '#6b7280' }}>{iaAgentFallback1 || '— nenhum —'}</div>
+          <div style={{ marginBottom: 18, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <label style={{ fontWeight: 700, display: 'block' }}>IA Agent Fallback 1</label>
+            <div style={{ marginLeft: 8, color: iaAgentFallback1 ? '#0f172a' : '#6b7280', fontWeight: iaAgentFallback1 ? 700 : 400 }}>{iaAgentFallback1 || '— nenhum —'}</div>
           </div>
-          <div style={{ marginBottom: 18 }}>
-            <label style={{ fontWeight: 700, display: 'inline-block', marginRight: 12 }}>IA Agent Fallback 2</label>
-            <div style={{ display: 'inline-block', minWidth: 240, padding: 8, borderRadius: 8, border: '1px solid #e6eef6', background: '#fbfdff', color: iaAgentFallback2 ? '#0f172a' : '#6b7280' }}>{iaAgentFallback2 || '— nenhum —'}</div>
+          <div style={{ marginBottom: 18, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <label style={{ fontWeight: 700, display: 'block' }}>IA Agent Fallback 2</label>
+            <div style={{ marginLeft: 8, color: iaAgentFallback2 ? '#0f172a' : '#6b7280', fontWeight: iaAgentFallback2 ? 700 : 400 }}>{iaAgentFallback2 || '— nenhum —'}</div>
           </div>
           {error && <div style={{ color: 'red', marginBottom: 12 }}>{error}</div>}
           {success && <div style={{ color: 'green', marginBottom: 12 }}>Configuração salva com sucesso!</div>}
