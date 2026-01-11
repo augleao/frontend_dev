@@ -1,4 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { atualizarSeloExecucaoServico } from '../servicos/ServicoSeloService';
+import ClipboardImageUpload from '../servicos/ClipboardImageUpload';
+import SeloFileUpload from '../servicos/SeloFileUpload';
 import { useNavigate, useParams } from 'react-router-dom';
 import config from '../../config';
 
@@ -24,6 +27,16 @@ export default function CertidaoGratuitaForm() {
   const [message, setMessage] = useState('');
   const [selos, setSelos] = useState([]);
   const [newSelo, setNewSelo] = useState({ selo_consulta: '', codigo_seguranca: '', qtd_atos: '', atos_praticados_por: '', valores: '' });
+  const [editingSeloId, setEditingSeloId] = useState(null);
+  const [editSelo, setEditSelo] = useState({});
+
+  const palette = {
+    primary: '#1d4ed8',
+    primaryDark: '#1e3a8a',
+    softBg: '#eef5ff',
+    softBorder: '#d6e4ff',
+    text: '#0f172a'
+  };
 
   useEffect(() => {
     async function fetchExisting() {
@@ -57,6 +70,43 @@ export default function CertidaoGratuitaForm() {
     }
     fetchExisting();
   }, [id, isEdit]);
+
+    // Buscar selos ao montar ou quando id mudar
+    useEffect(() => {
+      if (id) {
+        const token = localStorage.getItem('token');
+        fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(id)}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then(res => res.json())
+          .then(data => setSelos(data.selos || []))
+          .catch(() => setSelos([]));
+      }
+    }, [id]);
+
+    const excluirSelo = async (selo) => {
+      if (!window.confirm('Tem certeza que deseja excluir este selo?')) return;
+      try {
+        const token = localStorage.getItem('token');
+        const execucaoId = id;
+        if (!execucaoId || !selo.id) {
+          alert('Dados insuficientes para exclusão.');
+          return;
+        }
+        const res = await fetch(`${config.apiURL}/execucao-servico/${encodeURIComponent(execucaoId)}/selo/${selo.id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert('Erro ao excluir selo: ' + (err.error || res.status));
+          return;
+        }
+        setSelos(prev => prev.filter(s => s.id !== selo.id));
+      } catch (err) {
+        alert('Erro ao excluir selo.');
+      }
+    };
 
   function updateField(field, value) {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -229,55 +279,146 @@ export default function CertidaoGratuitaForm() {
               />
             </div>
 
-            {/* Selos eletrônicos - seção baseada em ServicoExecucao.jsx */}
+            {/* Selos eletrônicos - UI copiada de ServicoExecucao.jsx */}
             <div style={{ gridColumn: '1 / -1', marginTop: 6 }}>
-              <h4 style={{ color: '#2c3e50', marginBottom: 8 }}>Selos Utilizados neste Pedido</h4>
+              <h4 style={{ color: palette.primaryDark, marginBottom: 2 }}>Selos Utilizados neste Pedido</h4>
 
-              <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
-                <input value={newSelo.selo_consulta} onChange={e => setNewSelo({ ...newSelo, selo_consulta: e.target.value })} placeholder="Selo" style={{ padding: '8px 10px', borderRadius: 6, border: '1.5px solid #bdc3c7' }} />
-                <input value={newSelo.codigo_seguranca} onChange={e => setNewSelo({ ...newSelo, codigo_seguranca: e.target.value })} placeholder="Código de Segurança" style={{ padding: '8px 10px', borderRadius: 6, border: '1.5px solid #bdc3c7' }} />
-                <input value={newSelo.qtd_atos} onChange={e => setNewSelo({ ...newSelo, qtd_atos: e.target.value })} placeholder="Qtd. Atos" style={{ width: 100, padding: '8px 10px', borderRadius: 6, border: '1.5px solid #bdc3c7' }} />
-                <input value={newSelo.atos_praticados_por} onChange={e => setNewSelo({ ...newSelo, atos_praticados_por: e.target.value })} placeholder="Praticado por" style={{ padding: '8px 10px', borderRadius: 6, border: '1.5px solid #bdc3c7' }} />
-                <input value={newSelo.valores} onChange={e => setNewSelo({ ...newSelo, valores: e.target.value })} placeholder="Valores" style={{ padding: '8px 10px', borderRadius: 6, border: '1.5px solid #bdc3c7', flex: 1, minWidth: 180 }} />
-                <button onClick={() => {
-                  if (!newSelo.selo_consulta && !newSelo.codigo_seguranca) return;
-                  setSelos(prev => [{ ...newSelo, criado_em: new Date().toISOString(), id: Math.random().toString(36).slice(2) }, ...prev]);
-                  setNewSelo({ selo_consulta: '', codigo_seguranca: '', qtd_atos: '', atos_praticados_por: '', valores: '' });
-                }} style={{ background: '#2ecc71', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>Adicionar Selo</button>
-              </div>
-
-              {selos.length > 0 ? (
-                <div className="servico-table-container" style={{ overflowX: 'auto' }}>
-                  <table className="servico-table" style={{ width: '100%', background: '#fff', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ background: '#e1e9ff' }}>
-                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Selo Consulta</th>
-                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Código de Segurança</th>
-                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Qtd. Atos</th>
-                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Atos praticados por</th>
-                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Valores</th>
-                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Data/Hora</th>
-                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selos.map((selo, idx) => (
-                        <tr key={selo.id || idx} style={{ background: idx % 2 === 0 ? '#f7fbff' : '#fff' }}>
-                          <td style={{ padding: 6, fontSize: 12 }}>{selo.selo_consulta || ''}</td>
-                          <td style={{ padding: 6, fontSize: 12 }}>{selo.codigo_seguranca || ''}</td>
-                          <td style={{ padding: 6, fontSize: 12 }}>{selo.qtd_atos || ''}</td>
-                          <td style={{ padding: 6, fontSize: 12 }}>{selo.atos_praticados_por || ''}</td>
-                          <td style={{ padding: 6, fontSize: 12 }}>{selo.valores || ''}</td>
-                          <td style={{ padding: 6, fontSize: 12 }}>{selo.criado_em ? new Date(selo.criado_em).toLocaleString() : ''}</td>
-                          <td style={{ padding: 6, fontSize: 12 }}>
-                            <button onClick={() => setSelos(prev => prev.filter(s => s.id !== selo.id))} style={{ background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 8px', cursor: 'pointer' }}>Remover</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {isEdit && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
+                  <ClipboardImageUpload
+                    protocolo={id}
+                    onUpload={() => {
+                      if (id) {
+                        const token = localStorage.getItem('token');
+                        fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(id)}`, {
+                          headers: { Authorization: `Bearer ${token}` }
+                        })
+                          .then(res => res.json())
+                          .then(data => setSelos(data.selos || []))
+                          .catch(() => setSelos([]));
+                      }
+                    }}
+                  />
+                  <SeloFileUpload
+                    protocolo={id}
+                    onUpload={() => {
+                      if (id) {
+                        const token = localStorage.getItem('token');
+                        fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(id)}`, {
+                          headers: { Authorization: `Bearer ${token}` }
+                        })
+                          .then(res => res.json())
+                          .then(data => setSelos(data.selos || []))
+                          .catch(() => setSelos([]));
+                      }
+                    }}
+                  />
                 </div>
-              ) : (
+              )}
+
+              {isEdit && selos.length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <div className="servico-table-container">
+                    <table className="servico-table" style={{ background: '#fff' }}>
+                      <thead>
+                        <tr style={{ background: '#e1e9ff' }}>
+                          <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Selo Consulta</th>
+                          <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Código de Segurança</th>
+                          <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Qtd. Atos</th>
+                          <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Atos praticados por</th>
+                          <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Valores</th>
+                          <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Data/Hora</th>
+                          <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selos.map((selo, idx) => {
+                          const isEditing = editingSeloId === selo.id;
+                          return (
+                            <tr key={selo.id || idx} style={{ background: idx % 2 === 0 ? palette.softBg : '#fff' }}>
+                              <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
+                                {isEditing ? (
+                                  <input value={editSelo.selo_consulta || ''} onChange={e => setEditSelo({ ...editSelo, selo_consulta: e.target.value })} style={{ width: 80, fontSize: 9, padding: '1px 2px' }} placeholder="Selo" />
+                                ) : (
+                                  <span style={{ fontSize: 11 }}>{selo.selo_consulta || selo.seloConsulta || ''}</span>
+                                )}
+                              </td>
+                              <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
+                                {isEditing ? (
+                                  <input value={editSelo.codigo_seguranca || ''} onChange={e => setEditSelo({ ...editSelo, codigo_seguranca: e.target.value })} style={{ width: 120, fontSize: 9, padding: '1px 2px' }} placeholder="Código" />
+                                ) : (
+                                  <span style={{ fontSize: 11 }}>{selo.codigo_seguranca || selo.codigoSeguranca || ''}</span>
+                                )}
+                              </td>
+                              <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
+                                {isEditing ? (
+                                  <input value={editSelo.qtd_atos || ''} onChange={e => setEditSelo({ ...editSelo, qtd_atos: e.target.value })} style={{ width: 40, fontSize: 9, padding: '1px 2px' }} placeholder="Qtd" />
+                                ) : (
+                                  <span style={{ fontSize: 11 }}>{selo.qtd_atos || selo.qtdAtos || ''}</span>
+                                )}
+                              </td>
+                              <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
+                                {isEditing ? (
+                                  <input value={editSelo.atos_praticados_por || ''} onChange={e => setEditSelo({ ...editSelo, atos_praticados_por: e.target.value })} style={{ width: 100, fontSize: 9, padding: '1px 2px' }} placeholder="Praticado por" />
+                                ) : (
+                                  <span style={{ fontSize: 11 }}>{selo.atos_praticados_por || selo.atosPraticadosPor || ''}</span>
+                                )}
+                              </td>
+                              <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
+                                {isEditing ? (
+                                  <input value={editSelo.valores || ''} onChange={e => setEditSelo({ ...editSelo, valores: e.target.value })} style={{ width: 320, fontSize: 9, padding: '1px 2px' }} placeholder="Valores" />
+                                ) : (
+                                  <span style={{ fontSize: 11 }}>{selo.valores || ''}</span>
+                                )}
+                              </td>
+                              <td style={{ padding: 2, fontSize: 12 }}>{selo.criado_em ? new Date(selo.criado_em).toLocaleString() : ''}</td>
+                              <td style={{ padding: 2, fontSize: 12, display: 'flex', gap: 6 }}>
+                                {isEditing ? (
+                                  <>
+                                    <button
+                                      style={{ background: '#388e3c', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                                      title="Salvar"
+                                      onClick={async () => {
+                                        try {
+                                          await atualizarSeloExecucaoServico(selo.id, editSelo);
+                                          setSelos(prevSelos => prevSelos.map(s => s.id === selo.id ? { ...s, ...editSelo } : s));
+                                          setEditingSeloId(null);
+                                          setEditSelo({});
+                                        } catch (error) {
+                                          alert('Erro ao salvar selo: ' + error.message);
+                                        }
+                                      }}
+                                    >Salvar</button>
+                                    <button
+                                      style={{ background: '#aaa', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                                      title="Cancelar"
+                                      onClick={() => { setEditingSeloId(null); setEditSelo({}); }}
+                                    >Cancelar</button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button
+                                      style={{ background: '#1976d2', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                                      title="Editar selo"
+                                      onClick={() => { setEditingSeloId(selo.id); setEditSelo({ ...selo }); }}
+                                    >Editar</button>
+                                    <button
+                                      style={{ background: '#e74c3c', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                                      title="Excluir selo"
+                                      onClick={() => excluirSelo(selo)}
+                                    >Excluir</button>
+                                  </>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+              {!isEdit && selos.length === 0 && (
                 <div style={{ color: '#7f8c8d' }}>Nenhum selo adicionado.</div>
               )}
             </div>
