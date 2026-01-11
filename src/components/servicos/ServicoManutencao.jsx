@@ -637,7 +637,6 @@ export default function ServicoManutencao() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingBottom: 8, borderBottom: `1px solid ${palette.softBorder}` }}>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <button type="button" onClick={goPrev} disabled={currentIdx === 0} style={{ border: `1px solid ${palette.softBorder}`, background: '#fff', borderRadius: 8, padding: '8px 12px', cursor: currentIdx === 0 ? 'not-allowed' : 'pointer', color: palette.neutralText }}>Voltar</button>
-                  <button type="button" onClick={goNext} disabled={currentIdx === stepDefs.length - 1 || stepStates[currentIdx + 1]?.locked} style={{ border: `1px solid ${palette.primary}`, background: palette.primary, color: 'white', borderRadius: 8, padding: '8px 14px', cursor: currentIdx === stepDefs.length - 1 || stepStates[currentIdx + 1]?.locked ? 'not-allowed' : 'pointer' }}>Salvar e continuar</button>
                   <button type="button" onClick={() => setAba('historico')} style={{ border: `1px solid ${palette.softBorder}`, background: palette.primarySoft, color: palette.neutralText, borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}>Ver historico</button>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
