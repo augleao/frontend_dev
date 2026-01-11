@@ -11,12 +11,19 @@ export default function CertidaoGratuitaForm() {
     requerente: '',
     tipo: '',
     status: 'EM_ANDAMENTO',
-    observacoes: ''
+    observacoes: '',
+    registrado: '',
+    livro: '',
+    folha: '',
+    termo: '',
+    data_emissao: ''
   });
   const [loading, setLoading] = useState(false);
   const [loadingInitial, setLoadingInitial] = useState(isEdit);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [selos, setSelos] = useState([]);
+  const [newSelo, setNewSelo] = useState({ selo_consulta: '', codigo_seguranca: '', qtd_atos: '', atos_praticados_por: '', valores: '' });
 
   useEffect(() => {
     async function fetchExisting() {
@@ -35,8 +42,14 @@ export default function CertidaoGratuitaForm() {
           requerente: c.requerente?.nome || c.requerente || '',
           tipo: c.tipo || c.tipo_certidao || '',
           status: c.status || c.situacao || 'EM_ANDAMENTO',
-          observacoes: c.observacoes || c.justificativa || ''
+          observacoes: c.observacoes || c.justificativa || '',
+          registrado: c.registrado || c.nome_registrado || '',
+          livro: c.livro || c.numero_livro || '',
+          folha: c.folha || c.numero_folha || '',
+          termo: c.termo || c.numero_termo || '',
+          data_emissao: c.data_emissao || c.dataEmissao || ''
         });
+        setSelos(data.selos || c.selos || []);
       } catch (e) {
         setError(e.message || 'Erro ao carregar a certidão.');
       }
@@ -67,7 +80,13 @@ export default function CertidaoGratuitaForm() {
         requerente: form.requerente,
         tipo: form.tipo,
         status: form.status,
-        observacoes: form.observacoes
+        observacoes: form.observacoes,
+        registrado: form.registrado,
+        livro: form.livro,
+        folha: form.folha,
+        termo: form.termo,
+        data_emissao: form.data_emissao,
+        selos
       };
       const url = isEdit
         ? `${config.apiURL}/certidoes-gratuitas/${encodeURIComponent(id)}`
@@ -130,7 +149,7 @@ export default function CertidaoGratuitaForm() {
         {loadingInitial ? (
           <div style={{ color: '#7f8c8d' }}>Carregando informações...</div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label style={{ fontSize: 12, fontWeight: 600 }}>Requerente</label>
               <input
@@ -166,7 +185,40 @@ export default function CertidaoGratuitaForm() {
               </select>
             </div>
 
-            <div style={{ gridColumn: '1 / span 2', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 12, fontWeight: 600 }}>Nome do Registrado</label>
+              <input
+                type="text"
+                value={form.registrado}
+                onChange={e => updateField('registrado', e.target.value)}
+                placeholder="Nome do Registrado"
+                style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px', fontSize: 14 }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 12, fontWeight: 600 }}>Número do Livro</label>
+                <input type="text" value={form.livro} onChange={e => updateField('livro', e.target.value)} placeholder="Livro" style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px' }} />
+              </div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 12, fontWeight: 600 }}>Número da Folha</label>
+                <input type="text" value={form.folha} onChange={e => updateField('folha', e.target.value)} placeholder="Folha" style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px' }} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 12, fontWeight: 600 }}>Número do Termo</label>
+                <input type="text" value={form.termo} onChange={e => updateField('termo', e.target.value)} placeholder="Termo" style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px' }} />
+              </div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 12, fontWeight: 600 }}>Data de Emissão</label>
+                <input type="date" value={form.data_emissao} onChange={e => updateField('data_emissao', e.target.value)} style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px' }} />
+              </div>
+            </div>
+
+            <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label style={{ fontSize: 12, fontWeight: 600 }}>Observações</label>
               <textarea
                 value={form.observacoes}
@@ -175,6 +227,59 @@ export default function CertidaoGratuitaForm() {
                 placeholder="Observações, justificativa ou detalhes relevantes"
                 style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px', fontSize: 14, resize: 'vertical' }}
               />
+            </div>
+
+            {/* Selos eletrônicos - seção baseada em ServicoExecucao.jsx */}
+            <div style={{ gridColumn: '1 / -1', marginTop: 6 }}>
+              <h4 style={{ color: '#2c3e50', marginBottom: 8 }}>Selos Utilizados neste Pedido</h4>
+
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+                <input value={newSelo.selo_consulta} onChange={e => setNewSelo({ ...newSelo, selo_consulta: e.target.value })} placeholder="Selo" style={{ padding: '8px 10px', borderRadius: 6, border: '1.5px solid #bdc3c7' }} />
+                <input value={newSelo.codigo_seguranca} onChange={e => setNewSelo({ ...newSelo, codigo_seguranca: e.target.value })} placeholder="Código de Segurança" style={{ padding: '8px 10px', borderRadius: 6, border: '1.5px solid #bdc3c7' }} />
+                <input value={newSelo.qtd_atos} onChange={e => setNewSelo({ ...newSelo, qtd_atos: e.target.value })} placeholder="Qtd. Atos" style={{ width: 100, padding: '8px 10px', borderRadius: 6, border: '1.5px solid #bdc3c7' }} />
+                <input value={newSelo.atos_praticados_por} onChange={e => setNewSelo({ ...newSelo, atos_praticados_por: e.target.value })} placeholder="Praticado por" style={{ padding: '8px 10px', borderRadius: 6, border: '1.5px solid #bdc3c7' }} />
+                <input value={newSelo.valores} onChange={e => setNewSelo({ ...newSelo, valores: e.target.value })} placeholder="Valores" style={{ padding: '8px 10px', borderRadius: 6, border: '1.5px solid #bdc3c7', flex: 1, minWidth: 180 }} />
+                <button onClick={() => {
+                  if (!newSelo.selo_consulta && !newSelo.codigo_seguranca) return;
+                  setSelos(prev => [{ ...newSelo, criado_em: new Date().toISOString(), id: Math.random().toString(36).slice(2) }, ...prev]);
+                  setNewSelo({ selo_consulta: '', codigo_seguranca: '', qtd_atos: '', atos_praticados_por: '', valores: '' });
+                }} style={{ background: '#2ecc71', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>Adicionar Selo</button>
+              </div>
+
+              {selos.length > 0 ? (
+                <div className="servico-table-container" style={{ overflowX: 'auto' }}>
+                  <table className="servico-table" style={{ width: '100%', background: '#fff', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: '#e1e9ff' }}>
+                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Selo Consulta</th>
+                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Código de Segurança</th>
+                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Qtd. Atos</th>
+                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Atos praticados por</th>
+                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Valores</th>
+                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Data/Hora</th>
+                        <th style={{ padding: 6, fontSize: 12, color: '#2c3e50' }}>Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selos.map((selo, idx) => (
+                        <tr key={selo.id || idx} style={{ background: idx % 2 === 0 ? '#f7fbff' : '#fff' }}>
+                          <td style={{ padding: 6, fontSize: 12 }}>{selo.selo_consulta || ''}</td>
+                          <td style={{ padding: 6, fontSize: 12 }}>{selo.codigo_seguranca || ''}</td>
+                          <td style={{ padding: 6, fontSize: 12 }}>{selo.qtd_atos || ''}</td>
+                          <td style={{ padding: 6, fontSize: 12 }}>{selo.atos_praticados_por || ''}</td>
+                          <td style={{ padding: 6, fontSize: 12 }}>{selo.valores || ''}</td>
+                          <td style={{ padding: 6, fontSize: 12 }}>{selo.criado_em ? new Date(selo.criado_em).toLocaleString() : ''}</td>
+                          <td style={{ padding: 6, fontSize: 12 }}>
+                            <button onClick={() => setSelos(prev => prev.filter(s => s.id !== selo.id))} style={{ background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 8px', cursor: 'pointer' }}>Remover</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div style={{ color: '#7f8c8d' }}>Nenhum selo adicionado.</div>
+              )}
             </div>
           </div>
         )}
