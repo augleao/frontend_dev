@@ -30,6 +30,7 @@ export default function CertidaoGratuitaForm() {
   const [newSelo, setNewSelo] = useState({ selo_consulta: '', codigo_seguranca: '', qtd_atos: '', atos_praticados_por: '', valores: '' });
   const [editingSeloId, setEditingSeloId] = useState(null);
   const [editSelo, setEditSelo] = useState({});
+  const [savedId, setSavedId] = useState(null);
 
   const palette = {
     primary: '#1d4ed8',
@@ -41,7 +42,7 @@ export default function CertidaoGratuitaForm() {
 
   useEffect(() => {
     async function fetchExisting() {
-      if (!isEdit) return;
+      if (!isEdit && !savedId) return;
       setLoadingInitial(true);
       setError('');
       try {
@@ -105,16 +106,17 @@ export default function CertidaoGratuitaForm() {
 
     // Buscar selos ao montar ou quando id mudar
     useEffect(() => {
-      if (id) {
+      const protocoloToFetch = id || savedId;
+      if (protocoloToFetch) {
         const token = localStorage.getItem('token');
-        fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(id)}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-          .then(res => res.json())
-          .then(data => setSelos(data.selos || []))
-          .catch(() => setSelos([]));
+          fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocoloToFetch)}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+            .then(res => res.json())
+            .then(data => setSelos(data.selos || []))
+            .catch(() => setSelos([]));
       }
-    }, [id]);
+      }, [id, savedId]);
 
     const excluirSelo = async (selo) => {
       if (!window.confirm('Tem certeza que deseja excluir este selo?')) return;
@@ -185,15 +187,14 @@ export default function CertidaoGratuitaForm() {
         const txt = await res.text().catch(() => '');
         throw new Error(txt || 'Falha ao salvar a certidão.');
       }
-      // obtém resposta e redireciona para edição quando for criação
+      // obtém resposta e redireciona/ativa edição quando for criação
       let saved = {};
       try { saved = await res.json(); } catch (_) { saved = {}; }
-      if (!isEdit) {
-        const novoId = saved.id || saved.protocolo || saved.numero || saved[Object.keys(saved)[0]];
-        if (novoId) {
-          navigate(`/certidoes-gratuitas/${encodeURIComponent(novoId)}/editar`);
-          return;
-        }
+      const novoId = saved.id || saved.protocolo || saved.numero || saved[Object.keys(saved)[0]];
+      if (!isEdit && novoId) {
+        setSavedId(String(novoId));
+        // tenta navegar para a rota de edição — se falhar, o componente mostrará controles pelo savedId
+        try { navigate(`/certidoes-gratuitas/${encodeURIComponent(novoId)}/editar`); return; } catch (_) { /* continue */ }
       }
       setMessage('Certidão salva com sucesso.');
       // Retorna para a lista após breve intervalo (em edição)
@@ -284,7 +285,7 @@ export default function CertidaoGratuitaForm() {
             <div style={{ gridColumn: '1 / -1', marginTop: 6 }}>
               <h4 style={{ color: palette.primaryDark, marginBottom: 2 }}>Selos Utilizados neste Pedido</h4>
 
-              {isEdit && (
+              {(isEdit || savedId) && (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <label className="field-label">Código Tributário (para o selo)</label>
@@ -329,7 +330,7 @@ export default function CertidaoGratuitaForm() {
                 </div>
               )}
 
-              {isEdit && selos.length > 0 && (
+              {(isEdit || savedId) && selos.length > 0 && (
                 <div style={{ marginTop: 16 }}>
                   <div className="servico-table-container">
                     <table className="servico-table" style={{ background: '#fff' }}>
@@ -450,7 +451,7 @@ export default function CertidaoGratuitaForm() {
                   </div>
                 </div>
               )}
-              {!isEdit && selos.length === 0 && (
+              {!isEdit && !savedId && selos.length === 0 && (
                 <div style={{ color: '#7f8c8d' }}>Nenhum selo adicionado.</div>
               )}
             </div>
