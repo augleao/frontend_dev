@@ -40,6 +40,12 @@ export default function CertidaoGratuitaForm() {
     text: '#0f172a'
   };
 
+  // DEBUG: mostrar estado para diagnóstico em runtime
+  try {
+    // eslint-disable-next-line no-console
+    console.debug('[CertidaoGratuitaForm] debug', { id, isEdit, savedId, selosLength: selos.length, loadingInitial });
+  } catch (_) {}
+
   useEffect(() => {
     async function fetchExisting() {
       if (!isEdit && !savedId) return;
