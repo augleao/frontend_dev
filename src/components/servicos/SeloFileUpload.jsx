@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import config from '../../config';
 
-export default function SeloFileUpload({ protocolo, onUpload }) {
+export default function SeloFileUpload({ protocolo, onUpload, codigoTributario }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef();
@@ -23,6 +23,7 @@ export default function SeloFileUpload({ protocolo, onUpload }) {
     try {
       const formData = new FormData();
       formData.append('imagem', file);
+      if (codigoTributario) formData.append('codigo_tributario', codigoTributario);
       if (!protocolo || typeof protocolo !== 'string') {
         setError('Protocolo inválido para upload.');
         setUploading(false);

@@ -52,6 +52,19 @@ export default function CertidaoGratuitaForm() {
         if (!res.ok) throw new Error('Falha ao carregar a certidão.');
         const data = await res.json();
         const c = data.certidao || data || {};
+        const formatDateForInput = (d) => {
+          if (!d) return '';
+          try {
+            // accept ISO strings and timestamps
+            const s = String(d);
+            if (s.includes('T')) return s.split('T')[0];
+            // fallback: try Date parsing
+            const dt = new Date(s);
+            if (!isNaN(dt)) return dt.toISOString().slice(0,10);
+            return '';
+          } catch (_) { return ''; }
+        };
+
         setForm({
           requerente: c.requerente?.nome || c.requerente || '',
           tipo: c.tipo || c.tipo_certidao || '',
@@ -60,7 +73,7 @@ export default function CertidaoGratuitaForm() {
           livro: c.livro || c.numero_livro || '',
           folha: c.folha || c.numero_folha || '',
           termo: c.termo || c.numero_termo || '',
-          data_emissao: c.data_emissao || c.dataEmissao || ''
+          data_emissao: formatDateForInput(c.data_emissao || c.dataEmissao || '')
         });
         setSelos(data.selos || c.selos || []);
       } catch (e) {
