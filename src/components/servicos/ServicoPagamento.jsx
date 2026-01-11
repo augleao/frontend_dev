@@ -142,11 +142,11 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
           })
         });
         setPagamentoSalvo(true);
-        // Atualiza status para 'Aguardando Entrega'
-        await atualizarStatusPedido('Aguardando Entrega');
-        // Avança automaticamente para a próxima etapa
+        // Atualiza status para 'Aguardando Execução'
+        await atualizarStatusPedido('Aguardando Execução');
+        // Avança automaticamente para a etapa de execução
         if (typeof onAvancarEtapa === 'function') {
-          onAvancarEtapa();
+          onAvancarEtapa('execucao');
         }
       } catch (e) {
         console.error('Erro ao salvar informações de pagamento:', e);
@@ -696,9 +696,9 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       if (resultado && resultado.local) {
         alert('✅ Pagamento confirmado com sucesso! \n⚠️ Status atualizado localmente devido a problema de conectividade.');
       } else {}
-      // Avança para o componente ServicoEntrega.jsx via prop
+      // Avança para o componente ServicoExecucao.jsx via prop
       if (typeof onAvancarEtapa === 'function') {
-        onAvancarEtapa();
+        onAvancarEtapa('execucao');
       }
     } catch (error) {
       console.error('Erro ao confirmar pagamento:', error);
