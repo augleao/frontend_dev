@@ -1054,20 +1054,28 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
       {renderTabelaComplementos()}
 
       {/* Seção simplificada de botões de pagamento */}
-      {valorAdiantadoDetalhes && valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
+      {Array.isArray(valorAdiantadoDetalhes) && (
         <div style={{
           marginBottom: 20,
           textAlign: 'center'
         }}>
           {(() => {
             const totalAdiantado = calcularTotalAdiantado();
-            const valorRestante = subtotalPedido - totalAdiantado;
-            const excesso = totalAdiantado - subtotalPedido;
+            const totalDistribuido = pagamentoFinal.reduce((acc, item) => {
+              const valor = parseFloat(item.valor || 0);
+              return acc + (isNaN(valor) ? 0 : valor);
+            }, 0);
+            // Usa qualquer uma das fontes (adiantado ou distribuição) para liberar o salvamento
+            const totalParaPagamento = Math.max(totalAdiantado, totalDistribuido);
+            const valorRestante = subtotalPedido - totalParaPagamento;
+            const excesso = totalParaPagamento - subtotalPedido;
             const pagamentoConfirmado = statusPedido === 'Pago';
             
             console.log('[DEBUG-RECIBO] Renderização dos botões:');
             console.log('[DEBUG-RECIBO] - subtotalPedido:', subtotalPedido);
             console.log('[DEBUG-RECIBO] - totalAdiantado:', totalAdiantado);
+            console.log('[DEBUG-RECIBO] - totalDistribuido:', totalDistribuido);
+            console.log('[DEBUG-RECIBO] - totalParaPagamento:', totalParaPagamento);
             console.log('[DEBUG-RECIBO] - excesso:', excesso);
             console.log('[DEBUG-RECIBO] - pagamentoSalvo:', pagamentoSalvo);
             console.log('[DEBUG-RECIBO] - valorAdiantadoDetalhes.length:', valorAdiantadoDetalhes.length);
@@ -1080,8 +1088,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
             if (pagamentoSalvo) {
               statusMessage = '✅ Pagamento salvo com sucesso!';
               statusStyle = { background: palette.softBg, border: `2px solid ${palette.softBorder}`, color: palette.primaryDark };
-            } else if (totalAdiantado >= subtotalPedido) {
-              statusMessage = '✅ Valor adiantado suficiente para pagamento!';
+            } else if (totalParaPagamento >= subtotalPedido) {
+              statusMessage = '✅ Valor disponível suficiente para pagamento!';
               statusStyle = { background: palette.softBg, border: `2px solid ${palette.softBorder}`, color: palette.primaryDark };
             } else {
               statusMessage = `⚠️ Valor insuficiente para pagamento. Restam: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -1105,7 +1113,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                 {/* Botões de ação */}
                 <div className="servico-actions">
                   {/* Botão Salvar Pagamento - só aparece se não foi salvo e valor é suficiente */}
-                  {!pagamentoSalvo && totalAdiantado >= subtotalPedido && (
+                  {!pagamentoSalvo && totalParaPagamento >= subtotalPedido && (
                     <button
                       type="button"
                       onClick={() => {
