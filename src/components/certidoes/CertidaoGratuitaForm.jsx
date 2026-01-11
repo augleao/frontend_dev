@@ -185,8 +185,18 @@ export default function CertidaoGratuitaForm() {
         const txt = await res.text().catch(() => '');
         throw new Error(txt || 'Falha ao salvar a certidão.');
       }
+      // obtém resposta e redireciona para edição quando for criação
+      let saved = {};
+      try { saved = await res.json(); } catch (_) { saved = {}; }
+      if (!isEdit) {
+        const novoId = saved.id || saved.protocolo || saved.numero || saved[Object.keys(saved)[0]];
+        if (novoId) {
+          navigate(`/certidoes-gratuitas/${encodeURIComponent(novoId)}/editar`);
+          return;
+        }
+      }
       setMessage('Certidão salva com sucesso.');
-      // Retorna para a lista após breve intervalo
+      // Retorna para a lista após breve intervalo (em edição)
       setTimeout(() => navigate('/certidoes-gratuitas'), 600);
     } catch (e) {
       setError(e.message || 'Erro ao salvar a certidão.');
