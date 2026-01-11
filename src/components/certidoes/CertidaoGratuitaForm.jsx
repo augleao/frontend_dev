@@ -14,7 +14,6 @@ export default function CertidaoGratuitaForm() {
   const [form, setForm] = useState({
     requerente: '',
     tipo: '',
-    status: 'EM_ANDAMENTO',
     observacoes: '',
     registrado: '',
     livro: '',
@@ -55,7 +54,6 @@ export default function CertidaoGratuitaForm() {
         setForm({
           requerente: c.requerente?.nome || c.requerente || '',
           tipo: c.tipo || c.tipo_certidao || '',
-          status: c.status || c.situacao || 'EM_ANDAMENTO',
           observacoes: c.observacoes || c.justificativa || '',
           registrado: c.registrado || c.nome_registrado || '',
           livro: c.livro || c.numero_livro || '',
@@ -130,7 +128,6 @@ export default function CertidaoGratuitaForm() {
       const payload = {
         requerente: form.requerente,
         tipo: form.tipo,
-        status: form.status,
         observacoes: form.observacoes,
         registrado: form.registrado,
         livro: form.livro,
@@ -206,14 +203,7 @@ export default function CertidaoGratuitaForm() {
               <input className="certidao-input" type="text" value={form.tipo} onChange={e => updateField('tipo', e.target.value)} placeholder="Ex.: Nascimento, Casamento, Óbito ..." />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label className="field-label">Status</label>
-              <select className="certidao-select" value={form.status} onChange={e => updateField('status', e.target.value)}>
-                <option value="EM_ANDAMENTO">Em andamento</option>
-                <option value="EMITIDA">Emitida</option>
-                <option value="CANCELADA">Cancelada</option>
-              </select>
-            </div>
+            {/* Status removido conforme solicitado */}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label className="field-label">Nome do Registrado</label>
