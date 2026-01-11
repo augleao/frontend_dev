@@ -226,15 +226,15 @@ export default function CertidoesGratuitasLista() {
 
       {/* Tabela */}
       <div style={{ marginTop: 12, borderRadius: 12, background: '#f4f6f8', padding: 16 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, textAlign: 'center' }}>
           <thead>
             <tr style={{ background: '#e9ecef' }}>
-              <th style={{ padding: 8 }}>Criado em</th>
-              <th style={{ padding: 8 }}>Protocolo</th>
-              <th style={{ padding: 8 }}>Requerente</th>
-              <th style={{ padding: 8 }}>Tipo</th>
-              <th style={{ padding: 8 }}>Status</th>
-              <th style={{ padding: 8 }}>Ações</th>
+              <th style={{ padding: 8, textAlign: 'center' }}>Criado em</th>
+              <th style={{ padding: 8, textAlign: 'center' }}>Protocolo</th>
+              <th style={{ padding: 8, textAlign: 'center' }}>Requerente</th>
+              <th style={{ padding: 8, textAlign: 'center' }}>Tipo</th>
+              <th style={{ padding: 8, textAlign: 'center' }}>Status</th>
+              <th style={{ padding: 8, textAlign: 'center' }}>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -246,12 +246,12 @@ export default function CertidoesGratuitasLista() {
               const criadoEm = c.criado_em || c.created_at || c.data || null;
               return (
                 <tr key={`${protocolo}-${idx}`} style={{ background: idx % 2 === 0 ? '#fff' : '#f8f9fa' }}>
-                  <td style={{ padding: 8 }}>{formatDateTime(criadoEm)}</td>
-                  <td style={{ padding: 8 }}>{protocolo}</td>
-                  <td style={{ padding: 8 }}>{requerente}</td>
-                  <td style={{ padding: 8 }}>{tipo}</td>
-                  <td style={{ padding: 8, fontWeight: 700, color: '#2c3e50' }}>{status}</td>
-                  <td style={{ padding: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <td style={{ padding: 8, textAlign: 'center' }}>{formatDateTime(criadoEm)}</td>
+                  <td style={{ padding: 8, textAlign: 'center' }}>{protocolo}</td>
+                  <td style={{ padding: 8, textAlign: 'center' }}>{requerente}</td>
+                  <td style={{ padding: 8, textAlign: 'center' }}>{tipo}</td>
+                  <td style={{ padding: 8, fontWeight: 700, color: '#2c3e50', textAlign: 'center' }}>{status}</td>
+                  <td style={{ padding: 8, display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
                     <button
                       style={{
                         background: '#3498db', color: '#fff', border: 'none', borderRadius: 6,
