@@ -47,7 +47,8 @@ export default function CertidaoGratuitaForm() {
       setError('');
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${config.apiURL}/certidoes-gratuitas/${encodeURIComponent(id)}`, {
+        const protocoloToFetch = id || savedId;
+        const res = await fetch(`${config.apiURL}/certidoes-gratuitas/${encodeURIComponent(protocoloToFetch)}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Falha ao carregar a certidão.');
@@ -83,7 +84,7 @@ export default function CertidaoGratuitaForm() {
       setLoadingInitial(false);
     }
     fetchExisting();
-  }, [id, isEdit]);
+  }, [id, isEdit, savedId]);
 
   // Buscar lista de códigos tributários (exclui código '01')
   useEffect(() => {
@@ -122,7 +123,7 @@ export default function CertidaoGratuitaForm() {
       if (!window.confirm('Tem certeza que deseja excluir este selo?')) return;
       try {
         const token = localStorage.getItem('token');
-        const execucaoId = id;
+        const execucaoId = id || savedId;
         if (!execucaoId || !selo.id) {
           alert('Dados insuficientes para exclusão.');
           return;
@@ -298,12 +299,13 @@ export default function CertidaoGratuitaForm() {
                   </div>
 
                   <ClipboardImageUpload
-                    protocolo={id}
+                    protocolo={id || savedId}
                     codigoTributario={newSelo.codigo_tributario}
                     onUpload={() => {
-                      if (id) {
+                      const protocoloToFetch = id || savedId;
+                      if (protocoloToFetch) {
                         const token = localStorage.getItem('token');
-                        fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(id)}`, {
+                        fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocoloToFetch)}`, {
                           headers: { Authorization: `Bearer ${token}` }
                         })
                           .then(res => res.json())
@@ -313,12 +315,13 @@ export default function CertidaoGratuitaForm() {
                     }}
                   />
                   <SeloFileUpload
-                    protocolo={id}
+                    protocolo={id || savedId}
                     codigoTributario={newSelo.codigo_tributario}
                     onUpload={() => {
-                      if (id) {
+                      const protocoloToFetch = id || savedId;
+                      if (protocoloToFetch) {
                         const token = localStorage.getItem('token');
-                        fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(id)}`, {
+                        fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocoloToFetch)}`, {
                           headers: { Authorization: `Bearer ${token}` }
                         })
                           .then(res => res.json())
