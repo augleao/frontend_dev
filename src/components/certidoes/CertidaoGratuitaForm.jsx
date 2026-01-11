@@ -351,6 +351,11 @@ export default function CertidaoGratuitaForm() {
                       }
                     }}
                   />
+                  {!(id || savedId) && (
+                    <div style={{ fontSize: 12, color: '#7f8c8d', marginLeft: 4 }}>
+                      Salve a certidão para habilitar o envio de selos.
+                    </div>
+                  )}
                 </div>
 
               {(selos.length > 0) && (
