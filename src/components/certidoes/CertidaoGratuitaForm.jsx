@@ -90,16 +90,12 @@ export default function CertidaoGratuitaForm() {
     const token = localStorage.getItem('token');
     (async () => {
       try {
-        // Tenta rota dedicada primeiro
-        let res = await fetch(`${config.apiURL}/codigos-gratuitos`, { headers: { Authorization: `Bearer ${token}` } });
-        if (!res.ok) {
-          // fallback para rota de sugestões
-          res = await fetch(`${config.apiURL}/codigos-tributarios?s=gr`, { headers: { Authorization: `Bearer ${token}` } });
-        }
+        // Buscar lista completa de códigos gratuitos (sem filtro)
+        const res = await fetch(`${config.apiURL}/codigos-gratuitos`, { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json().catch(() => ({}));
-        const list = data.codigos || data.sugestoes || [];
+        const list = data.codigos || data || [];
         if (!mounted) return;
-        setCodigos((list || []).filter(c => String(c.codigo) !== '01'));
+        setCodigos(list || []);
       } catch (e) {
         // ignore errors, leave codigos empty
       }
