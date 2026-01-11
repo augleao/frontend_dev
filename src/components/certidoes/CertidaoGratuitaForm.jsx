@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { atualizarSeloExecucaoServico } from '../servicos/ServicoSeloService';
 import ClipboardImageUpload from '../servicos/ClipboardImageUpload';
 import SeloFileUpload from '../servicos/SeloFileUpload';
+import './certidao.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import config from '../../config';
 
@@ -164,23 +165,12 @@ export default function CertidaoGratuitaForm() {
   }
 
   return (
-    <div style={{ maxWidth: 980, margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <h2 style={{ margin: 0 }}>{isEdit ? 'Editar Certidão Gratuita' : 'Nova Certidão Gratuita'}</h2>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            onClick={() => navigate('/certidoes-gratuitas')}
-            style={{ background: '#95a5a6', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 18px', fontWeight: 600, cursor: 'pointer' }}
-          >
-            Voltar
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={loading || loadingInitial}
-            style={{ background: '#27ae60', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 18px', fontWeight: 600, cursor: loading || loadingInitial ? 'not-allowed' : 'pointer', opacity: loading || loadingInitial ? 0.7 : 1 }}
-          >
-            {isEdit ? 'Salvar Alterações' : 'Salvar' }
-          </button>
+    <div className="certidao-container">
+      <div className="certidao-header">
+        <h2 className="certidao-title">{isEdit ? 'Editar Certidão Gratuita' : 'Nova Certidão Gratuita'}</h2>
+        <div className="certidao-actions">
+          <button onClick={() => navigate('/certidoes-gratuitas')} className="btn btn-secondary">Voltar</button>
+          <button onClick={handleSave} disabled={loading || loadingInitial} className="btn btn-primary">{isEdit ? 'Salvar Alterações' : 'Salvar'}</button>
         </div>
       </div>
 
@@ -201,34 +191,24 @@ export default function CertidaoGratuitaForm() {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={{ fontSize: 12, fontWeight: 600 }}>Requerente</label>
+              <label className="field-label">Requerente</label>
               <input
+                className="certidao-input"
                 type="text"
                 value={form.requerente}
                 onChange={e => updateField('requerente', e.target.value)}
                 placeholder="Nome do requerente"
-                style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px', fontSize: 14 }}
               />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={{ fontSize: 12, fontWeight: 600 }}>Tipo de Certidão</label>
-              <input
-                type="text"
-                value={form.tipo}
-                onChange={e => updateField('tipo', e.target.value)}
-                placeholder="Ex.: Nascimento, Casamento, Óbito ..."
-                style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px', fontSize: 14 }}
-              />
+              <label className="field-label">Tipo de Certidão</label>
+              <input className="certidao-input" type="text" value={form.tipo} onChange={e => updateField('tipo', e.target.value)} placeholder="Ex.: Nascimento, Casamento, Óbito ..." />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={{ fontSize: 12, fontWeight: 600 }}>Status</label>
-              <select
-                value={form.status}
-                onChange={e => updateField('status', e.target.value)}
-                style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px', fontSize: 14 }}
-              >
+              <label className="field-label">Status</label>
+              <select className="certidao-select" value={form.status} onChange={e => updateField('status', e.target.value)}>
                 <option value="EM_ANDAMENTO">Em andamento</option>
                 <option value="EMITIDA">Emitida</option>
                 <option value="CANCELADA">Cancelada</option>
@@ -236,47 +216,35 @@ export default function CertidaoGratuitaForm() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={{ fontSize: 12, fontWeight: 600 }}>Nome do Registrado</label>
-              <input
-                type="text"
-                value={form.registrado}
-                onChange={e => updateField('registrado', e.target.value)}
-                placeholder="Nome do Registrado"
-                style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px', fontSize: 14 }}
-              />
+              <label className="field-label">Nome do Registrado</label>
+              <input className="certidao-input" type="text" value={form.registrado} onChange={e => updateField('registrado', e.target.value)} placeholder="Nome do Registrado" />
             </div>
 
             <div style={{ display: 'flex', gap: 12 }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ fontSize: 12, fontWeight: 600 }}>Número do Livro</label>
-                <input type="text" value={form.livro} onChange={e => updateField('livro', e.target.value)} placeholder="Livro" style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px' }} />
+                <label className="field-label">Número do Livro</label>
+                <input className="certidao-input" type="text" value={form.livro} onChange={e => updateField('livro', e.target.value)} placeholder="Livro" />
               </div>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ fontSize: 12, fontWeight: 600 }}>Número da Folha</label>
-                <input type="text" value={form.folha} onChange={e => updateField('folha', e.target.value)} placeholder="Folha" style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px' }} />
+                <label className="field-label">Número da Folha</label>
+                <input className="certidao-input" type="text" value={form.folha} onChange={e => updateField('folha', e.target.value)} placeholder="Folha" />
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: 12 }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ fontSize: 12, fontWeight: 600 }}>Número do Termo</label>
-                <input type="text" value={form.termo} onChange={e => updateField('termo', e.target.value)} placeholder="Termo" style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px' }} />
+                <label className="field-label">Número do Termo</label>
+                <input className="certidao-input" type="text" value={form.termo} onChange={e => updateField('termo', e.target.value)} placeholder="Termo" />
               </div>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ fontSize: 12, fontWeight: 600 }}>Data de Emissão</label>
-                <input type="date" value={form.data_emissao} onChange={e => updateField('data_emissao', e.target.value)} style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px' }} />
+                <label className="field-label">Data de Emissão</label>
+                <input className="certidao-input" type="date" value={form.data_emissao} onChange={e => updateField('data_emissao', e.target.value)} />
               </div>
             </div>
 
             <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={{ fontSize: 12, fontWeight: 600 }}>Observações</label>
-              <textarea
-                value={form.observacoes}
-                onChange={e => updateField('observacoes', e.target.value)}
-                rows={6}
-                placeholder="Observações, justificativa ou detalhes relevantes"
-                style={{ border: '1.5px solid #bdc3c7', borderRadius: 6, padding: '10px 12px', fontSize: 14, resize: 'vertical' }}
-              />
+              <label className="field-label">Observações</label>
+              <textarea className="certidao-textarea" value={form.observacoes} onChange={e => updateField('observacoes', e.target.value)} rows={6} placeholder="Observações, justificativa ou detalhes relevantes" />
             </div>
 
             {/* Selos eletrônicos - UI copiada de ServicoExecucao.jsx */}
