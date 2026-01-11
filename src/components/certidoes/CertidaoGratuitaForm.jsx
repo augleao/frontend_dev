@@ -302,63 +302,63 @@ export default function CertidaoGratuitaForm() {
               <textarea className="certidao-textarea" value={form.observacoes} onChange={e => updateField('observacoes', e.target.value)} rows={6} placeholder="Observações, justificativa ou detalhes relevantes" />
             </div>
 
-            {/* Selos eletrônicos - UI copiada de ServicoExecucao.jsx */}
-            <div style={{ gridColumn: '1 / -1', marginTop: 6 }}>
+            {/* Selos eletrônicos */}
+            <div style={{ gridColumn: '1 / -1', marginTop: 6, padding: 12, border: '1px dashed #b0c4ff', borderRadius: 10, background: '#f8fbff' }}>
               <h4 style={{ color: palette.primaryDark, marginBottom: 2 }}>Selos Utilizados neste Pedido</h4>
 
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <label className="field-label">Código Tributário (para o selo)</label>
-                    <select className="certidao-select" value={newSelo.codigo_tributario || ''} onChange={e => setNewSelo({ ...newSelo, codigo_tributario: e.target.value })}>
-                      <option value="">(Não informado)</option>
-                      {codigos.map(c => (
-                        <option key={c.codigo} value={c.codigo}>{`${c.codigo} - ${c.descricao}`}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <ClipboardImageUpload
-                    protocolo={id || savedId}
-                    disabled={!(id || savedId)}
-                    codigoTributario={newSelo.codigo_tributario}
-                    onUpload={() => {
-                      const protocoloToFetch = id || savedId;
-                      if (protocoloToFetch) {
-                        const token = localStorage.getItem('token');
-                        fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocoloToFetch)}`, {
-                          headers: { Authorization: `Bearer ${token}` }
-                        })
-                          .then(res => res.json())
-                          .then(data => setSelos(data.selos || []))
-                          .catch(() => setSelos([]));
-                      }
-                    }}
-                  />
-                  <SeloFileUpload
-                    protocolo={id || savedId}
-                    disabled={!(id || savedId)}
-                    codigoTributario={newSelo.codigo_tributario}
-                    onUpload={() => {
-                      const protocoloToFetch = id || savedId;
-                      if (protocoloToFetch) {
-                        const token = localStorage.getItem('token');
-                        fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocoloToFetch)}`, {
-                          headers: { Authorization: `Bearer ${token}` }
-                        })
-                          .then(res => res.json())
-                          .then(data => setSelos(data.selos || []))
-                          .catch(() => setSelos([]));
-                      }
-                    }}
-                  />
-                  {!(id || savedId) && (
-                    <div style={{ fontSize: 12, color: '#7f8c8d', marginLeft: 4 }}>
-                      Salve a certidão para habilitar o envio de selos.
-                    </div>
-                  )}
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 240 }}>
+                  <label className="field-label">Código Tributário (para o selo)</label>
+                  <select className="certidao-select" value={newSelo.codigo_tributario || ''} onChange={e => setNewSelo({ ...newSelo, codigo_tributario: e.target.value })}>
+                    <option value="">(Não informado)</option>
+                    {codigos.map(c => (
+                      <option key={c.codigo} value={c.codigo}>{`${c.codigo} - ${c.descricao}`}</option>
+                    ))}
+                  </select>
                 </div>
 
-              {(selos.length > 0) && (
+                <ClipboardImageUpload
+                  protocolo={id || savedId}
+                  disabled={!(id || savedId)}
+                  codigoTributario={newSelo.codigo_tributario}
+                  onUpload={() => {
+                    const protocoloToFetch = id || savedId;
+                    if (protocoloToFetch) {
+                      const token = localStorage.getItem('token');
+                      fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocoloToFetch)}`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                      })
+                        .then(res => res.json())
+                        .then(data => setSelos(data.selos || []))
+                        .catch(() => setSelos([]));
+                    }
+                  }}
+                />
+                <SeloFileUpload
+                  protocolo={id || savedId}
+                  disabled={!(id || savedId)}
+                  codigoTributario={newSelo.codigo_tributario}
+                  onUpload={() => {
+                    const protocoloToFetch = id || savedId;
+                    if (protocoloToFetch) {
+                      const token = localStorage.getItem('token');
+                      fetch(`${config.apiURL}/selos-execucao-servico/${encodeURIComponent(protocoloToFetch)}`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                      })
+                        .then(res => res.json())
+                        .then(data => setSelos(data.selos || []))
+                        .catch(() => setSelos([]));
+                    }
+                  }}
+                />
+                {!(id || savedId) && (
+                  <div style={{ fontSize: 12, color: '#7f8c8d', minWidth: 200 }}>
+                    Salve a certidão para habilitar o envio de selos.
+                  </div>
+                )}
+              </div>
+
+              {(selos.length > 0) ? (
                 <div style={{ marginTop: 16 }}>
                   <div className="servico-table-container">
                     <table className="servico-table" style={{ background: '#fff' }}>
@@ -478,8 +478,7 @@ export default function CertidaoGratuitaForm() {
                     </table>
                   </div>
                 </div>
-              )}
-              {selos.length === 0 && (
+              ) : (
                 <div style={{ color: '#7f8c8d' }}>Nenhum selo adicionado.</div>
               )}
             </div>
