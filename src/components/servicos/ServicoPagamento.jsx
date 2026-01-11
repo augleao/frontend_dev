@@ -410,8 +410,14 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
 
   // Função para calcular o total adiantado
   const calcularTotalAdiantado = () => {
-    const detalhesValidos = valorAdiantadoDetalhes.filter(item => item.valor && item.forma);
-    const total = detalhesValidos.reduce((total, item) => total + parseFloat(item.valor || 0), 0);
+    const detalhesValidos = (valorAdiantadoDetalhes || []).filter(item => {
+      const valor = parseFloat(item?.valor ?? item?.valor_pago ?? 0);
+      return !isNaN(valor) && valor !== 0;
+    });
+    const total = detalhesValidos.reduce((acc, item) => {
+      const valor = parseFloat(item?.valor ?? item?.valor_pago ?? 0);
+      return acc + (isNaN(valor) ? 0 : valor);
+    }, 0);
     console.debug('[DEBUG-RECIBO] calcularTotalAdiantado - valorAdiantadoDetalhes:', valorAdiantadoDetalhes);
     console.debug('[DEBUG-RECIBO] calcularTotalAdiantado - detalhesValidos:', detalhesValidos);
     console.debug('[DEBUG-RECIBO] calcularTotalAdiantado - total:', total);
@@ -914,7 +920,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
 
 
       {/* Tabela de Valores Adiantados (não editável) */}
-      {valorAdiantadoDetalhes && valorAdiantadoDetalhes.length > 0 && valorAdiantadoDetalhes.some(item => item.valor && item.forma) && (
+      {Array.isArray(valorAdiantadoDetalhes) && valorAdiantadoDetalhes.length > 0 && (
         <div style={{ marginBottom: 20 }}>
           <div className="servico-table-container">
           <h4 style={{
@@ -947,28 +953,30 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               </tr>
             </thead>
             <tbody>
-              {valorAdiantadoDetalhes
-                .filter(item => item.valor && item.forma)
-                .map((item, idx) => (
-                <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : palette.softBg }}>
-                  <td style={{
-                    padding: '8px 12px',
-                    border: `1px solid ${palette.softBorder}`,
-                    fontFamily: 'monospace',
-                    fontWeight: '600',
-                    color: palette.primary
-                  }}>
-                    R$ {parseFloat(item.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </td>
-                  <td style={{
-                    padding: '8px 12px',
-                    border: `1px solid ${palette.softBorder}`,
-                    color: palette.primaryDark
-                  }}>
-                    {item.forma}
-                  </td>
-                </tr>
-              ))}
+              {valorAdiantadoDetalhes.map((item, idx) => {
+                const valorNumero = parseFloat(item.valor || item.valor_pago || 0) || 0;
+                const forma = item.forma || item.meio || item.metodo || '—';
+                return (
+                  <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : palette.softBg }}>
+                    <td style={{
+                      padding: '8px 12px',
+                      border: `1px solid ${palette.softBorder}`,
+                      fontFamily: 'monospace',
+                      fontWeight: '600',
+                      color: palette.primary
+                    }}>
+                      R$ {valorNumero.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                    <td style={{
+                      padding: '8px 12px',
+                      border: `1px solid ${palette.softBorder}`,
+                      color: palette.primaryDark
+                    }}>
+                      {forma}
+                    </td>
+                  </tr>
+                );
+              })}
               {/* Linha de Total */}
               <tr style={{ background: palette.softBg, fontWeight: 'bold' }}>
                 <td style={{
