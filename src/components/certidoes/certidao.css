@@ -4,13 +4,13 @@
   --muted:#6b7280;
   --success:#10b981;
   --danger:#ef4444;
-  --soft-bg:#eef5ff;
+  --soft-bg:#e6efff;
   --soft-border:#d6e4ff;
   --card-bg:#ffffff;
 }
 
-.certidao-container{max-width:1100px;margin:0 auto;padding:18px}
-.certidao-card{background:var(--card-bg);border-radius:12px;padding:20px;box-shadow:0 6px 18px rgba(15,23,42,0.06);}
+.certidao-container{max-width:1100px;margin:18px auto;padding:20px;background:var(--soft-bg);border-radius:14px}
+.certidao-card{background:var(--card-bg);border-radius:12px;padding:20px;box-shadow:0 8px 26px rgba(15,23,42,0.09);} 
 .certidao-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .certidao-title{margin:0;font-size:20px;color:var(--primary-dark);font-weight:700}
 .certidao-actions{display:flex;gap:10px}

@@ -26,6 +26,7 @@ export default function CertidaoGratuitaForm() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [selos, setSelos] = useState([]);
+  const [codigos, setCodigos] = useState([]);
   const [newSelo, setNewSelo] = useState({ selo_consulta: '', codigo_seguranca: '', qtd_atos: '', atos_praticados_por: '', valores: '' });
   const [editingSeloId, setEditingSeloId] = useState(null);
   const [editSelo, setEditSelo] = useState({});
@@ -69,6 +70,29 @@ export default function CertidaoGratuitaForm() {
     }
     fetchExisting();
   }, [id, isEdit]);
+
+  // Buscar lista de códigos tributários (exclui código '01')
+  useEffect(() => {
+    let mounted = true;
+    const token = localStorage.getItem('token');
+    (async () => {
+      try {
+        // Tenta rota dedicada primeiro
+        let res = await fetch(`${config.apiURL}/codigos-gratuitos`, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) {
+          // fallback para rota de sugestões
+          res = await fetch(`${config.apiURL}/codigos-tributarios?s=gr`, { headers: { Authorization: `Bearer ${token}` } });
+        }
+        const data = await res.json().catch(() => ({}));
+        const list = data.codigos || data.sugestoes || [];
+        if (!mounted) return;
+        setCodigos((list || []).filter(c => String(c.codigo) !== '01'));
+      } catch (e) {
+        // ignore errors, leave codigos empty
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
     // Buscar selos ao montar ou quando id mudar
     useEffect(() => {
@@ -285,6 +309,7 @@ export default function CertidaoGratuitaForm() {
                           <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Qtd. Atos</th>
                           <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Atos praticados por</th>
                           <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Valores</th>
+                          <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Código Tributário</th>
                           <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Data/Hora</th>
                           <th style={{ padding: 6, fontSize: 12, color: palette.primaryDark }}>Ações</th>
                         </tr>
@@ -327,6 +352,24 @@ export default function CertidaoGratuitaForm() {
                                   <input value={editSelo.valores || ''} onChange={e => setEditSelo({ ...editSelo, valores: e.target.value })} style={{ width: 320, fontSize: 9, padding: '1px 2px' }} placeholder="Valores" />
                                 ) : (
                                   <span style={{ fontSize: 11 }}>{selo.valores || ''}</span>
+                                )}
+                              </td>
+                              <td style={{ padding: 2, fontSize: isEditing ? 13 : 12 }}>
+                                {isEditing ? (
+                                  <select value={editSelo.codigo_tributario || ''} onChange={e => setEditSelo({ ...editSelo, codigo_tributario: e.target.value })} style={{ fontSize: 11, padding: '2px 4px' }}>
+                                    <option value="">(Não informado)</option>
+                                    {codigos.map(c => (
+                                      <option key={c.codigo} value={c.codigo}>{`${c.codigo} - ${c.descricao}`}</option>
+                                    ))}
+                                  </select>
+                                ) : (
+                                  <span style={{ fontSize: 11 }}>{
+                                    (() => {
+                                      const codigo = selo.codigo_tributario || selo.codigoTributario || selo.tributacao || selo.codigo_tributacao;
+                                      const item = codigos.find(x => String(x.codigo) === String(codigo));
+                                      return item ? `${item.codigo} - ${item.descricao}` : (codigo || '');
+                                    })()
+                                  }</span>
                                 )}
                               </td>
                               <td style={{ padding: 2, fontSize: 12 }}>{selo.criado_em ? new Date(selo.criado_em).toLocaleString() : ''}</td>
