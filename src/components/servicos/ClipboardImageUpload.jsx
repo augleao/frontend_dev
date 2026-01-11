@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import config from '../../config';
 
-export default function ClipboardImageUpload({ protocolo, onUpload, codigoTributario }) {
+export default function ClipboardImageUpload({ protocolo, onUpload, codigoTributario, disabled = false }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const buttonRef = useRef();
@@ -9,6 +9,11 @@ export default function ClipboardImageUpload({ protocolo, onUpload, codigoTribut
   // Handler para importar dados de selo da área de transferência
   const handleImportFromClipboard = async () => {
     setError('');
+
+    if (disabled) {
+      setError('Salve a certidão antes de importar selos.');
+      return;
+    }
 
     if (!navigator.clipboard || typeof navigator.clipboard.readText !== 'function') {
       setError('Navegador não suporta leitura de texto da área de transferência.');
@@ -81,7 +86,7 @@ export default function ClipboardImageUpload({ protocolo, onUpload, codigoTribut
         ref={buttonRef}
         type="button"
         onClick={handleImportFromClipboard}
-        disabled={uploading}
+        disabled={uploading || disabled}
         style={{
           width: 220,
           padding: '4px 10px',
@@ -91,7 +96,7 @@ export default function ClipboardImageUpload({ protocolo, onUpload, codigoTribut
           borderRadius: 6,
           fontSize: 13,
           fontWeight: 600,
-          cursor: uploading ? 'not-allowed' : 'pointer',
+          cursor: (uploading || disabled) ? 'not-allowed' : 'pointer',
           marginLeft: 0
         }}
         title="Importar imagem da área de transferência"

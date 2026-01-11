@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import config from '../../config';
 
-export default function SeloFileUpload({ protocolo, onUpload, codigoTributario }) {
+export default function SeloFileUpload({ protocolo, onUpload, codigoTributario, disabled = false }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef();
@@ -25,7 +25,7 @@ export default function SeloFileUpload({ protocolo, onUpload, codigoTributario }
       formData.append('imagem', file);
       if (codigoTributario) formData.append('codigo_tributario', codigoTributario);
       if (!protocolo || typeof protocolo !== 'string') {
-        setError('Protocolo inválido para upload.');
+        setError('Protocolo inválido para upload. Salve a certidão primeiro.');
         setUploading(false);
         return;
       }
@@ -55,8 +55,11 @@ export default function SeloFileUpload({ protocolo, onUpload, codigoTributario }
     <span style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 0, width: '100%' }}>
       <button
         type="button"
-        onClick={() => fileInputRef.current && fileInputRef.current.click()}
-        disabled={uploading}
+        onClick={() => {
+          if (disabled) return alert('Salve a certidão antes de enviar selos.');
+          fileInputRef.current && fileInputRef.current.click();
+        }}
+        disabled={uploading || disabled}
         style={{
           width: 220,
           padding: '4px 10px',
@@ -66,7 +69,7 @@ export default function SeloFileUpload({ protocolo, onUpload, codigoTributario }
           borderRadius: 6,
           fontSize: 13,
           fontWeight: 600,
-          cursor: uploading ? 'not-allowed' : 'pointer',
+          cursor: (uploading || disabled) ? 'not-allowed' : 'pointer',
           marginLeft: 0
         }}
         title="Selecionar arquivo de imagem do selo"

@@ -47,6 +47,20 @@ export default function CertidaoGratuitaForm() {
   } catch (_) {}
 
   useEffect(() => {
+    try {
+      // eslint-disable-next-line no-console
+      console.debug('[CertidaoGratuitaForm] render-check', {
+        showUploadBlock: Boolean(isEdit || savedId),
+        showSeloTable: Boolean(isEdit || savedId) && selos.length > 0,
+        isEdit,
+        savedId,
+        selosLength: selos.length,
+        loadingInitial
+      });
+    } catch (_) {}
+  }, [isEdit, savedId, selos.length, loadingInitial]);
+
+  useEffect(() => {
     async function fetchExisting() {
       if (!isEdit && !savedId) return;
       setLoadingInitial(true);
@@ -292,8 +306,7 @@ export default function CertidaoGratuitaForm() {
             <div style={{ gridColumn: '1 / -1', marginTop: 6 }}>
               <h4 style={{ color: palette.primaryDark, marginBottom: 2 }}>Selos Utilizados neste Pedido</h4>
 
-              {(isEdit || savedId) && (
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <label className="field-label">Código Tributário (para o selo)</label>
                     <select className="certidao-select" value={newSelo.codigo_tributario || ''} onChange={e => setNewSelo({ ...newSelo, codigo_tributario: e.target.value })}>
@@ -306,6 +319,7 @@ export default function CertidaoGratuitaForm() {
 
                   <ClipboardImageUpload
                     protocolo={id || savedId}
+                    disabled={!(id || savedId)}
                     codigoTributario={newSelo.codigo_tributario}
                     onUpload={() => {
                       const protocoloToFetch = id || savedId;
@@ -322,6 +336,7 @@ export default function CertidaoGratuitaForm() {
                   />
                   <SeloFileUpload
                     protocolo={id || savedId}
+                    disabled={!(id || savedId)}
                     codigoTributario={newSelo.codigo_tributario}
                     onUpload={() => {
                       const protocoloToFetch = id || savedId;
@@ -337,9 +352,8 @@ export default function CertidaoGratuitaForm() {
                     }}
                   />
                 </div>
-              )}
 
-              {(isEdit || savedId) && selos.length > 0 && (
+              {(selos.length > 0) && (
                 <div style={{ marginTop: 16 }}>
                   <div className="servico-table-container">
                     <table className="servico-table" style={{ background: '#fff' }}>
@@ -460,7 +474,7 @@ export default function CertidaoGratuitaForm() {
                   </div>
                 </div>
               )}
-              {!isEdit && !savedId && selos.length === 0 && (
+              {selos.length === 0 && (
                 <div style={{ color: '#7f8c8d' }}>Nenhum selo adicionado.</div>
               )}
             </div>
