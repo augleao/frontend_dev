@@ -280,8 +280,19 @@ export default function CertidaoGratuitaForm() {
 
               {isEdit && (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label className="field-label">Código Tributário (para o selo)</label>
+                    <select className="certidao-select" value={newSelo.codigo_tributario || ''} onChange={e => setNewSelo({ ...newSelo, codigo_tributario: e.target.value })}>
+                      <option value="">(Não informado)</option>
+                      {codigos.map(c => (
+                        <option key={c.codigo} value={c.codigo}>{`${c.codigo} - ${c.descricao}`}</option>
+                      ))}
+                    </select>
+                  </div>
+
                   <ClipboardImageUpload
                     protocolo={id}
+                    codigoTributario={newSelo.codigo_tributario}
                     onUpload={() => {
                       if (id) {
                         const token = localStorage.getItem('token');
@@ -296,6 +307,7 @@ export default function CertidaoGratuitaForm() {
                   />
                   <SeloFileUpload
                     protocolo={id}
+                    codigoTributario={newSelo.codigo_tributario}
                     onUpload={() => {
                       if (id) {
                         const token = localStorage.getItem('token');

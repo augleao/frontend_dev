@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import config from '../../config';
 
-export default function ClipboardImageUpload({ protocolo, onUpload }) {
+export default function ClipboardImageUpload({ protocolo, onUpload, codigoTributario }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const buttonRef = useRef();
@@ -48,6 +48,7 @@ export default function ClipboardImageUpload({ protocolo, onUpload }) {
       formData.append('imagem', blob, 'selo.txt');
       formData.append('conteudo_selo', conteudoSelo);
       formData.append('execucao_servico_id', protocolo);
+      if (codigoTributario) formData.append('codigo_tributario', codigoTributario);
 
       const token = localStorage.getItem('token');
       const res = await fetch(`${config.apiURL}/execucaoservico/${protocolo}/selo`, {
