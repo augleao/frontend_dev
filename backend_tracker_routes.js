@@ -76,7 +76,6 @@ async function ensureTable() {
     await pool.query(ddl);
     ensureTable._done = true;
   } catch (e) {
-    console.warn('[tracker] failed to ensure table exists', e && e.message ? e.message : e);
   }
 }
 
@@ -170,7 +169,6 @@ router.post('/events', express.json(), async (req, res) => {
     const result = await processTrackerEvent(pool, body, req);
     return res.status(result.status).json(result.body);
   } catch (err) {
-    console.error('[tracker] unexpected error', err && err.stack ? err.stack : err);
     return res.status(500).json({ ok: false, error: 'internal error' });
   }
 });

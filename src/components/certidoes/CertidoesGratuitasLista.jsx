@@ -218,7 +218,7 @@ export default function CertidoesGratuitasLista() {
               <th style={{ padding: 8, textAlign: 'center' }}>Protocolo</th>
               <th style={{ padding: 8, textAlign: 'center' }}>Requerente</th>
               <th style={{ padding: 8, textAlign: 'center' }}>Tipo</th>
-              <th style={{ padding: 8, textAlign: 'center' }}>Status</th>
+              <th style={{ padding: 8, textAlign: 'center' }}>Responsável</th>
               <th style={{ padding: 8, textAlign: 'center' }}>Ações</th>
             </tr>
           </thead>
@@ -227,7 +227,7 @@ export default function CertidoesGratuitasLista() {
               const protocolo = c.protocolo || c.numero || c.id || '-';
               const requerente = c.requerente?.nome || c.requerente || '-';
               const tipo = c.tipo || c.tipo_certidao || '-';
-              const status = c.status || c.situacao || '-';
+              const responsavel = c.responsavel_nome || c.usuario_nome || c.usuario || '-';
               const criadoEm = c.criado_em || c.created_at || c.data || null;
               return (
                 <tr key={`${protocolo}-${idx}`} style={{ background: idx % 2 === 0 ? '#fff' : '#f8f9fa' }}>
@@ -235,7 +235,7 @@ export default function CertidoesGratuitasLista() {
                   <td style={{ padding: 8, textAlign: 'center' }}>{protocolo}</td>
                   <td style={{ padding: 8, textAlign: 'center' }}>{requerente}</td>
                   <td style={{ padding: 8, textAlign: 'center' }}>{tipo}</td>
-                  <td style={{ padding: 8, fontWeight: 700, color: '#2c3e50', textAlign: 'center' }}>{status}</td>
+                  <td style={{ padding: 8, fontWeight: 700, color: '#2c3e50', textAlign: 'center' }}>{responsavel}</td>
                   <td style={{ padding: 8, display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
                     <button
                       style={{

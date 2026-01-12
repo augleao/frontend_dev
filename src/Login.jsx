@@ -79,7 +79,7 @@ function Login() {
             ts: new Date().toISOString(),
             data: { method: 'password', uid, userId, userName }
           };
-          console.debug('[tracker][login] sending', payload);
+          
           fetch(`${config.apiURL}/tracker/events`, {
             method: 'POST',
             credentials: 'include',
@@ -87,18 +87,14 @@ function Login() {
             body: JSON.stringify(payload)
           })
             .then(async (res) => {
-              if (!res.ok) {
+                if (!res.ok) {
                 const body = await res.text().catch(() => '');
-                console.error('[tracker][login] server error', res.status, body);
               } else {
-                console.debug('[tracker][login] ok', res.status);
               }
             })
             .catch((err) => {
-              console.error('[tracker][login] fetch error', err && err.message ? err.message : err);
             });
         } catch (e) {
-          console.error('[tracker][login] unexpected error', e && e.message ? e.message : e);
         }
 
         await checarAlertasRelatorios(data.token);

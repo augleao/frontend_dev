@@ -98,9 +98,7 @@ class Tracker {
         const blob = new Blob([payload], { type: 'application/json' });
         const ok = navigator.sendBeacon(this.endpoint, blob);
         if (ok) return;
-        console.warn('[tracker] sendBeacon failed, falling back to fetch');
       } catch (e) {
-        console.warn('[tracker] sendBeacon error', e && e.message ? e.message : e);
       }
     }
 
@@ -118,18 +116,15 @@ class Tracker {
           bodyText = await res.text();
           try {
             const parsed = JSON.parse(bodyText);
-            console.error('[tracker] server error', res.status, parsed);
           } catch (e) {
-            console.error('[tracker] server error', res.status, bodyText);
+            
           }
-        } catch (e) {
-          console.error('[tracker] server error - unable to read body', res.status, e && e.message ? e.message : e);
+          } catch (e) {
         }
         throw new Error('failed to send analytics: ' + res.status);
       }
       return res;
     } catch (err) {
-      console.error('[tracker] _sendBatch error', err && err.message ? err.message : err);
       throw err;
     }
   }
@@ -156,10 +151,10 @@ class Tracker {
       try {
         const blob = new Blob([payload], { type: 'application/json' });
         const ok = navigator.sendBeacon(this.endpoint, blob);
-        if (!ok) console.warn('[tracker] sendBeacon returned false on unload');
+        if (!ok) ;
         this.queue = [];
       } catch (e) {
-        console.warn('[tracker] sendBeacon error on unload', e && e.message ? e.message : e);
+        
       }
     } else {
       // best-effort synchronous XHR fallback (deprecated but may help)
