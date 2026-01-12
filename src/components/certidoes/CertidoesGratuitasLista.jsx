@@ -48,36 +48,15 @@ export default function CertidoesGratuitasLista() {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-        const idServentiaUsuario = usuario.serventia || usuario.serventiaId || usuario.serventia_id;
-
-        // Busca usuários e filtra pela serventia, como em ServicoLista
-        const usuariosRes = await fetch(`${config.apiURL}/users`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const usuariosData = await usuariosRes.json();
-        const usuariosDaServentia = (usuariosData.usuarios || []).filter(u => {
-          const serv = u.serventia || u.serventiaId || u.serventia_id;
-          return serv === idServentiaUsuario;
-        });
-        const nomesUsuariosDaServentia = new Set(usuariosDaServentia.map(u => u.nome));
-
-        // Busca certidões gratuitas
+        // Busca certidões gratuitas já filtradas por serventia no backend
         const res = await fetch(`${config.apiURL}/certidoes-gratuitas`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Falha ao carregar certidões gratuitas');
         const data = await res.json();
         const lista = data.certidoes || data.items || data || [];
-
-        // Filtra por usuários da serventia (se disponível atributo usuario)
-        const porServentia = lista.filter(c => {
-          const nomeUsuario = c.usuario || c.usuario_nome || c.criado_por || '';
-          return !nomeUsuario || nomesUsuariosDaServentia.has(nomeUsuario);
-        });
-
-        setRegistros(porServentia);
-        setFiltrados(porServentia);
+        setRegistros(lista);
+        setFiltrados(lista);
       } catch (e) {
         setRegistros([]);
         setFiltrados([]);

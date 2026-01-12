@@ -1,12 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { atualizarSeloExecucaoServico } from '../servicos/ServicoSeloService';
 import ClipboardImageUpload from '../servicos/ClipboardImageUpload';
 import SeloFileUpload from '../servicos/SeloFileUpload';
 import './certidao.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import config from '../../config';
+import { AuthContext } from '../../AuthContext';
 
 export default function CertidaoGratuitaForm() {
+  const { user } = useContext(AuthContext);
   const { id } = useParams(); // protocolo/id quando em edição
   const isEdit = useMemo(() => Boolean(id), [id]);
   const navigate = useNavigate();
@@ -190,7 +192,8 @@ export default function CertidaoGratuitaForm() {
         folha: form.folha,
         termo: form.termo,
         data_emissao: form.data_emissao,
-        selos
+        selos,
+        user_id: user?.id || null
       };
       const url = isEdit
         ? `${config.apiURL}/certidoes-gratuitas/${encodeURIComponent(id)}`
