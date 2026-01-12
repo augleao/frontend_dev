@@ -52,12 +52,18 @@ export default function CertidoesGratuitasLista() {
         const res = await fetch(`${config.apiURL}/certidoes-gratuitas`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        if (!res.ok) throw new Error('Falha ao carregar certidões gratuitas');
+        if (!res.ok) {
+          const txt = await res.text().catch(() => '');
+          try { console.error('[CertidoesGratuitasLista] fetch error', { status: res.status, body: txt }); } catch (_) {}
+          throw new Error('Falha ao carregar certidões gratuitas');
+        }
         const data = await res.json();
         const lista = data.certidoes || data.items || data || [];
+        try { console.debug('[CertidoesGratuitasLista] lista recebida', Array.isArray(lista) ? lista.length : 0); } catch (_) {}
         setRegistros(lista);
         setFiltrados(lista);
       } catch (e) {
+        try { console.error('[CertidoesGratuitasLista] erro geral', e && e.message ? e.message : e); } catch (_) {}
         setRegistros([]);
         setFiltrados([]);
       }
