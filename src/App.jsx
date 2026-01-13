@@ -52,6 +52,7 @@ import AtosTabelaManager from './components/admin/AtosTabelaManager';
 import CompararAtosDap from './components/ia/CompararAtosDap';
 import CookieConsent from './components/CookieConsent';
 import { trackEvent, isConsentGiven } from './utils/tracker';
+import CartosoftIntegration from './CartosoftIntegration';
 
 
 
@@ -375,8 +376,14 @@ function App() {
               <AnaliseDAP />
             </PrivateRoute>
           }
-        />
-        <Route
+        />        <Route
+          path="/cartosoft-integration"
+          element={
+            <PrivateRoute>
+              <CartosoftIntegration />
+            </PrivateRoute>
+          }
+        />        <Route
           path="/certidoes-gratuitas"
           element={
             <PrivateRoute>
