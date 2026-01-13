@@ -30,7 +30,7 @@ function CartosoftIntegration() {
         return;
       }
 
-      const response = await fetch(`${config.apiURL}/api/cartosoft-search/search-options`, {
+      const response = await fetch(`${config.apiURL}/cartosoft-search/search-options`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -62,7 +62,7 @@ function CartosoftIntegration() {
         return;
       }
 
-      const response = await fetch(`${config.apiURL}/api/cartosoft-search/search-birth-records`, {
+      const response = await fetch(`${config.apiURL}/cartosoft-search/search-birth-records`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
