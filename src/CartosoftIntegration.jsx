@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function CartosoftIntegration() {
@@ -20,12 +20,7 @@ function CartosoftIntegration() {
     ufs: []
   });
 
-  // Carregar opções de filtro ao montar o componente
-  useEffect(() => {
-    loadSearchOptions();
-  }, []);
-
-  const loadSearchOptions = async () => {
+  const loadSearchOptions = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -47,7 +42,12 @@ function CartosoftIntegration() {
     } catch (error) {
       console.error('Erro ao carregar opções:', error);
     }
-  };
+  }, [navigate]);
+
+  // Carregar opções de filtro ao montar o componente
+  useEffect(() => {
+    loadSearchOptions();
+  }, [loadSearchOptions]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
