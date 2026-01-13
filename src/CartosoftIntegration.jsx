@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import config from './config';
 
 function CartosoftIntegration() {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ function CartosoftIntegration() {
         return;
       }
 
-      const response = await fetch('/api/cartosoft-search/search-options', {
+      const response = await fetch(`${config.apiURL}/api/cartosoft-search/search-options`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -61,7 +62,7 @@ function CartosoftIntegration() {
         return;
       }
 
-      const response = await fetch('/api/cartosoft-search/search-birth-records', {
+      const response = await fetch(`${config.apiURL}/api/cartosoft-search/search-birth-records`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
