@@ -6,6 +6,16 @@ function CartosoftIntegration() {
   const navigate = useNavigate();
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [cartosoftAuth, setCartosoftAuth] = useState({
+    isAuthenticated: false,
+    accessToken: null,
+    cookies: null,
+    loading: false
+  });
+  const [loginForm, setLoginForm] = useState({
+    username: '',
+    password: ''
+  });
   const [searchForm, setSearchForm] = useState({
     nome: '',
     dataNascimento: '',
@@ -22,6 +32,8 @@ function CartosoftIntegration() {
   });
 
   const loadSearchOptions = useCallback(async () => {
+    if (!cartosoftAuth.isAuthenticated) return;
+
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -30,28 +42,169 @@ function CartosoftIntegration() {
         return;
       }
 
-      const response = await fetch(`${config.apiURL}/cartosoft-search/search-options`, {
+      const response = await fetch(`${config.apiURL}/cartosoft-integration/search-options-with-token`, {
+        method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          accessToken: cartosoftAuth.accessToken,
+          cookies: cartosoftAuth.cookies
+        })
       });
 
       if (response.ok) {
         const data = await response.json();
         setSearchOptions(data);
+      } else {
+        console.error('Erro ao carregar opções:', response.status);
+        // Fallback para dados mockados se a API falhar
+        setSearchOptions({
+          municipios: [
+            { id: 1, nome: 'Belo Horizonte', uf: 'MG' },
+            { id: 2, nome: 'Contagem', uf: 'MG' },
+            { id: 3, nome: 'Betim', uf: 'MG' }
+          ],
+          ufs: [
+            { id: 1, sigla: 'MG', nome: 'Minas Gerais' },
+            { id: 2, sigla: 'SP', nome: 'São Paulo' },
+            { id: 3, sigla: 'RJ', nome: 'Rio de Janeiro' }
+          ]
+        });
       }
     } catch (error) {
       console.error('Erro ao carregar opções:', error);
+      // Fallback para dados mockados
+      setSearchOptions({
+        municipios: [
+          { id: 1, nome: 'Belo Horizonte', uf: 'MG' },
+          { id: 2, nome: 'Contagem', uf: 'MG' },
+          { id: 3, nome: 'Betim', uf: 'MG' }
+        ],
+        ufs: [
+          { id: 1, sigla: 'MG', nome: 'Minas Gerais' },
+          { id: 2, sigla: 'SP', nome: 'São Paulo' },
+          { id: 3, sigla: 'RJ', nome: 'Rio de Janeiro' }
+        ]
+      });
     }
-  }, [navigate]);
+  }, [cartosoftAuth, navigate]);
 
-  // Carregar opções de filtro ao montar o componente
+  // Função para fazer login no Cartosoft
+  const handleCartosoftLogin = async (e) => {
+    e.preventDefault();
+    setCartosoftAuth(prev => ({ ...prev, loading: true }));
+
+    try {
+      console.log('🔐 Fazendo login no Cartosoft...');
+
+      const response = await fetch('https://cartosoftweb.recivil.com.br/auth/realms/cartosoft/protocol/openid-connect/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        },
+        body: new URLSearchParams({
+          grant_type: 'password',
+          client_id: 'cartosoft-web',
+          username: loginForm.username,
+          password: loginForm.password,
+          scope: 'openid'
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Login falhou: ${response.status} - ${errorData}`);
+      }
+
+      const tokenData = await response.json();
+      console.log('✅ Login no Cartosoft bem-sucedido!');
+
+      // Extrair cookies se houver
+      const cookiesHeader = response.headers.get('set-cookie');
+      let cookies = null;
+      if (cookiesHeader) {
+        cookies = cookiesHeader.split(',').map(c => c.trim());
+      }
+
+      setCartosoftAuth({
+        isAuthenticated: true,
+        accessToken: tokenData.access_token,
+        cookies: cookies,
+        loading: false
+      });
+
+      // Enviar tokens para o backend
+      await sendTokensToBackend(tokenData.access_token, cookies);
+
+      // Carregar opções após login
+      setTimeout(() => loadSearchOptions(), 500);
+
+    } catch (error) {
+      console.error('❌ Erro no login do Cartosoft:', error.message);
+      alert(`Erro no login do Cartosoft: ${error.message}`);
+      setCartosoftAuth(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  // Função para enviar tokens para o backend
+  const sendTokensToBackend = async (accessToken, cookies) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch(`${config.apiURL}/cartosoft-integration/login-frontend`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          accessToken,
+          cookies
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ Tokens enviados para o backend com sucesso');
+      } else {
+        console.error('❌ Erro ao enviar tokens para o backend');
+      }
+    } catch (error) {
+      console.error('❌ Erro ao enviar tokens para o backend:', error);
+    }
+  };
+
+  // Função para fazer logout do Cartosoft
+  const handleCartosoftLogout = () => {
+    setCartosoftAuth({
+      isAuthenticated: false,
+      accessToken: null,
+      cookies: null,
+      loading: false
+    });
+    setSearchOptions({ municipios: [], ufs: [] });
+    setSearchResults([]);
+    console.log('👋 Logout do Cartosoft realizado');
+  };
+
+  // Carregar opções de filtro quando autenticado no Cartosoft
   useEffect(() => {
-    loadSearchOptions();
-  }, [loadSearchOptions]);
+    if (cartosoftAuth.isAuthenticated) {
+      loadSearchOptions();
+    }
+  }, [cartosoftAuth.isAuthenticated, loadSearchOptions]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
+
+    if (!cartosoftAuth.isAuthenticated) {
+      alert('Você precisa fazer login no Cartosoft primeiro');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -62,24 +215,30 @@ function CartosoftIntegration() {
         return;
       }
 
-      const response = await fetch(`${config.apiURL}/cartosoft-search/search-birth-records`, {
+      const response = await fetch(`${config.apiURL}/cartosoft-integration/search-birth-records-with-token`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(searchForm)
+        body: JSON.stringify({
+          ...searchForm,
+          accessToken: cartosoftAuth.accessToken,
+          cookies: cartosoftAuth.cookies
+        })
       });
 
       if (response.ok) {
         const data = await response.json();
         setSearchResults(data.registros || []);
+        console.log(`✅ Busca concluída: ${data.registros?.length || 0} registros encontrados`);
       } else {
         const error = await response.json();
+        console.error('❌ Erro na busca:', error);
         alert(`Erro na busca: ${error.error || 'Erro desconhecido'}`);
       }
     } catch (error) {
-      console.error('Erro na busca:', error);
+      console.error('❌ Erro na busca:', error);
       alert('Erro ao conectar com o servidor Cartosoft. Verifique sua conexão.');
     } finally {
       setLoading(false);
@@ -89,6 +248,14 @@ function CartosoftIntegration() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSearchForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleLoginInputChange = (e) => {
+    const { name, value } = e.target;
+    setLoginForm(prev => ({
       ...prev,
       [name]: value
     }));
@@ -140,12 +307,154 @@ function CartosoftIntegration() {
 
         {/* Search Form */}
         <div style={{ padding: '32px' }}>
-          <form onSubmit={handleSearch} style={{
-            background: '#f8f9fa',
-            padding: '24px',
-            borderRadius: '12px',
-            marginBottom: '32px'
-          }}>
+          {/* Cartosoft Login Form */}
+          {!cartosoftAuth.isAuthenticated ? (
+            <div style={{
+              background: '#fff3cd',
+              border: '1px solid #ffeaa7',
+              borderRadius: '12px',
+              padding: '24px',
+              marginBottom: '32px'
+            }}>
+              <h3 style={{
+                margin: '0 0 20px 0',
+                color: '#856404',
+                fontSize: '20px'
+              }}>
+                🔐 Login no Cartosoft
+              </h3>
+              <p style={{
+                margin: '0 0 20px 0',
+                color: '#856404',
+                fontSize: '14px'
+              }}>
+                Você precisa fazer login no Cartosoft para realizar buscas nos registros de nascimento.
+              </p>
+
+              <form onSubmit={handleCartosoftLogin} style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: '16px',
+                alignItems: 'end'
+              }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '4px',
+                    fontWeight: '500',
+                    color: '#495057'
+                  }}>
+                    Usuário Cartosoft
+                  </label>
+                  <input
+                    type="text"
+                    name="username"
+                    value={loginForm.username}
+                    onChange={handleLoginInputChange}
+                    placeholder="Digite seu usuário"
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #ced4da',
+                      borderRadius: '6px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '4px',
+                    fontWeight: '500',
+                    color: '#495057'
+                  }}>
+                    Senha Cartosoft
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={loginForm.password}
+                    onChange={handleLoginInputChange}
+                    placeholder="Digite sua senha"
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid #ced4da',
+                      borderRadius: '6px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <button
+                    type="submit"
+                    disabled={cartosoftAuth.loading}
+                    style={{
+                      background: cartosoftAuth.loading ? '#6c757d' : '#ffc107',
+                      color: cartosoftAuth.loading ? 'white' : '#212529',
+                      border: 'none',
+                      padding: '10px 20px',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: cartosoftAuth.loading ? 'not-allowed' : 'pointer',
+                      transition: 'background 0.3s ease'
+                    }}
+                  >
+                    {cartosoftAuth.loading ? '🔄 Fazendo login...' : '🔐 Entrar no Cartosoft'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          ) : (
+            <div style={{
+              background: '#d4edda',
+              border: '1px solid #c3e6cb',
+              borderRadius: '12px',
+              padding: '16px',
+              marginBottom: '32px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div style={{
+                color: '#155724',
+                fontSize: '16px',
+                fontWeight: '500'
+              }}>
+                ✅ Autenticado no Cartosoft
+              </div>
+              <button
+                onClick={handleCartosoftLogout}
+                style={{
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background 0.3s ease'
+                }}
+              >
+                👋 Sair do Cartosoft
+              </button>
+            </div>
+          )}
+
+          {/* Search Form */}
+          {cartosoftAuth.isAuthenticated && (
+            <form onSubmit={handleSearch} style={{
+              background: '#f8f9fa',
+              padding: '24px',
+              borderRadius: '12px',
+              marginBottom: '32px'
+            }}>
             <h3 style={{
               margin: '0 0 20px 0',
               color: '#2c3e50',
@@ -340,6 +649,7 @@ function CartosoftIntegration() {
               </button>
             </div>
           </form>
+          )}
 
           {/* Search Results */}
           {searchResults.length > 0 && (
