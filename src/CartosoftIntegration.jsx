@@ -97,7 +97,7 @@ function CartosoftIntegration() {
     setCartosoftAuth(prev => ({ ...prev, loading: true }));
 
     try {
-      console.log('🔐 Fazendo login no Cartosoft diretamente...');
+      console.log('🔐 Fazendo login no Cartosoft via backend...');
 
       const token = localStorage.getItem('token');
       if (!token) {
@@ -106,46 +106,35 @@ function CartosoftIntegration() {
         return;
       }
 
-      // Fazer login diretamente no Cartosoft (sem passar pelo backend)
-      const cartosoftResponse = await fetch('https://cartosoftweb.recivil.com.br/auth/realms/cartosoft/protocol/openid-connect/token', {
+      const response = await fetch(`${config.apiURL}/cartosoft-integration/login-with-credentials`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
-        body: new URLSearchParams({
-          grant_type: 'password',
-          client_id: 'cartosoft-web',
+        body: JSON.stringify({
           username: loginForm.username,
-          password: loginForm.password,
-          scope: 'openid'
+          password: loginForm.password
         })
       });
 
-      if (!cartosoftResponse.ok) {
-        const errorText = await cartosoftResponse.text();
-        throw new Error(`Login falhou: ${cartosoftResponse.status} - ${errorText}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Erro ${response.status}`);
       }
 
-      const tokenData = await cartosoftResponse.json();
-      console.log('✅ Login no Cartosoft bem-sucedido!');
-
-      // Extrair cookies se houver
-      const cookiesHeader = cartosoftResponse.headers.get('set-cookie');
-      let cookies = null;
-      if (cookiesHeader) {
-        cookies = cookiesHeader.split(';')[0]; // Pegar apenas o cookie principal
-      }
+      const loginData = await response.json();
+      console.log('✅ Login no Cartosoft bem-sucedido via backend!');
 
       setCartosoftAuth({
         isAuthenticated: true,
-        accessToken: tokenData.access_token,
-        cookies: cookies,
+        accessToken: loginData.accessToken,
+        cookies: loginData.cookies,
         loading: false
       });
 
-      // Enviar tokens para o backend após login bem-sucedido
-      await sendTokensToBackend(tokenData.access_token, cookies);
+      // Enviar tokens para o backend (opcional, para futuras sessões)
+      await sendTokensToBackend(loginData.accessToken, loginData.cookies);
 
       // Carregar opções após login
       setTimeout(() => loadSearchOptions(), 500);
