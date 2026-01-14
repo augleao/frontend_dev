@@ -27,6 +27,46 @@ function CartosoftIntegration() {
     ufs: []
   });
 
+  // Função para carregar opções de busca (municípios e UFs)
+  const loadSearchOptions = useCallback(async () => {
+    if (!cartosoftAuth.isAuthenticated) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Você precisa estar logado para acessar esta funcionalidade');
+        navigate('/login');
+        return;
+      }
+
+      const response = await fetch(`${config.apiURL}/cartosoft-integration/search-options-with-token`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          accessToken: cartosoftAuth.accessToken,
+          cookies: cartosoftAuth.cookies
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro ao carregar opções: ${response.status}`);
+      }
+
+      const optionsData = await response.json();
+      setSearchOptions({
+        municipios: optionsData.municipios || [],
+        ufs: optionsData.ufs || []
+      });
+
+    } catch (error) {
+      console.error('Erro ao carregar opções de busca:', error);
+      alert('Erro ao carregar opções de busca. Tente novamente.');
+    }
+  }, [cartosoftAuth.isAuthenticated, cartosoftAuth.accessToken, cartosoftAuth.cookies, navigate]);
+
   // useEffect para fazer login automático no Cartosoft ao carregar o componente
   useEffect(() => {
     const autoLoginCartosoft = async () => {
@@ -78,68 +118,20 @@ function CartosoftIntegration() {
     };
 
     autoLoginCartosoft();
-  }, [navigate]);
+  }, [navigate, loadSearchOptions]);
 
-  // Função para carregar opções de busca (municípios e UFs)
-  const loadSearchOptions = useCallback(async () => {
-    if (!cartosoftAuth.isAuthenticated) return;
-
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Você precisa estar logado para acessar esta funcionalidade');
-        navigate('/login');
-        return;
-      }
-
-      const response = await fetch(`${config.apiURL}/cartosoft-integration/search-options-with-token`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          accessToken: cartosoftAuth.accessToken,
-          cookies: cartosoftAuth.cookies
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSearchOptions(data);
-      } else {
-        console.error('Erro ao carregar opções:', response.status);
-        // Fallback para dados mockados se a API falhar
-        setSearchOptions({
-          municipios: [
-            { id: 1, nome: 'Belo Horizonte', uf: 'MG' },
-            { id: 2, nome: 'Contagem', uf: 'MG' },
-            { id: 3, nome: 'Betim', uf: 'MG' }
-          ],
-          ufs: [
-            { id: 1, sigla: 'MG', nome: 'Minas Gerais' },
-            { id: 2, sigla: 'SP', nome: 'São Paulo' },
-            { id: 3, sigla: 'RJ', nome: 'Rio de Janeiro' }
-          ]
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao carregar opções:', error);
-      // Fallback para dados mockados
-      setSearchOptions({
-        municipios: [
-          { id: 1, nome: 'Belo Horizonte', uf: 'MG' },
-          { id: 2, nome: 'Contagem', uf: 'MG' },
-          { id: 3, nome: 'Betim', uf: 'MG' }
-        ],
-        ufs: [
-          { id: 1, sigla: 'MG', nome: 'Minas Gerais' },
-          { id: 2, sigla: 'SP', nome: 'São Paulo' },
-          { id: 3, sigla: 'RJ', nome: 'Rio de Janeiro' }
-        ]
-      });
-    }
-  }, [cartosoftAuth, navigate]);
+  // Função para fazer logout do Cartosoft
+  const handleCartosoftLogout = () => {
+    setCartosoftAuth({
+      isAuthenticated: false,
+      accessToken: null,
+      cookies: null,
+      loading: false
+    });
+    setSearchOptions({ municipios: [], ufs: [] });
+    setSearchResults([]);
+    console.log('👋 Logout do Cartosoft realizado');
+  };
 
   // Carregar opções de filtro quando autenticado no Cartosoft
   useEffect(() => {
