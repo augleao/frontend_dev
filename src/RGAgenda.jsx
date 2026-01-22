@@ -17,6 +17,8 @@ export default function RGAgenda() {
   const [showModal, setShowModal] = useState(false);
   const [slotDate, setSlotDate] = useState(formatDate(new Date()));
   const [slotTime, setSlotTime] = useState('08:00');
+  const [clienteQuery, setClienteQuery] = useState('');
+  const [clienteSuggestions, setClienteSuggestions] = useState([]);
 
   useEffect(() => {
     loadMonth(month);
@@ -32,6 +34,26 @@ export default function RGAgenda() {
     const res = await fetch(`${API_BASE}${path}`, {...opts, headers});
     return res;
   }
+
+  // fetch cliente suggestions (debounced)
+  useEffect(() => {
+    if (!clienteQuery || clienteQuery.length < 2) { setClienteSuggestions([]); return; }
+    let mounted = true;
+    const t = setTimeout(async () => {
+      try {
+        let res = await apiFetch(`/rg/clientes?search=${encodeURIComponent(clienteQuery)}`);
+        if (!res.ok) {
+          // fallback to list
+          res = await apiFetch(`/rg/clientes`);
+        }
+        if (!res.ok) return;
+        const j = await res.json();
+        if (!mounted) return;
+        setClienteSuggestions(j.clientes || j || []);
+      } catch (e) { /* ignore */ }
+    }, 300);
+    return () => { mounted = false; clearTimeout(t); };
+  }, [clienteQuery]);
 
   async function loadMonth(m) {
     try {
@@ -149,11 +171,11 @@ export default function RGAgenda() {
           <div style={{ marginTop:12, padding:8, border:'1px solid #eee', borderRadius:6 }}>
             <h4 style={{ margin:0 }}>Abrir/Fechar Slot</h4>
             <div style={{ marginTop:8 }}>
-              <input type="date" value={slotDate} onChange={e=>setSlotDate(e.target.value)} />
-              <input type="time" value={slotTime} step={1800} onChange={e=>setSlotTime(e.target.value)} />
+              <input style={{ padding:6, borderRadius:6, border:'1px solid #ccc' }} type="date" value={slotDate} onChange={e=>setSlotDate(e.target.value)} />
+              <input style={{ padding:6, borderRadius:6, border:'1px solid #ccc', marginLeft:8 }} type="time" value={slotTime} step={1800} onChange={e=>setSlotTime(e.target.value)} />
               <div style={{ marginTop:8 }}>
-                <button className="btn" onClick={()=>toggleSlot(true)}>Abrir</button>
-                <button className="btn outline" onClick={()=>toggleSlot(false)} style={{ marginLeft:8 }}>Fechar</button>
+                <button className="btn" onClick={()=>toggleSlot(true)} style={{ padding:'6px 10px', borderRadius:6, background:'#2b7cff', color:'#fff', border:'none' }}>Abrir</button>
+                <button className="btn outline" onClick={()=>toggleSlot(false)} style={{ marginLeft:8, padding:'6px 10px', borderRadius:6 }}>Fechar</button>
               </div>
             </div>
           </div>
@@ -198,14 +220,26 @@ export default function RGAgenda() {
           <div className="modal-content">
             <h3>{editing.id ? 'Editar Agendamento' : 'Novo Agendamento'}</h3>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-              <input placeholder="Nome do cliente" value={editing.nome_cliente} onChange={e=>setEditing({...editing, nome_cliente:e.target.value})} />
+              <div style={{ position:'relative' }}>
+                <input placeholder="Nome do cliente" value={editing.nome_cliente} onChange={e=>{ setEditing({...editing, nome_cliente:e.target.value, cliente_id: null}); setClienteQuery(e.target.value); }} />
+                {clienteSuggestions.length>0 && (
+                  <div style={{ position:'absolute', zIndex:40, background:'#fff', border:'1px solid #ddd', width:'100%', maxHeight:160, overflow:'auto' }}>
+                    {clienteSuggestions.map(c=> (
+                      <div key={c.id} style={{ padding:8, cursor:'pointer' }} onClick={()=>{ setEditing({...editing, nome_cliente:c.nome, cliente_id:c.id}); setClienteSuggestions([]); setClienteQuery(''); }}>
+                        <div style={{ fontWeight:600 }}>{c.nome}</div>
+                        <div className="small">{c.cpf || c.rg || c.telefone}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <input type="date" value={editing.data} onChange={e=>setEditing({...editing, data:e.target.value})} />
               <input type="time" value={editing.hora} onChange={e=>setEditing({...editing, hora:e.target.value})} />
               <textarea placeholder="Observações" value={editing.observacoes} onChange={e=>setEditing({...editing, observacoes:e.target.value})} />
-              <div style={{ display:'flex', gap:8 }}>
-                <button className="btn" onClick={saveEditing}>Salvar</button>
-                <button className="btn outline" onClick={()=>setShowModal(false)}>Fechar</button>
-              </div>
+                <div style={{ display:'flex', gap:8 }}>
+                  <button className="btn" onClick={saveEditing} style={{ padding:'8px 14px', borderRadius:6, background:'#2b7cff', color:'#fff', border:'none' }}>Salvar</button>
+                  <button className="btn outline" onClick={()=>setShowModal(false)} style={{ padding:'8px 12px', borderRadius:6 }}>Fechar</button>
+                </div>
             </div>
           </div>
         </div>
