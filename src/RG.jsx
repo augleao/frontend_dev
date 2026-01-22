@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import MeusFechamentosRG from './RelatoriosCaixaDiarioRG';
 
 export default function RG() {
   const navigate = useNavigate();
@@ -146,13 +145,21 @@ export default function RG() {
           ))}
         </div>
 
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.9)',
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.08)'
-        }}>
-          <MeusFechamentosRG />
+        <div style={{ textAlign: 'center', marginTop: 12 }}>
+          <button
+            onClick={() => navigate('/rg/meus-fechamentos')}
+            style={{
+              background: '#1f8ef1',
+              color: 'white',
+              border: 'none',
+              padding: '12px 20px',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontWeight: 600
+            }}
+          >
+            Ver Fechamentos de Caixa (RG)
+          </button>
         </div>
       </main>
     </div>
