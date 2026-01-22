@@ -7,6 +7,9 @@
     {
       "path": "../backend_dev",
       "name": "backend_dev"
+    },
+    {
+      "path": "../frontend_externo_dev"
     }
   ],
   "settings": {}
