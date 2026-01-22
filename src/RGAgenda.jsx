@@ -107,7 +107,7 @@ export default function RGAgenda() {
   }
 
   async function deleteAppt(id){
-    if (!confirm('Excluir agendamento?')) return;
+    if (!window.confirm('Excluir agendamento?')) return;
     try{
       const r = await apiFetch(`/rg/agendamentos/${id}`, { method: 'DELETE' });
       if (!r.ok) throw new Error('erro');
