@@ -53,6 +53,9 @@ import CompararAtosDap from './components/ia/CompararAtosDap';
 import CookieConsent from './components/CookieConsent';
 import { trackEvent, isConsentGiven } from './utils/tracker';
 import CartosoftIntegration from './CartosoftIntegration';
+import RG from './RG';
+import RGCaixa from './RGCaixa';
+import RGAgenda from './RGAgenda';
 
 
 
@@ -119,6 +122,30 @@ function App() {
           element={
             <PrivateRoute>
               <Home2 />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/rg"
+          element={
+            <PrivateRoute>
+              <RG />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/rg/caixa"
+          element={
+            <PrivateRoute>
+              <RGCaixa />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/rg/agenda"
+          element={
+            <PrivateRoute>
+              <RGAgenda />
             </PrivateRoute>
           }
         />

@@ -73,6 +73,15 @@ function Home() {
 
   // Integração Cartosoft
   // Integração Cartosoft removida temporariamente (suspensa)
+  // Módulo RG (Carteira de Identidade)
+  featureCards.push({
+    id: 'rg-module',
+    title: 'RG (Carteira de Identidade)',
+    description: 'Emissão de RG — financeiro e agenda de atendimentos',
+    icon: '🪪',
+    color: '#1f8ef1',
+    route: '/rg'
+  });
 
   const futureFeatures = [
     {
