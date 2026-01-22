@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 export default function RG() {
   const navigate = useNavigate();
 
-  import React from 'react';
-  import { useNavigate } from 'react-router-dom';
+  const modules = [
+    {
+      id: 'rg-caixa',
       title: 'Financeiro (Caixa)',
       description: 'Abertura/fechamento e movimentação do caixa para emissão de RG',
       icon: '💰',
@@ -20,19 +21,18 @@ export default function RG() {
       color: '#2563eb',
       route: '/rg/agenda'
     }
+    ,{
+      id: 'rg-fechamentos',
+      title: 'Fechamentos de Caixa',
+      description: 'Visualize os fechamentos diários do caixa RG',
+      icon: '🗂️',
+      color: '#1f8ef1',
+      route: '/rg/meus-fechamentos'
+    }
   ];
 
   const cardStyle = (color) => ({
     background: 'white',
-      ,
-      {
-        id: 'rg-fechamentos',
-        title: 'Fechamentos de Caixa',
-        description: 'Visualizar relatórios e fechamentos do caixa (RG)',
-        icon: '🗂️',
-        color: '#f39c12',
-        route: '/rg/meus-fechamentos'
-      }
     borderRadius: '16px',
     padding: '32px 24px',
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
@@ -58,7 +58,22 @@ export default function RG() {
         background: 'rgba(44, 62, 80, 0.95)',
         backdropFilter: 'blur(10px)',
         padding: '16px 32px',
-          </div>
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+      }}>
+        <h1 style={{
+          color: 'white',
+          margin: 0,
+          fontSize: '20px',
+          fontWeight: '600',
+          letterSpacing: '0.5px'
+        }}>
+          RG — Emissão da Carteira de Identidade
+        </h1>
+      </header>
+
       <main style={{
         maxWidth: '1200px',
         margin: '0 auto',
@@ -138,22 +153,7 @@ export default function RG() {
           ))}
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: 12 }}>
-          <button
-            onClick={() => navigate('/rg/meus-fechamentos')}
-            style={{
-              background: '#1f8ef1',
-              color: 'white',
-              border: 'none',
-              padding: '12px 20px',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontWeight: 600
-            }}
-          >
-            Ver Fechamentos de Caixa (RG)
-          </button>
-        </div>
+        {/* botão de fechamentos agora apresentado como cartão entre os módulos */}
       </main>
     </div>
   );
