@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 const API_BASE = window.API_BASE || '/api';
 const authToken = localStorage.getItem('token') || localStorage.getItem('rg_token');
@@ -19,6 +19,8 @@ export default function RGAgenda() {
   const [slotTime, setSlotTime] = useState('08:00');
   const [clienteQuery, setClienteQuery] = useState('');
   const [clienteSuggestions, setClienteSuggestions] = useState([]);
+  const nameInputRef = useRef(null);
+  const dateInputRef = useRef(null);
 
   useEffect(() => {
     loadMonth(month);
@@ -84,10 +86,18 @@ export default function RGAgenda() {
 
   function openNew(date){
     setEditing({ id: null, nome_cliente: '', data: date, hora: '08:00', observacoes: '' });
+    setClienteQuery('');
+    setClienteSuggestions([]);
     setShowModal(true);
   }
 
-  function openEdit(a){ setEditing({...a}); setShowModal(true); }
+  function openEdit(a){ setEditing({...a}); setClienteQuery(''); setClienteSuggestions([]); setShowModal(true); }
+
+  useEffect(() => {
+    if (showModal && nameInputRef.current) {
+      try { nameInputRef.current.focus(); } catch(e){}
+    }
+  }, [showModal]);
 
   async function saveEditing(){
     if (!editing) return;
@@ -185,7 +195,7 @@ export default function RGAgenda() {
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <h3 style={{ margin:0 }}>Atendimentos de {day}</h3>
             <div>
-              <button className="btn" onClick={()=>openNew(day)}>Adicionar</button>
+              <button className="btn" onClick={()=>openNew(day)}>Adicionar Agendamento</button>
             </div>
           </div>
 
@@ -221,11 +231,25 @@ export default function RGAgenda() {
             <h3>{editing.id ? 'Editar Agendamento' : 'Novo Agendamento'}</h3>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               <div style={{ position:'relative' }}>
-                <input placeholder="Nome do cliente" value={editing.nome_cliente} onChange={e=>{ setEditing({...editing, nome_cliente:e.target.value, cliente_id: null}); setClienteQuery(e.target.value); }} />
+                <input ref={nameInputRef} autoFocus placeholder="Nome do cliente" value={editing.nome_cliente} onChange={e=>{ setEditing({...editing, nome_cliente:e.target.value, cliente_id: null}); setClienteQuery(e.target.value); }} onKeyDown={e=>{
+                  if (e.key === 'Enter'){
+                    if (clienteSuggestions && clienteSuggestions.length>0){
+                      const c = clienteSuggestions[0];
+                      setEditing(prev=>({...prev, nome_cliente: c.nome, cliente_id: c.id}));
+                      setClienteSuggestions([]);
+                      setClienteQuery('');
+                      if (dateInputRef.current) dateInputRef.current.focus();
+                      e.preventDefault();
+                    } else {
+                      if (dateInputRef.current) dateInputRef.current.focus();
+                      e.preventDefault();
+                    }
+                  }
+                }} />
                 {clienteSuggestions.length>0 && (
                   <div style={{ position:'absolute', zIndex:40, background:'#fff', border:'1px solid #ddd', width:'100%', maxHeight:160, overflow:'auto' }}>
                     {clienteSuggestions.map(c=> (
-                      <div key={c.id} style={{ padding:8, cursor:'pointer' }} onClick={()=>{ setEditing({...editing, nome_cliente:c.nome, cliente_id:c.id}); setClienteSuggestions([]); setClienteQuery(''); }}>
+                      <div key={c.id} style={{ padding:8, cursor:'pointer' }} onClick={()=>{ setEditing(prev=>({...prev, nome_cliente:c.nome, cliente_id:c.id})); setClienteSuggestions([]); setClienteQuery(''); if (dateInputRef.current) dateInputRef.current.focus(); }}>
                         <div style={{ fontWeight:600 }}>{c.nome}</div>
                         <div className="small">{c.cpf || c.rg || c.telefone}</div>
                       </div>
@@ -233,7 +257,7 @@ export default function RGAgenda() {
                   </div>
                 )}
               </div>
-              <input type="date" value={editing.data} onChange={e=>setEditing({...editing, data:e.target.value})} />
+              <input ref={dateInputRef} type="date" value={editing.data} onChange={e=>setEditing({...editing, data:e.target.value})} />
               <input type="time" value={editing.hora} onChange={e=>setEditing({...editing, hora:e.target.value})} />
               <textarea placeholder="Observações" value={editing.observacoes} onChange={e=>setEditing({...editing, observacoes:e.target.value})} />
                 <div style={{ display:'flex', gap:8 }}>
