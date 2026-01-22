@@ -72,14 +72,7 @@ function Home() {
   });
 
   // Integração Cartosoft
-  featureCards.push({
-    id: 'cartosoft-integration',
-    title: 'CARTOSOFT WEB',
-    description: 'Integração com o sistema Cartosoft para busca de registros civis',
-    icon: '🌐',
-    color: '#e74c3c',
-    route: '/cartosoft-integration'
-  });
+  // Integração Cartosoft removida temporariamente (suspensa)
 
   const futureFeatures = [
     {
