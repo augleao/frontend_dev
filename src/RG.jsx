@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import MeusFechamentosRG from './RelatoriosCaixaDiarioRG';
 
 export default function RG() {
   const navigate = useNavigate();
@@ -46,6 +47,10 @@ export default function RG() {
             <p style={{ color: '#6b7280' }}>{m.description}</p>
           </div>
         ))}
+      </div>
+      {/* Exibe os fechamentos de caixa RG abaixo dos cards */}
+      <div style={{ marginTop: 28 }}>
+        <MeusFechamentosRG />
       </div>
     </div>
   );
