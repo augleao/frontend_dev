@@ -47,7 +47,7 @@ export default function RGAgenda() {
     let mounted = true;
     const t = setTimeout(async () => {
       try {
-        let res = await apiFetch(`/rg/clientes?search=${encodeURIComponent(clienteQuery)}`);
+        let res = await apiFetch(`/rg/clientes?query=${encodeURIComponent(clienteQuery)}`);
         if (!res.ok) {
           // fallback to list
           res = await apiFetch(`/rg/clientes`);
