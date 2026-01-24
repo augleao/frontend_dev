@@ -20,6 +20,7 @@ import {
   FaUsers
 } from 'react-icons/fa';
 import ConfigurarServentia from './ConfigurarServentia';
+import ConfigurarIA from './ConfigurarIA';
 import { useMemo, useState, useEffect } from 'react';
 import config from './config';
 import { Link, useNavigate } from 'react-router-dom';
@@ -27,6 +28,7 @@ import { Link, useNavigate } from 'react-router-dom';
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [showConfigurar, setShowConfigurar] = useState(false);
+  const [showConfigIA, setShowConfigIA] = useState(false);
   const [configModalFocus, setConfigModalFocus] = useState(null);
   const [configOpenAgents, setConfigOpenAgents] = useState(false);
   const [earning, setEarning] = useState(null);
@@ -180,6 +182,10 @@ export default function AdminDashboard() {
             <button type="button" className="topbar-action-btn" onClick={() => { setShowConfigurar(true); setConfigModalFocus(null); setConfigOpenAgents(true); }}>
               <FaCog size={16} />
               Agentes de IA
+            </button>
+            <button type="button" className="topbar-action-btn" onClick={() => setShowConfigIA(true)}>
+              <FaRobot size={16} />
+              Engine de IA
             </button>
           </div>
         </div>
@@ -367,6 +373,14 @@ export default function AdminDashboard() {
         <div className="dashboard-modal-overlay">
           <div className="dashboard-modal">
             <ConfigurarServentia onClose={() => { setShowConfigurar(false); setConfigModalFocus(null); setConfigOpenAgents(false); }} focusField={configModalFocus} openAgents={configOpenAgents} />
+          </div>
+        </div>
+      )}
+
+      {showConfigIA && (
+        <div className="dashboard-modal-overlay">
+          <div className="dashboard-modal">
+            <ConfigurarIA onClose={() => setShowConfigIA(false)} />
           </div>
         </div>
       )}
