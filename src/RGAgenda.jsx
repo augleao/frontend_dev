@@ -362,9 +362,9 @@ export default function RGAgenda() {
       </div>
 
       {showModal && editing && (
-        <div className="modal" style={{ display:'flex' }}>
-          <div className="modal-content">
-            <h3>{editing.id ? 'Editar Agendamento' : 'Novo Agendamento'}</h3>
+        <div className="modal" style={{ position:'fixed', left:0, top:0, right:0, bottom:0, background:'rgba(2,6,23,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999 }}>
+          <div className="modal-content" style={{ background:'#fff', borderRadius:12, padding:20, maxWidth:800, width:'95%', boxShadow:'0 12px 40px rgba(2,6,23,0.12)', position:'relative' }}>
+            <h3 style={{ marginTop:0 }}>{editing.id ? 'Editar Agendamento' : 'Novo Agendamento'}</h3>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               <div style={{ position:'relative' }}>
                 <input ref={nameInputRef} autoFocus placeholder="Nome do cliente" value={editing.nome_cliente} onChange={e=>{ setEditing({...editing, nome_cliente:e.target.value, cliente_id: null}); setClienteQuery(e.target.value); }} onKeyDown={e=>{
