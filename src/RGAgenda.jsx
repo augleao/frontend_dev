@@ -34,16 +34,20 @@ export default function RGAgenda() {
 
   function isWeekend(dateStr){
     try{
-      const d = new Date(dateStr + 'T00:00:00');
-      const day = d.getDay(); // 0 = Sunday, 6 = Saturday
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const dt = new Date(y, m-1, d);
+      const day = dt.getDay(); // 0 = Sunday, 6 = Saturday
       return day === 0 || day === 6;
     }catch(e){ return false; }
   }
 
   function nextWeekday(dateStr){
-    let d = new Date(dateStr + 'T00:00:00');
-    do { d.setDate(d.getDate()+1); } while (d.getDay()===0 || d.getDay()===6);
-    return d.toISOString().slice(0,10);
+    try{
+      const [y,m,day] = dateStr.split('-').map(Number);
+      let d = new Date(y, m-1, day);
+      do { d.setDate(d.getDate()+1); } while (d.getDay()===0 || d.getDay()===6);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }catch(e){ return dateStr; }
   }
 
   function findSlotByTime(time){
