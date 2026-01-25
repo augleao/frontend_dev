@@ -182,11 +182,11 @@ xml_obito                 → Geração de XML para óbitos
 
 **Objetivo:** Determinar se o documento é manuscrito ou digitado
 
-**Função:** `identifyEscritaWithGeminiImage(imagePath, status, ctx)`
+**Função:** `identifyEscritaWithIAImage(imagePath, status, ctx)`
 
 **Processo:**
 ```
-1. Enviar imagem para Gemini Vision
+1. Enviar imagem para agente IA multimodal (ex.: Gemini ou DeepSeek)
    → Retorna: writingType ('manuscript' ou 'printed') + confidence (0-1)
 
 2. Se confiança baixa:
@@ -425,8 +425,8 @@ Alternativamente, o backend pode gerar XML diretamente com Gemini:
      │           │
      │           ├─ Loop por arquivo/imagem:
      │           │  │
-     │           │  ├─ identifyEscritaWithGeminiImage()
-     │           │  │  └─→ Tipo: manuscript vs printed
+   │           │  ├─ identifyEscritaWithIAImage()
+   │           │  │  └─→ Tipo: manuscript vs printed
      │           │  │
      │           │  ├─ Se manuscrito (batch):
      │           │  │  └─→ analyzeRecordFromImageWithGemini()
