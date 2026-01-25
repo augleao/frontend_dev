@@ -25,8 +25,8 @@
 .rg-panel .month-view,.rg-panel .day-view{transition:opacity .28s ease, transform .28s ease; will-change:opacity,transform}
 .rg-panel .month-view{opacity:1;transform:translateY(0)}
 .rg-panel.day-mode .month-view{opacity:0;transform:translateY(6px);pointer-events:none}
-.rg-panel .day-view{opacity:0;transform:translateY(6px);position:absolute;left:0;right:0;top:64px;bottom:0;overflow:auto;background:transparent;pointer-events:none}
-.rg-panel.day-mode .day-view{opacity:1;transform:translateY(0);position:absolute;z-index:5;pointer-events:auto}
+.rg-panel .day-view{opacity:0;transform:translateY(6px);position:absolute;left:0;right:0;top:64px;bottom:auto;overflow:visible;background:transparent;pointer-events:none}
+.rg-panel.day-mode .day-view{opacity:1;transform:translateY(0);position:relative;z-index:5;pointer-events:auto;overflow:visible}
 .rg-slot-status{padding:4px 8px;border-radius:8px;font-weight:600}
 .rg-slot-open{background:#e6fffa;color:#065f46;border:1px solid #bff0e0}
 .rg-slot-closed{background:#fff1f2;color:#981b1b;border:1px solid #ffd7db}

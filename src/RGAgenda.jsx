@@ -299,14 +299,15 @@ export default function RGAgenda() {
           </div>
           <div className="month-view" style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:6, marginTop:6 }}>
             {(() => {
-              const [y,m] = month.split('-').map(Number);
-              const first = new Date(y, m-1, 1);
-              const last = new Date(y, m, 0);
+              const first = new Date(`${month}-01`);
+              const y = first.getFullYear();
+              const mIndex = first.getMonth(); // 0-based
+              const last = new Date(y, mIndex + 1, 0);
               const blanks = first.getDay();
               const cells = [];
               for (let i=0;i<blanks;i++) cells.push(<div key={'b'+i} />);
               for (let d=1; d<=last.getDate(); d++) {
-                const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const dateStr = `${y}-${String(mIndex+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 const meta = daysMeta[dateStr];
                 const slotsCount = slotsByDay[dateStr] || 0;
                 const isToday = dateStr===new Date().toISOString().slice(0,10);
