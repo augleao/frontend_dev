@@ -27,6 +27,29 @@ export default function RGAgenda() {
   const dateInputRef = useRef(null);
   const [slots, setSlots] = useState([]);
   const [slotsByDay, setSlotsByDay] = useState({});
+  const [calendarMode, setCalendarMode] = useState('month'); // 'month' or 'day'
+
+  const OPEN_TIME_START = '09:00';
+  const OPEN_TIME_END = '17:00';
+
+  function isWeekend(dateStr){
+    try{
+      const d = new Date(dateStr + 'T00:00:00');
+      const day = d.getDay(); // 0 = Sunday, 6 = Saturday
+      return day === 0 || day === 6;
+    }catch(e){ return false; }
+  }
+
+  function nextWeekday(dateStr){
+    let d = new Date(dateStr + 'T00:00:00');
+    do { d.setDate(d.getDate()+1); } while (d.getDay()===0 || d.getDay()===6);
+    return d.toISOString().slice(0,10);
+  }
+
+  function findSlotByTime(time){
+    if (!slots || !Array.isArray(slots)) return null;
+    return slots.find(s => (s.hora||'').slice(0,5) === time);
+  }
 
   useEffect(() => {
     loadMonth(month);
@@ -199,6 +222,9 @@ export default function RGAgenda() {
 
   async function toggleSlot(open){
     try{
+      if (isWeekend(slotDate) && open) { alert('Fins de semana permanecem fechados. Escolha outro dia.'); return; }
+      // ensure time within allowed hours
+      if (slotTime < OPEN_TIME_START || slotTime > OPEN_TIME_END) { alert(`Horário permitido: ${OPEN_TIME_START} - ${OPEN_TIME_END}`); return; }
       const r = await apiFetch(`/rg/agendamentos/slots`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ data: slotDate, hora: slotTime+':00', aberto: !!open }) });
       if (!r.ok) throw new Error('erro');
       alert('Operação concluída'); loadMonth(month);
@@ -210,8 +236,14 @@ export default function RGAgenda() {
   async function toggleRange(open){
     // generate times from slotTime to rangeEnd with rangeStep minutes
     try{
-      const [sh, sm] = slotTime.split(':').map(Number);
-      const [eh, em] = rangeEnd.split(':').map(Number);
+      if (isWeekend(slotDate) && open) { alert('Fins de semana permanecem fechados. Escolha outro dia.'); return; }
+      // clamp start/end within allowed hours
+      let s = slotTime;
+      let e = rangeEnd;
+      if (s < OPEN_TIME_START) { s = OPEN_TIME_START; }
+      if (e > OPEN_TIME_END) { e = OPEN_TIME_END; }
+      const [sh, sm] = s.split(':').map(Number);
+      const [eh, em] = e.split(':').map(Number);
       let start = new Date(0,0,0,sh,sm,0,0);
       const end = new Date(0,0,0,eh,em,0,0);
       const promises = [];
@@ -219,7 +251,10 @@ export default function RGAgenda() {
         const hh = String(start.getHours()).padStart(2,'0');
         const mm = String(start.getMinutes()).padStart(2,'0');
         const timeStr = `${hh}:${mm}:00`;
-        promises.push(apiFetch(`/rg/agendamentos/slots`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ data: slotDate, hora: timeStr, aberto: !!open }) }));
+        // only post times inside allowed window
+        if (timeStr >= OPEN_TIME_START+':00' && timeStr <= OPEN_TIME_END+':00'){
+          promises.push(apiFetch(`/rg/agendamentos/slots`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ data: slotDate, hora: timeStr, aberto: !!open }) }));
+        }
         start = new Date(start.getTime() + (rangeStep||30)*60000);
       }
       const results = await Promise.all(promises);
@@ -229,6 +264,13 @@ export default function RGAgenda() {
     } catch (e){ alert('Erro na operação de faixa'); }
     // refresh slots for selected date
     loadSlots(slotDate);
+  }
+
+  async function handleOpenNextWeekday(){
+    const next = nextWeekday(slotDate);
+    setSlotDate(next);
+    // allow state to update, then open the slot
+    setTimeout(()=>toggleSlot(true), 50);
   }
 
   async function toggleSingleSlot(hora, open){
@@ -244,6 +286,7 @@ export default function RGAgenda() {
       <h1>Agenda de Atendimentos — RG (Escrevente)</h1>
       <div style={{ display:'flex', gap:20, alignItems:'flex-start' }}>
         <div style={{ width:360 }}>
+          <div className={`rg-panel ${calendarMode==='day' ? 'day-mode' : ''}`}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <div style={{ fontWeight:700 }}>{new Date(month+'-01').toLocaleString('pt-BR', { month:'long', year:'numeric' })}</div>
             <div>
@@ -254,7 +297,7 @@ export default function RGAgenda() {
           <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:6, marginTop:8 }}>
             {['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((w,i)=>(<div key={i} style={{ textAlign:'center', fontSize:12, color:'#666' }}>{w}</div>))}
           </div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:6, marginTop:6 }}>
+          <div className="month-view" style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:6, marginTop:6 }}>
             {(() => {
               const [y,m] = month.split('-').map(Number);
               const first = new Date(y, m-1, 1);
@@ -267,8 +310,10 @@ export default function RGAgenda() {
                 const meta = daysMeta[dateStr];
                 const slotsCount = slotsByDay[dateStr] || 0;
                 const isToday = dateStr===new Date().toISOString().slice(0,10);
+                const weekend = isWeekend(dateStr);
+                const cellClass = `rg-cell ${!weekend ? 'selectable' : ''} ${isToday ? 'today' : ''} ${weekend ? 'rg-weekend' : ''}`.trim();
                 cells.push(
-                  <div key={dateStr} className={isToday?'today':''} style={{ border:'1px solid #eee', padding:6, minHeight:48, cursor:'pointer', position:'relative' }} onClick={() => setDay(dateStr)}>
+                  <div key={dateStr} className={cellClass} style={{ padding:6, position:'relative' }} onClick={() => { if (!weekend) { setDay(dateStr); setCalendarMode('day'); } }}>
                     <div style={{ fontSize:12 }}>{d}</div>
                     {meta && meta.total>0 && <div style={{ marginTop:6 }}><span className="badge">{meta.total}</span></div>}
                     {slotsCount>0 && (
@@ -282,6 +327,65 @@ export default function RGAgenda() {
           </div>
 
           {/* Slot configuration moved to modal - use "Configurar Agenda" button to open */}
+            <div className="day-view">
+            {calendarMode === 'day' && (
+          <div style={{ marginTop:12 }} className="rg-card">
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div style={{ fontWeight:700 }}>{new Date(day).toLocaleDateString()}</div>
+              <div style={{ display:'flex', gap:8 }}>
+                <button className="rg-btn rg-btn-outline" onClick={() => setCalendarMode('month')}>Voltar ao Mês</button>
+              </div>
+            </div>
+            <div style={{ marginTop:12 }}>
+              {(() => {
+                const slotsList = [];
+                const start = 9 * 60; const end = 17 * 60; const step = 30;
+                for (let t = start; t <= end; t += step){
+                  const hh = String(Math.floor(t/60)).padStart(2,'0');
+                  const mm = String(t%60).padStart(2,'0');
+                  const time = `${hh}:${mm}`;
+                    const matches = appointments.filter(a => (a.hora||'').slice(0,5) === time);
+                    const slotInfo = findSlotByTime(time);
+                    slotsList.push({ time, matches, slotInfo });
+                }
+                return (
+                  <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                      {slotsList.map(s => (
+                        <div key={s.time} className="rg-card" style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                          <div style={{ display:'flex', gap:12, alignItems:'center' }}>
+                            <div style={{ fontWeight:700 }}>{s.time}</div>
+                            <div className="rg-small">{s.matches.length>0 ? `${s.matches.length} agendamento(s)` : 'Livre'}</div>
+                          </div>
+                          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                            {s.slotInfo ? (
+                              <div className={`rg-slot-status ${s.slotInfo.aberto ? 'rg-slot-open' : 'rg-slot-closed'}`}>{s.slotInfo.aberto ? 'Aberto' : 'Fechado'}</div>
+                            ) : (
+                              <div className="rg-slot-status rg-slot-free">Livre</div>
+                            )}
+                            {s.matches.length>0 ? s.matches.map(m => (
+                              <div key={m.id} style={{ padding:8, borderRadius:8, background:'#fff' }}>{m.nome_cliente || m.telefone}</div>
+                            )) : (
+                              s.slotInfo ? (
+                                s.slotInfo.aberto ? (
+                                  <button className="rg-btn rg-btn-outline" onClick={()=>toggleSingleSlot(s.time, false)}>Fechar</button>
+                                ) : (
+                                  <button className="rg-btn rg-btn-success" onClick={()=>toggleSingleSlot(s.time, true)}>Abrir</button>
+                                )
+                              ) : (
+                                <button className="rg-btn rg-btn-success" onClick={()=>{ setSlotDate(day); setSlotTime(s.time); toggleSlot(true); }}>Abrir</button>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+            )}
+            </div>
+          </div>
         </div>
 
         <div style={{ flex:1 }}>
@@ -397,10 +501,13 @@ export default function RGAgenda() {
                 <input className="rg-input" type="time" value={slotTime} step={1800} onChange={e=>setSlotTime(e.target.value)} />
               </div>
               <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-                <button className="rg-btn rg-btn-primary" onClick={()=>toggleSlot(true)}>Abrir</button>
+                <button className="rg-btn rg-btn-outline" onClick={handleOpenNextWeekday}>Abrir Próximo Dia Útil</button>
+                <button className="rg-btn rg-btn-primary" onClick={()=>toggleSlot(true)} disabled={isWeekend(slotDate)}>Abrir</button>
                 <button className="rg-btn rg-btn-outline" onClick={()=>toggleSlot(false)}>Fechar</button>
               </div>
             </div>
+
+            <div style={{ marginTop:8 }} className="rg-small">Horário permitido: <strong>09:00 — 17:00</strong>. Finais de semana ficam fechados (sábado e domingo).</div>
 
             <div style={{ marginTop:12, borderTop:'1px dashed #eee', paddingTop:12 }}>
               <div className="rg-row">
@@ -410,7 +517,7 @@ export default function RGAgenda() {
                 <input className="rg-input" type="time" value={rangeEnd} onChange={e=>setRangeEnd(e.target.value)} />
                 <input className="rg-input" type="number" min={5} step={5} value={rangeStep} onChange={e=>setRangeStep(Number(e.target.value))} style={{width:92}} />
                 <div className="rg-small">min</div>
-                <button className="rg-btn rg-btn-primary" onClick={()=>toggleRange(true)}>Abrir Faixa</button>
+                <button className="rg-btn rg-btn-primary" onClick={()=>toggleRange(true)} disabled={isWeekend(slotDate)}>Abrir Faixa</button>
                 <button className="rg-btn rg-btn-outline" onClick={()=>toggleRange(false)}>Fechar Faixa</button>
               </div>
               <div style={{ marginTop:8 }} className="rg-small">Use faixas para abrir/fechar vários horários de uma vez.</div>

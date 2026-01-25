@@ -18,3 +18,16 @@
 .rg-col{min-width:140px}
 .rg-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 .rg-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#e9f3ff;border:1px solid #d8eaff;color:#062a6a}
+.rg-cell{border:1px solid transparent;border-radius:8px;padding:8px;min-height:48px;transition:all .12s ease;cursor:pointer;background:transparent}
+.rg-cell.selectable:hover{box-shadow:0 6px 18px rgba(37,99,235,0.08);transform:translateY(-2px);border-color:rgba(37,99,235,0.06)}
+.rg-weekend{opacity:0.55;cursor:not-allowed;color:#4a6b9a;background:transparent}
+.rg-panel{position:relative}
+.rg-panel .month-view,.rg-panel .day-view{transition:opacity .28s ease, transform .28s ease; will-change:opacity,transform}
+.rg-panel .month-view{opacity:1;transform:translateY(0)}
+.rg-panel.day-mode .month-view{opacity:0;transform:translateY(6px);pointer-events:none}
+.rg-panel .day-view{opacity:0;transform:translateY(6px);position:absolute;left:0;right:0;top:0}
+.rg-panel.day-mode .day-view{opacity:1;transform:translateY(0);position:relative}
+.rg-slot-status{padding:4px 8px;border-radius:8px;font-weight:600}
+.rg-slot-open{background:#e6fffa;color:#065f46;border:1px solid #bff0e0}
+.rg-slot-closed{background:#fff1f2;color:#981b1b;border:1px solid #ffd7db}
+.rg-slot-free{background:#eef2ff;color:#1e3a8a;border:1px solid #dbeafe}
