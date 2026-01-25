@@ -4,13 +4,29 @@ import './RGAgenda.css';
 
 const authToken = localStorage.getItem('token') || localStorage.getItem('rg_token');
 
-function formatDate(d) {
-  return d.toISOString().slice(0,10);
+// Always derive date strings in local time to avoid UTC/off-by-one shifts
+function toYMD(dateObj) {
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const d = String(dateObj.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
+function formatDate(d) {
+  return toYMD(d);
+}
+
+function formatDayLabel(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString();
+}
+
+const todayDefault = toYMD(new Date());
+const monthDefault = todayDefault.slice(0, 7);
+
 export default function RGAgenda() {
-  const [month, setMonth] = useState('2026-01');
-  const [day, setDay] = useState(() => new Date().toISOString().slice(0,10));
+  const [month, setMonth] = useState(monthDefault);
+  const [day, setDay] = useState(todayDefault);
   const [daysMeta, setDaysMeta] = useState({});
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -68,8 +84,9 @@ export default function RGAgenda() {
 
   // Always open in current month on mount
   useEffect(() => {
-    const currentMonth = new Date().toISOString().slice(0,7);
-    const currentDay = new Date().toISOString().slice(0,10);
+    const now = new Date();
+    const currentMonth = toYMD(now).slice(0,7);
+    const currentDay = toYMD(now);
     if (month !== currentMonth) setMonth(currentMonth);
     if (day !== currentDay) setDay(currentDay);
     setCalendarMode('month');
@@ -333,9 +350,9 @@ export default function RGAgenda() {
           </div>
           <div className="month-view" style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:6, marginTop:6 }}>
             {(() => {
-              const first = new Date(`${month}-01`);
-              const y = first.getFullYear();
-              const mIndex = first.getMonth(); // 0-based
+              const [y, mm] = month.split('-').map(Number);
+              const first = new Date(y, mm - 1, 1);
+              const mIndex = mm - 1; // 0-based
               const last = new Date(y, mIndex + 1, 0);
               const blanks = first.getDay();
               const cells = [];
@@ -344,7 +361,7 @@ export default function RGAgenda() {
                 const dateStr = `${y}-${String(mIndex+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 const meta = daysMeta[dateStr];
                 const slotsCount = slotsByDay[dateStr] || 0;
-                const isToday = dateStr===new Date().toISOString().slice(0,10);
+                const isToday = dateStr===toYMD(new Date());
                 const weekend = isWeekend(dateStr);
                 const cellClass = `rg-cell ${!weekend ? 'selectable' : ''} ${isToday ? 'today' : ''} ${weekend ? 'rg-weekend' : ''}`.trim();
                 cells.push(
@@ -366,7 +383,7 @@ export default function RGAgenda() {
             {calendarMode === 'day' && (
           <div style={{ marginTop:12 }} className="rg-card">
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-              <div style={{ fontWeight:700 }}>{new Date(day).toLocaleDateString()}</div>
+              <div style={{ fontWeight:700 }}>{formatDayLabel(day)}</div>
               <div style={{ display:'flex', gap:8 }}>
                 <button className="rg-btn rg-btn-outline" onClick={() => setCalendarMode('month')}>Voltar ao Mês</button>
               </div>
