@@ -64,6 +64,15 @@ export default function RGAgenda() {
     loadDay(day);
   }, [day]);
 
+  // Always open in current month on mount
+  useEffect(() => {
+    const currentMonth = new Date().toISOString().slice(0,7);
+    const currentDay = new Date().toISOString().slice(0,10);
+    if (month !== currentMonth) setMonth(currentMonth);
+    if (day !== currentDay) setDay(currentDay);
+    setCalendarMode('month');
+  }, []);
+
   async function apiFetch(path, opts={}){
     const headers = opts.headers || {};
     if (authToken) headers.Authorization = `Bearer ${authToken}`;
@@ -191,7 +200,7 @@ export default function RGAgenda() {
     setMonth(newMonth);
     setDay(`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-01`); // reset day to 1st of new month
     setCalendarMode('month'); // reset to month view when navigating months
-    setTimeout(() => setMonthChanging(false), 100);
+    setTimeout(() => setMonthChanging(false), 500);
   }
 
   function openNew(date){
