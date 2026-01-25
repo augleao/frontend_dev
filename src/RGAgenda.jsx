@@ -28,6 +28,7 @@ export default function RGAgenda() {
   const [slots, setSlots] = useState([]);
   const [slotsByDay, setSlotsByDay] = useState({});
   const [calendarMode, setCalendarMode] = useState('month'); // 'month' or 'day'
+  const [monthChanging, setMonthChanging] = useState(false);
 
   const OPEN_TIME_START = '09:00';
   const OPEN_TIME_END = '17:00';
@@ -182,12 +183,15 @@ export default function RGAgenda() {
   }
 
   function changeMonth(delta){
+    if (monthChanging) return;
+    setMonthChanging(true);
     const [y, m] = month.split('-').map(Number);
     const dt = new Date(y, m-1 + delta, 1);
     const newMonth = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
     setMonth(newMonth);
     setDay(`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-01`); // reset day to 1st of new month
     setCalendarMode('month'); // reset to month view when navigating months
+    setTimeout(() => setMonthChanging(false), 100);
   }
 
   function openNew(date){
@@ -309,8 +313,8 @@ export default function RGAgenda() {
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <div style={{ fontWeight:700 }}>{new Date(month+'-01').toLocaleString('pt-BR', { month:'long', year:'numeric' })}</div>
             <div>
-              <button className="btn outline" onClick={() => changeMonth(-1)}>‹</button>
-              <button className="btn outline" onClick={() => changeMonth(1)}>›</button>
+              <button className="btn outline" disabled={monthChanging} onClick={() => changeMonth(-1)}>‹</button>
+              <button className="btn outline" disabled={monthChanging} onClick={() => changeMonth(1)}>›</button>
             </div>
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:6, marginTop:8 }}>
