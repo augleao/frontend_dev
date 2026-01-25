@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { apiURL } from './config';
-
-const API_BASE = apiURL || '/api';
 const authToken = localStorage.getItem('token') || localStorage.getItem('rg_token');
 
 function formatDate(d) {
@@ -38,29 +36,10 @@ export default function RGAgenda() {
   async function apiFetch(path, opts={}){
     const headers = opts.headers || {};
     if (authToken) headers.Authorization = `Bearer ${authToken}`;
-    // try configured base first
-    try {
-      const res = await fetch(`${API_BASE}${path}`, {...opts, headers});
-      // If the configured API_BASE is an absolute URL and returns 404,
-      // try a relative `/api` fallback (common when API_BASE was set to the frontend origin).
-      if (res && res.status === 404 && /^https?:\/\//.test(API_BASE)) {
-        try {
-          const fallback = await fetch(`/api${path}`, {...opts, headers});
-          return fallback.ok || fallback.status !== 404 ? fallback : res;
-        } catch (e) {
-          return res;
-        }
-      }
-      return res;
-    } catch (e) {
-      // network error on configured base — try relative `/api` as last resort
-      try {
-        const fallback = await fetch(`/api${path}`, {...opts, headers});
-        return fallback;
-      } catch (err) {
-        throw err;
-      }
-    }
+    // Use apiURL from config explicitly; do not fallback to relative /api
+    if (!apiURL) throw new Error('apiURL is not configured in src/config.js');
+    const res = await fetch(`${apiURL}${path}`, {...opts, headers});
+    return res;
   }
 
   // fetch cliente suggestions (debounced)
