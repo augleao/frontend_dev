@@ -320,7 +320,7 @@ export default function RGAgenda() {
         <div style={{ width:360 }}>
           <div className={`rg-panel ${calendarMode==='day' ? 'day-mode' : ''}`}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-            <div style={{ fontWeight:700 }}>{new Date(month+'-01').toLocaleString('pt-BR', { month:'long', year:'numeric' })}</div>
+            <div style={{ fontWeight:700 }}>{(() => { const [y, mm] = month.split('-').map(Number); return `${monthNames[mm-1]} ${y}`; })()}</div>
             <div>
               <button className="btn outline" disabled={monthChanging} onClick={() => changeMonth(-1)}>‹</button>
               <button className="btn outline" disabled={monthChanging} onClick={() => changeMonth(1)}>›</button>
