@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { apiURL } from './config';
+import './RGAgenda.css';
+
 const authToken = localStorage.getItem('token') || localStorage.getItem('rg_token');
 
 function formatDate(d) {
@@ -14,6 +16,7 @@ export default function RGAgenda() {
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showSlotModal, setShowSlotModal] = useState(false);
   const [slotDate, setSlotDate] = useState(formatDate(new Date()));
   const [slotTime, setSlotTime] = useState('08:00');
   const [rangeEnd, setRangeEnd] = useState('12:00');
@@ -278,45 +281,14 @@ export default function RGAgenda() {
             })()}
           </div>
 
-          <div style={{ marginTop:12, padding:8, border:'1px solid #eee', borderRadius:6 }}>
-            <h4 style={{ margin:0 }}>Abrir/Fechar Slot</h4>
-            <div style={{ marginTop:8 }}>
-              <input style={{ padding:6, borderRadius:6, border:'1px solid #ccc' }} type="date" value={slotDate} onChange={e=>setSlotDate(e.target.value)} />
-              <input style={{ padding:6, borderRadius:6, border:'1px solid #ccc', marginLeft:8 }} type="time" value={slotTime} step={1800} onChange={e=>setSlotTime(e.target.value)} />
-              <div style={{ marginTop:8, display:'flex', gap:8, alignItems:'center' }}>
-                <button className="btn" onClick={()=>toggleSlot(true)} style={{ padding:'6px 10px', borderRadius:6, background:'#2b7cff', color:'#fff', border:'none' }}>Abrir</button>
-                <button className="btn outline" onClick={()=>toggleSlot(false)} style={{ padding:'6px 10px', borderRadius:6 }}>Fechar</button>
-                <div style={{ marginLeft:12 }}>
-                  <div style={{ fontSize:12, color:'#444', marginBottom:6 }}>Rápido:</div>
-                  <div style={{ display:'flex', gap:6 }}>
-                    {['08:00','09:00','10:00','11:00','14:00','15:00'].map(t=> (
-                      <button key={t} className="btn outline" onClick={()=>setSlotTime(t)} style={{ padding:'6px 8px', borderRadius:6 }}>{t}</button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ marginTop:10, borderTop:'1px dashed #eee', paddingTop:10 }}>
-                <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-                  <div style={{ fontSize:12, color:'#444' }}>Faixa:</div>
-                  <input type="time" value={slotTime} onChange={e=>setSlotTime(e.target.value)} style={{ padding:6, borderRadius:6, border:'1px solid #ccc' }} />
-                  <span style={{ color:'#666' }}>até</span>
-                  <input type="time" value={rangeEnd} onChange={e=>setRangeEnd(e.target.value)} style={{ padding:6, borderRadius:6, border:'1px solid #ccc' }} />
-                  <input type="number" min={5} step={5} value={rangeStep} onChange={e=>setRangeStep(Number(e.target.value))} style={{ width:80, padding:6, borderRadius:6, border:'1px solid #ccc' }} />
-                  <div style={{ fontSize:12, color:'#666' }}>min</div>
-                  <button className="btn" onClick={()=>toggleRange(true)} style={{ padding:'6px 10px', borderRadius:6, background:'#2b7cff', color:'#fff', border:'none' }}>Abrir Faixa</button>
-                  <button className="btn outline" onClick={()=>toggleRange(false)} style={{ padding:'6px 10px', borderRadius:6 }}>Fechar Faixa</button>
-                </div>
-                <div style={{ marginTop:8, fontSize:12, color:'#666' }}>Use faixas para abrir/fechar vários horários de uma vez.</div>
-              </div>
-            </div>
-          </div>
+          {/* Slot configuration moved to modal - use "Configurar Agenda" button to open */}
         </div>
 
         <div style={{ flex:1 }}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <h3 style={{ margin:0 }}>Atendimentos de {day}</h3>
-            <div>
+            <div style={{ display:'flex', gap:8 }}>
+              <button className="btn outline" onClick={()=>setShowSlotModal(true)} style={{ padding:'6px 10px' }}>Configurar Agenda</button>
               <button className="btn" onClick={()=>openNew(day)}>Adicionar Agendamento</button>
             </div>
           </div>
@@ -368,10 +340,10 @@ export default function RGAgenda() {
       </div>
 
       {showModal && editing && (
-        <div className="modal" style={{ position:'fixed', left:0, top:0, right:0, bottom:0, background:'rgba(2,6,23,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999 }}>
-          <div className="modal-content" style={{ background:'#fff', borderRadius:12, padding:20, maxWidth:800, width:'95%', boxShadow:'0 12px 40px rgba(2,6,23,0.12)', position:'relative' }}>
-            <h3 style={{ marginTop:0 }}>{editing.id ? 'Editar Agendamento' : 'Novo Agendamento'}</h3>
-            <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+            <div className="rg-modal">
+              <div className="rg-modal-content">
+                <h3 className="rg-modal-title">{editing.id ? 'Editar Agendamento' : 'Novo Agendamento'}</h3>
+                <div className="rg-form">
               <div style={{ position:'relative' }}>
                 <input ref={nameInputRef} autoFocus placeholder="Nome do cliente" value={editing.nome_cliente} onChange={e=>{ setEditing({...editing, nome_cliente:e.target.value, cliente_id: null}); setClienteQuery(e.target.value); }} onKeyDown={e=>{
                   if (e.key === 'Enter'){
@@ -406,6 +378,46 @@ export default function RGAgenda() {
                   <button className="btn" onClick={saveEditing} style={{ padding:'8px 14px', borderRadius:6, background:'#2b7cff', color:'#fff', border:'none' }}>Salvar</button>
                   <button className="btn outline" onClick={()=>setShowModal(false)} style={{ padding:'8px 12px', borderRadius:6 }}>Fechar</button>
                 </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSlotModal && (
+        <div className="rg-modal">
+          <div className="rg-modal-content">
+            <h3 className="rg-modal-title">Configurar Agenda — Slots</h3>
+            <div className="rg-row" style={{gap:16,alignItems:'flex-start'}}>
+              <div className="rg-col">
+                <div className="rg-small" style={{marginBottom:6}}>Data</div>
+                <input className="rg-input" type="date" value={slotDate} onChange={e=>setSlotDate(e.target.value)} />
+              </div>
+              <div className="rg-col">
+                <div className="rg-small" style={{marginBottom:6}}>Horário</div>
+                <input className="rg-input" type="time" value={slotTime} step={1800} onChange={e=>setSlotTime(e.target.value)} />
+              </div>
+              <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                <button className="rg-btn rg-btn-primary" onClick={()=>toggleSlot(true)}>Abrir</button>
+                <button className="rg-btn rg-btn-outline" onClick={()=>toggleSlot(false)}>Fechar</button>
+              </div>
+            </div>
+
+            <div style={{ marginTop:12, borderTop:'1px dashed #eee', paddingTop:12 }}>
+              <div className="rg-row">
+                <div className="rg-small">Faixa</div>
+                <input className="rg-input" type="time" value={slotTime} onChange={e=>setSlotTime(e.target.value)} />
+                <div className="rg-small">até</div>
+                <input className="rg-input" type="time" value={rangeEnd} onChange={e=>setRangeEnd(e.target.value)} />
+                <input className="rg-input" type="number" min={5} step={5} value={rangeStep} onChange={e=>setRangeStep(Number(e.target.value))} style={{width:92}} />
+                <div className="rg-small">min</div>
+                <button className="rg-btn rg-btn-primary" onClick={()=>toggleRange(true)}>Abrir Faixa</button>
+                <button className="rg-btn rg-btn-outline" onClick={()=>toggleRange(false)}>Fechar Faixa</button>
+              </div>
+              <div style={{ marginTop:8 }} className="rg-small">Use faixas para abrir/fechar vários horários de uma vez.</div>
+            </div>
+
+            <div className="rg-footer">
+              <button className="rg-btn" onClick={()=>{ setShowSlotModal(false); }}>Fechar</button>
             </div>
           </div>
         </div>
