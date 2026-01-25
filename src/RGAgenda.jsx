@@ -150,10 +150,22 @@ export default function RGAgenda() {
     setLoading(true);
     try {
       const res = await apiFetch(`/rg/agendamentos?data=${d}`);
-      if (!res.ok) { setAppointments([]); setLoading(false); return; }
+      if (!res.ok) {
+        if (res.status === 401) {
+          alert('Você precisa estar logado para visualizar os agendamentos.');
+        } else {
+          console.error('Erro ao carregar agendamentos:', res.status);
+        }
+        setAppointments([]);
+        setLoading(false);
+        return;
+      }
       const j = await res.json();
       setAppointments(j.agendamentos || []);
-    } catch (e) { setAppointments([]); }
+    } catch (e) {
+      console.error('Erro ao carregar agendamentos:', e);
+      setAppointments([]);
+    }
     setLoading(false);
     // load slots for this day as well
     loadSlots(d);
