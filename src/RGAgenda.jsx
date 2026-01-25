@@ -55,14 +55,6 @@ export default function RGAgenda() {
     return slots.find(s => (s.hora||'').slice(0,5) === time);
   }
 
-  const changeMonth = (delta) => {
-    const [y, m] = month.split('-').map(Number);
-    const newDate = new Date(y, m-1 + delta, 1);
-    const newMonth = `${newDate.getFullYear()}-${String(newDate.getMonth()+1).padStart(2,'0')}`;
-    setMonth(newMonth);
-    setCalendarMode('month'); // reset to month view when navigating months
-  };
-
   useEffect(() => {
     loadMonth(month);
   }, [month]);
@@ -181,6 +173,7 @@ export default function RGAgenda() {
     const [y, m] = month.split('-').map(Number);
     const dt = new Date(y, m-1 + delta, 1);
     setMonth(`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`);
+    setCalendarMode('month'); // reset to month view when navigating months
   }
 
   function openNew(date){
