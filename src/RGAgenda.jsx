@@ -9,7 +9,7 @@ function formatDate(d) {
 }
 
 export default function RGAgenda() {
-  const [month, setMonth] = useState(() => new Date().toISOString().slice(0,7));
+  const [month, setMonth] = useState('2026-01');
   const [day, setDay] = useState(() => new Date().toISOString().slice(0,10));
   const [daysMeta, setDaysMeta] = useState({});
   const [appointments, setAppointments] = useState([]);
