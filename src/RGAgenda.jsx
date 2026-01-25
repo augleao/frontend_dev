@@ -288,8 +288,8 @@ export default function RGAgenda() {
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <h3 style={{ margin:0 }}>Atendimentos de {day}</h3>
             <div style={{ display:'flex', gap:8 }}>
-              <button className="btn outline" onClick={()=>setShowSlotModal(true)} style={{ padding:'6px 10px' }}>Configurar Agenda</button>
-              <button className="btn" onClick={()=>openNew(day)}>Adicionar Agendamento</button>
+              <button className="rg-btn rg-btn-success-outline" onClick={()=>setShowSlotModal(true)}>Configurar Agenda</button>
+              <button className="rg-btn rg-btn-success" onClick={()=>openNew(day)}>Adicionar Agendamento</button>
             </div>
           </div>
 

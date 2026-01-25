@@ -6,6 +6,8 @@
 .rg-btn:disabled{opacity:0.6;cursor:not-allowed}
 .rg-btn-primary{background:linear-gradient(90deg,#2563eb,#1e40af);color:#ffffff;border:none}
 .rg-btn-outline{background:transparent;border:1px solid #bfd7ff;color:#062a6a}
+.rg-btn-success{background:linear-gradient(90deg,#10b981,#059669);color:#ffffff;border:none}
+.rg-btn-success-outline{background:transparent;border:1px solid #bde8d8;color:#059669;color:#034d35}
 .rg-input{padding:8px 10px;border-radius:8px;border:1px solid #cfe4ff;background:#f7fbff;min-height:36px;color:#062a6a}
 .rg-small{font-size:12px;color:#17406a}
 .rg-modal{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:flex;align-items:center;justify-content:center;z-index:9999}
