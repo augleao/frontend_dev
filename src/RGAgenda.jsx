@@ -78,6 +78,10 @@ export default function RGAgenda() {
     try{
       // try month-based query first
       const res = await apiFetch(`/rg/agendamentos/slots?month=${m}`);
+      if (res.status === 404) { // server doesn't support month endpoint
+        setSlotsByDay({});
+        return;
+      }
       if (res.ok){
         const j = await res.json();
         // if API returns days summary
@@ -128,6 +132,7 @@ export default function RGAgenda() {
   async function loadSlots(d){
     try{
       const res = await apiFetch(`/rg/agendamentos/slots?data=${d}`);
+      if (res.status === 404) { setSlots([]); return; }
       if (!res.ok) { setSlots([]); return; }
       const j = await res.json();
       setSlots(j.slots || j || []);
