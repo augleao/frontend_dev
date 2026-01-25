@@ -184,7 +184,9 @@ export default function RGAgenda() {
   function changeMonth(delta){
     const [y, m] = month.split('-').map(Number);
     const dt = new Date(y, m-1 + delta, 1);
-    setMonth(`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`);
+    const newMonth = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+    setMonth(newMonth);
+    setDay(`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-01`); // reset day to 1st of new month
     setCalendarMode('month'); // reset to month view when navigating months
   }
 
