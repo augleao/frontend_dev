@@ -95,7 +95,7 @@ export default function RGAgenda() {
   async function loadMonth(m) {
     try {
       const res = await apiFetch(`/rg/agendamentos/calendar?month=${m}`);
-      if (!res.ok) return setDaysMeta({});
+      if (!res.ok) { console.error('[RG-AGENDA] calendar fetch failed', res.status); return; }
       const j = await res.json();
       const map = Object.fromEntries((j.days||[]).map(d => [d.data, d]));
       setDaysMeta(map);
