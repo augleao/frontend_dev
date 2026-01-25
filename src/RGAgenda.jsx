@@ -30,6 +30,8 @@ export default function RGAgenda() {
   const [calendarMode, setCalendarMode] = useState('month'); // 'month' or 'day'
   const [monthChanging, setMonthChanging] = useState(false);
 
+  const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
   const OPEN_TIME_START = '09:00';
   const OPEN_TIME_END = '17:00';
 
