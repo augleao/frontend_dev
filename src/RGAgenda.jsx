@@ -450,7 +450,9 @@ export default function RGAgenda() {
                   const slotsCount = slotsByDay[dateStr] || 0;
                   const isToday = dateStr===toYMD(new Date());
                   const weekend = isWeekend(dateStr);
-                  const cellClass = `rg-cell ${!weekend ? 'selectable' : ''} ${isToday ? 'today' : ''} ${weekend ? 'rg-weekend' : ''}`.trim();
+                  const hasAppt = !!(meta && meta.total > 0);
+                  const statusClass = hasAppt ? 'rg-has-appt' : (slotsCount > 0 ? 'rg-has-slots' : 'rg-no-slots');
+                  const cellClass = `rg-cell ${statusClass} ${!weekend ? 'selectable' : ''} ${isToday ? 'today' : ''} ${weekend ? 'rg-weekend' : ''}`.trim();
                   cells.push(
                     <div key={dateStr} className={cellClass} style={{ padding:6, position:'relative' }} onClick={() => { if (!weekend) { setDay(dateStr); setCalendarMode('day'); } }}>
                       <div style={{ fontSize:12 }}>{d}</div>
@@ -522,6 +524,12 @@ export default function RGAgenda() {
               </div>
             </div>
           )}
+
+          <div className="rg-legend" style={{ marginTop:10 }}>
+            <span className="rg-legend-item"><span className="rg-legend-dot rg-legend-open" /> Slots abertos</span>
+            <span className="rg-legend-item"><span className="rg-legend-dot rg-legend-appt" /> Agendamento</span>
+            <span className="rg-legend-item"><span className="rg-legend-dot rg-legend-closed" /> Sem slots</span>
+          </div>
           </div>
         </div>
 

@@ -20,7 +20,7 @@
 .rg-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#e9f3ff;border:1px solid #d8eaff;color:#062a6a}
 .rg-cell{border:1px solid transparent;border-radius:8px;padding:8px;min-height:48px;transition:all .12s ease;cursor:pointer;background:transparent}
 .rg-cell.selectable:hover{box-shadow:0 6px 18px rgba(37,99,235,0.08);transform:translateY(-2px);border-color:rgba(37,99,235,0.06)}
-.rg-weekend{opacity:0.55;cursor:not-allowed;color:#4a6b9a;background:transparent}
+.rg-weekend{opacity:0.55;cursor:not-allowed;color:#4a6b9a}
 .rg-panel{position:relative}
 .rg-panel .month-view,.rg-panel .day-view{transition:opacity .28s ease, transform .28s ease; will-change:opacity,transform}
 .rg-panel .month-view{opacity:1;transform:translateY(0)}
@@ -31,3 +31,14 @@
 .rg-slot-open{background:#e6fffa;color:#065f46;border:1px solid #bff0e0}
 .rg-slot-closed{background:#fff1f2;color:#981b1b;border:1px solid #ffd7db}
 .rg-slot-free{background:#eef2ff;color:#1e3a8a;border:1px solid #dbeafe}
+
+.rg-has-slots{background:#e6f0ff;border:1px solid #2a7bff;color:#0b4fb3}
+.rg-has-appt{background:#e7f8ec;border:1px solid #24a148;color:#0f6c2f}
+.rg-no-slots{background:#f2f2f2;border:1px solid #d9d9d9;color:#4b5563}
+
+.rg-legend{display:flex;gap:10px;align-items:center;font-size:12px;color:#21406a}
+.rg-legend-item{display:inline-flex;align-items:center;gap:6px}
+.rg-legend-dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid #bcc6d6}
+.rg-legend-open{background:#2a7bff;border-color:#2a7bff}
+.rg-legend-appt{background:#24a148;border-color:#24a148}
+.rg-legend-closed{background:#b7b7b7;border-color:#b7b7b7}
