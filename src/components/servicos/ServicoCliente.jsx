@@ -64,6 +64,9 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
     onClienteChange('nome', cliente.nome);
     onClienteChange('cpf', cliente.cpf);
     onClienteChange('endereco', cliente.endereco);
+    onClienteChange('cep', cliente.cep);
+    onClienteChange('cidade', cliente.cidade);
+    onClienteChange('estado', cliente.estado);
     onClienteChange('telefone', cliente.telefone);
     onClienteChange('email', cliente.email);
     setOriginalCliente({
@@ -71,6 +74,9 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
       nome: cliente.nome || '',
       cpf: cliente.cpf || '',
       endereco: cliente.endereco || '',
+      cep: cliente.cep || '',
+      cidade: cliente.cidade || '',
+      estado: cliente.estado || '',
       telefone: cliente.telefone || '',
       email: cliente.email || '',
     });
@@ -118,7 +124,12 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(form.cliente),
+      body: JSON.stringify({
+        ...form.cliente,
+        cep: form.cliente?.cep || '',
+        cidade: form.cliente?.cidade || '',
+        estado: form.cliente?.estado || '',
+      }),
     });
     if (res.ok) {
       const novoCliente = await res.json();
@@ -152,6 +163,9 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
       onClienteChange('nome', '');
       onClienteChange('cpf', '');
       onClienteChange('endereco', '');
+      onClienteChange('cep', '');
+      onClienteChange('cidade', '');
+      onClienteChange('estado', '');
       onClienteChange('telefone', '');
       onClienteChange('email', '');
       setSearchTerm('');
@@ -180,6 +194,9 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
             nome: form.cliente?.nome || '',
             cpf: form.cliente?.cpf || '',
             endereco: form.cliente?.endereco || '',
+            cep: form.cliente?.cep || '',
+            cidade: form.cliente?.cidade || '',
+            estado: form.cliente?.estado || '',
             telefone: form.cliente?.telefone || '',
             email: form.cliente?.email || '',
           };
@@ -197,7 +214,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
   const hasChanges = useMemo(() => {
     if (!form?.clienteId || !originalCliente) return false;
     const curr = form.cliente || {};
-    const fields = ['nome', 'cpf', 'endereco', 'telefone', 'email'];
+    const fields = ['nome', 'cpf', 'endereco', 'cep', 'cidade', 'estado', 'telefone', 'email'];
     return fields.some(k => (curr[k] || '') !== (originalCliente[k] || ''));
   }, [form?.clienteId, form?.cliente, originalCliente]);
 
@@ -214,6 +231,9 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
         nome: form.cliente?.nome || '',
         cpf: form.cliente?.cpf || '',
         endereco: form.cliente?.endereco || '',
+        cep: form.cliente?.cep || '',
+        cidade: form.cliente?.cidade || '',
+        estado: form.cliente?.estado || '',
         telefone: form.cliente?.telefone || '',
         email: form.cliente?.email || '',
       };
@@ -324,6 +344,40 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
             inputMode="text"
             form="no-autofill-form"
           />
+            <label className="servico-label" style={{ minWidth: 40, margin: 0, marginLeft: 12 }}>CEP:</label>
+            <input 
+              type="text" 
+              value={form.cliente.cep} 
+              onChange={e => onClienteChange('cep', e.target.value)} 
+              className="servico-input"
+              style={{ width: 100 }} 
+              autoComplete="new-password"
+              inputMode="text"
+              form="no-autofill-form"
+            />
+            <label className="servico-label" style={{ minWidth: 60, margin: 0, marginLeft: 12 }}>Cidade:</label>
+            <input 
+              type="text" 
+              value={form.cliente.cidade} 
+              onChange={e => onClienteChange('cidade', e.target.value)} 
+              className="servico-input"
+              style={{ width: 140 }} 
+              autoComplete="new-password"
+              inputMode="text"
+              form="no-autofill-form"
+            />
+            <label className="servico-label" style={{ minWidth: 50, margin: 0, marginLeft: 12 }}>UF:</label>
+            <input 
+              type="text" 
+              value={form.cliente.estado} 
+              maxLength={2}
+              onChange={e => onClienteChange('estado', e.target.value)} 
+              className="servico-input"
+              style={{ width: 50 }} 
+              autoComplete="new-password"
+              inputMode="text"
+              form="no-autofill-form"
+            />
           <label className="servico-label" style={{ minWidth: 70, margin: 0, marginLeft: 12 }}>Telefone:</label>
           <input 
             type="text" 

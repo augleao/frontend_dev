@@ -573,20 +573,18 @@ export default function RGAgenda() {
             )}
             {loading ? <div>Carregando...</div> : (
               appointments.length===0 ? <div className="small">Nenhum agendamento neste dia.</div> : (
-                appointments.map(a=> (
-                  <div key={a.id} className="item" style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                appointments.map((a, idx) => (
+                  <div key={a.id || idx} className="item" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:12, paddingBottom:12, marginBottom:12, borderBottom:'1px dashed #d9e2f3' }}>
                     <div>
                       <div><strong>{a.hora.slice(0,5)}</strong> — {a.nome_cliente || a.telefone}</div>
                       <div className="small">Usuário: {a.usuario || a.criado_por || '-' } • Status: {a.status}</div>
                     </div>
-                    <div style={{ display:'flex', gap:8 }}>
-                      <button className="btn outline" onClick={()=>openEdit(a)}>Editar</button>
-                      <button className="btn outline" onClick={()=>deleteAppt(a.id)}>Excluir</button>
-                      <div style={{ display:'flex', flexDirection:'column' }}>
-                        <button className="btn" onClick={()=>patchStatus(a.id,'realizado')}>Realizado</button>
-                        <button className="btn outline" onClick={()=>patchStatus(a.id,'nao_compareceu')} style={{ marginTop:6 }}>Não compareceu</button>
-                        <button className="btn outline" onClick={()=>patchStatus(a.id,'cancelado')} style={{ marginTop:6 }}>Cancelado</button>
-                      </div>
+                    <div style={{ display:'flex', gap:8, flexWrap:'wrap', justifyContent:'flex-end', minWidth:280 }}>
+                      <button className="btn outline" style={{ background:'#e8f2ff', color:'#1d4ed8', borderColor:'#c7dbff' }} onClick={()=>openEdit(a)}>Editar</button>
+                      <button className="btn outline" style={{ background:'#e8f2ff', color:'#1d4ed8', borderColor:'#c7dbff' }} onClick={()=>deleteAppt(a.id)}>Excluir</button>
+                      <button className="btn" style={{ background:'#16a34a', border:'1px solid #0f7a36', color:'#fff' }} onClick={()=>patchStatus(a.id,'realizado')}>Realizado</button>
+                      <button className="btn" style={{ background:'#dc2626', border:'1px solid #b91c1c', color:'#fff' }} onClick={()=>patchStatus(a.id,'nao_compareceu')}>Não compareceu</button>
+                      <button className="btn" style={{ background:'#f97316', border:'1px solid #ea580c', color:'#fff' }} onClick={()=>patchStatus(a.id,'cancelado')}>Cancelado</button>
                     </div>
                   </div>
                 ))
