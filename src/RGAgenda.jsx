@@ -354,95 +354,94 @@ export default function RGAgenda() {
           <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:6, marginTop:8 }}>
             {['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((w,i)=>(<div key={i} style={{ textAlign:'center', fontSize:12, color:'#666' }}>{w}</div>))}
           </div>
-          <div className="month-view" style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:6, marginTop:6 }}>
-            {(() => {
-              const [y, mm] = month.split('-').map(Number);
-              const first = new Date(y, mm - 1, 1);
-              const mIndex = mm - 1; // 0-based
-              const last = new Date(y, mIndex + 1, 0);
-              const blanks = first.getDay();
-              const cells = [];
-              for (let i=0;i<blanks;i++) cells.push(<div key={'b'+i} />);
-              for (let d=1; d<=last.getDate(); d++) {
-                const dateStr = `${y}-${String(mIndex+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const meta = daysMeta[dateStr];
-                const slotsCount = slotsByDay[dateStr] || 0;
-                const isToday = dateStr===toYMD(new Date());
-                const weekend = isWeekend(dateStr);
-                const cellClass = `rg-cell ${!weekend ? 'selectable' : ''} ${isToday ? 'today' : ''} ${weekend ? 'rg-weekend' : ''}`.trim();
-                cells.push(
-                  <div key={dateStr} className={cellClass} style={{ padding:6, position:'relative' }} onClick={() => { if (!weekend) { setDay(dateStr); setCalendarMode('day'); } }}>
-                    <div style={{ fontSize:12 }}>{d}</div>
-                    {meta && meta.total>0 && <div style={{ marginTop:6 }}><span className="badge">{meta.total}</span></div>}
-                    {slotsCount>0 && (
-                      <div style={{ position:'absolute', top:6, right:6, width:10, height:10, borderRadius:5, background:'#2b7cff', boxShadow:'0 0 0 2px rgba(43,124,255,0.12)' }} title={`${slotsCount} slot(s) abertos`} />
-                    )}
-                  </div>
-                );
-              }
-              return cells;
-            })()}
-          </div>
-
-          {/* Slot configuration moved to modal - use "Configurar Agenda" button to open */}
-            <div className="day-view">
-            {calendarMode === 'day' && (
-          <div style={{ marginTop:12 }} className="rg-card">
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-              <div style={{ fontWeight:700 }}>{formatDayLabel(day)}</div>
-              <div style={{ display:'flex', gap:8 }}>
-                <button className="rg-btn rg-btn-outline" onClick={() => setCalendarMode('month')}>Voltar ao Mês</button>
-              </div>
-            </div>
-            <div style={{ marginTop:12 }}>
+          {calendarMode === 'month' ? (
+            <div className="month-view" style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:6, marginTop:6 }}>
               {(() => {
-                const slotsList = [];
-                const start = 9 * 60; const end = 17 * 60; const step = 30;
-                for (let t = start; t <= end; t += step){
-                  const hh = String(Math.floor(t/60)).padStart(2,'0');
-                  const mm = String(t%60).padStart(2,'0');
-                  const time = `${hh}:${mm}`;
-                    const matches = appointments.filter(a => (a.hora||'').slice(0,5) === time);
-                    const slotInfo = findSlotByTime(time);
-                    slotsList.push({ time, matches, slotInfo });
+                const [y, mm] = month.split('-').map(Number);
+                const first = new Date(y, mm - 1, 1);
+                const mIndex = mm - 1; // 0-based
+                const last = new Date(y, mIndex + 1, 0);
+                const blanks = first.getDay();
+                const cells = [];
+                for (let i=0;i<blanks;i++) cells.push(<div key={'b'+i} />);
+                for (let d=1; d<=last.getDate(); d++) {
+                  const dateStr = `${y}-${String(mIndex+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                  const meta = daysMeta[dateStr];
+                  const slotsCount = slotsByDay[dateStr] || 0;
+                  const isToday = dateStr===toYMD(new Date());
+                  const weekend = isWeekend(dateStr);
+                  const cellClass = `rg-cell ${!weekend ? 'selectable' : ''} ${isToday ? 'today' : ''} ${weekend ? 'rg-weekend' : ''}`.trim();
+                  cells.push(
+                    <div key={dateStr} className={cellClass} style={{ padding:6, position:'relative' }} onClick={() => { if (!weekend) { setDay(dateStr); setCalendarMode('day'); } }}>
+                      <div style={{ fontSize:12 }}>{d}</div>
+                      {meta && meta.total>0 && <div style={{ marginTop:6 }}><span className="badge">{meta.total}</span></div>}
+                      {slotsCount>0 && (
+                        <div style={{ position:'absolute', top:6, right:6, width:10, height:10, borderRadius:5, background:'#2b7cff', boxShadow:'0 0 0 2px rgba(43,124,255,0.12)' }} title={`${slotsCount} slot(s) abertos`} />
+                      )}
+                    </div>
+                  );
                 }
-                return (
-                  <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                      {slotsList.map(s => (
-                        <div key={s.time} className="rg-card" style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                          <div style={{ display:'flex', gap:12, alignItems:'center' }}>
-                            <div style={{ fontWeight:700 }}>{s.time}</div>
-                            <div className="rg-small">{s.matches.length>0 ? `${s.matches.length} agendamento(s)` : 'Livre'}</div>
-                          </div>
-                          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-                            {s.slotInfo ? (
-                              <div className={`rg-slot-status ${s.slotInfo.aberto ? 'rg-slot-open' : 'rg-slot-closed'}`}>{s.slotInfo.aberto ? 'Aberto' : 'Fechado'}</div>
-                            ) : (
-                              <div className="rg-slot-status rg-slot-free">Livre</div>
-                            )}
-                            {s.matches.length>0 ? s.matches.map(m => (
-                              <div key={m.id} style={{ padding:8, borderRadius:8, background:'#fff' }}>{m.nome_cliente || m.telefone}</div>
-                            )) : (
-                              s.slotInfo ? (
-                                s.slotInfo.aberto ? (
-                                  <button className="rg-btn rg-btn-outline" onClick={()=>toggleSingleSlot(s.time, false)}>Fechar</button>
-                                ) : (
-                                  <button className="rg-btn rg-btn-success" onClick={()=>toggleSingleSlot(s.time, true)}>Abrir</button>
-                                )
-                              ) : (
-                                <button className="rg-btn rg-btn-success" onClick={()=>{ setSlotDate(day); setSlotTime(s.time); toggleSlot(true); }}>Abrir</button>
-                              )
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                );
+                return cells;
               })()}
             </div>
-          </div>
-            )}
+          ) : (
+            <div className="day-view">
+              <div style={{ marginTop:12 }} className="rg-card">
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <div style={{ fontWeight:700 }}>{formatDayLabel(day)}</div>
+                  <div style={{ display:'flex', gap:8 }}>
+                    <button className="rg-btn rg-btn-outline" onClick={() => setCalendarMode('month')}>Voltar ao Mês</button>
+                  </div>
+                </div>
+                <div style={{ marginTop:12 }}>
+                  {(() => {
+                    const slotsList = [];
+                    const start = 9 * 60; const end = 17 * 60; const step = 30;
+                    for (let t = start; t <= end; t += step){
+                      const hh = String(Math.floor(t/60)).padStart(2,'0');
+                      const mm = String(t%60).padStart(2,'0');
+                      const time = `${hh}:${mm}`;
+                      const matches = appointments.filter(a => (a.hora||'').slice(0,5) === time);
+                      const slotInfo = findSlotByTime(time);
+                      slotsList.push({ time, matches, slotInfo });
+                    }
+                    return (
+                      <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                        {slotsList.map(s => (
+                          <div key={s.time} className="rg-card" style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                            <div style={{ display:'flex', gap:12, alignItems:'center' }}>
+                              <div style={{ fontWeight:700 }}>{s.time}</div>
+                              <div className="rg-small">{s.matches.length>0 ? `${s.matches.length} agendamento(s)` : 'Livre'}</div>
+                            </div>
+                            <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                              {s.slotInfo ? (
+                                <div className={`rg-slot-status ${s.slotInfo.aberto ? 'rg-slot-open' : 'rg-slot-closed'}`}>{s.slotInfo.aberto ? 'Aberto' : 'Fechado'}</div>
+                              ) : (
+                                <div className="rg-slot-status rg-slot-free">Livre</div>
+                              )}
+                              {s.matches.length>0 ? s.matches.map(m => (
+                                <div key={m.id} style={{ padding:8, borderRadius:8, background:'#fff' }}>{m.nome_cliente || m.telefone}</div>
+                              )) : (
+                                s.slotInfo ? (
+                                  s.slotInfo.aberto ? (
+                                    <button className="rg-btn rg-btn-outline" onClick={()=>toggleSingleSlot(s.time, false)}>Fechar</button>
+                                  ) : (
+                                    <button className="rg-btn rg-btn-success" onClick={()=>toggleSingleSlot(s.time, true)}>Abrir</button>
+                                  )
+                                ) : (
+                                  <button className="rg-btn rg-btn-success" onClick={()=>{ setSlotDate(day); setSlotTime(s.time); toggleSlot(true); }}>Abrir</button>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
             </div>
+          )}
           </div>
         </div>
 
