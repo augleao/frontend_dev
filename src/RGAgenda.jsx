@@ -178,6 +178,12 @@ export default function RGAgenda() {
   async function loadDay(d) {
     setLoading(true);
     try {
+      if (!authToken) {
+        // without token, the endpoint 401s; avoid noisy requests
+        setAppointments([]);
+        setLoading(false);
+        return;
+      }
       const res = await apiFetch(`/rg/agendamentos?data=${d}`);
       if (!res.ok) {
         if (res.status === 401) {
