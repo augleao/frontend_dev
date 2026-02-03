@@ -332,7 +332,7 @@ export default function RGAgenda() {
       if (isWeekend(slotDate) && open) { alert('Fins de semana permanecem fechados. Escolha outro dia.'); return; }
       // ensure time within allowed hours
       if (slotTime < OPEN_TIME_START || slotTime > OPEN_TIME_END) { alert(`Horário permitido: ${OPEN_TIME_START} - ${OPEN_TIME_END}`); return; }
-      const r = await apiFetch(`/rg/agendamentos/slots`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ data: slotDate, hora: slotTime+':00', aberto: !!open }) });
+      const r = await apiFetch(`/rg/agendamentos/slots`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ data: slotDate, hora: slotTime+':00', abrir: !!open }) });
       if (!r.ok) throw new Error('erro');
       alert('Operação concluída'); loadMonth(month);
     } catch(e){ alert('Erro na operação de slot'); }
@@ -360,7 +360,7 @@ export default function RGAgenda() {
         const timeStr = `${hh}:${mm}:00`;
         // only post times inside allowed window
         if (timeStr >= OPEN_TIME_START+':00' && timeStr <= OPEN_TIME_END+':00'){
-          promises.push(apiFetch(`/rg/agendamentos/slots`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ data: slotDate, hora: timeStr, aberto: !!open }) }));
+          promises.push(apiFetch(`/rg/agendamentos/slots`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ data: slotDate, hora: timeStr, abrir: !!open }) }));
         }
         start = new Date(start.getTime() + (rangeStep||30)*60000);
       }
@@ -387,7 +387,7 @@ export default function RGAgenda() {
           continue;
         }
         for (const hora of slotsList){
-          const body = { data: d, hora, aberto: !!open };
+          const body = { data: d, hora, abrir: !!open };
           const r = await apiFetch(`/rg/agendamentos/slots`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
           if (!r.ok) {
             messages.push(`Falha em ${d} ${hora}`);
@@ -412,7 +412,7 @@ export default function RGAgenda() {
 
   async function toggleSingleSlot(hora, open){
     try{
-      const r = await apiFetch(`/rg/agendamentos/slots`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ data: day, hora: hora+':00', aberto: !!open }) });
+      const r = await apiFetch(`/rg/agendamentos/slots`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ data: day, hora: hora+':00', abrir: !!open }) });
       if (!r.ok) throw new Error('erro');
       loadSlots(day); loadMonth(month);
     } catch(e){ alert('Erro ao alterar slot'); }
