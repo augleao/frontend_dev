@@ -81,6 +81,14 @@ export default function RGAgenda() {
     }catch(e){ return dateStr; }
   }
 
+  // Avoid UTC parsing of ISO strings by always constructing dates with numeric parts
+  function dayOfWeek(dateStr){
+    try{
+      const [y,m,d] = dateStr.split('-').map(Number);
+      return new Date(y, m-1, d).getDay();
+    } catch(e){ return new Date(dateStr).getDay(); }
+  }
+
   // Helpers for bulk config
   function listDaysInRange(startStr, endStr){
     const days = [];
@@ -114,7 +122,7 @@ export default function RGAgenda() {
   }
 
   function countPreview(){
-    const days = listDaysInRange(bulkStart, bulkEnd).filter(d => weekdays[new Date(d).getDay()]);
+    const days = listDaysInRange(bulkStart, bulkEnd).filter(d => weekdays[dayOfWeek(d)]);
     const perDay = generateSlotsForRanges(timeRanges, slotDuration).length;
     return { days: days.length, perDay, total: days.length * perDay };
   }
@@ -377,11 +385,11 @@ export default function RGAgenda() {
     setBulkBusy(true);
     const messages = [];
     try {
-      const days = listDaysInRange(bulkStart, bulkEnd).filter(d => weekdays[new Date(d).getDay()]);
+      const days = listDaysInRange(bulkStart, bulkEnd).filter(d => weekdays[dayOfWeek(d)]);
       const slotsList = generateSlotsForRanges(timeRanges, slotDuration);
       if (slotsList.length === 0) throw new Error('Nenhum slot gerado. Ajuste faixas/horários.');
       for (const d of days){
-        if (isWeekend(d) && !weekdays[new Date(d).getDay()]) continue;
+        if (isWeekend(d) && !weekdays[dayOfWeek(d)]) continue;
         if (!open && daysMeta[d]?.total > 0) {
           messages.push(`Dia ${d}: possui agendamentos, não fechado.`);
           continue;
