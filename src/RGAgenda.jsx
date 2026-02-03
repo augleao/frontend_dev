@@ -48,6 +48,18 @@ export default function RGAgenda() {
 
   const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
+  // Bulk slot config state
+  const [bulkStart, setBulkStart] = useState(todayDefault);
+  const [bulkEnd, setBulkEnd] = useState(todayDefault);
+  const [weekdays, setWeekdays] = useState({ 1:true, 2:true, 3:true, 4:true, 5:true, 6:false, 0:false }); // default: seg-sex
+  const [timeRanges, setTimeRanges] = useState([
+    { start:'09:00', end:'12:00' },
+    { start:'13:00', end:'17:00' },
+  ]);
+  const [slotDuration, setSlotDuration] = useState(30);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkMessages, setBulkMessages] = useState([]);
+
   const OPEN_TIME_START = '09:00';
   const OPEN_TIME_END = '17:00';
 
@@ -67,6 +79,44 @@ export default function RGAgenda() {
       do { d.setDate(d.getDate()+1); } while (d.getDay()===0 || d.getDay()===6);
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     }catch(e){ return dateStr; }
+  }
+
+  // Helpers for bulk config
+  function listDaysInRange(startStr, endStr){
+    const days = [];
+    const [ys, ms, ds] = startStr.split('-').map(Number);
+    const [ye, me, de] = endStr.split('-').map(Number);
+    let cur = new Date(ys, ms-1, ds);
+    const end = new Date(ye, me-1, de);
+    while (cur <= end){
+      days.push(toYMD(cur));
+      cur.setDate(cur.getDate()+1);
+    }
+    return days;
+  }
+
+  function generateSlotsForRanges(ranges, duration){
+    const slots = [];
+    ranges.forEach(r => {
+      const [sh, sm] = r.start.split(':').map(Number);
+      const [eh, em] = r.end.split(':').map(Number);
+      let start = new Date(0,0,0,sh,sm,0,0);
+      const end = new Date(0,0,0,eh,em,0,0);
+      if (end <= start) return; // invalid range
+      while (start < end){
+        const hh = String(start.getHours()).padStart(2,'0');
+        const mm = String(start.getMinutes()).padStart(2,'0');
+        slots.push(`${hh}:${mm}:00`);
+        start = new Date(start.getTime() + duration*60000);
+      }
+    });
+    return slots;
+  }
+
+  function countPreview(){
+    const days = listDaysInRange(bulkStart, bulkEnd).filter(d => weekdays[new Date(d).getDay()]);
+    const perDay = generateSlotsForRanges(timeRanges, slotDuration).length;
+    return { days: days.length, perDay, total: days.length * perDay };
   }
 
   function findSlotByTime(time){
@@ -323,6 +373,36 @@ export default function RGAgenda() {
     loadSlots(slotDate);
   }
 
+  async function applyBulk(open){
+    setBulkBusy(true);
+    const messages = [];
+    try {
+      const days = listDaysInRange(bulkStart, bulkEnd).filter(d => weekdays[new Date(d).getDay()]);
+      const slotsList = generateSlotsForRanges(timeRanges, slotDuration);
+      if (slotsList.length === 0) throw new Error('Nenhum slot gerado. Ajuste faixas/horários.');
+      for (const d of days){
+        if (isWeekend(d) && !weekdays[new Date(d).getDay()]) continue;
+        if (!open && daysMeta[d]?.total > 0) {
+          messages.push(`Dia ${d}: possui agendamentos, não fechado.`);
+          continue;
+        }
+        for (const hora of slotsList){
+          const body = { data: d, hora, aberto: !!open };
+          const r = await apiFetch(`/rg/agendamentos/slots`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+          if (!r.ok) {
+            messages.push(`Falha em ${d} ${hora}`);
+          }
+        }
+      }
+      messages.push(open ? 'Abertura concluída.' : 'Fechamento concluído (agendamentos existentes foram mantidos).');
+      loadMonth(month);
+    } catch (e){
+      messages.push(e.message || 'Erro na configuração em lote');
+    }
+    setBulkMessages(messages);
+    setBulkBusy(false);
+  }
+
   async function handleOpenNextWeekday(){
     const next = nextWeekday(slotDate);
     setSlotDate(next);
@@ -547,41 +627,76 @@ export default function RGAgenda() {
       {showSlotModal && (
         <div className="rg-modal">
           <div className="rg-modal-content">
-            <h3 className="rg-modal-title">Configurar Agenda — Slots</h3>
-            <div className="rg-row" style={{gap:16,alignItems:'flex-start'}}>
+            <h3 className="rg-modal-title">Configurar Agenda — Lote</h3>
+
+            <div className="rg-row" style={{gap:12, alignItems:'flex-start', flexWrap:'wrap'}}>
               <div className="rg-col">
-                <div className="rg-small" style={{marginBottom:6}}>Data</div>
-                <input className="rg-input" type="date" value={slotDate} onChange={e=>setSlotDate(e.target.value)} />
+                <div className="rg-small">Data início</div>
+                <input className="rg-input" type="date" value={bulkStart} onChange={e=>setBulkStart(e.target.value)} />
               </div>
               <div className="rg-col">
-                <div className="rg-small" style={{marginBottom:6}}>Horário</div>
-                <input className="rg-input" type="time" value={slotTime} step={1800} onChange={e=>setSlotTime(e.target.value)} />
+                <div className="rg-small">Data fim</div>
+                <input className="rg-input" type="date" value={bulkEnd} onChange={e=>setBulkEnd(e.target.value)} />
               </div>
-              <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-                <button className="rg-btn rg-btn-outline" onClick={handleOpenNextWeekday}>Abrir Próximo Dia Útil</button>
-                <button className="rg-btn rg-btn-primary" onClick={()=>toggleSlot(true)} disabled={isWeekend(slotDate)}>Abrir</button>
-                <button className="rg-btn rg-btn-outline" onClick={()=>toggleSlot(false)}>Fechar</button>
+              <div className="rg-col">
+                <div className="rg-small">Duração (min)</div>
+                <input className="rg-input" type="number" min={5} step={5} value={slotDuration} onChange={e=>setSlotDuration(Number(e.target.value)||30)} style={{width:120}} />
               </div>
             </div>
 
-            <div style={{ marginTop:8 }} className="rg-small">Horário permitido: <strong>09:00 — 17:00</strong>. Finais de semana ficam fechados (sábado e domingo).</div>
+            <div style={{ marginTop:12 }}>
+              <div className="rg-small" style={{ marginBottom:6 }}>Dias da semana</div>
+              <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                {['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((lbl, idx)=>(
+                  <label key={idx} style={{ display:'flex', alignItems:'center', gap:6, border:'1px solid #e5eaf3', padding:'6px 8px', borderRadius:8, background: weekdays[idx] ? '#f0f6ff' : '#fff' }}>
+                    <input type="checkbox" checked={!!weekdays[idx]} onChange={e=> setWeekdays(prev=>({...prev, [idx]: e.target.checked})) } />
+                    <span>{lbl}</span>
+                  </label>
+                ))}
+              </div>
+              <div className="rg-small" style={{ marginTop:6 }}>Finais de semana ficam desmarcados por padrão.</div>
+            </div>
 
             <div style={{ marginTop:12, borderTop:'1px dashed #eee', paddingTop:12 }}>
-              <div className="rg-row">
-                <div className="rg-small">Faixa</div>
-                <input className="rg-input" type="time" value={slotTime} onChange={e=>setSlotTime(e.target.value)} />
-                <div className="rg-small">até</div>
-                <input className="rg-input" type="time" value={rangeEnd} onChange={e=>setRangeEnd(e.target.value)} />
-                <input className="rg-input" type="number" min={5} step={5} value={rangeStep} onChange={e=>setRangeStep(Number(e.target.value))} style={{width:92}} />
-                <div className="rg-small">min</div>
-                <button className="rg-btn rg-btn-primary" onClick={()=>toggleRange(true)} disabled={isWeekend(slotDate)}>Abrir Faixa</button>
-                <button className="rg-btn rg-btn-outline" onClick={()=>toggleRange(false)}>Fechar Faixa</button>
-              </div>
-              <div style={{ marginTop:8 }} className="rg-small">Use faixas para abrir/fechar vários horários de uma vez.</div>
+              <div className="rg-small" style={{ marginBottom:6 }}>Faixas de horário</div>
+              {timeRanges.map((tr, idx)=>(
+                <div key={idx} style={{ display:'flex', gap:8, alignItems:'center', marginBottom:8 }}>
+                  <span className="rg-small">Início</span>
+                  <input className="rg-input" type="time" value={tr.start} onChange={e=>{
+                    const v = e.target.value;
+                    setTimeRanges(prev => prev.map((r,i)=> i===idx ? {...r, start:v} : r));
+                  }} />
+                  <span className="rg-small">Fim</span>
+                  <input className="rg-input" type="time" value={tr.end} onChange={e=>{
+                    const v = e.target.value;
+                    setTimeRanges(prev => prev.map((r,i)=> i===idx ? {...r, end:v} : r));
+                  }} />
+                  <button className="rg-btn rg-btn-outline" onClick={()=> setTimeRanges(prev => prev.filter((_,i)=>i!==idx))} disabled={timeRanges.length<=1}>Remover</button>
+                </div>
+              ))}
+              <button className="rg-btn rg-btn-success-outline" onClick={()=> setTimeRanges(prev => [...prev, { start:'09:00', end:'17:00' }])}>Adicionar faixa</button>
             </div>
 
-            <div className="rg-footer">
-              <button className="rg-btn" onClick={()=>{ setShowSlotModal(false); }}>Fechar</button>
+            <div style={{ marginTop:12, padding:12, background:'#f8fbff', border:'1px solid #e6eefc', borderRadius:10 }}>
+              {(() => {
+                const preview = countPreview();
+                return <div className="rg-small">Você está prestes a gerar aproximadamente <strong>{preview.total}</strong> slots de <strong>{slotDuration} minutos</strong> em <strong>{preview.days}</strong> dia(s), com ~<strong>{preview.perDay}</strong> slots por dia.</div>;
+              })()}
+            </div>
+
+            {bulkMessages.length>0 && (
+              <div style={{ marginTop:10 }} className="rg-small">
+                {bulkMessages.map((m,i)=>(<div key={i}>{m}</div>))}
+              </div>
+            )}
+
+            <div className="rg-footer" style={{ display:'flex', justifyContent:'space-between', marginTop:16 }}>
+              <div style={{ display:'flex', gap:8 }}>
+                <button className="rg-btn rg-btn-primary" disabled={bulkBusy} onClick={()=>applyBulk(true)}>Abrir Agenda</button>
+                <button className="rg-btn rg-btn-outline" disabled={bulkBusy} onClick={()=>applyBulk(false)}>Fechar Agenda</button>
+                <button className="rg-btn rg-btn-outline" disabled={bulkBusy} onClick={()=>{ setBulkMessages([]); setTimeRanges([{start:'09:00', end:'17:00'}]); }}>Limpar faixas</button>
+              </div>
+              <button className="rg-btn" onClick={()=>{ setShowSlotModal(false); setBulkMessages([]); }}>Fechar</button>
             </div>
           </div>
         </div>
