@@ -1,5 +1,6 @@
+.rg-shell{background:#f5f8ff;min-height:100vh}
 .rg-container{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;color:#062a6a}
-.rg-card{background:#eef6ff;border-radius:12px;box-shadow:0 8px 24px rgba(14,45,113,0.06);padding:16px}
+.rg-card{background:#ffffff;border:1px solid #dbe7ff;border-radius:12px;box-shadow:0 8px 24px rgba(14,45,113,0.06);padding:16px}
 .rg-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
 .rg-actions{display:flex;gap:8px;align-items:center}
 .rg-btn{padding:8px 12px;border-radius:8px;border:1px solid transparent;background:#e8f2ff;color:#062a6a;cursor:pointer;font-weight:600}
@@ -11,7 +12,7 @@
 .rg-input{padding:8px 10px;border-radius:8px;border:1px solid #cfe4ff;background:#f7fbff;min-height:36px;color:#062a6a}
 .rg-small{font-size:12px;color:#17406a}
 .rg-modal{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:flex;align-items:center;justify-content:center;z-index:9999}
-.rg-modal-content{background:#f7fbff;border-radius:12px;padding:20px;max-width:920px;width:94%;box-shadow:0 24px 80px rgba(2,6,23,0.12);position:relative}
+.rg-modal-content{background:#eef3ff;border-radius:12px;padding:20px;max-width:920px;width:94%;box-shadow:0 24px 80px rgba(2,6,23,0.12);position:relative;border:1px solid #d0dbf5}
 .rg-modal-title{margin:0 0 8px 0;font-size:18px;color:#062a6a}
 .rg-form{display:flex;flex-direction:column;gap:10px}
 .rg-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -21,7 +22,7 @@
 .rg-cell{border:1px solid transparent;border-radius:8px;padding:8px;min-height:48px;transition:all .12s ease;cursor:pointer;background:transparent}
 .rg-cell.selectable:hover{box-shadow:0 6px 18px rgba(37,99,235,0.08);transform:translateY(-2px);border-color:rgba(37,99,235,0.06)}
 .rg-weekend{opacity:0.55;cursor:not-allowed;color:#4a6b9a}
-.rg-panel{position:relative}
+.rg-panel{position:relative;background:#ffffff;border:1px solid #dbe7ff;border-radius:12px;padding:12px}
 .rg-panel .month-view,.rg-panel .day-view{transition:opacity .28s ease, transform .28s ease; will-change:opacity,transform}
 .rg-panel .month-view{opacity:1;transform:translateY(0)}
 .rg-panel.day-mode .month-view{opacity:0;transform:translateY(6px);pointer-events:none}
@@ -36,7 +37,7 @@
 .rg-has-appt{background:#e7f8ec;border:1px solid #24a148;color:#0f6c2f}
 .rg-no-slots{background:#f2f2f2;border:1px solid #d9d9d9;color:#4b5563}
 
-.rg-legend{display:flex;gap:10px;align-items:center;font-size:12px;color:#21406a}
+.rg-legend{display:flex;gap:10px;align-items:center;font-size:12px;color:#21406a;background:#eef3ff;border:1px solid #dbe7ff;border-radius:10px;padding:8px 10px}
 .rg-legend-item{display:inline-flex;align-items:center;gap:6px}
 .rg-legend-dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid #bcc6d6}
 .rg-legend-open{background:#2a7bff;border-color:#2a7bff}

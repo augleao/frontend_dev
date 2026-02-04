@@ -542,7 +542,7 @@ export default function RGAgenda() {
   }
 
   return (
-    <div style={{ padding:24 }}>
+    <div className="rg-shell" style={{ padding:24 }}>
       <h1>Agenda de Atendimentos — RG (Escrevente)</h1>
       <div style={{ display:'flex', gap:20, alignItems:'flex-start' }}>
         <div style={{ width:360 }}>
