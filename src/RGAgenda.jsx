@@ -697,8 +697,8 @@ export default function RGAgenda() {
                       <div className="small">Usuário: {a.usuario || a.criado_por || '-' } • Status: {a.status}</div>
                     </div>
                     <div style={{ display:'flex', gap:8, flexWrap:'wrap', justifyContent:'flex-end', minWidth:280 }}>
-                      <button className="btn outline" style={{ background:'#e8f2ff', color:'#1d4ed8', borderColor:'#c7dbff' }} onClick={()=>openEdit(a)}>Editar</button>
-                      <button className="btn outline" style={{ background:'#e8f2ff', color:'#1d4ed8', borderColor:'#c7dbff' }} onClick={()=>deleteAppt(a.id)}>Excluir</button>
+                      <button className="btn" style={{ background:'linear-gradient(90deg,#60a5fa,#2563eb)', border:'none', color:'#fff' }} onClick={()=>openEdit(a)}>Editar</button>
+                      <button className="btn" style={{ background:'linear-gradient(90deg,#60a5fa,#2563eb)', border:'none', color:'#fff' }} onClick={()=>deleteAppt(a.id)}>Excluir</button>
                       <button className="btn" style={{ background:'linear-gradient(90deg,#10b981,#059669)', border:'none', color:'#fff' }} onClick={()=>patchStatus(a.id,'realizado')}>Realizado</button>
                       <button className="btn" style={{ background:'linear-gradient(90deg,#ef4444,#b91c1c)', border:'none', color:'#fff' }} onClick={()=>patchStatus(a.id,'nao_compareceu')}>Não compareceu</button>
                       <button className="btn" style={{ background:'linear-gradient(90deg,#f97316,#ea580c)', border:'none', color:'#fff' }} onClick={()=>patchStatus(a.id,'cancelado')}>Cancelado</button>
