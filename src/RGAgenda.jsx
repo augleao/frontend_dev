@@ -660,10 +660,10 @@ export default function RGAgenda() {
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <h3 style={{ margin:0 }}>Atendimentos de {formatDayLabel(day)}</h3>
             <div style={{ display:'flex', gap:8 }}>
-                <button className="rg-btn" style={{ background:'#16a34a', border:'1px solid #0f7a36', color:'#fff' }} onClick={()=>setShowReportModal(true)}>Relatórios</button>
-                <button className="rg-btn" style={{ background:'#dc2626', border:'1px solid #b91c1c', color:'#fff' }} onClick={()=>{ setShowSuspModal(true); loadSuspensos(); }}>Clientes Suspensos</button>
+                <button className="rg-btn rg-btn-success" onClick={()=>setShowReportModal(true)}>Relatórios</button>
+                <button className="rg-btn" style={{ background:'linear-gradient(90deg,#ef4444,#b91c1c)', border:'none', color:'#fff' }} onClick={()=>{ setShowSuspModal(true); loadSuspensos(); }}>Clientes Suspensos</button>
               <button className="rg-btn rg-btn-success" onClick={()=>openNew(day)}>Adicionar Agendamento</button>
-              <button className="rg-btn" style={{ background:'#16a34a', border:'1px solid #0f7a36', color:'#fff' }} onClick={()=>setShowSlotModal(true)}>Configurar Agenda</button>
+              <button className="rg-btn rg-btn-success" onClick={()=>setShowSlotModal(true)}>Configurar Agenda</button>
             </div>
           </div>
 
@@ -699,9 +699,9 @@ export default function RGAgenda() {
                     <div style={{ display:'flex', gap:8, flexWrap:'wrap', justifyContent:'flex-end', minWidth:280 }}>
                       <button className="btn outline" style={{ background:'#e8f2ff', color:'#1d4ed8', borderColor:'#c7dbff' }} onClick={()=>openEdit(a)}>Editar</button>
                       <button className="btn outline" style={{ background:'#e8f2ff', color:'#1d4ed8', borderColor:'#c7dbff' }} onClick={()=>deleteAppt(a.id)}>Excluir</button>
-                      <button className="btn" style={{ background:'#16a34a', border:'1px solid #0f7a36', color:'#fff' }} onClick={()=>patchStatus(a.id,'realizado')}>Realizado</button>
-                      <button className="btn" style={{ background:'#dc2626', border:'1px solid #b91c1c', color:'#fff' }} onClick={()=>patchStatus(a.id,'nao_compareceu')}>Não compareceu</button>
-                      <button className="btn" style={{ background:'#f97316', border:'1px solid #ea580c', color:'#fff' }} onClick={()=>patchStatus(a.id,'cancelado')}>Cancelado</button>
+                      <button className="btn" style={{ background:'linear-gradient(90deg,#10b981,#059669)', border:'none', color:'#fff' }} onClick={()=>patchStatus(a.id,'realizado')}>Realizado</button>
+                      <button className="btn" style={{ background:'linear-gradient(90deg,#ef4444,#b91c1c)', border:'none', color:'#fff' }} onClick={()=>patchStatus(a.id,'nao_compareceu')}>Não compareceu</button>
+                      <button className="btn" style={{ background:'linear-gradient(90deg,#f97316,#ea580c)', border:'none', color:'#fff' }} onClick={()=>patchStatus(a.id,'cancelado')}>Cancelado</button>
                     </div>
                   </div>
                 ))
