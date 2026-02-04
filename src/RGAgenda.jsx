@@ -660,10 +660,10 @@ export default function RGAgenda() {
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <h3 style={{ margin:0 }}>Atendimentos de {formatDayLabel(day)}</h3>
             <div style={{ display:'flex', gap:8 }}>
-                <button className="rg-btn rg-btn-outline" onClick={()=>setShowReportModal(true)}>Relatórios</button>
+                <button className="rg-btn" style={{ background:'#16a34a', border:'1px solid #0f7a36', color:'#fff' }} onClick={()=>setShowReportModal(true)}>Relatórios</button>
                 <button className="rg-btn" style={{ background:'#dc2626', border:'1px solid #b91c1c', color:'#fff' }} onClick={()=>{ setShowSuspModal(true); loadSuspensos(); }}>Clientes Suspensos</button>
               <button className="rg-btn rg-btn-success" onClick={()=>openNew(day)}>Adicionar Agendamento</button>
-              <button className="rg-btn rg-btn-success-outline" onClick={()=>setShowSlotModal(true)}>Configurar Agenda</button>
+              <button className="rg-btn" style={{ background:'#16a34a', border:'1px solid #0f7a36', color:'#fff' }} onClick={()=>setShowSlotModal(true)}>Configurar Agenda</button>
             </div>
           </div>
 
