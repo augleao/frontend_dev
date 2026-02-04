@@ -532,7 +532,9 @@ export default function RGAgenda() {
         styles: { fontSize: 9 },
         headStyles: { fillColor: [43,124,255] }
       });
-      doc.save('agendamentos.pdf');
+      const blob = doc.output('blob');
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
       setShowReportModal(false);
     } finally {
       setReportLoading(false);
