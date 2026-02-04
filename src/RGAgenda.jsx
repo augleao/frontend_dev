@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { apiURL } from './config';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './RGAgenda.css';
 
 const authToken = localStorage.getItem('token') || localStorage.getItem('rg_token');
@@ -18,7 +20,7 @@ function formatDate(d) {
 
 function formatDayLabel(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString();
+  return new Date(y, m - 1, d).toLocaleDateString('pt-BR');
 }
 
 const todayDefault = toYMD(new Date());
@@ -65,6 +67,10 @@ export default function RGAgenda() {
   const [suspQuery, setSuspQuery] = useState('');
   const [suspResults, setSuspResults] = useState([]);
   const [showSuspModal, setShowSuspModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportStart, setReportStart] = useState(todayDefault);
+  const [reportEnd, setReportEnd] = useState(todayDefault);
+  const [reportLoading, setReportLoading] = useState(false);
 
   const OPEN_TIME_START = '09:00';
   const OPEN_TIME_END = '17:00';
@@ -125,6 +131,19 @@ export default function RGAgenda() {
       }
     });
     return slots;
+  }
+
+  function listDays(startStr, endStr){
+    const res = [];
+    const [ys, ms, ds] = startStr.split('-').map(Number);
+    const [ye, me, de] = endStr.split('-').map(Number);
+    let cur = new Date(ys, ms-1, ds);
+    const end = new Date(ye, me-1, de);
+    while (cur <= end){
+      res.push(toYMD(cur));
+      cur.setDate(cur.getDate()+1);
+    }
+    return res;
   }
 
   function countPreview(){
@@ -478,6 +497,48 @@ export default function RGAgenda() {
     setSuspActionId(null);
   }
 
+  async function generateReport(){
+    if (!reportStart || !reportEnd) { alert('Selecione o intervalo de datas.'); return; }
+    if (reportEnd < reportStart) { alert('Data fim deve ser maior ou igual à data início.'); return; }
+    setReportLoading(true);
+    try {
+      const dates = listDays(reportStart, reportEnd);
+      const rows = [];
+      for (const d of dates){
+        try {
+          const res = await apiFetch(`/rg/agendamentos?data=${d}`);
+          if (!res.ok) continue;
+          const j = await res.json();
+          const list = j.agendamentos || [];
+          list.filter(a => a.status === 'agendado').forEach(a => {
+            rows.push({ data: d, hora: (a.hora||'').slice(0,5), nome: a.nome_cliente || a.telefone || '-', cpf: a.cpf || '-' });
+          });
+        } catch(e){ /* ignore */ }
+      }
+      if (rows.length === 0){
+        alert('Nenhum agendamento no período.');
+        setReportLoading(false);
+        return;
+      }
+      const doc = new jsPDF();
+      doc.setFontSize(12);
+      doc.text('Relatório de Agendamentos', 14, 18);
+      doc.setFontSize(10);
+      doc.text(`Período: ${formatDayLabel(reportStart)} a ${formatDayLabel(reportEnd)}`, 14, 26);
+      autoTable(doc, {
+        startY: 32,
+        head: [['Data', 'Hora', 'Cliente', 'CPF']],
+        body: rows.map(r => [formatDayLabel(r.data), r.hora, r.nome, r.cpf]),
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [43,124,255] }
+      });
+      doc.save('agendamentos.pdf');
+      setShowReportModal(false);
+    } finally {
+      setReportLoading(false);
+    }
+  }
+
   return (
     <div style={{ padding:24 }}>
       <h1>Agenda de Atendimentos — RG (Escrevente)</h1>
@@ -595,11 +656,12 @@ export default function RGAgenda() {
 
         <div style={{ flex:1 }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-            <h3 style={{ margin:0 }}>Atendimentos de {day}</h3>
+            <h3 style={{ margin:0 }}>Atendimentos de {formatDayLabel(day)}</h3>
             <div style={{ display:'flex', gap:8 }}>
+                <button className="rg-btn rg-btn-outline" onClick={()=>setShowReportModal(true)}>Relatórios</button>
                 <button className="rg-btn" style={{ background:'#dc2626', border:'1px solid #b91c1c', color:'#fff' }} onClick={()=>{ setShowSuspModal(true); loadSuspensos(); }}>Clientes Suspensos</button>
-              <button className="rg-btn rg-btn-success-outline" onClick={()=>setShowSlotModal(true)}>Configurar Agenda</button>
               <button className="rg-btn rg-btn-success" onClick={()=>openNew(day)}>Adicionar Agendamento</button>
+              <button className="rg-btn rg-btn-success-outline" onClick={()=>setShowSlotModal(true)}>Configurar Agenda</button>
             </div>
           </div>
 
@@ -686,6 +748,29 @@ export default function RGAgenda() {
                   <button className="btn" onClick={saveEditing} style={{ padding:'8px 14px', borderRadius:6, background:'#2b7cff', color:'#fff', border:'none' }}>Salvar</button>
                   <button className="btn outline" onClick={()=>setShowModal(false)} style={{ padding:'8px 12px', borderRadius:6 }}>Fechar</button>
                 </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showReportModal && (
+        <div className="rg-modal" onClick={(e)=>{ if (e.target.classList.contains('rg-modal')) setShowReportModal(false); }}>
+          <div className="rg-modal-content" style={{ maxWidth:420 }}>
+            <h3 className="rg-modal-title" style={{ marginBottom:8 }}>Relatórios de Agendamentos</h3>
+            <div className="rg-form" style={{ display:'flex', flexDirection:'column', gap:12 }}>
+              <div>
+                <div className="rg-small">Data início</div>
+                <input className="rg-input" type="date" value={reportStart} onChange={e=>setReportStart(e.target.value)} />
+              </div>
+              <div>
+                <div className="rg-small">Data fim</div>
+                <input className="rg-input" type="date" value={reportEnd} onChange={e=>setReportEnd(e.target.value)} />
+              </div>
+              <div className="rg-small" style={{ color:'#555' }}>O PDF traz apenas agendamentos com status "agendado".</div>
+              <div style={{ display:'flex', justifyContent:'space-between', gap:8, marginTop:4 }}>
+                <button className="rg-btn rg-btn-outline" onClick={()=>setShowReportModal(false)}>Fechar</button>
+                <button className="rg-btn rg-btn-primary" disabled={reportLoading} onClick={generateReport}>{reportLoading ? 'Gerando...' : 'Gerar PDF'}</button>
+              </div>
             </div>
           </div>
         </div>
