@@ -59,6 +59,11 @@ export default function RGAgenda() {
   const [slotDuration, setSlotDuration] = useState(30);
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkMessages, setBulkMessages] = useState([]);
+  const [suspensos, setSuspensos] = useState([]);
+  const [suspLoading, setSuspLoading] = useState(false);
+  const [suspActionId, setSuspActionId] = useState(null);
+  const [suspQuery, setSuspQuery] = useState('');
+  const [suspResults, setSuspResults] = useState([]);
 
   const OPEN_TIME_START = '09:00';
   const OPEN_TIME_END = '17:00';
@@ -150,6 +155,10 @@ export default function RGAgenda() {
     setCalendarMode('month');
   }, []);
 
+  useEffect(() => {
+    loadSuspensos();
+  }, []);
+
   async function apiFetch(path, opts={}){
     const headers = opts.headers || {};
     if (authToken) headers.Authorization = `Bearer ${authToken}`;
@@ -157,6 +166,19 @@ export default function RGAgenda() {
     if (!apiURL) throw new Error('apiURL is not configured in src/config.js');
     const res = await fetch(`${apiURL}${path}`, {...opts, headers});
     return res;
+  }
+
+  // load suspended list
+  async function loadSuspensos(){
+    try {
+      setSuspLoading(true);
+      const res = await apiFetch('/rg/clientes/suspensos');
+      if (res.ok) {
+        const j = await res.json();
+        setSuspensos(j.clientes || []);
+      }
+    } catch(e){ /* ignore */ }
+    setSuspLoading(false);
   }
 
   // fetch cliente suggestions (debounced)
@@ -178,6 +200,23 @@ export default function RGAgenda() {
     }, 300);
     return () => { mounted = false; clearTimeout(t); };
   }, [clienteQuery]);
+
+  // search clients to suspend (debounced)
+  useEffect(() => {
+    if (!suspQuery || suspQuery.length < 2) { setSuspResults([]); return; }
+    let active = true;
+    const t = setTimeout(async () => {
+      try {
+        const res = await apiFetch(`/rg/clientes?query=${encodeURIComponent(suspQuery)}`);
+        if (!active) return;
+        if (res.ok) {
+          const j = await res.json();
+          setSuspResults(j.clientes || []);
+        }
+      } catch(e){ /* ignore */ }
+    }, 300);
+    return () => { active = false; clearTimeout(t); };
+  }, [suspQuery]);
 
   async function loadMonth(m) {
     try {
@@ -426,6 +465,18 @@ export default function RGAgenda() {
     } catch(e){ alert('Erro ao alterar slot'); }
   }
 
+  async function toggleSuspensao(id, suspenso){
+    if (!id) return;
+    setSuspActionId(id);
+    try {
+      const res = await apiFetch(`/rg/clientes/${id}/suspensao`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ suspenso }) });
+      if (res.ok) {
+        await loadSuspensos();
+      }
+    } catch(e){ /* ignore */ }
+    setSuspActionId(null);
+  }
+
   return (
     <div style={{ padding:24 }}>
       <h1>Agenda de Atendimentos — RG (Escrevente)</h1>
@@ -590,6 +641,63 @@ export default function RGAgenda() {
                 ))
               )
             )}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop:24, padding:16, border:'1px solid #e5eaf3', borderRadius:10, background:'#fbfdff' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:12, flexWrap:'wrap' }}>
+          <div>
+            <h3 style={{ margin:'0 0 4px 0' }}>Suspensões de clientes</h3>
+            <div className="small">Visualize suspensos, prazos e libere ou aplique nova suspensão (30 dias).</div>
+          </div>
+          <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+            <button className="rg-btn rg-btn-outline" onClick={loadSuspensos} disabled={suspLoading}>Atualizar lista</button>
+          </div>
+        </div>
+
+        <div style={{ marginTop:12, display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))', gap:12 }}>
+          <div style={{ border:'1px solid #e6eefc', borderRadius:8, padding:12, background:'#fff' }}>
+            <div style={{ fontWeight:700, marginBottom:8 }}>Suspensos atuais</div>
+            {suspLoading ? <div className="small">Carregando...</div> : (
+              suspensos.length === 0 ? <div className="small">Nenhum cliente suspenso.</div> : (
+                <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                  {suspensos.map(c => {
+                    const release = c.releaseAt || c.releaseat || c.suspenso_inicio;
+                    return (
+                      <div key={c.id} style={{ border:'1px solid #edf2ff', borderRadius:8, padding:8, background:'#f9fbff' }}>
+                        <div style={{ fontWeight:600 }}>{c.nome}</div>
+                        <div className="small">CPF: {c.cpf || '-'}</div>
+                        <div className="small">Início: {c.suspenso_inicio ? formatDayLabel(c.suspenso_inicio.slice(0,10)) : '-'}</div>
+                        <div className="small">Liberação: {release ? formatDayLabel(release.slice(0,10)) : '-'}</div>
+                        <div style={{ marginTop:6 }}>
+                          <button className="rg-btn rg-btn-outline" disabled={suspActionId === c.id} onClick={()=>toggleSuspensao(c.id, false)}>Cancelar suspensão</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )
+            )}
+          </div>
+
+          <div style={{ border:'1px solid #e6eefc', borderRadius:8, padding:12, background:'#fff' }}>
+            <div style={{ fontWeight:700, marginBottom:8 }}>Aplicar suspensão (30 dias)</div>
+            <input className="rg-input" placeholder="Buscar por nome ou CPF" value={suspQuery} onChange={e=>setSuspQuery(e.target.value)} />
+            {suspResults.length > 0 && (
+              <div style={{ marginTop:8, maxHeight:200, overflow:'auto', border:'1px solid #eee', borderRadius:6 }}>
+                {suspResults.map(c => (
+                  <div key={c.id} style={{ padding:8, borderBottom:'1px solid #f2f4f8', display:'flex', justifyContent:'space-between', alignItems:'center', gap:8 }}>
+                    <div>
+                      <div style={{ fontWeight:600 }}>{c.nome}</div>
+                      <div className="small">CPF: {c.cpf || '-'} | Email: {c.email || '-'}</div>
+                    </div>
+                    <button className="rg-btn rg-btn-outline" disabled={suspActionId === c.id} onClick={()=>toggleSuspensao(c.id, true)}>Suspender</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="small" style={{ marginTop:8 }}>Selecione um cliente para suspender por 30 dias. A suspensão começa hoje.</div>
           </div>
         </div>
       </div>
