@@ -29,6 +29,40 @@ function RelatorioCNJ() {
     setErro('');
   };
 
+  // Cálculo dos subtotais usados no tooltip e no container de somatórias
+  let arrecadacaoBreakdown = null;
+  let somatorias = null;
+  if (resultado && resultado.dadosIndividuais) {
+    const sumField = (field) => resultado.dadosIndividuais.reduce((s, it) => s + Number(it[field] || 0), 0);
+
+    const emolumentoNum = sumField('emolumentoApurado');
+    const recompeRecebidoNum = sumField('recompeRecebido');
+    const tfjNum = sumField('tfj');
+    const issqnNum = sumField('issqn');
+    const totalDespesasNum = sumField('totalDespesas');
+    const recompeApuradoNum = sumField('recompeApurado');
+    const atosPraticadosNum = sumField('atosPraticados');
+
+    arrecadacaoBreakdown = {
+      emolumento: emolumentoNum.toFixed(2),
+      recompeRecebido: recompeRecebidoNum.toFixed(2),
+      tfj: tfjNum.toFixed(2),
+      issqn: issqnNum.toFixed(2),
+    };
+
+    somatorias = {
+      emolumentoNum,
+      recompeRecebidoNum,
+      tfjNum,
+      issqnNum,
+      totalDespesasNum,
+      recompeApuradoNum,
+      atosPraticadosNum,
+      arrecadacaoCalculadaNum: emolumentoNum + recompeRecebidoNum + tfjNum + issqnNum,
+      repassesCalculadoNum: recompeApuradoNum + issqnNum + tfjNum,
+    };
+  }
+
   const enviarArquivosParaBackend = async () => {
   if (arquivos.length !== 6) {
     setErro('Selecione exatamente 6 arquivos PDF.');
@@ -327,7 +361,20 @@ Data de Geração: ${new Date().toLocaleDateString('pt-BR')}
                   <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
                     R$ {resultado.totais.arrecadacao}
                   </div>
-                  <div style={{ fontSize: '14px', opacity: 0.9 }}>Arrecadação</div>
+                  <div style={{ fontSize: '14px', opacity: 0.9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    Arrecadação
+                    {arrecadacaoBreakdown && (
+                      <span
+                        style={{ marginLeft: '8px', cursor: 'help', fontSize: '14px' }}
+                        title={
+`Emolumento Apurado: R$ ${arrecadacaoBreakdown.emolumento}\nRECOMPE Recebido: R$ ${arrecadacaoBreakdown.recompeRecebido}\nTFJ: R$ ${arrecadacaoBreakdown.tfj}\nISSQN: R$ ${arrecadacaoBreakdown.issqn}`
+                        }
+                        aria-label="Detalhamento da arrecadação"
+                      >
+                        ℹ️
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
@@ -343,6 +390,57 @@ Data de Geração: ${new Date().toLocaleDateString('pt-BR')}
                 </div>
               </div>
             </div>
+
+            {/* Somatórias que compõem os totais exibidos no resumo */}
+            {somatorias && (
+              <div style={{
+                background: 'white',
+                borderRadius: '12px',
+                padding: '20px',
+                marginBottom: '20px',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.06)'
+              }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#2c3e50' }}>🔎 Cálculo das Somatórias</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                  <div style={{ fontSize: '14px' }}>
+                    <div style={{ fontWeight: 600 }}>Emolumento Apurado</div>
+                    <div>R$ {somatorias.emolumentoNum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                  <div style={{ fontSize: '14px' }}>
+                    <div style={{ fontWeight: 600 }}>RECOMPE Recebido</div>
+                    <div>R$ {somatorias.recompeRecebidoNum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                  <div style={{ fontSize: '14px' }}>
+                    <div style={{ fontWeight: 600 }}>TFJ</div>
+                    <div>R$ {somatorias.tfjNum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                  <div style={{ fontSize: '14px' }}>
+                    <div style={{ fontWeight: 600 }}>ISSQN</div>
+                    <div>R$ {somatorias.issqnNum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                  <div style={{ fontSize: '14px' }}>
+                    <div style={{ fontWeight: 600 }}>Arrecadação (soma acima)</div>
+                    <div style={{ fontWeight: 700 }}>R$ {somatorias.arrecadacaoCalculadaNum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                  <div style={{ fontSize: '14px' }}>
+                    <div style={{ fontWeight: 600 }}>Custeio (Despesas)</div>
+                    <div>R$ {somatorias.totalDespesasNum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                  <div style={{ fontSize: '14px' }}>
+                    <div style={{ fontWeight: 600 }}>RECOMPE Apurado</div>
+                    <div>R$ {somatorias.recompeApuradoNum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                  <div style={{ fontSize: '14px' }}>
+                    <div style={{ fontWeight: 600 }}>Repasses (RECOMPE Apurado + ISSQN + TFJ)</div>
+                    <div style={{ fontWeight: 700 }}>R$ {somatorias.repassesCalculadoNum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                  <div style={{ fontSize: '14px' }}>
+                    <div style={{ fontWeight: 600 }}>Atos Praticados (soma)</div>
+                    <div>{somatorias.atosPraticadosNum}</div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Detalhamento por Arquivo */}
             <h3 style={{ color: '#2c3e50', marginBottom: '20px' }}>
