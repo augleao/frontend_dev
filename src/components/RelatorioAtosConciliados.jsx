@@ -648,18 +648,9 @@ function RelatorioAtosConciliados() {
                 <button
                   key={label}
                   onClick={fn}
-                  style={{
-                    padding: '4px 12px',
-                    background: '#f3f4f6',
-                    color: '#4f46e5',
-                    border: '1px solid #c7d2fe',
-                    borderRadius: 6,
-                    fontWeight: 600,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                    transition: 'background 0.2s',
-                  }}
+                  className="btn-gradient btn-gradient-blue btn-compact"
                   type="button"
+                  style={{ fontSize: 12 }}
                 >
                   {label}
                 </button>
@@ -673,42 +664,16 @@ function RelatorioAtosConciliados() {
                   setFiltroFormas([]);
                   setFiltroAtos([]);
                 }}
-                style={{
-                  padding: '10px 22px',
-                  background: '#f87171',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontWeight: 700,
-                  fontSize: 15,
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(220, 38, 38, 0.10)',
-                  alignSelf: 'stretch',
-                  transition: 'background 0.2s',
-                  letterSpacing: 0.5,
-                  flex: 1
-                }}
+                className="btn-gradient btn-gradient-red btn-block"
+                style={{ flex: 1 }}
                 title="Limpar todos os filtros"
               >
                 Limpar Filtros
               </button>
               <button
                 onClick={gerarRelatorioPDF}
-                style={{
-                  padding: '10px 22px',
-                  background: '#4f46e5',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontWeight: 700,
-                  fontSize: 15,
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(76, 81, 255, 0.10)',
-                  alignSelf: 'stretch',
-                  transition: 'background 0.2s',
-                  letterSpacing: 0.5,
-                  flex: 1
-                }}
+                className="btn-gradient btn-gradient-green btn-block"
+                style={{ flex: 1 }}
                 title="Gerar relatório PDF com os dados filtrados"
               >
                 Gerar Relatório PDF
@@ -842,17 +807,8 @@ function RelatorioAtosConciliados() {
                     </div>
                     <button
                       onClick={() => excluirRelatorio(relatorio.id)}
-                      style={{
-                        padding: '8px 14px',
-                        background: '#f87171',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        boxShadow: '0 2px 8px rgba(220, 38, 38, 0.10)',
-                        minWidth: 120
-                      }}
+                      className="btn-gradient btn-gradient-red btn-compact"
+                      style={{ minWidth: 120 }}
                       title="Excluir este relatório"
                     >
                       Excluir

@@ -68,7 +68,11 @@ function UploadForm() {
           <option value="manuscrito">Manuscrito</option>
           <option value="misto">Misto</option>
         </select>
-        <label htmlFor="fileInput" className="custom-file-button" style={{ marginRight: 12, marginBottom: 0 }}>
+        <label
+          htmlFor="fileInput"
+          className="btn-gradient btn-gradient-orange btn-compact"
+          style={{ marginRight: 12, marginBottom: 0 }}
+        >
           {file ? file.name : 'Escolher Arquivo PDF'}
         </label>
         <input
@@ -80,7 +84,7 @@ function UploadForm() {
         />
         <button
           type="submit"
-          className="custom-file-button"
+          className={`btn-gradient btn-gradient-green btn-compact${(!file || uploading) ? ' btn-muted' : ''}`}
           style={{ marginLeft: 0 }}
           disabled={!file || uploading}
         >
