@@ -218,15 +218,7 @@ function OnedriveConfig() {
           <button
             type="button"
             onClick={handleOpenAuthUrl}
-            style={{
-              background: 'linear-gradient(135deg,#16a34a,#15803d)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 10,
-              padding: '10px 18px',
-              fontWeight: 700,
-              cursor: 'pointer'
-            }}
+            className="btn-gradient btn-gradient-green"
           >
             Gerar URL de autorização
           </button>
@@ -271,7 +263,7 @@ function OnedriveConfig() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+          <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
             <button
               type="button"
               onClick={async () => {
@@ -296,8 +288,10 @@ function OnedriveConfig() {
                 }
               }}
               disabled={savingBb}
-              style={{ background: savingBb ? '#94a3b8' : 'linear-gradient(135deg,#2563eb,#1d4ed8)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 18px', fontWeight: 800, cursor: savingBb ? 'not-allowed' : 'pointer' }}
-            >{savingBb ? 'Salvando…' : 'Salvar Backblaze'}</button>
+              className="btn-gradient btn-gradient-blue"
+            >
+              {savingBb ? 'Salvando…' : 'Salvar Backblaze'}
+            </button>
             <button
               type="button"
               onClick={async () => {
@@ -314,8 +308,10 @@ function OnedriveConfig() {
                 } finally { setDeletingBb(false); }
               }}
               disabled={deletingBb || !bbRecordId}
-              style={{ background: deletingBb ? '#f87171' : '#dc2626', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 18px', fontWeight: 800, cursor: deletingBb || !bbRecordId ? 'not-allowed' : 'pointer' }}
-            >{deletingBb ? 'Removendo…' : 'Excluir Backblaze'}</button>
+              className="btn-gradient btn-gradient-red"
+            >
+              {deletingBb ? 'Removendo…' : 'Excluir Backblaze'}
+            </button>
           </div>
         </div>
 
@@ -348,13 +344,8 @@ function OnedriveConfig() {
                 <button
                   type="button"
                   onClick={() => setShowSecret(prev => !prev)}
-                  style={{
-                    minWidth: 96,
-                    border: '1px solid #d0d7de',
-                    borderRadius: 10,
-                    background: '#f8fafc',
-                    cursor: 'pointer'
-                  }}
+                  className="btn-gradient btn-gradient-orange btn-compact"
+                  style={{ minWidth: 96 }}
                 >
                   {showSecret ? 'Ocultar' : 'Exibir'}
                 </button>
@@ -431,13 +422,8 @@ function OnedriveConfig() {
                       triggerToast('error', 'Não foi possível copiar. Copie manualmente.');
                     }
                   }}
-                  style={{
-                    minWidth: 96,
-                    border: '1px solid #d0d7de',
-                    borderRadius: 10,
-                    background: '#f8fafc',
-                    cursor: 'pointer'
-                  }}
+                  className="btn-gradient btn-gradient-blue btn-compact"
+                  style={{ minWidth: 96 }}
                 >
                   Copiar
                 </button>
@@ -446,20 +432,12 @@ function OnedriveConfig() {
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+        <div style={{ display: 'flex', gap: 10, marginTop: 24, flexWrap: 'wrap' }}>
           <button
             type="button"
             onClick={handleSave}
             disabled={saving || loading}
-            style={{
-              background: saving ? '#94a3b8' : 'linear-gradient(135deg,#2563eb,#1d4ed8)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 10,
-              padding: '10px 18px',
-              fontWeight: 800,
-              cursor: saving || loading ? 'not-allowed' : 'pointer'
-            }}
+            className="btn-gradient btn-gradient-green"
           >
             {saving ? 'Salvando…' : 'Salvar'}
           </button>
@@ -467,15 +445,7 @@ function OnedriveConfig() {
             type="button"
             onClick={handleDelete}
             disabled={deleting || !recordId || loading}
-            style={{
-              background: deleting ? '#f87171' : '#dc2626',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 10,
-              padding: '10px 18px',
-              fontWeight: 800,
-              cursor: deleting || !recordId || loading ? 'not-allowed' : 'pointer'
-            }}
+            className="btn-gradient btn-gradient-red"
           >
             {deleting ? 'Removendo…' : 'Excluir'}
           </button>

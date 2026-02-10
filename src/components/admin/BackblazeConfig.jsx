@@ -105,8 +105,22 @@ export default function BackblazeConfig() {
       </div>
 
       <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-        <button className="btn btn-success" onClick={handleSave} disabled={loading}>{loading ? 'Salvando…' : 'Salvar'}</button>
-        <button className="btn btn-danger" onClick={handleDelete} disabled={loading}>Remover</button>
+        <button
+          type="button"
+          className="btn-gradient btn-gradient-green btn-compact"
+          onClick={handleSave}
+          disabled={loading}
+        >
+          {loading ? 'Salvando…' : 'Salvar'}
+        </button>
+        <button
+          type="button"
+          className="btn-gradient btn-gradient-red btn-compact"
+          onClick={handleDelete}
+          disabled={loading}
+        >
+          Remover
+        </button>
       </div>
 
       <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage('')} />

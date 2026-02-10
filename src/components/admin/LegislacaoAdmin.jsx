@@ -119,7 +119,8 @@ export default function LegislacaoAdmin() {
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button
             onClick={() => navigate('/admin')}
-            style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #ddd', background: '#f8f9fa', cursor: 'pointer' }}
+            type="button"
+            className="btn-gradient btn-gradient-blue btn-compact"
           >
             ← Voltar
           </button>
@@ -128,7 +129,8 @@ export default function LegislacaoAdmin() {
         <div>
           <button
             onClick={onOpenNovo}
-            style={{ padding: '10px 18px', borderRadius: 8, border: 'none', background: '#1976d2', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
+            type="button"
+            className="btn-gradient btn-gradient-green"
           >
             + Novo
           </button>
@@ -153,7 +155,11 @@ export default function LegislacaoAdmin() {
           <input type="checkbox" checked={mostrarInativos} onChange={(e) => setMostrarInativos(e.target.checked)} />
           Mostrar inativos
         </label>
-        <button onClick={carregar} style={{ padding: '10px 16px', borderRadius: 8, border: 'none', background: '#16a085', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
+        <button
+          type="button"
+          onClick={carregar}
+          className="btn-gradient btn-gradient-blue"
+        >
           Buscar
         </button>
       </div>
@@ -187,8 +193,22 @@ export default function LegislacaoAdmin() {
                   <td style={{ borderBottom: '1px solid #f2f2f2', padding: 10 }}>{it.jurisdicao || '-'}</td>
                   <td style={{ borderBottom: '1px solid #f2f2f2', padding: 10 }}>{it.ativo ? 'Sim' : 'Não'}</td>
                   <td style={{ borderBottom: '1px solid #f2f2f2', padding: 10 }}>
-                    <button onClick={() => onOpenEditar(it)} style={{ padding: '6px 10px', marginRight: 8, borderRadius: 6, border: '1px solid #ddd', background: '#fff', cursor: 'pointer' }}>Editar</button>
-                    <button onClick={() => onExcluir(it)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e57373', background: '#ffcdd2', color: '#b71c1c', cursor: 'pointer' }}>Excluir</button>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => onOpenEditar(it)}
+                        className="btn-gradient btn-gradient-blue btn-compact"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onExcluir(it)}
+                        className="btn-gradient btn-gradient-red btn-compact"
+                      >
+                        Excluir
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -271,8 +291,19 @@ export default function LegislacaoAdmin() {
           </div>
         </div>
         <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-          <button onClick={() => setModalOpen(false)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #ddd', background: '#fff' }}>Cancelar</button>
-          <button onClick={onSalvar} disabled={loading} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: '#27ae60', color: '#fff', fontWeight: 700 }}>
+          <button
+            type="button"
+            onClick={() => setModalOpen(false)}
+            className="btn-gradient btn-gradient-red btn-compact"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={onSalvar}
+            disabled={loading}
+            className="btn-gradient btn-gradient-green btn-compact"
+          >
             {loading ? 'Salvando…' : 'Salvar'}
           </button>
         </div>

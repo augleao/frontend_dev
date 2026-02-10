@@ -210,7 +210,7 @@ export default function TrackerAuditoria() {
         <button
           type="button"
           onClick={() => setFilters({ event: '', uid: '', path: '', from: '', to: '' })}
-          style={ghostButton}
+          className="btn-gradient btn-gradient-blue btn-compact"
         >
           Limpar filtros
         </button>
@@ -218,7 +218,7 @@ export default function TrackerAuditoria() {
           type="button"
           onClick={purgeAll}
           disabled={purging}
-          style={{ ...ghostButton, borderColor: '#dc2626', color: '#dc2626' }}
+          className="btn-gradient btn-gradient-red btn-compact"
         >
           {purging ? 'Excluindo...' : 'Excluir tudo'}
         </button>
@@ -287,6 +287,7 @@ export default function TrackerAuditoria() {
 
                           <button
                             type="button"
+                            className="btn-gradient btn-gradient-blue btn-compact"
                             onClick={(e) => {
                               e.stopPropagation();
                               setExpanded((m) => ({ ...m, [row.id]: !isOpen }));
@@ -331,7 +332,6 @@ const subtitleStyle = { marginTop: 0, marginBottom: '20px', color: '#475569' };
 const statsGrid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: 16 };
 const filtersGrid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' };
 const inputStyle = { padding: '10px', border: '1px solid #d1d5db', borderRadius: 6, background: '#fff' };
-const ghostButton = { padding: '10px', borderRadius: 6, border: '1px solid #d1d5db', background: '#f8fafc', cursor: 'pointer' };
 const errorStyle = { color: '#dc2626', marginBottom: '12px' };
 const infoStyle = { color: '#475569', marginBottom: '12px' };
 const cardsWrap = { display: 'flex', flexDirection: 'column', gap: '24px' };
@@ -340,6 +340,6 @@ const card = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12
 const cardTop = { display: 'flex', justifyContent: 'space-between', gap: 12 };
 const pill = { display: 'inline-block', padding: '4px 10px', borderRadius: 999, fontSize: '12px', fontWeight: 700, letterSpacing: '0.3px' };
 const rowLine = { fontSize: '13px', color: '#6b7280', borderTop: '1px solid #f1f5f9', paddingTop: 8 };
-const expandBtn = { alignSelf: 'flex-start', border: '1px solid #e2e8f0', background: '#f8fafc', borderRadius: 6, padding: '6px 10px', cursor: 'pointer', fontSize: '13px' };
+const expandBtn = { alignSelf: 'flex-start', marginTop: 8, fontSize: '13px' };
 const jsonBox = { background: '#0f172a', color: '#e2e8f0', padding: 12, borderRadius: 8, fontSize: '12px', maxHeight: 240, overflow: 'auto' };
 const statCard = { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12, boxShadow: '0 8px 16px rgba(15, 23, 42, 0.04)' };

@@ -208,13 +208,28 @@ export default function AtosTabelaManager() {
           </div>
         </div>
         <div className="atm-version-actions">
-          <button type="button" onClick={() => handlePreview(item.origem)} disabled={previewBusy && preview?.origem === item.origem}>
+          <button
+            type="button"
+            className="btn-gradient btn-gradient-blue btn-compact"
+            onClick={() => handlePreview(item.origem)}
+            disabled={previewBusy && preview?.origem === item.origem}
+          >
             <FiEye size={16} /> Prévia
           </button>
-          <button type="button" onClick={() => handleActivate(item.origem)} disabled={tableBusy}>
+          <button
+            type="button"
+            className="btn-gradient btn-gradient-green btn-compact"
+            onClick={() => handleActivate(item.origem)}
+            disabled={tableBusy}
+          >
             <FiPlay size={16} /> Ativar
           </button>
-          <button type="button" className="atm-danger" onClick={() => handleDelete(item.origem)} disabled={tableBusy}>
+          <button
+            type="button"
+            className="btn-gradient btn-gradient-red btn-compact"
+            onClick={() => handleDelete(item.origem)}
+            disabled={tableBusy}
+          >
             <FiTrash2 size={16} /> Excluir
           </button>
         </div>
@@ -240,7 +255,12 @@ export default function AtosTabelaManager() {
           <span>Versão em uso</span>
           <strong>{active?.origem || 'não definida'}</strong>
           <small>{active?.total ? `${active.total} atos carregados` : 'Capture ou ative uma origem para definir a versão atual.'}</small>
-          <button type="button" onClick={loadVersions} disabled={loading}>
+          <button
+            type="button"
+            className="btn-gradient btn-gradient-blue btn-compact atm-hero-btn"
+            onClick={loadVersions}
+            disabled={loading}
+          >
             <FiRefreshCcw size={16} /> Atualizar estado
           </button>
         </div>
@@ -276,7 +296,11 @@ export default function AtosTabelaManager() {
               />
               <span>Substituir se já existir</span>
             </label>
-            <button type="submit" disabled={snapshotBusy}>
+            <button
+              type="submit"
+              className="btn-gradient btn-gradient-green"
+              disabled={snapshotBusy}
+            >
               <LuLayers size={18} /> {snapshotBusy ? 'Salvando...' : 'Capturar versão atual'}
             </button>
           </form>
@@ -305,7 +329,11 @@ export default function AtosTabelaManager() {
                 placeholder='[ { "codigo": "7801", "descricao": "Registro...", "valor_final": 123.45 }, ... ]'
               />
             </label>
-            <button type="submit" disabled={importBusy}>
+            <button
+              type="submit"
+              className="btn-gradient btn-gradient-orange"
+              disabled={importBusy}
+            >
               <FiUpload size={18} /> {importBusy ? 'Importando...' : 'Importar registros'}
             </button>
           </form>
@@ -317,7 +345,12 @@ export default function AtosTabelaManager() {
           <h2>Histórico de origens
             <small>{loading ? 'Carregando...' : `${versions.length} origens cadastradas`}</small>
           </h2>
-          <button type="button" onClick={loadVersions} disabled={loading}>
+          <button
+            type="button"
+            className="btn-gradient btn-gradient-blue btn-compact"
+            onClick={loadVersions}
+            disabled={loading}
+          >
             <FiRefreshCcw size={16} /> Atualizar lista
           </button>
         </div>
@@ -334,7 +367,11 @@ export default function AtosTabelaManager() {
               <h3>Origem {preview.origem}</h3>
               <small>{preview.registros.length} registros exibidos (máx. 200)</small>
             </div>
-            <button type="button" onClick={() => setPreview({ origem: null, registros: [] })}>
+            <button
+              type="button"
+              className="btn-gradient btn-gradient-red btn-compact"
+              onClick={() => setPreview({ origem: null, registros: [] })}
+            >
               Fechar
             </button>
           </header>
@@ -413,7 +450,12 @@ export default function AtosTabelaManager() {
                       />
                     </td>
                     <td className="atm-inline-actions">
-                      <button type="button" onClick={() => handlePreviewSave(row)} disabled={updateBusy === row.codigo}>
+                      <button
+                        type="button"
+                        className="btn-gradient btn-gradient-green btn-compact"
+                        onClick={() => handlePreviewSave(row)}
+                        disabled={updateBusy === row.codigo}
+                      >
                         <FiSave size={16} /> {updateBusy === row.codigo ? 'Salvando...' : 'Salvar'}
                       </button>
                     </td>

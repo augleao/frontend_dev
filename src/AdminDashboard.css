@@ -86,24 +86,9 @@
   margin-top: 32px;
 }
 
-.logout-btn {
-  width: 100%;
-  border: none;
-  border-radius: 14px;
-  padding: 12px 0;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.sidebar-logout-btn {
   gap: 8px;
-  transition: background 0.2s ease;
-}
-
-.logout-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  font-size: 0.95rem;
 }
 
 .dashboard-main {
@@ -130,18 +115,12 @@
   font-weight: 500;
 }
 
-.topbar-action-btn {
-  border: none;
-  border-radius: 18px;
-  padding: 12px 24px;
-  background: linear-gradient(120deg, var(--accent-primary), #4e7dff);
-  color: #fff;
-  font-weight: 600;
+.dashboard-topbar .topbar-action-btn {
   display: flex;
-  gap: 10px;
   align-items: center;
-  cursor: pointer;
-  box-shadow: 0 18px 25px rgba(31, 94, 255, 0.25);
+  gap: 10px;
+  padding: 12px 22px;
+  font-size: 0.95rem;
 }
 
 .dashboard-cards {
@@ -223,19 +202,9 @@
   display: block;
 }
 
-.pill-btn {
-  border: none;
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-weight: 600;
-  background: #f0f6ff;
-  color: var(--accent-primary);
-}
-
-.pill-btn.secondary {
-  background: rgba(255, 159, 63, 0.15);
-  color: var(--accent-secondary);
-  align-self: flex-start;
+.chart-pill {
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .bar-chart {
@@ -387,26 +356,30 @@
   gap: 16px;
 }
 
-.action-btn {
+.dashboard-actions .action-btn {
   text-decoration: none;
-  border: none;
-  border-radius: 18px;
-  padding: 18px 22px;
-  background: #fff;
-  box-shadow: var(--card-shadow);
-  color: #0a1428;
   display: flex;
-  gap: 12px;
   align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 20px 22px;
+  border-radius: 18px;
+  box-shadow: var(--card-shadow);
+  text-align: left;
+  line-height: 1.3;
 }
 
-.action-btn:hover {
+.dashboard-actions .action-btn:hover {
   transform: translateY(-3px);
+}
+
+.dashboard-actions .action-btn strong {
+  font-size: 1.05rem;
 }
 
 .action-description {
   font-size: 0.9rem;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .dashboard-modal-overlay {

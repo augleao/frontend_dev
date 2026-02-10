@@ -201,15 +201,7 @@ export default function EditarCombos() {
                   <button
                     type="button"
                     onClick={() => handleRemoverAto(a.id)}
-                    style={{
-                      background: '#e74c3c',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 6,
-                      padding: '2px 10px',
-                      fontSize: 13,
-                      cursor: 'pointer',
-                    }}
+                    className="btn-gradient btn-gradient-red btn-compact"
                   >
                     Remover
                   </button>
@@ -220,16 +212,7 @@ export default function EditarCombos() {
         )}
         <button
           type="submit"
-          style={{
-            padding: '10px 24px',
-            background: '#27ae60',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            fontWeight: 'bold',
-            fontSize: 16,
-            cursor: 'pointer',
-          }}
+          className="btn-gradient btn-gradient-green"
         >
           Salvar Combo
         </button>
@@ -256,16 +239,7 @@ export default function EditarCombos() {
                 <button
                   type="button"
                   onClick={() => handleExcluirCombo(combo.id)}
-                  style={{
-                    background: '#e74c3c',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 6,
-                    padding: '6px 16px',
-                    fontWeight: 'bold',
-                    fontSize: 14,
-                    cursor: 'pointer'
-                  }}
+                  className="btn-gradient btn-gradient-red btn-compact"
                 >
                   Excluir
                 </button>

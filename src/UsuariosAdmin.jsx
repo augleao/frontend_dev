@@ -68,21 +68,7 @@ export default function UsuariosAdmin() {
     }
   };
 
-  const buttonStyle = {
-    padding: '10px 24px',
-    background: '#1976d2',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 8,
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: 16,
-    transition: 'background 0.2s',
-  };
-  const buttonEditStyle = { ...buttonStyle, background: '#2196f3' };
-  const buttonSaveStyle = { ...buttonStyle, background: '#388e3c' };
-  const buttonCancelStyle = { ...buttonStyle, background: '#d32f2f' };
-  const buttonDeleteStyle = { ...buttonStyle, background: '#f44336' };
+  const actionGroupStyle = { display: 'flex', gap: 8, flexWrap: 'wrap' };
 
   return (
     <div style={{ maxWidth: 1000, margin: '40px auto', padding: 20, border: '1px solid #ddd', borderRadius: 8 }}>
@@ -193,20 +179,39 @@ export default function UsuariosAdmin() {
               </td>
               <td>
                 {editId === usuario.id ? (
-                  <>
-                    <button onClick={handleSave} style={buttonSaveStyle}>
+                  <div style={actionGroupStyle}>
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      className="btn-gradient btn-gradient-green btn-compact"
+                    >
                       Salvar
                     </button>
-                    <button onClick={() => setEditId(null)} style={buttonCancelStyle}>
+                    <button
+                      type="button"
+                      onClick={() => setEditId(null)}
+                      className="btn-gradient btn-gradient-red btn-compact"
+                    >
                       Cancelar
                     </button>
-                  </>
+                  </div>
                 ) : (
-                  <>
-                    <button onClick={() => handleEdit(usuario)} style={buttonEditStyle}>
+                  <div style={actionGroupStyle}>
+                    <button
+                      type="button"
+                      onClick={() => handleEdit(usuario)}
+                      className="btn-gradient btn-gradient-blue btn-compact"
+                    >
                       Editar
                     </button>
-                  </>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(usuario.id)}
+                      className="btn-gradient btn-gradient-red btn-compact"
+                    >
+                      Excluir
+                    </button>
+                  </div>
                 )}
               </td>
             </tr>

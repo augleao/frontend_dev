@@ -261,7 +261,8 @@ export default function RenderBackupManager() {
         onClick={() => {
           if (backups.length > 0) realizarBackupAgora(backups[0].id, true);
         }}
-        style={{ marginBottom: 8, padding: '8px 18px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 'bold', fontSize: 15 }}
+        className="btn-gradient btn-gradient-blue"
+        style={{ marginBottom: 8 }}
         disabled={backupLoading}
       >
         {backupLoading ? 'Processando...' : 'Realizar Backup Agora'}
@@ -294,7 +295,8 @@ export default function RenderBackupManager() {
           )}
         </div>
         <button
-          style={{ marginTop: 10, padding: '6px 18px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 'bold', fontSize: 14, width: '100%' }}
+          className="btn-gradient btn-gradient-blue btn-block btn-compact"
+          style={{ marginTop: 10 }}
           disabled={autoBackupLoading || backups.length === 0}
           onClick={async () => {
             if (backups.length > 0) {
@@ -372,8 +374,16 @@ export default function RenderBackupManager() {
                     )}
                   </td>
                   <td style={{ padding: 12, textAlign: 'center', borderBottom: '1px solid #dee2e6' }}>
-                    <div style={{ display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
-                      <button onClick={() => checkRecoveryStatus(service.id)} style={{ background: '#607d8b', color: '#fff', fontSize: 12, padding: '6px 12px', border: 'none', borderRadius: 8, fontWeight: 'bold' }} disabled={backupLoading || recoveryLoading}>Check Recovery</button>
+                    <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => checkRecoveryStatus(service.id)}
+                        className="btn-gradient btn-gradient-blue btn-compact"
+                        style={{ fontSize: 12 }}
+                        disabled={backupLoading || recoveryLoading}
+                      >
+                        Check Recovery
+                      </button>
                       <button
                         onClick={() => {
                           // Só permite disparar se recoveryInfo estiver disponível e for available
@@ -381,14 +391,18 @@ export default function RenderBackupManager() {
                             triggerRecovery(service.id);
                           }
                         }}
-                        style={{ background: '#9c27b0', color: '#fff', fontSize: 12, padding: '6px 12px', border: 'none', borderRadius: 8, fontWeight: 'bold', opacity: (backupLoading || recoveryLoading || !recoveryInfo[service.id]?.available) ? 0.5 : 1, cursor: (backupLoading || recoveryLoading || !recoveryInfo[service.id]?.available) ? 'not-allowed' : 'pointer' }}
+                        type="button"
+                        className="btn-gradient btn-gradient-orange btn-compact"
+                        style={{ fontSize: 12 }}
                         disabled={backupLoading || recoveryLoading || !recoveryInfo[service.id]?.available}
                       >
                         Disparar Recovery Manual
                       </button>
                       <button
                         onClick={() => realizarBackupAgora(service.id)}
-                        style={{ background: '#1976d2', color: '#fff', fontSize: 12, padding: '6px 12px', border: 'none', borderRadius: 8, fontWeight: 'bold' }}
+                        type="button"
+                        className="btn-gradient btn-gradient-green btn-compact"
+                        style={{ fontSize: 12 }}
                         disabled={backupLoading || recoveryLoading}
                         title="Solicitar backup lógico (export) agora via API da Render"
                       >
@@ -419,8 +433,23 @@ export default function RenderBackupManager() {
                     <div style={{ color: '#64748b', fontSize: 12 }}>{exp.filename || (exp.url ? decodeURIComponent(String(exp.url).split('/').pop()) : '')}</div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
-                    <a href={exp.url} target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2', fontWeight: 700, textDecoration: 'none', padding: '6px 10px', borderRadius: 8, border: '1px solid #dbeafe' }}>Download</a>
-                    <button onClick={() => { navigator.clipboard?.writeText(exp.url); }} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e6e6e6', background: '#f8fafc', cursor: 'pointer' }}>Copiar link</button>
+                    <a
+                      href={exp.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-gradient btn-gradient-blue btn-compact"
+                      style={{ fontSize: 12 }}
+                    >
+                      Download
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => { navigator.clipboard?.writeText(exp.url); }}
+                      className="btn-gradient btn-gradient-orange btn-compact"
+                      style={{ fontSize: 12 }}
+                    >
+                      Copiar link
+                    </button>
                   </div>
                 </div>
               ))}

@@ -25,6 +25,13 @@ import { useMemo, useState, useEffect } from 'react';
 import config from './config';
 import { Link, useNavigate } from 'react-router-dom';
 
+const gradientVariants = {
+  blue: 'btn-gradient-blue',
+  green: 'btn-gradient-green',
+  orange: 'btn-gradient-orange',
+  red: 'btn-gradient-red'
+};
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [showConfigurar, setShowConfigurar] = useState(false);
@@ -106,31 +113,36 @@ export default function AdminDashboard() {
       label: 'Configurar Serventia',
       description: 'Atualize dados institucionais e branding.',
       icon: FaCog,
-      onClick: () => { setShowConfigurar(true); setConfigModalFocus(null); setConfigOpenAgents(false); }
+        variant: 'blue',
+        onClick: () => { setShowConfigurar(true); setConfigModalFocus(null); setConfigOpenAgents(false); }
     },
     {
       label: 'Importar Atos',
       description: 'Suba novas tabelas 07/08 em minutos.',
       icon: FaFileUpload,
-      to: '/admin/importar-atos'
+        to: '/admin/importar-atos',
+        variant: 'orange'
     },
     {
       label: 'Versões TJMG',
       description: 'Selecione qual tabela de atos abastece o sistema.',
       icon: FaLayerGroup,
-      to: '/admin/atos-tabelas'
+        to: '/admin/atos-tabelas',
+        variant: 'blue'
     },
     {
       label: 'Backup Manual',
       description: 'Dispare uma cópia de segurança imediata.',
       icon: FaArchive,
-      to: '/admin/backup'
+        to: '/admin/backup',
+        variant: 'red'
     },
     {
       label: 'Prompts IA',
       description: 'Edite assistentes e roteiros inteligentes.',
       icon: FaRobot,
-      to: '/admin/prompts-ia'
+        to: '/admin/prompts-ia',
+        variant: 'green'
     }
   ];
 
@@ -161,7 +173,11 @@ export default function AdminDashboard() {
           })}
         </nav>
         <div className="sidebar-logout">
-          <button type="button" className="logout-btn" onClick={handleLogout}>
+          <button
+            type="button"
+            className="btn-gradient btn-gradient-red btn-block btn-compact sidebar-logout-btn"
+            onClick={handleLogout}
+          >
             <FaSignOutAlt size={16} />
             Sair
           </button>
@@ -175,15 +191,27 @@ export default function AdminDashboard() {
             <h1>Painel Administrativo</h1>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button type="button" className="topbar-action-btn" onClick={() => { setShowConfigurar(true); setConfigModalFocus('caixa'); setConfigOpenAgents(false); }}>
+            <button
+              type="button"
+              className="btn-gradient btn-gradient-green topbar-action-btn"
+              onClick={() => { setShowConfigurar(true); setConfigModalFocus('caixa'); setConfigOpenAgents(false); }}
+            >
               <FaMoneyBillWave size={16} />
               Tipo de Caixa
             </button>
-            <button type="button" className="topbar-action-btn" onClick={() => { setShowConfigurar(true); setConfigModalFocus(null); setConfigOpenAgents(true); }}>
+            <button
+              type="button"
+              className="btn-gradient btn-gradient-blue topbar-action-btn"
+              onClick={() => { setShowConfigurar(true); setConfigModalFocus(null); setConfigOpenAgents(true); }}
+            >
               <FaCog size={16} />
               Agentes de IA
             </button>
-            <button type="button" className="topbar-action-btn" onClick={() => setShowConfigIA(true)}>
+            <button
+              type="button"
+              className="btn-gradient btn-gradient-orange topbar-action-btn"
+              onClick={() => setShowConfigIA(true)}
+            >
               <FaRobot size={16} />
               Engine de IA
             </button>
@@ -218,7 +246,7 @@ export default function AdminDashboard() {
                 <strong>Result</strong>
                 <span>Comparativo {new Date().getFullYear()}</span>
               </div>
-              <button type="button" className="pill-btn">
+              <button type="button" className="btn-gradient btn-gradient-green btn-pill btn-compact chart-pill">
                 28,79%
               </button>
             </div>
@@ -265,7 +293,9 @@ export default function AdminDashboard() {
               <li>Lorem ipsum</li>
               <li>Lorem ipsum</li>
             </ul>
-            <button type="button" className="pill-btn secondary">Agentes de IA</button>
+            <button type="button" className="btn-gradient btn-gradient-blue btn-pill btn-compact chart-pill">
+              Agentes de IA
+            </button>
           </div>
         </section>
 
@@ -338,9 +368,11 @@ export default function AdminDashboard() {
         <section className="dashboard-actions">
           {quickActions.map((action) => {
             const Icon = action.icon;
+            const baseVariant = gradientVariants[action.variant] || gradientVariants.blue;
+            const classes = `btn-gradient ${baseVariant} action-btn`;
             if (action.to) {
               return (
-                <Link key={action.label} to={action.to} className="action-btn">
+                <Link key={action.label} to={action.to} className={classes}>
                   <Icon size={18} />
                   <span>
                     <strong>{action.label}</strong>
@@ -354,7 +386,7 @@ export default function AdminDashboard() {
               <button
                 type="button"
                 key={action.label}
-                className="action-btn"
+                className={classes}
                 onClick={action.onClick}
               >
                 <Icon size={18} />

@@ -9,23 +9,7 @@ function ImportarAtos() {
   const [editAto, setEditAto] = useState({});
   const [novoAto, setNovoAto] = useState({ codigo: '', descricao: '' });
 
-  // Estilos dos botões
-  const buttonStyle = {
-    padding: '10px 24px',
-    background: '#1976d2',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 8,
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginRight: 8,
-    transition: 'background 0.2s'
-  };
-  const buttonDisabledStyle = { ...buttonStyle, background: '#ccc', cursor: 'not-allowed' };
-  const buttonEditStyle = { ...buttonStyle, background: '#2196f3' };
-  const buttonSaveStyle = { ...buttonStyle, background: '#388e3c' };
-  const buttonCancelStyle = { ...buttonStyle, background: '#d32f2f' };
+  const actionGroupStyle = { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' };
 
   // Busca os atos do backend ao montar o componente
   // Função para buscar atos do backend
@@ -205,7 +189,11 @@ function ImportarAtos() {
             required
           />
         </div>
-        <button type="submit" disabled={loading} style={loading ? buttonDisabledStyle : buttonStyle}>
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-gradient btn-gradient-green"
+        >
           {loading ? 'Cadastrando...' : 'Cadastrar Ato'}
         </button>
       </form>
@@ -320,28 +308,30 @@ function ImportarAtos() {
                       </td>
                       <td style={{ border: '1px solid #ddd', padding: 12, textAlign: 'center' }}>
                         {editIndex === idx ? (
-                          <>
-                            <button onClick={handleEditSave} style={{
-              padding: '10px 20px',
-              background: '#1976d2',
-              color: '#fff',
-              borderRadius: 8,
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              fontSize: 16
-            }}>Salvar</button>
-                            <button onClick={() => setEditIndex(null)} style={buttonCancelStyle}>Cancelar</button>
-                          </>
+                          <div style={actionGroupStyle}>
+                            <button
+                              type="button"
+                              onClick={handleEditSave}
+                              className="btn-gradient btn-gradient-green btn-compact"
+                            >
+                              Salvar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditIndex(null)}
+                              className="btn-gradient btn-gradient-red btn-compact"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
                         ) : (
-                          <button onClick={() => handleEdit(idx)} style={{
-              padding: '10px 20px',
-              background: '#1976d2',
-              color: '#fff',
-              borderRadius: 8,
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              fontSize: 16
-            }}>Editar</button>
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(idx)}
+                            className="btn-gradient btn-gradient-blue btn-compact"
+                          >
+                            Editar
+                          </button>
                         )}
                       </td>
                     </tr>
@@ -351,7 +341,12 @@ function ImportarAtos() {
             </table>
           </div>
           <div style={{ textAlign: 'center', marginTop: 24 }}>
-            <button onClick={handleSalvar} disabled={loading} style={loading ? buttonDisabledStyle : buttonSaveStyle}>
+            <button
+              type="button"
+              onClick={handleSalvar}
+              disabled={loading}
+              className="btn-gradient btn-gradient-green"
+            >
               {loading ? 'Salvando...' : 'Salvar todas alterações'}
             </button>
           </div>

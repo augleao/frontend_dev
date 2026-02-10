@@ -112,8 +112,14 @@ export default function PromptsIAAdmin() {
           style={{ width: '100%', padding: 8, border: '1px solid #ccc', borderRadius: 6, fontFamily: 'monospace' }}
         />
         <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-          <button onClick={addNew} style={{ padding: '8px 16px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Salvar</button>
-          <button onClick={() => { setNewIdx(''); setNewPrompt(''); }} style={{ padding: '8px 16px', background: '#888', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Limpar</button>
+          <button type="button" onClick={addNew} className="btn-gradient btn-gradient-green btn-compact">Salvar</button>
+          <button
+            type="button"
+            onClick={() => { setNewIdx(''); setNewPrompt(''); }}
+            className="btn-gradient btn-gradient-orange btn-compact"
+          >
+            Limpar
+          </button>
         </div>
       </div>
 
@@ -146,8 +152,20 @@ function PromptRow({ item, onSave, onDelete }) {
         style={{ width: '100%', padding: 8, border: '1px solid #ccc', borderRadius: 6, fontFamily: 'monospace' }}
       />
       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-        <button onClick={() => onSave(item.indexador, val)} style={{ padding: '8px 16px', background: '#27ae60', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Salvar</button>
-        <button onClick={() => onDelete(item.indexador)} style={{ padding: '8px 16px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Apagar</button>
+        <button
+          type="button"
+          onClick={() => onSave(item.indexador, val)}
+          className="btn-gradient btn-gradient-green btn-compact"
+        >
+          Salvar
+        </button>
+        <button
+          type="button"
+          onClick={() => onDelete(item.indexador)}
+          className="btn-gradient btn-gradient-red btn-compact"
+        >
+          Apagar
+        </button>
       </div>
     </div>
   );
