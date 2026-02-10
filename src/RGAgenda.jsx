@@ -542,14 +542,14 @@ export default function RGAgenda() {
   }
 
   return (
-    <div className="rg-shell" style={{ padding:24 }}>
+    <div className="rg-shell">
       <h1>Agenda de Atendimentos — RG (Escrevente)</h1>
-      <div style={{ display:'flex', gap:20, alignItems:'flex-start' }}>
-        <div style={{ width:360 }}>
+      <div className="rg-layout">
+        <div className="rg-panel-wrapper">
           <div className={`rg-panel ${calendarMode==='day' ? 'day-mode' : ''}`}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div className="rg-day-header">
             <div style={{ fontWeight:700 }}>{(() => { const [y, mm] = month.split('-').map(Number); return `${monthNames[mm-1]} ${y}`; })()}</div>
-            <div>
+            <div className="rg-day-actions">
               <button className="btn outline" disabled={monthChanging} onClick={() => changeMonth(-1)}>‹</button>
               <button className="btn outline" disabled={monthChanging} onClick={() => changeMonth(1)}>›</button>
             </div>
@@ -592,9 +592,9 @@ export default function RGAgenda() {
           ) : (
             <div className="day-view">
               <div style={{ marginTop:12 }} className="rg-card">
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <div className="rg-day-header">
                   <div style={{ fontWeight:700 }}>{formatDayLabel(day)}</div>
-                  <div style={{ display:'flex', gap:8 }}>
+                  <div className="rg-day-actions">
                     <button className="rg-btn rg-btn-outline" onClick={() => setCalendarMode('month')}>Voltar ao Mês</button>
                   </div>
                 </div>
@@ -613,12 +613,12 @@ export default function RGAgenda() {
                     return (
                       <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                         {slotsList.map(s => (
-                          <div key={s.time} className="rg-card" style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                            <div style={{ display:'flex', gap:12, alignItems:'center' }}>
+                          <div key={s.time} className="rg-slot-card">
+                            <div className="rg-slot-card-body">
                               <div style={{ fontWeight:700 }}>{s.time}</div>
                               <div className="rg-small">{s.matches.length>0 ? `${s.matches.length} agendamento(s)` : 'Livre'}</div>
                             </div>
-                            <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                            <div className="rg-slot-card-actions">
                               {s.slotInfo ? (
                                 <div className={`rg-slot-status ${s.slotInfo.aberto ? 'rg-slot-open' : 'rg-slot-closed'}`}>{s.slotInfo.aberto ? 'Aberto' : 'Fechado'}</div>
                               ) : (
@@ -656,10 +656,10 @@ export default function RGAgenda() {
           </div>
         </div>
 
-        <div style={{ flex:1 }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-            <h3 style={{ margin:0 }}>Atendimentos de {formatDayLabel(day)}</h3>
-            <div style={{ display:'flex', gap:8 }}>
+        <div className="rg-main-column">
+          <div className="rg-day-header">
+          <h3 style={{ margin:0 }}>Atendimentos de {formatDayLabel(day)}</h3>
+          <div className="rg-day-actions">
                 <button className="rg-btn rg-btn-success" onClick={()=>setShowReportModal(true)}>Relatórios</button>
                 <button className="rg-btn" style={{ background:'linear-gradient(90deg,#ef4444,#b91c1c)', border:'none', color:'#fff' }} onClick={()=>{ setShowSuspModal(true); loadSuspensos(); }}>Clientes Suspensos</button>
               <button className="rg-btn rg-btn-success" onClick={()=>openNew(day)}>Adicionar Agendamento</button>
@@ -671,7 +671,7 @@ export default function RGAgenda() {
             {slots && slots.length>0 && (
               <div style={{ marginBottom:12, padding:8, border:'1px solid #f0f4ff', borderRadius:6, background:'#fbfdff' }}>
                 <div style={{ fontWeight:700, marginBottom:6 }}>Slots abertos</div>
-                <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                <div className="rg-slot-list">
                   {slots.map(s=> (
                     <div key={s.hora} style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 8px', border:'1px solid #e6eefc', borderRadius:6, background:'#fff' }}>
                       <div style={{ fontWeight:600 }}>{s.hora.slice(0,5)}</div>
@@ -691,12 +691,12 @@ export default function RGAgenda() {
             {loading ? <div>Carregando...</div> : (
               appointments.length===0 ? <div className="small">Nenhum agendamento neste dia.</div> : (
                 appointments.map((a, idx) => (
-                  <div key={a.id || idx} className="item" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:12, paddingBottom:12, marginBottom:12, borderBottom:'1px dashed #d9e2f3' }}>
+                  <div key={a.id || idx} className="item rg-appointment">
                     <div>
                       <div><strong>{a.hora.slice(0,5)}</strong> — {a.nome_cliente || a.telefone}</div>
                       <div className="small">Usuário: {a.usuario || a.criado_por || '-' } • Status: {a.status}</div>
                     </div>
-                    <div style={{ display:'flex', gap:8, flexWrap:'wrap', justifyContent:'flex-end', minWidth:280 }}>
+                    <div className="rg-appointment-actions">
                       <button className="btn" style={{ background:'linear-gradient(90deg,#60a5fa,#2563eb)', border:'none', color:'#fff' }} onClick={()=>openEdit(a)}>Editar</button>
                       <button className="btn" style={{ background:'linear-gradient(90deg,#60a5fa,#2563eb)', border:'none', color:'#fff' }} onClick={()=>deleteAppt(a.id)}>Excluir</button>
                       <button className="btn" style={{ background:'linear-gradient(90deg,#10b981,#059669)', border:'none', color:'#fff' }} onClick={()=>patchStatus(a.id,'realizado')}>Realizado</button>

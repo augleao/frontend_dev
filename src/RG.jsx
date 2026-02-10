@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './RG.css';
 
 export default function RG() {
   const navigate = useNavigate();
@@ -9,7 +8,7 @@ export default function RG() {
     {
       id: 'rg-caixa',
       title: 'Financeiro (Caixa)',
-      description: 'Abertura, movimentação e fechamento inteligente do caixa exclusivo do RG.',
+      description: 'Abertura/fechamento e movimentação do caixa para emissão de RG',
       icon: '💰',
       color: '#27ae60',
       route: '/rg/caixa'
@@ -17,79 +16,152 @@ export default function RG() {
     {
       id: 'rg-agenda',
       title: 'Agenda de Atendimentos',
-      description: 'Organize horários, acompanhe status e mantenha o fluxo de atendimento sincronizado.',
+      description: 'Gerencie os agendamentos para emissão de RG',
       icon: '📅',
       color: '#2563eb',
       route: '/rg/agenda'
-    },
-    {
+    }
+    ,{
       id: 'rg-relatorios',
       title: 'Relatórios Financeiros',
-      description: 'Visualize receitas, despesas e tributos projetados para recolhimento do RG.',
+      description: 'Receitas, despesas e tributos projetados para a emissão de RG',
       icon: '📊',
       color: '#f59e0b',
       route: '/rg/relatorios'
-    },
-    {
+    }
+    ,{
       id: 'rg-fechamentos',
       title: 'Fechamentos de Caixa',
-      description: 'Histórico consolidado dos fechamentos diários para auditoria e conferência.',
+      description: 'Visualize os fechamentos diários do caixa RG',
       icon: '🗂️',
       color: '#1f8ef1',
       route: '/rg/meus-fechamentos'
     }
   ];
 
-  const formatPillLabel = (id) => id.replace(/^rg-/, 'RG ').replace(/-/g, ' ').toUpperCase();
-
-  const handleNavigate = (route) => navigate(route);
-
-  const handleCardKey = (event, route) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      handleNavigate(route);
-    }
-  };
+  const cardStyle = (color) => ({
+    background: 'white',
+    borderRadius: '16px',
+    padding: '32px 24px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    border: `3px solid transparent`,
+    textAlign: 'center',
+    minHeight: '200px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    position: 'relative',
+    overflow: 'hidden'
+  });
 
   return (
-    <div className="rg-page">
-      <main className="rg-content">
-        <header className="rg-hero">
-          <div className="rg-hero-text">
-            <span className="rg-hero-eyebrow">plataforma exclusiva</span>
-            <h1 className="rg-hero-title">RG — Emissão da Carteira de Identidade</h1>
-            <p className="rg-hero-subtitle">
-              Centralize finanças, agenda e relatórios do módulo RG em uma experiência otimizada para desktop e iPhone.
-            </p>
-          </div>
-          <div className="rg-hero-badge">Mobile-ready · iOS otimizado</div>
-        </header>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <header style={{
+        background: 'rgba(44, 62, 80, 0.95)',
+        backdropFilter: 'blur(10px)',
+        padding: '16px 32px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+      }}>
+        <h1 style={{
+          color: 'white',
+          margin: 0,
+          fontSize: '20px',
+          fontWeight: '600',
+          letterSpacing: '0.5px'
+        }}>
+          RG — Emissão da Carteira de Identidade
+        </h1>
+      </header>
 
-        <section className="rg-intro">
-          <h2>Módulo RG — Gestão Financeira e Agenda</h2>
-          <p>
-            Navegue por cada fluxo do RG com cartões responsivos: caixa diário, agenda, fechamentos e relatórios de arrecadação em um só lugar.
+      <main style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '40px 32px'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '32px'
+        }}>
+          <h2 style={{
+            fontSize: '36px',
+            fontWeight: '700',
+            color: 'white',
+            margin: '0 0 8px 0',
+            textShadow: '0 4px 8px rgba(0, 0, 0, 0.3)'
+          }}>
+            Módulo RG — Gestão Financeira e Agenda
+          </h2>
+          <p style={{
+            fontSize: '16px',
+            color: 'rgba(255, 255, 255, 0.9)',
+            margin: 0,
+            fontWeight: '300'
+          }}>
+            Acesse e gerencie o caixa e os atendimentos para emissão da carteira de identidade.
           </p>
-        </section>
+        </div>
 
-        <section className="rg-module-grid">
-          {modules.map((module) => (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '24px',
+          marginBottom: '32px'
+        }}>
+          {modules.map((m) => (
             <div
-              key={module.id}
-              className="rg-module-card"
-              role="button"
-              tabIndex={0}
-              style={{ '--accent-color': module.color }}
-              onClick={() => handleNavigate(module.route)}
-              onKeyDown={(event) => handleCardKey(event, module.route)}
+              key={m.id}
+              style={cardStyle(m.color)}
+              onClick={() => navigate(m.route)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px)';
+                e.currentTarget.style.boxShadow = '0 16px 48px rgba(0, 0, 0, 0.15)';
+                e.currentTarget.style.borderColor = m.color;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.borderColor = 'transparent';
+              }}
             >
-              <div className="rg-module-card-icon">{module.icon}</div>
-              <span className="rg-module-card-pill">{formatPillLabel(module.id)}</span>
-              <h3 className="rg-module-card-title">{module.title}</h3>
-              <p className="rg-module-card-desc">{module.description}</p>
+              <div style={{
+                fontSize: '40px',
+                marginBottom: '12px',
+                filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))'
+              }}>{m.icon}</div>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: '#2c3e50',
+                margin: '0 0 8px 0'
+              }}>{m.title}</h3>
+              <p style={{
+                fontSize: '14px',
+                color: '#7f8c8d',
+                margin: 0
+              }}>{m.description}</p>
+              <div style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: '4px',
+                background: `linear-gradient(90deg, ${m.color}, ${m.color}88)`,
+                borderRadius: '0 0 16px 16px'
+              }} />
             </div>
           ))}
-        </section>
+        </div>
+
+        {/* botão de fechamentos agora apresentado como cartão entre os módulos */}
       </main>
     </div>
   );
