@@ -57,6 +57,7 @@ import CartosoftIntegration from './CartosoftIntegration';
 import RG from './RG';
 import RGCaixa from './RGCaixa';
 import RGAgenda from './RGAgenda';
+import RGRelatorioFinanceiro from './RGRelatorioFinanceiro';
 
 
 
@@ -147,6 +148,14 @@ function App() {
           element={
             <PrivateRoute>
               <RGAgenda />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/rg/relatorios"
+          element={
+            <PrivateRoute>
+              <RGRelatorioFinanceiro />
             </PrivateRoute>
           }
         />

@@ -22,6 +22,14 @@ export default function RG() {
       route: '/rg/agenda'
     }
     ,{
+      id: 'rg-relatorios',
+      title: 'Relatórios Financeiros',
+      description: 'Receitas, despesas e tributos projetados para a emissão de RG',
+      icon: '📊',
+      color: '#f59e0b',
+      route: '/rg/relatorios'
+    }
+    ,{
       id: 'rg-fechamentos',
       title: 'Fechamentos de Caixa',
       description: 'Visualize os fechamentos diários do caixa RG',
