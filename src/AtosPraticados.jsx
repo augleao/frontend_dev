@@ -1358,21 +1358,10 @@ useEffect(() => {
               ➕ Adicionar Ato
             </h3>
             <button
+              type="button"
               onClick={importarAtosPraticados}
-              style={{
-                background: '#3498db',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(52, 152, 219, 0.3)',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseOver={(e) => e.target.style.background = '#2980b9'}
-              onMouseOut={(e) => e.target.style.background = '#3498db'}
+              className="btn-gradient btn-gradient-blue btn-compact"
+              style={{ minWidth: 180 }}
             >
               📥 Importar Atos
             </button>

@@ -672,16 +672,9 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
         {/* Botão Adicionar */}
         <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: 4 /* reduzido de 12 */ }}>
           <button
-            style={{
-              padding: '8px 16px', // reduzido de 12px 24px
-              background: (selectedAto && selectedCodigoTributario) ? '#388e3c' : '#ccc',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              cursor: (selectedAto && selectedCodigoTributario) ? 'pointer' : 'not-allowed',
-              fontWeight: 'bold',
-              fontSize: '15px', // reduzido de 16px
-            }}
+            type="button"
+            className={`btn-gradient btn-gradient-green btn-compact${(!selectedAto || !selectedCodigoTributario) ? ' btn-muted' : ''}`}
+            style={{ minWidth: 180 }}
             onClick={adicionarAto}
             disabled={!selectedAto || !selectedCodigoTributario}
           >

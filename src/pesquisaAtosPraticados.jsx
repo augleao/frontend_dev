@@ -502,75 +502,24 @@ export default function PesquisaAtosPraticados() {
             {/* Botões de período rápido */}
             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
               <button
+                type="button"
+                className="btn-gradient btn-gradient-blue btn-compact"
                 onClick={definirUltimos30Dias}
-                style={{
-                  padding: '5px 10px',
-                  background: '#e3f2fd',
-                  color: '#1976d2',
-                  border: '1px solid #bbdefb',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = '#bbdefb';
-                  e.target.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = '#e3f2fd';
-                  e.target.style.transform = 'translateY(0)';
-                }}
               >
                 📅 Últimos 30 dias
               </button>
               <button
+                type="button"
+                className="btn-gradient btn-gradient-green btn-compact"
                 onClick={definirHoje}
-                style={{
-                  padding: '5px 10px',
-                  background: '#e3f2fd',
-                  color: '#1976d2',
-                  border: '1px solid #bbdefb',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = '#bbdefb';
-                  e.target.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = '#e3f2fd';
-                  e.target.style.transform = 'translateY(0)';
-                }}
               >
                 📅 Hoje
               </button>
               
               <button
+                type="button"
+                className="btn-gradient btn-gradient-orange btn-compact"
                 onClick={definirMesAtual}
-                style={{
-                  padding: '5px 10px',
-                  background: '#e3f2fd',
-                  color: '#1976d2',
-                  border: '1px solid #bbdefb',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = '#bbdefb';
-                  e.target.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = '#e3f2fd';
-                  e.target.style.transform = 'translateY(0)';
-                }}
               >
                 📅 Mês atual
               </button>
@@ -734,62 +683,20 @@ export default function PesquisaAtosPraticados() {
           {/* Botões de Ação */}
           <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
+              type="button"
+              className={`btn-gradient btn-gradient-blue${loading ? ' btn-muted' : ''}`}
+              style={{ minWidth: 160 }}
               onClick={buscarAtosPraticados}
               disabled={loading}
-              style={{
-                padding: '8px 16px',
-                background: loading ? '#ccc' : '#2196f3',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                fontWeight: 'bold',
-                fontSize: '14px',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
-              }}
-              onMouseEnter={(e) => {
-                if (!loading) {
-                  e.target.style.background = '#1976d2';
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 6px 16px rgba(33, 150, 243, 0.4)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!loading) {
-                  e.target.style.background = '#2196f3';
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 12px rgba(33, 150, 243, 0.3)';
-                }
-              }}
             >
               {loading ? '🔄 Buscando...' : '🔍 Buscar Atos'}
             </button>
             
             <button
+              type="button"
+              className="btn-gradient btn-gradient-orange"
+              style={{ minWidth: 160 }}
               onClick={limparFiltros}
-              style={{
-                padding: '8px 16px',
-                background: '#6c757d',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                fontSize: '14px',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 4px 12px rgba(108, 117, 125, 0.3)'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = '#5a6268';
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 6px 16px rgba(108, 117, 125, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = '#6c757d';
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.3)';
-              }}
             >
               🗑️ Limpar Filtros
             </button>

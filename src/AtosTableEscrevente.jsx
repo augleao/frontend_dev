@@ -171,14 +171,8 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{renderPagamentos(ato)}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>
                   <button
-                    style={{
-                      background: '#d32f2f',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 6,
-                      padding: '6px 12px',
-                      cursor: 'pointer',
-                    }}
+                    type="button"
+                    className="btn-gradient btn-gradient-red btn-compact"
                     onClick={() => handleRemover(ato.id)}
                   >
                     Excluir
