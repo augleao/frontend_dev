@@ -560,8 +560,8 @@ export default function RGAgenda() {
           <div className="rg-day-header">
             <div style={{ fontWeight:700 }}>{(() => { const [y, mm] = month.split('-').map(Number); return `${monthNames[mm-1]} ${y}`; })()}</div>
             <div className="rg-day-actions">
-              <button className="btn outline" disabled={monthChanging} onClick={() => changeMonth(-1)}>‹</button>
-              <button className="btn outline" disabled={monthChanging} onClick={() => changeMonth(1)}>›</button>
+              <button type="button" className="btn-gradient btn-gradient-blue btn-compact" disabled={monthChanging} onClick={() => changeMonth(-1)}>‹</button>
+              <button type="button" className="btn-gradient btn-gradient-blue btn-compact" disabled={monthChanging} onClick={() => changeMonth(1)}>›</button>
             </div>
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:6, marginTop:8 }}>
@@ -605,7 +605,7 @@ export default function RGAgenda() {
                 <div className="rg-day-header">
                   <div style={{ fontWeight:700 }}>{formatDayLabel(day)}</div>
                   <div className="rg-day-actions">
-                    <button className="rg-btn rg-btn-outline" onClick={() => setCalendarMode('month')}>Voltar ao Mês</button>
+                    <button type="button" className="btn-gradient btn-gradient-blue btn-compact" onClick={() => setCalendarMode('month')}>Voltar ao Mês</button>
                   </div>
                 </div>
                 <div style={{ marginTop:12 }}>
@@ -639,12 +639,12 @@ export default function RGAgenda() {
                               )) : (
                                 s.slotInfo ? (
                                   s.slotInfo.aberto ? (
-                                    <button className="rg-btn rg-btn-outline" onClick={()=>toggleSingleSlot(s.time, false)}>Fechar</button>
+                                    <button type="button" className="btn-gradient btn-gradient-red btn-compact" onClick={()=>toggleSingleSlot(s.time, false)}>Fechar</button>
                                   ) : (
-                                    <button className="rg-btn rg-btn-success" onClick={()=>toggleSingleSlot(s.time, true)}>Abrir</button>
+                                    <button type="button" className="btn-gradient btn-gradient-green btn-compact" onClick={()=>toggleSingleSlot(s.time, true)}>Abrir</button>
                                   )
                                 ) : (
-                                  <button className="rg-btn rg-btn-success" onClick={()=>{ setSlotDate(day); setSlotTime(s.time); toggleSlot(true); }}>Abrir</button>
+                                  <button type="button" className="btn-gradient btn-gradient-green btn-compact" onClick={()=>{ setSlotDate(day); setSlotTime(s.time); toggleSlot(true); }}>Abrir</button>
                                 )
                               )}
                             </div>
@@ -670,10 +670,10 @@ export default function RGAgenda() {
           <div className="rg-day-header">
           <h3 style={{ margin:0 }}>Atendimentos de {formatDayLabel(day)}</h3>
           <div className="rg-day-actions">
-                <button className="rg-btn rg-btn-success" onClick={()=>setShowReportModal(true)}>Relatórios</button>
-                <button className="rg-btn" style={{ background:'linear-gradient(90deg,#ef4444,#b91c1c)', border:'none', color:'#fff' }} onClick={()=>{ setShowSuspModal(true); loadSuspensos(); }}>Clientes Suspensos</button>
-              <button className="rg-btn rg-btn-success" onClick={()=>openNew(day)}>Adicionar Agendamento</button>
-              <button className="rg-btn rg-btn-success" onClick={()=>setShowSlotModal(true)}>Configurar Agenda</button>
+                <button type="button" className="btn-gradient btn-gradient-blue" onClick={()=>setShowReportModal(true)}>Relatórios</button>
+                <button type="button" className="btn-gradient btn-gradient-red" onClick={()=>{ setShowSuspModal(true); loadSuspensos(); }}>Clientes Suspensos</button>
+              <button type="button" className="btn-gradient btn-gradient-green" onClick={()=>openNew(day)}>Adicionar Agendamento</button>
+              <button type="button" className="btn-gradient btn-gradient-green" onClick={()=>setShowSlotModal(true)}>Configurar Agenda</button>
             </div>
           </div>
 
@@ -688,9 +688,9 @@ export default function RGAgenda() {
                       <div style={{ fontSize:12, color:'#666' }}>{s.aberto ? 'Aberto' : 'Fechado'}</div>
                       <div>
                         {s.aberto ? (
-                          <button className="btn outline" onClick={()=>toggleSingleSlot(s.hora, false)} style={{ padding:'4px 8px' }}>Fechar</button>
+                          <button type="button" className="btn-gradient btn-gradient-red btn-compact" onClick={()=>toggleSingleSlot(s.hora, false)}>Fechar</button>
                         ) : (
-                          <button className="btn" onClick={()=>toggleSingleSlot(s.hora, true)} style={{ padding:'4px 8px' }}>Abrir</button>
+                          <button type="button" className="btn-gradient btn-gradient-green btn-compact" onClick={()=>toggleSingleSlot(s.hora, true)}>Abrir</button>
                         )}
                       </div>
                     </div>
@@ -707,11 +707,11 @@ export default function RGAgenda() {
                       <div className="small">Usuário: {a.usuario || a.criado_por || '-' } • Status: {a.status}</div>
                     </div>
                     <div className="rg-appointment-actions">
-                      <button className="btn" style={{ background:'linear-gradient(90deg,#60a5fa,#2563eb)', border:'none', color:'#fff' }} onClick={()=>openEdit(a)}>Editar</button>
-                      <button className="btn" style={{ background:'linear-gradient(90deg,#60a5fa,#2563eb)', border:'none', color:'#fff' }} onClick={()=>deleteAppt(a.id)}>Excluir</button>
-                      <button className="btn" style={{ background:'linear-gradient(90deg,#10b981,#059669)', border:'none', color:'#fff' }} onClick={()=>patchStatus(a.id,'realizado')}>Realizado</button>
-                      <button className="btn" style={{ background:'linear-gradient(90deg,#ef4444,#b91c1c)', border:'none', color:'#fff' }} onClick={()=>patchStatus(a.id,'nao_compareceu')}>Não compareceu</button>
-                      <button className="btn" style={{ background:'linear-gradient(90deg,#f97316,#ea580c)', border:'none', color:'#fff' }} onClick={()=>patchStatus(a.id,'cancelado')}>Cancelado</button>
+                      <button type="button" className="btn-gradient btn-gradient-blue" onClick={()=>openEdit(a)}>Editar</button>
+                      <button type="button" className="btn-gradient btn-gradient-blue" onClick={()=>deleteAppt(a.id)}>Excluir</button>
+                      <button type="button" className="btn-gradient btn-gradient-green" onClick={()=>patchStatus(a.id,'realizado')}>Realizado</button>
+                      <button type="button" className="btn-gradient btn-gradient-red" onClick={()=>patchStatus(a.id,'nao_compareceu')}>Não compareceu</button>
+                      <button type="button" className="btn-gradient btn-gradient-orange" onClick={()=>patchStatus(a.id,'cancelado')}>Cancelado</button>
                     </div>
                   </div>
                 ))
@@ -757,8 +757,8 @@ export default function RGAgenda() {
               <input type="time" value={editing.hora} onChange={e=>setEditing({...editing, hora:e.target.value})} />
               <textarea placeholder="Observações" value={editing.observacoes} onChange={e=>setEditing({...editing, observacoes:e.target.value})} />
                 <div style={{ display:'flex', gap:8 }}>
-                  <button className="btn" onClick={saveEditing} style={{ padding:'8px 14px', borderRadius:6, background:'#2b7cff', color:'#fff', border:'none' }}>Salvar</button>
-                  <button className="btn outline" onClick={()=>setShowModal(false)} style={{ padding:'8px 12px', borderRadius:6 }}>Fechar</button>
+                  <button type="button" className="btn-gradient btn-gradient-blue" onClick={saveEditing}>Salvar</button>
+                  <button type="button" className="btn-gradient btn-gradient-orange" onClick={()=>setShowModal(false)}>Fechar</button>
                 </div>
             </div>
           </div>
@@ -780,8 +780,8 @@ export default function RGAgenda() {
               </div>
               <div className="rg-small" style={{ color:'#555' }}>O PDF traz apenas agendamentos com status "agendado".</div>
               <div style={{ display:'flex', justifyContent:'space-between', gap:8, marginTop:4 }}>
-                <button className="rg-btn rg-btn-outline" onClick={()=>setShowReportModal(false)}>Fechar</button>
-                <button className="rg-btn rg-btn-primary" disabled={reportLoading} onClick={generateReport}>{reportLoading ? 'Gerando...' : 'Gerar PDF'}</button>
+                <button type="button" className="btn-gradient btn-gradient-orange" onClick={()=>setShowReportModal(false)}>Fechar</button>
+                <button type="button" className={`btn-gradient btn-gradient-blue${reportLoading ? ' btn-muted' : ''}`} disabled={reportLoading} onClick={generateReport}>{reportLoading ? 'Gerando...' : 'Gerar PDF'}</button>
               </div>
             </div>
           </div>
@@ -835,10 +835,10 @@ export default function RGAgenda() {
                     const v = e.target.value;
                     setTimeRanges(prev => prev.map((r,i)=> i===idx ? {...r, end:v} : r));
                   }} />
-                  <button className="rg-btn rg-btn-outline" onClick={()=> setTimeRanges(prev => prev.filter((_,i)=>i!==idx))} disabled={timeRanges.length<=1}>Remover</button>
+                  <button type="button" className={`btn-gradient btn-gradient-red btn-compact${timeRanges.length<=1 ? ' btn-muted' : ''}`} onClick={()=> setTimeRanges(prev => prev.filter((_,i)=>i!==idx))} disabled={timeRanges.length<=1}>Remover</button>
                 </div>
               ))}
-              <button className="rg-btn rg-btn-success-outline" onClick={()=> setTimeRanges(prev => [...prev, { start:'09:00', end:'17:00' }])}>Adicionar faixa</button>
+              <button type="button" className="btn-gradient btn-gradient-green btn-compact" onClick={()=> setTimeRanges(prev => [...prev, { start:'09:00', end:'17:00' }])}>Adicionar faixa</button>
             </div>
 
             <div style={{ marginTop:12, padding:12, background:'#f8fbff', border:'1px solid #e6eefc', borderRadius:10 }}>
@@ -856,11 +856,11 @@ export default function RGAgenda() {
 
             <div className="rg-footer" style={{ display:'flex', justifyContent:'space-between', marginTop:16 }}>
               <div style={{ display:'flex', gap:8 }}>
-                <button className="rg-btn rg-btn-primary" disabled={bulkBusy} onClick={()=>applyBulk(true)}>Abrir Agenda</button>
-                <button className="rg-btn rg-btn-outline" disabled={bulkBusy} onClick={()=>applyBulk(false)}>Fechar Agenda</button>
-                <button className="rg-btn rg-btn-outline" disabled={bulkBusy} onClick={()=>{ setBulkMessages([]); setTimeRanges([{start:'09:00', end:'17:00'}]); }}>Limpar faixas</button>
+                <button type="button" className={`btn-gradient btn-gradient-green${bulkBusy ? ' btn-muted' : ''}`} disabled={bulkBusy} onClick={()=>applyBulk(true)}>Abrir Agenda</button>
+                <button type="button" className={`btn-gradient btn-gradient-red${bulkBusy ? ' btn-muted' : ''}`} disabled={bulkBusy} onClick={()=>applyBulk(false)}>Fechar Agenda</button>
+                <button type="button" className={`btn-gradient btn-gradient-orange${bulkBusy ? ' btn-muted' : ''}`} disabled={bulkBusy} onClick={()=>{ setBulkMessages([]); setTimeRanges([{start:'09:00', end:'17:00'}]); }}>Limpar faixas</button>
               </div>
-              <button className="rg-btn" onClick={()=>{ setShowSlotModal(false); setBulkMessages([]); }}>Fechar</button>
+              <button type="button" className="btn-gradient btn-gradient-orange" onClick={()=>{ setShowSlotModal(false); setBulkMessages([]); }}>Fechar</button>
             </div>
           </div>
         </div>
@@ -875,8 +875,8 @@ export default function RGAgenda() {
                 <div className="small">Visualize suspensos, prazos e libere ou aplique nova suspensão (30 dias).</div>
               </div>
               <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-                <button className="rg-btn rg-btn-outline" onClick={loadSuspensos} disabled={suspLoading}>Atualizar lista</button>
-                <button className="rg-btn rg-btn-outline" onClick={()=>setShowSuspModal(false)}>Fechar</button>
+                <button type="button" className={`btn-gradient btn-gradient-blue btn-compact${suspLoading ? ' btn-muted' : ''}`} onClick={loadSuspensos} disabled={suspLoading}>Atualizar lista</button>
+                <button type="button" className="btn-gradient btn-gradient-orange btn-compact" onClick={()=>setShowSuspModal(false)}>Fechar</button>
               </div>
             </div>
 
@@ -895,7 +895,7 @@ export default function RGAgenda() {
                             <div className="small">Início: {c.suspenso_inicio ? formatDayLabel(c.suspenso_inicio.slice(0,10)) : '-'}</div>
                             <div className="small">Liberação: {release ? formatDayLabel(release.slice(0,10)) : '-'}</div>
                             <div style={{ marginTop:6 }}>
-                              <button className="rg-btn rg-btn-outline" disabled={suspActionId === c.id} onClick={()=>toggleSuspensao(c.id, false)}>Cancelar suspensão</button>
+                              <button type="button" className={`btn-gradient btn-gradient-green btn-compact${suspActionId === c.id ? ' btn-muted' : ''}`} disabled={suspActionId === c.id} onClick={()=>toggleSuspensao(c.id, false)}>Cancelar suspensão</button>
                             </div>
                           </div>
                         );
@@ -916,7 +916,7 @@ export default function RGAgenda() {
                           <div style={{ fontWeight:600 }}>{c.nome}</div>
                           <div className="small">CPF: {c.cpf || '-'} | Email: {c.email || '-'}</div>
                         </div>
-                        <button className="rg-btn rg-btn-outline" disabled={suspActionId === c.id} onClick={()=>toggleSuspensao(c.id, true)}>Suspender</button>
+                        <button type="button" className={`btn-gradient btn-gradient-red btn-compact${suspActionId === c.id ? ' btn-muted' : ''}`} disabled={suspActionId === c.id} onClick={()=>toggleSuspensao(c.id, true)}>Suspender</button>
                       </div>
                     ))}
                   </div>

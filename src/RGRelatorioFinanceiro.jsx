@@ -169,16 +169,8 @@ function RGRelatorioFinanceiro() {
                 key={option.value}
                 type="button"
                 onClick={() => setModo(option.value)}
-                style={{
-                  padding: '10px 16px',
-                  borderRadius: '999px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  color: modo === option.value ? 'white' : '#1f2d3d',
-                  background: modo === option.value ? '#2563eb' : '#e2e8f0',
-                  boxShadow: modo === option.value ? '0 6px 18px rgba(37,99,235,0.35)' : 'none'
-                }}
+                className={`btn-gradient btn-gradient-blue btn-pill btn-compact${modo === option.value ? '' : ' btn-muted'}`}
+                style={{ minWidth: '140px' }}
               >
                 {option.label}
               </button>
@@ -237,16 +229,8 @@ function RGRelatorioFinanceiro() {
               type="button"
               onClick={() => gerarRelatorio(false)}
               disabled={loading}
-              style={{
-                background: '#2563eb',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '12px 24px',
-                fontWeight: 700,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                boxShadow: '0 10px 20px rgba(37,99,235,0.25)'
-              }}
+              className={`btn-gradient btn-gradient-blue${loading ? ' btn-muted' : ''}`}
+              style={{ padding: '12px 24px', fontWeight: 700 }}
             >
               {loading ? 'Gerando...' : 'Gerar relatório'}
             </button>
