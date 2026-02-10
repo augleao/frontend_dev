@@ -90,15 +90,8 @@ export default function ConfigurarIA({ onClose }) {
             <button 
               onClick={handleSave} 
               disabled={saving}
-              style={{
-                padding: '10px 20px',
-                background: '#2b7cff',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-                opacity: saving ? 0.7 : 1
-              }}
+              className="btn-gradient btn-gradient-green"
+              style={{ padding: '10px 20px', opacity: saving ? 0.7 : 1 }}
             >
               {saving ? 'Salvando...' : 'Salvar Alteração'}
             </button>

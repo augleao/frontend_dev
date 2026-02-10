@@ -779,19 +779,9 @@ useEffect(() => {
                 />
               </div>
               <button
+                type="button"
                 onClick={adicionarEntrada}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  backgroundColor: '#27ae60',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
+                className="btn-gradient btn-gradient-green btn-block"
               >
                 ➕ Adicionar Entrada
               </button>
@@ -899,19 +889,9 @@ useEffect(() => {
                 />
               </div>
               <button
+                type="button"
                 onClick={adicionarSaida}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  backgroundColor: '#e74c3c',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
+                className="btn-gradient btn-gradient-red btn-block"
               >
                 ➖ Adicionar Saída
               </button>

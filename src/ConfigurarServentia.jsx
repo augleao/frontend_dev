@@ -210,16 +210,11 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
                 type="button"
                 onClick={handleFetchAgents}
                 disabled={loadingAgents || saving}
+                className="btn-gradient btn-gradient-blue btn-compact"
                 style={{
                   marginLeft: 'auto',
-                  padding: '8px 12px',
-                  borderRadius: 10,
-                  background: '#0ea5a3',
-                  color: 'white',
-                  border: 'none',
-                  cursor: loadingAgents || saving ? 'not-allowed' : 'pointer',
-                  fontWeight: 700,
-                  boxShadow: '0 6px 18px rgba(14,165,163,0.12)'
+                  minWidth: 170,
+                  cursor: loadingAgents || saving ? 'not-allowed' : 'pointer'
                 }}
                 title="Buscar agentes IA disponíveis"
               >
@@ -257,6 +252,9 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
                         const isPrimary = String(agentKey) === String(iaAgent);
                         const isFb1 = String(agentKey) === String(iaAgentFallback1);
                         const isFb2 = String(agentKey) === String(iaAgentFallback2);
+                        const primaryClasses = `btn-gradient ${isPrimary ? 'btn-gradient-green' : 'btn-gradient-blue'} btn-compact`;
+                        const fb1Classes = `btn-gradient ${isFb1 ? 'btn-gradient-orange' : 'btn-gradient-blue'} btn-compact`;
+                        const fb2Classes = `btn-gradient ${isFb2 ? 'btn-gradient-red' : 'btn-gradient-blue'} btn-compact`;
                         return (
                           <div key={idx} style={{ borderRadius: 10, padding: 12, background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: 8 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -273,17 +271,8 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
                                 type="button"
                                 onClick={() => { handleUseAgent(agentKey, 'primary'); }}
                                 aria-pressed={isPrimary}
-                                style={{
-                                  flex: 1,
-                                  padding: '8px 10px',
-                                  borderRadius: 8,
-                                  background: isPrimary ? '#065f46' : '#0ea5a3',
-                                  color: '#fff',
-                                  border: isPrimary ? '2px solid rgba(0,0,0,0.06)' : 'none',
-                                  boxShadow: isPrimary ? 'inset 0 2px 6px rgba(0,0,0,0.14)' : '0 2px 6px rgba(2,6,23,0.06)',
-                                  transform: isPrimary ? 'translateY(1px)' : 'none',
-                                  transition: 'transform 120ms ease, box-shadow 120ms ease, background 120ms ease'
-                                }}
+                                className={primaryClasses}
+                                style={{ flex: 1 }}
                               >
                                 Primário
                               </button>
@@ -291,17 +280,8 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
                                 type="button"
                                 onClick={() => { handleUseAgent(agentKey, 'fb1'); }}
                                 aria-pressed={isFb1}
-                                style={{
-                                  flex: 1,
-                                  padding: '8px 10px',
-                                  borderRadius: 8,
-                                  background: isFb1 ? '#3f3f46' : '#94a3b8',
-                                  color: '#fff',
-                                  border: isFb1 ? '2px solid rgba(0,0,0,0.06)' : 'none',
-                                  boxShadow: isFb1 ? 'inset 0 2px 6px rgba(0,0,0,0.14)' : '0 2px 6px rgba(2,6,23,0.06)',
-                                  transform: isFb1 ? 'translateY(1px)' : 'none',
-                                  transition: 'transform 120ms ease, box-shadow 120ms ease, background 120ms ease'
-                                }}
+                                className={fb1Classes}
+                                style={{ flex: 1 }}
                               >
                                 Fallback 1
                               </button>
@@ -309,17 +289,8 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
                                 type="button"
                                 onClick={() => { handleUseAgent(agentKey, 'fb2'); }}
                                 aria-pressed={isFb2}
-                                style={{
-                                  flex: 1,
-                                  padding: '8px 10px',
-                                  borderRadius: 8,
-                                  background: isFb2 ? '#1f2937' : '#64748b',
-                                  color: '#fff',
-                                  border: isFb2 ? '2px solid rgba(0,0,0,0.06)' : 'none',
-                                  boxShadow: isFb2 ? 'inset 0 2px 6px rgba(0,0,0,0.14)' : '0 2px 6px rgba(2,6,23,0.06)',
-                                  transform: isFb2 ? 'translateY(1px)' : 'none',
-                                  transition: 'transform 120ms ease, box-shadow 120ms ease, background 120ms ease'
-                                }}
+                                className={fb2Classes}
+                                style={{ flex: 1 }}
                               >
                                 Fallback 2
                               </button>
@@ -331,8 +302,20 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
                   )}
                 </div>
                 <div style={{ marginTop: 8, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                  <button type="button" onClick={() => { setAgentsModalOpen(false); setSuccess(false); if (typeof onClose === 'function') onClose(); }} style={{ padding: '8px 12px', borderRadius: 8, background: '#e5e7eb', border: 'none' }}>Fechar</button>
-                  <button type="button" onClick={() => { setAgentsModalOpen(false); setSuccess(false); handleSalvar(); if (typeof onClose === 'function') onClose(); }} style={{ padding: '8px 12px', background: '#1976d2', color: 'white', border: 'none', borderRadius: 8 }}>Salvar alterações</button>
+                  <button
+                    type="button"
+                    onClick={() => { setAgentsModalOpen(false); setSuccess(false); if (typeof onClose === 'function') onClose(); }}
+                    className="btn-gradient btn-gradient-orange btn-compact"
+                  >
+                    Fechar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setAgentsModalOpen(false); setSuccess(false); handleSalvar(); if (typeof onClose === 'function') onClose(); }}
+                    className="btn-gradient btn-gradient-green btn-compact"
+                  >
+                    Salvar alterações
+                  </button>
                 </div>
               </div>
             </div>
@@ -340,33 +323,16 @@ export default function ConfigurarServentia({ onClose, focusField, openAgents })
           <div style={{ display: 'flex', gap: 12 }}>
             <button
               onClick={handleSalvar}
-              style={{
-                padding: '8px 24px',
-                background: '#1976d2',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 6,
-                fontWeight: 600,
-                fontSize: 15,
-                cursor: saving ? 'not-allowed' : 'pointer',
-                opacity: saving ? 0.7 : 1
-              }}
+              className="btn-gradient btn-gradient-green"
+              style={{ padding: '8px 24px', opacity: saving ? 0.7 : 1 }}
               disabled={saving}
             >
               {saving ? 'Salvando...' : 'Salvar'}
             </button>
             <button
               onClick={onClose}
-              style={{
-                padding: '8px 24px',
-                background: '#888',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 6,
-                fontWeight: 600,
-                fontSize: 15,
-                cursor: 'pointer',
-              }}
+              className="btn-gradient btn-gradient-orange"
+              style={{ padding: '8px 24px' }}
             >
               Fechar
             </button>
