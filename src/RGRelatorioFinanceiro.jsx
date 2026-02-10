@@ -129,11 +129,20 @@ function RGRelatorioFinanceiro() {
     { label: 'Saldo projetado', value: formatarMoeda((resultado.totalReceitas || 0) - (resultado.totalDespesas || 0)), color: '#1abc9c' }
   ] : [];
 
+  const receitaBruta = resultado?.totalReceitas || 0;
+  const ficValor = resultado?.impostos?.fic || 0;
+  const baseCalculo = resultado?.impostos?.baseCalculo || 0;
+  const irpfValor = resultado?.impostos?.irpf || 0;
+  const issValor = resultado?.impostos?.iss || 0;
+  const liquidoAntesDespesas = receitaBruta - ficValor - irpfValor - issValor;
+
   const impostosCards = resultado ? [
-    { label: 'FIC (1,5%)', value: formatarMoeda(resultado.impostos?.fic || 0) },
-    { label: 'Base p/ ISS & IRPF', value: formatarMoeda(resultado.impostos?.baseCalculo || 0) },
-    { label: 'IRPF (27,5%)', value: formatarMoeda(resultado.impostos?.irpf || 0) },
-    { label: 'ISS (3%)', value: formatarMoeda(resultado.impostos?.iss || 0) }
+    { label: 'Receita bruta considerada', value: formatarMoeda(receitaBruta), color: '#0f172a' },
+    { label: 'FIC (1,5%)', value: formatarMoeda(ficValor) },
+    { label: 'Base p/ ISS & IRPF', value: formatarMoeda(baseCalculo) },
+    { label: 'IRPF (27,5%)', value: formatarMoeda(irpfValor) },
+    { label: 'ISS (3%)', value: formatarMoeda(issValor) },
+    { label: 'Resultado líquido antes das despesas', value: formatarMoeda(liquidoAntesDespesas), color: '#047857' }
   ] : [];
 
   return (
@@ -266,9 +275,17 @@ function RGRelatorioFinanceiro() {
               <h3 style={{ margin: 0, fontSize: '18px', color: '#1f2d3d', fontWeight: 600 }}>Tributos previstos</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginTop: '16px' }}>
                 {impostosCards.map((card) => (
-                  <div key={card.label} style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
+                  <div
+                    key={card.label}
+                    style={{
+                      background: '#f8fafc',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      border: `1px solid ${card.color ? `${card.color}33` : '#e2e8f0'}`
+                    }}
+                  >
                     <p style={{ margin: 0, color: '#475569', fontWeight: 600 }}>{card.label}</p>
-                    <strong style={{ fontSize: '18px', marginTop: '6px', display: 'block', color: '#0f172a' }}>{card.value}</strong>
+                    <strong style={{ fontSize: '18px', marginTop: '6px', display: 'block', color: card.color || '#0f172a' }}>{card.value}</strong>
                   </div>
                 ))}
               </div>
