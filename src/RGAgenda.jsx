@@ -190,15 +190,25 @@ export default function RGAgenda() {
 
   // load suspended list
   async function loadSuspensos(){
+    if (!authToken) {
+      setSuspensos([]);
+      return;
+    }
+    setSuspLoading(true);
     try {
-      setSuspLoading(true);
       const res = await apiFetch('/rg/clientes/suspensos');
+      if (res.status === 401) {
+        setSuspensos([]);
+        return;
+      }
       if (res.ok) {
         const j = await res.json();
         setSuspensos(j.clientes || []);
       }
     } catch(e){ /* ignore */ }
-    setSuspLoading(false);
+    finally {
+      setSuspLoading(false);
+    }
   }
 
   // fetch cliente suggestions (debounced)
