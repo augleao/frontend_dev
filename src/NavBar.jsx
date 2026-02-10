@@ -9,12 +9,6 @@ function NavBar() {
   const buttonStyle = {
     fontSize: '0.9rem',
     padding: '6px 14px',
-    background: '#4CAF50',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    textDecoration: 'none',
     marginLeft: '8px',
   };
 
@@ -76,26 +70,26 @@ function NavBar() {
             👤 {user.nome || user.email}
           </span>
           {user.cargo === 'Registrador' && (
-            <Link to="/admin" style={{ ...buttonStyle, background: '#1976d2' }}>
+            <Link to="/admin" className="btn-gradient btn-gradient-blue" style={buttonStyle}>
               Administração
             </Link>
           )}
-          <button style={buttonStyle} onClick={handleHome}>
+          <button type="button" className="btn-gradient btn-gradient-green" style={buttonStyle} onClick={handleHome}>
             Home
           </button>
-          <button style={buttonStyle} onClick={handleVoltar}>
+          <button type="button" className="btn-gradient btn-gradient-green" style={buttonStyle} onClick={handleVoltar}>
             Voltar
           </button>
-          <button style={buttonStyle} onClick={handleLogout}>
+          <button type="button" className="btn-gradient btn-gradient-green" style={buttonStyle} onClick={handleLogout}>
             Logout
           </button>
         </>
       ) : (
         <>
-          <Link to="/login" style={buttonStyle}>
+          <Link to="/login" className="btn-gradient btn-gradient-green" style={buttonStyle}>
             Login
           </Link>
-          <Link to="/signup" style={buttonStyle}>
+          <Link to="/signup" className="btn-gradient btn-gradient-green" style={buttonStyle}>
             Cadastro
           </Link>
         </>

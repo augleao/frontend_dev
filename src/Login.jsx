@@ -181,16 +181,8 @@ function Login() {
         <button
           type="submit"
           disabled={loading}
-          style={{
-            width: '100%',
-            padding: '12px',
-            backgroundColor: loading ? '#ccc' : '#4CAF50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            fontSize: '16px',
-            cursor: loading ? 'not-allowed' : 'pointer'
-          }}
+          className="btn-gradient btn-gradient-green"
+          style={{ width: '100%', padding: '12px', fontSize: '16px' }}
         >
           {loading ? 'Entrando...' : 'Entrar'}
         </button>
