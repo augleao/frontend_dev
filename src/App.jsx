@@ -63,6 +63,8 @@ import RGRelatorioFinanceiro from './RGRelatorioFinanceiro';
 
 function App() {
   // ...existing code...
+  const location = useLocation();
+  const hideNav = location.pathname === '/';
   // Fallback: se a URL vier com hash (ex.: /#/recibo/...), redireciona internamente
   function HashRedirector() {
     const navigate = useNavigate();
@@ -87,7 +89,7 @@ function App() {
       <TrackPageviews />
       {/* Always scroll to top on route change to avoid new pages loading scrolled down */}
       <ScrollToTop />
-      <NavBar />
+      {!hideNav && <NavBar />}
       <CookieConsent />
       <Routes>
         <Route
