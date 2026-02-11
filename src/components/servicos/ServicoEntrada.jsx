@@ -1236,8 +1236,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                         <button
                           type="button"
                           onClick={() => handleRemoverAto(idx)}
-                          className="btn"
-                          style={{ background: palette.primaryDark, color: '#fff', border: 'none' }}
+                          className="btn-gradient btn-gradient-red btn-compact"
+                          style={{ padding: '6px 10px' }}
                         >
                           Remover
                         </button>
@@ -1252,7 +1252,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
 
         {/* Salvar/Atualizar Button e Imprimir Protocolo */}
         <div className="servico-actions">
-          <button onClick={handleSubmit} className="btn" style={{ background: palette.primary, color: '#fff', border: 'none' }}>
+          <button onClick={handleSubmit} className="btn-gradient btn-gradient-blue btn-compact" style={{ padding: '8px 12px' }}>
             {form.protocolo && form.protocolo.trim() !== '' ? 'Atualizar Pedido' : 'Salvar Pedido'}
           </button>
           {/* <ReciboProtocolo removido conforme solicitado */}
