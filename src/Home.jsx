@@ -380,12 +380,12 @@ function Home() {
 
       <main className="hero">
         <section className="hero-left">
-          <div className="hero-title">Modernidade e seguranca no Registro Civil</div>
+          <div className="hero-title">Modernidade e seguranca na gestão de seu cartório</div>
           <div className="hero-sub">
-            Agilize certidoes, casamentos e registros com um painel seguro, audita vel e pronto para o dia a dia da serventia.
+            Controle de pedidos, selos pagos, atos gratuitos, relatorios auxiliares como CNJ, ferramentas de IA e muito mais
           </div>
           <div className="hero-chips">
-            <span className="chip">Certidoes digitais validadas</span>
+            <span className="chip">Controle de Caixa</span>
             <span className="chip">Fluxos monitorados em tempo real</span>
             <span className="chip">Infraestrutura pronta para LAI e LGPD</span>
           </div>
@@ -416,27 +416,27 @@ function Home() {
       </main>
 
       <section className="value-section" id="mais">
-        <div className="value-title">Feito para o cartorio digital</div>
+        <div className="value-title">Feito para o cartorio moderno</div>
         <div className="value-cards">
           <div className="card">
             <div className="icon">📄</div>
             <div>
-              <div className="card-title">Certidoes Online</div>
-              <div className="card-text">Emita e valide certidoes com rastreabilidade e protocolo unico.</div>
+              <div className="card-title">Controle de Caixa</div>
+              <div className="card-text">Controle de caixa integrado com gestao de pedidos e selos.</div>
             </div>
           </div>
           <div className="card">
             <div className="icon">📚</div>
             <div>
-              <div className="card-title">Gestao de Acervo</div>
-              <div className="card-text">Organize livros, termos e imagens com busca inteligente e controle de acesso.</div>
+              <div className="card-title">Ferramentas de IA</div>
+              <div className="card-text">Crie averbações, leia livros manuscritos, tanto para carga na CRC quanto para inteiro teor.</div>
             </div>
           </div>
           <div className="card">
             <div className="icon">🔒</div>
             <div>
               <div className="card-title">Seguranca Juridica</div>
-              <div className="card-text">Assinatura digital, trilhas de auditoria e criptografia em todas as etapas.</div>
+              <div className="card-text">Trilhas de auditoria e criptografia em todas as etapas.</div>
             </div>
           </div>
         </div>
