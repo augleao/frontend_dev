@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Home() {
+  const navigate = useNavigate();
   return (
     <div className="home-shell">
       <style>{`
@@ -361,8 +363,8 @@ function Home() {
         <div className="brand">
           <div className="brand-mark">RC</div>
           <div>
-            <div style={{ fontSize: 15, opacity: 0.86 }}>Cartório Digital</div>
-            <div style={{ fontWeight: 900, fontSize: 17 }}>Registro Civil Seguro</div>
+            <div style={{ fontSize: 15, opacity: 0.86 }}>Controle Digital</div>
+            <div style={{ fontWeight: 900, fontSize: 17 }}>Sua Serveventia na sua mão!</div>
           </div>
         </div>
 
@@ -373,8 +375,8 @@ function Home() {
         </nav>
 
         <div className="nav-actions">
-          <button className="btn btn-outline">Login</button>
-          <button className="btn btn-solid">Cadastrar</button>
+          <button className="btn btn-outline" onClick={() => navigate('/login')}>Login</button>
+          <button className="btn btn-solid" onClick={() => navigate('/signup')}>Cadastrar</button>
         </div>
       </header>
 
@@ -390,7 +392,7 @@ function Home() {
             <span className="chip">Infraestrutura pronta para LAI e LGPD</span>
           </div>
           <div className="hero-cta">
-            <button className="btn btn-solid">Criar conta agora</button>
+            <button className="btn btn-solid" onClick={() => navigate('/signup')}>Criar conta agora</button>
             <a className="cta-secondary" href="#mais">Ver como funciona →</a>
           </div>
         </section>
@@ -409,8 +411,8 @@ function Home() {
             <input id="senha" className="input" type="password" placeholder="••••••••" />
           </div>
           <div className="login-footer">
-            <a className="link" href="#recuperar">Esqueci minha senha</a>
-            <button className="btn btn-solid" style={{ minWidth: 120 }}>Entrar</button>
+            <a className="link" href="/login#recuperar">Esqueci minha senha</a>
+            <button className="btn btn-solid" style={{ minWidth: 120 }} onClick={() => navigate('/login')}>Entrar</button>
           </div>
         </section>
       </main>
