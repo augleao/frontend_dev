@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './buttonGradients.css';
 
 export default function ProtocoloAcesso() {
   const [protocolo, setProtocolo] = useState('');
@@ -45,7 +46,7 @@ export default function ProtocoloAcesso() {
           />
         </div>
         {erro && <div style={{ color: 'red', marginBottom: 12 }}>{erro}</div>}
-        <button type="submit" style={{ width: '100%', background: '#6c3483', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 0', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>
+        <button type="submit" className="btn-gradient btn-gradient-blue btn-block">
           Acessar Protocolo
         </button>
       </form>

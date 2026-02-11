@@ -1,5 +1,6 @@
 import React from 'react';
 import { formasPagamento, formatarMoeda } from './utils';
+import './buttonGradients.css';
 
 export default function AtosTableEscrevente({ atos, onRemover }) {
   console.log("Atos recebidos na tabela atos-table:", atos);

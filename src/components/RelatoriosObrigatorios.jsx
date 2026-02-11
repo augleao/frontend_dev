@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import config from '../config';
+import '../buttonGradients.css';
 
 const RELATORIOS = [
   {
@@ -317,19 +318,12 @@ function RelatoriosObrigatorios() {
             Relatórios a serem enviados em {competenciaEnvio}
           </span>
           <button
-            onClick={carregarRegistros}
+            type="button"
+            className={`btn-gradient btn-gradient-blue ${loading ? 'btn-muted' : ''}`}
             disabled={loading}
-            style={{
-              padding: '10px 18px',
-              background: '#2e7d32',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: loading ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {loading ? 'Atualizando...' : 'Atualizar' }
-          </button>
+            onClick={carregarRegistros}
+            style={{ padding: '10px 18px' }}
+          >{loading ? 'Atualizando...' : 'Atualizar' }</button>
         </div>
         <p style={{ marginTop: '12px', fontSize: '13px', color: '#666' }}>
           Utilize o campo de competência para selecionar o mês de referência do envio (por padrão, o mês anterior ao atual). As informações são salvas por mês e por relatório.
@@ -515,32 +509,18 @@ function RelatoriosObrigatorios() {
 
               <footer style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <button
-                  onClick={() => salvarRegistro(relatorio.id)}
+                  type="button"
+                  className={`btn-gradient btn-gradient-green ${savingId === relatorio.id ? 'btn-muted' : ''}`}
                   disabled={savingId === relatorio.id}
-                  style={{
-                    padding: '10px 18px',
-                    background: '#1e88e5',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: savingId === relatorio.id ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {savingId === relatorio.id ? 'Salvando...' : 'Salvar registro'}
-                </button>
+                  onClick={() => salvarRegistro(relatorio.id)}
+                  style={{ padding: '10px 18px' }}
+                >{savingId === relatorio.id ? 'Salvando...' : 'Salvar registro'}</button>
                 <button
+                  type="button"
+                  className="btn-gradient btn-gradient-orange btn-muted"
                   onClick={() => limparRegistro(relatorio.id)}
-                  style={{
-                    padding: '10px 16px',
-                    background: '#eceff1',
-                    color: '#455a64',
-                    border: '1px solid #cfd8dc',
-                    borderRadius: '8px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Limpar campos
-                </button>
+                  style={{ padding: '10px 16px' }}
+                >Limpar campos</button>
                 {registro.atualizado_em && (
                   <span style={{ fontSize: '12px', color: '#607d8b', alignSelf: 'center' }}>
                     Última atualização: {new Date(registro.atualizado_em).toLocaleString('pt-BR')}

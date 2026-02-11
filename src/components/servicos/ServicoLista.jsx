@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import config from '../../config';
+import '../../buttonGradients.css';
 import { gerarReciboProtocoloPDF } from '../../utils/gerarReciboProtocoloPDF';
 
 
@@ -227,17 +228,7 @@ export default function ListaServicos() {
       }}>
         <button
           onClick={() => navigate('/manutencao-servicos')}
-          style={{
-            background: '#27ae60',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            padding: '12px 32px',
-            fontSize: 16,
-            fontWeight: 600,
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
-          }}
+          className="btn-gradient btn-gradient-green btn-compact"
         >
           + NOVO PEDIDO
         </button>
@@ -356,18 +347,8 @@ export default function ListaServicos() {
 
           <button
             onClick={limparFiltros}
-            style={{
-              background: '#95a5a6',
-              color: 'white',
-              border: 'none',
-              borderRadius: 6,
-              padding: '8px 16px',
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-              marginTop: 16,
-              boxShadow: '0 2px 4px rgba(44,62,80,0.12)'
-            }}
+            className="btn-gradient btn-muted btn-compact"
+            style={{ marginTop: 16 }}
           >
             Limpar Filtros
           </button>
@@ -425,33 +406,14 @@ export default function ListaServicos() {
                   <td style={{ padding: 8 }}>{formatDate(p.prazo)}</td>
                   <td style={{ padding: 8, display: 'flex', gap: 8 }}>
                     <button
-                      style={{
-                        background: '#3498db',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 6,
-                        padding: '6px 16px',
-                        fontWeight: 'bold',
-                        fontSize: 14,
-                        cursor: 'pointer'
-                      }}
+                      className="btn-gradient btn-gradient-blue btn-compact"
                       onClick={() => navigate(`/manutencao-servicos?protocolo=${encodeURIComponent(p.protocolo)}`)}
                     >
                       EDITAR
                     </button>
                     <button
-                      style={{
-                        background: '#e67e22',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 6,
-                        padding: '6px 16px',
-                        fontWeight: 'bold',
-                        fontSize: 14,
-                        cursor: 'pointer'
-                      }}
+                      className="btn-gradient btn-gradient-orange btn-compact"
                       onClick={() => {
-                        // Usa link com hash para garantir carregamento em nova aba em qualquer hospedagem SPA
                         const url = `${window.location.origin}/#${`/recibo/${encodeURIComponent(p.protocolo)}`}`;
                         window.open(url, '_blank', 'noopener,noreferrer');
                       }}
@@ -459,16 +421,7 @@ export default function ListaServicos() {
                       PROTOCOLO
                     </button>
                     <button
-                      style={{
-                        background: '#e74c3c',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 6,
-                        padding: '6px 16px',
-                        fontWeight: 'bold',
-                        fontSize: 14,
-                        cursor: 'pointer'
-                      }}
+                      className="btn-gradient btn-gradient-red btn-compact"
                       onClick={async () => {
                         if (window.confirm(`Tem certeza que deseja apagar o pedido ${p.protocolo}?`)) {
                           try {

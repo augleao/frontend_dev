@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import './buttonGradients.css';
 import { useParams } from 'react-router-dom';
 import { QRCodeCanvas } from 'qrcode.react';
 import config from './config';
@@ -191,13 +192,14 @@ export default function ReciboPedido() {
       }}>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button
+            type="button"
+            className="btn-gradient btn-gradient-blue"
             onClick={() => window.print()}
-            style={{
-              background: '#2c3e50', color: '#fff', border: 'none', borderRadius: 6,
-              padding: '8px 14px', fontWeight: 700, cursor: 'pointer'
-            }}
+            style={{ padding: '8px 14px', fontWeight: 700 }}
           >Imprimir</button>
           <button
+            type="button"
+            className={`btn-gradient btn-gradient-green ${sharing || !(pedido?.cliente?.telefone || pedido?.cliente?.celular) ? 'btn-muted' : ''}`}
             disabled={sharing || !(pedido?.cliente?.telefone || pedido?.cliente?.celular)}
             onClick={async () => {
               setSharing(true);
@@ -207,10 +209,7 @@ export default function ReciboPedido() {
               openWhatsAppDesktopOrWeb(phoneDigits, buildShareText);
               setSharing(false);
             }}
-            style={{
-              background: '#25D366', color: '#fff', border: 'none', borderRadius: 6,
-              padding: '8px 14px', fontWeight: 700, cursor: 'pointer', opacity: sharing ? 0.8 : 1
-            }}
+            style={{ padding: '8px 14px', fontWeight: 700 }}
           >Enviar via WhatsApp</button>
         </div>
       </div>

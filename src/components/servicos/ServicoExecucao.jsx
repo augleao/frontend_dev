@@ -5,6 +5,7 @@ import ClipboardImageUpload from './ClipboardImageUpload';
 import SeloFileUpload from './SeloFileUpload';
 import config from '../../config';
 import './servicos.css';
+import '../../buttonGradients.css';
 
 const palette = {
     primary: '#1d4ed8',
@@ -300,7 +301,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
             type="button"
             onClick={salvarOuAlterarExecucao}
             disabled={salvando}
-            className="btn btn-primary"
+            className="btn-gradient btn-gradient-green btn-compact"
           >
             {salvando ? 'Salvando...' : 'Salvar Execução'}
           </button>
@@ -347,7 +348,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
                 alert('Erro ao cancelar execução ou atualizar status do pedido.');
               }
             }}
-            className="btn btn-danger"
+            className="btn-gradient btn-gradient-red btn-compact"
           >
             Cancelar Execução
           </button>
@@ -416,7 +417,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
                       {isEditing ? (
                         <>
                           <button
-                            style={{ background: '#388e3c', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                            className="btn-gradient btn-gradient-green btn-compact"
                             title="Salvar"
                             onClick={async () => {
                               try {
@@ -434,7 +435,7 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
                             }}
                           >Salvar</button>
                           <button
-                            style={{ background: '#aaa', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                            className="btn-gradient btn-muted btn-compact"
                             title="Cancelar"
                             onClick={() => { setEditingSeloId(null); setEditSelo({}); }}
                           >Cancelar</button>
@@ -442,12 +443,12 @@ export default function ServicoExecucao({ form, onChange, pedidoId, onStatusChan
                       ) : (
                         <>
                           <button
-                            style={{ background: '#1976d2', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                            className="btn-gradient btn-gradient-blue btn-compact"
                             title="Editar selo"
                             onClick={() => { setEditingSeloId(selo.id); setEditSelo({ ...selo }); }}
                           >Editar</button>
                           <button
-                            style={{ background: '#e74c3c', color: 'white', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                            className="btn-gradient btn-gradient-red btn-compact"
                             title="Excluir selo"
                             onClick={() => excluirSelo(selo)}
                           >Excluir</button>

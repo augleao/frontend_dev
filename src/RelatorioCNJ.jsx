@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiURL } from './config';
+import './buttonGradients.css';
 
 function RelatorioCNJ() {
   const navigate = useNavigate();
@@ -169,17 +170,10 @@ Data de Geração: ${new Date().toLocaleDateString('pt-BR')}
           📊 Relatório Semestral CNJ
         </h1>
         <button
+          type="button"
+          className="btn-gradient btn-gradient-blue"
           onClick={() => navigate('/')}
-          style={{
-            background: 'rgba(52, 152, 219, 0.8)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '10px 20px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}
+          style={{ padding: '10px 20px', fontSize: '14px', fontWeight: 500 }}
         >
           ← Voltar
         </button>
@@ -279,19 +273,11 @@ Data de Geração: ${new Date().toLocaleDateString('pt-BR')}
           )}
 
           <button
-            onClick={enviarArquivosParaBackend}
+            type="button"
+            className={`btn-gradient btn-gradient-green ${arquivos.length !== 6 || processando ? 'btn-muted' : ''}`}
             disabled={arquivos.length !== 6 || processando}
-            style={{
-              background: arquivos.length === 6 && !processando ? '#27ae60' : '#95a5a6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '15px 30px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: arquivos.length === 6 && !processando ? 'pointer' : 'not-allowed',
-              width: '100%'
-            }}
+            onClick={enviarArquivosParaBackend}
+            style={{ padding: '15px 30px', fontSize: '16px', fontWeight: 600, width: '100%' }}
           >
             {processando ? '🔄 Processando...' : '🚀 Processar Arquivos'}
           </button>
@@ -319,20 +305,11 @@ Data de Geração: ${new Date().toLocaleDateString('pt-BR')}
                 📈 Resultados do Processamento
               </h2>
               <button
+                type="button"
+                className="btn-gradient btn-gradient-orange"
                 onClick={gerarRelatorio}
-                style={{
-                  background: '#e67e22',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '12px 24px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                📥 Baixar Relatório
-              </button>
+                style={{ padding: '12px 24px', fontSize: '14px', fontWeight: 600 }}
+              >📥 Baixar Relatório</button>
             </div>
 
             {/* Resumo Consolidado */}

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './buttonGradients.css';
 
 
 export default function ReciboBusca() {
@@ -40,7 +41,7 @@ export default function ReciboBusca() {
         {erro && <div style={{ color: 'red', marginBottom: 8 }}>{erro}</div>}
         <button
           type="submit"
-          style={{ width: '100%', background: '#3498db', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 0', fontSize: 16, fontWeight: 600, cursor: 'pointer' }}
+          className="btn-gradient btn-gradient-blue btn-block"
         >
           Ver Recibo
         </button>
