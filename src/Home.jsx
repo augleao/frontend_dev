@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 import config from './config';
@@ -10,6 +10,19 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const prev = root.style.getPropertyValue('--navbar-height');
+    root.style.setProperty('--navbar-height', '0px');
+    return () => {
+      if (prev) {
+        root.style.setProperty('--navbar-height', prev);
+      } else {
+        root.style.removeProperty('--navbar-height');
+      }
+    };
+  }, []);
 
   const handleInlineLogin = async (e) => {
     e.preventDefault();
