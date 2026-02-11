@@ -1,8 +1,44 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from './AuthContext';
+import config from './config';
 
 function Home() {
+  const { login } = useContext(AuthContext);
+  const [nome, setNome] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const handleInlineLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const response = await fetch(`${config.apiURL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ nome, password })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.message || 'Erro ao fazer login.');
+        return;
+      }
+      try { localStorage.setItem('usuario', JSON.stringify(data.user)); } catch (_) {}
+      try { localStorage.setItem('token', data.token); } catch (_) {}
+      if (typeof login === 'function') {
+        login(data.user, data.token);
+      }
+      navigate('/home2');
+    } catch (err) {
+      setError('Erro de conexão. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="home-shell">
       <style>{`
@@ -364,7 +400,7 @@ function Home() {
           <div className="brand-mark">RC</div>
           <div>
             <div style={{ fontSize: 15, opacity: 0.86 }}>Controle Digital</div>
-            <div style={{ fontWeight: 900, fontSize: 17 }}>Sua Serveventia na sua mão!</div>
+            <div style={{ fontWeight: 900, fontSize: 17 }}>Sua Serventia na sua mão!</div>
           </div>
         </div>
 
@@ -382,7 +418,7 @@ function Home() {
 
       <main className="hero">
         <section className="hero-left">
-          <div className="hero-title">Modernidade e seguranca na gestão de seu cartório</div>
+          <div className="hero-title">Modernidade e segurança na gestão de seu cartório.</div>
           <div className="hero-sub">
             Controle de pedidos, selos pagos, atos gratuitos, relatorios auxiliares como CNJ, ferramentas de IA e muito mais
           </div>
@@ -402,18 +438,43 @@ function Home() {
             <div className="login-title">Acesse sua conta</div>
             <div className="badge">Ambiente seguro</div>
           </div>
-          <div className="form-group">
-            <label htmlFor="email">Email institucional</label>
-            <input id="email" className="input" type="email" placeholder="usuario@serventia.gov.br" />
-          </div>
-          <div className="form-group">
-            <label htmlFor="senha">Senha</label>
-            <input id="senha" className="input" type="password" placeholder="••••••••" />
-          </div>
-          <div className="login-footer">
-            <a className="link" href="/login#recuperar">Esqueci minha senha</a>
-            <button className="btn btn-solid" style={{ minWidth: 120 }} onClick={() => navigate('/login')}>Entrar</button>
-          </div>
+          <form onSubmit={handleInlineLogin}>
+            <div className="form-group">
+              <label htmlFor="email">Email institucional</label>
+              <input
+                id="email"
+                className="input"
+                type="text"
+                placeholder="usuario@serventia.gov.br"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                autoComplete="username"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="senha">Senha</label>
+              <input
+                id="senha"
+                className="input"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+              />
+            </div>
+            {error && (
+              <div style={{ color: '#b91c1c', background: '#fef2f2', border: '1px solid #fecdd3', padding: 10, borderRadius: 10, marginBottom: 8 }}>
+                {error}
+              </div>
+            )}
+            <div className="login-footer">
+              <a className="link" href="/login#recuperar">Esqueci minha senha</a>
+              <button className="btn btn-solid" style={{ minWidth: 120 }} type="submit" disabled={loading}>
+                {loading ? 'Entrando...' : 'Entrar'}
+              </button>
+            </div>
+          </form>
         </section>
       </main>
 
