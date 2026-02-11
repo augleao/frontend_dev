@@ -641,7 +641,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           <button
             type="button"
             onClick={() => setShowAdicionarAtosModal(true)}
-            className="btn btn-primary"
+            className="btn-gradient btn-gradient-blue btn-compact"
           >
             ➕ Adicionar Atos
           </button>
@@ -696,8 +696,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                                   handleRemoveValorAdiantadoDetalhe(originalIndex);
                                 }
                               }}
-                              className="btn"
-                              style={{ background: palette.primaryDark, color: '#fff', border: 'none' }}
+                              className="btn-gradient btn-gradient-red btn-compact"
+                              style={{ padding: '6px 10px' }}
                             >
                               Remover
                             </button>
@@ -822,19 +822,8 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
                 type="button"
                 onClick={handleAdicionarPagamentoModal}
                 disabled={!modalValorPagamento || !modalFormaPagamento}
-                style={{
-                  marginTop: 18,
-                  padding: '12px 0',
-                  background: modalValorPagamento && modalFormaPagamento ? palette.primary : '#ccc',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontWeight: 'bold',
-                  fontSize: 16,
-                  cursor: modalValorPagamento && modalFormaPagamento ? 'pointer' : 'not-allowed',
-                  transition: 'all 0.3s ease',
-                  width: '100%'
-                }}
+                className={modalValorPagamento && modalFormaPagamento ? 'btn-gradient btn-gradient-green' : 'btn-muted btn-compact'}
+                style={{ marginTop: 18, width: '100%', padding: '12px 0' }}
               >
                 ✅ ADICIONAR PAGAMENTO
               </button>
