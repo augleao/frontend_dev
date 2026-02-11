@@ -5,6 +5,7 @@ import PromptsService from '../../services/PromptsService';
 import { useNavigate } from 'react-router-dom';
 // importar identificarTipo removido — não precisamos chamar /identificar-tipo a partir deste componente
 import { apiURL } from '../../config';
+import '../../buttonGradients.css';
 
 function renderFormattedText(text) {
   if (!text) return null;
@@ -1682,15 +1683,15 @@ export default function LeituraLivros() {
                     <div style={{ fontSize: 14, color: '#0f172a' }}>{f.filename}</div>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={() => handleDownloadSingle(i)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#10b981,#059669)', color: '#fff', cursor: 'pointer' }}>Salvar</button>
+                    <button onClick={() => handleDownloadSingle(i)} className="btn-gradient btn-gradient-green btn-compact">Salvar</button>
                   </div>
                 </div>
               ))}
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-              <button onClick={() => setShowExtractModal(false)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff' }}>Fechar</button>
-              <button onClick={handleChooseFolderAndSave} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#059669,#10b981)', color: '#fff' }}>Escolher pasta e salvar</button>
-              <button onClick={handleDownloadAll} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', color: '#fff' }}>Download todos</button>
+              <button onClick={() => setShowExtractModal(false)} className="btn-muted btn-compact">Fechar</button>
+              <button onClick={handleChooseFolderAndSave} className="btn-gradient btn-gradient-green btn-compact">Escolher pasta e salvar</button>
+              <button onClick={handleDownloadAll} className="btn-gradient btn-gradient-blue btn-compact">Download todos</button>
             </div>
           </div>
         </div>
@@ -1798,13 +1799,20 @@ export default function LeituraLivros() {
             }}>Upload de arquivos</button>
         </div>
       </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => handleExtractP7s(files)} disabled={running || files.length === 0}
+          <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => handleExtractP7s(files)}
+            disabled={running || files.length === 0}
             title={files.length === 0 ? 'Selecione arquivos primeiro' : 'Extrair imagens dos arquivos selecionados'}
-            style={{ background: '#fff', border: '1px solid #e5e7eb', color: '#374151', padding: '8px 12px', borderRadius: 10, fontWeight: 700, cursor: running || files.length === 0 ? 'not-allowed' : 'pointer' }}>Extrair Imagem</button>
-        <button onClick={startProcessing} disabled={running || (mode === 'upload' && files.length === 0)}
-          style={{ background: running ? '#94a3b8' : 'linear-gradient(135deg,#2563eb,#1d4ed8)', color: '#fff',
-            border: 'none', padding: '10px 16px', borderRadius: 10, fontWeight: 800, cursor: running ? 'not-allowed' : 'pointer' }}>
+            className={running || files.length === 0 ? 'btn-muted btn-compact' : 'btn-gradient btn-gradient-blue btn-compact'}
+          >
+            Extrair Imagem
+          </button>
+        <button
+          onClick={startProcessing}
+          disabled={running || (mode === 'upload' && files.length === 0)}
+          className={running ? 'btn-muted btn-compact' : 'btn-gradient btn-gradient-blue btn-compact'}
+        >
           {running ? 'Processando…' : (mode === 'folder' ? 'Iniciar' : 'Enviar e Processar')}
         </button>
       </div>
@@ -1860,15 +1868,18 @@ export default function LeituraLivros() {
               <h4 style={{ marginTop: 0, color: '#1f2937', marginBottom: 0 }}>Registros extraídos</h4>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 {/* Baixar XML (server-side) removed — use "Gerar XML" to generate client-side XML */}
-                <button onClick={() => setShowRawResults(s => !s)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer' }}>
+                <button onClick={() => setShowRawResults(s => !s)} className="btn-muted btn-compact">
                   {showRawResults ? 'Ocultar JSON' : 'Mostrar JSON'}
                 </button>
-                <button onClick={handleGenerateMatriculas} disabled={running || results.length === 0}
+                <button
+                  onClick={handleGenerateMatriculas}
+                  disabled={running || results.length === 0}
                   title={results.length === 0 ? 'Nenhum registro para gerar' : 'Gerar matrículas para os registros mostrados'}
-                  style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb', background: running || results.length === 0 ? '#f1f5f9' : '#fff', cursor: running || results.length === 0 ? 'not-allowed' : 'pointer' }}>
+                  className={(running || results.length === 0) ? 'btn-muted btn-compact' : 'btn-gradient btn-gradient-blue btn-compact'}
+                >
                   Gerar Matrículas
                 </button>
-                <button onClick={handleSaveChangesAsXml} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff', cursor: 'pointer' }}>
+                <button onClick={handleSaveChangesAsXml} className="btn-gradient btn-gradient-orange btn-compact">
                   Gerar XML
                 </button>
               </div>
@@ -1950,26 +1961,9 @@ export default function LeituraLivros() {
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
                           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                            <button
-                              onClick={() => insertRecordAbove(i)}
-                              title="Inserir registro acima"
-                              style={{ padding: '6px 8px', borderRadius: 6, border: '1px solid #c7e0f4', background: '#e6f2fb', color: '#0b5394', cursor: 'pointer' }}
-                            >
-                              + Acima
-                            </button>
-                            <button
-                              onClick={() => insertRecordBelow(i)}
-                              title="Inserir registro abaixo"
-                              style={{ padding: '6px 8px', borderRadius: 6, border: '1px solid #c7e0f4', background: '#e6f2fb', color: '#0b5394', cursor: 'pointer' }}
-                            >
-                              + Abaixo
-                            </button>
-                            <button
-                              onClick={() => removeRecord(i)}
-                              style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fee2e2', color: '#b91c1c', cursor: 'pointer', fontWeight: 700 }}
-                            >
-                              Excluir
-                            </button>
+                            <button onClick={() => insertRecordAbove(i)} title="Inserir registro acima" className="btn-gradient btn-gradient-blue btn-compact">+ Acima</button>
+                            <button onClick={() => insertRecordBelow(i)} title="Inserir registro abaixo" className="btn-gradient btn-gradient-blue btn-compact">+ Abaixo</button>
+                            <button onClick={() => removeRecord(i)} className="btn-gradient btn-gradient-red btn-compact">Excluir</button>
                           </div>
                         </td>
                       </tr>
@@ -1989,20 +1983,12 @@ export default function LeituraLivros() {
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     {(fullTextAvailable || fullTextContent || fullTextInline || fullTextPreview) && (
                       <button
-                        onClick={handleCopyFullText}
-                        disabled={fullTextLoading || (!fullTextAvailable && !fullTextContent && !fullTextInline && !fullTextPreview)}
-                        style={{
-                          background: fullTextLoading ? '#94a3b8' : 'linear-gradient(135deg,#10b981,#059669)',
-                          color: '#fff',
-                          border: 'none',
-                          padding: '10px 16px',
-                          borderRadius: 10,
-                          fontWeight: 800,
-                          cursor: fullTextLoading ? 'not-allowed' : 'pointer'
-                        }}
-                      >
-                        {fullTextLoading ? 'Carregando…' : 'Copiar inteiro teor'}
-                      </button>
+                          onClick={handleCopyFullText}
+                          disabled={fullTextLoading || (!fullTextAvailable && !fullTextContent && !fullTextInline && !fullTextPreview)}
+                          className={fullTextLoading ? 'btn-muted btn-compact' : 'btn-gradient btn-gradient-green btn-compact'}
+                        >
+                          {fullTextLoading ? 'Carregando…' : 'Copiar inteiro teor'}
+                        </button>
                     )}
                     {fullTextCopied && (
                       <span style={{ color: '#047857', fontWeight: 700, fontSize: 13 }}>Copiado!</span>

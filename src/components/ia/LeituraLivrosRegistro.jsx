@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import Tesseract from 'tesseract.js';
+import '../../buttonGradients.css';
 
 function escapeXml(str) {
   return String(str || '')
@@ -161,7 +162,7 @@ export default function LeituraLivrosRegistro() {
           <button
             onClick={() => inputRef.current && inputRef.current.click()}
             disabled={processando}
-            style={{ background: '#2c3e50', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 16px', fontWeight: 700, cursor: 'pointer' }}
+            className={processando ? 'btn-muted btn-compact' : 'btn-gradient btn-gradient-blue btn-compact'}
           >
             📁 Selecionar pasta de imagens
           </button>
@@ -188,14 +189,14 @@ export default function LeituraLivrosRegistro() {
           <button
             onClick={iniciarProcessamento}
             disabled={processando || !arquivos.length}
-            style={{ background: '#27ae60', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 16px', fontWeight: 700, cursor: processando ? 'not-allowed' : 'pointer' }}
+            className={(processando || !arquivos.length) ? 'btn-muted btn-compact' : 'btn-gradient btn-gradient-blue btn-compact'}
           >
             ▶ Iniciar
           </button>
           <button
             onClick={baixarXML}
             disabled={!resultados.length}
-            style={{ background: '#9b59b6', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 16px', fontWeight: 700, cursor: !resultados.length ? 'not-allowed' : 'pointer' }}
+            className={!resultados.length ? 'btn-muted btn-compact' : 'btn-gradient btn-gradient-orange btn-compact'}
           >
             ⬇ Baixar XML
           </button>
