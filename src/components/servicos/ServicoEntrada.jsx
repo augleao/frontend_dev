@@ -634,7 +634,7 @@ export default function ServicoEntrada({ form, tiposServico, onChange, combosDis
           <button
             type="button"
             onClick={() => setShowAdicionarPagamentoModal(true)}
-            className="btn btn-primary"
+            className="btn-gradient btn-gradient-blue btn-compact"
           >
             ➕ Adicionar Pagamento
           </button>
