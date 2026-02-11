@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import config from '../../config';
 import './servicos.css';
+import '../../buttonGradients.css';
 import Toast from '../Toast';
 import { DEFAULT_TOAST_DURATION } from '../toastConfig';
 
@@ -405,7 +406,7 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
         <div className="servico-actions" style={{ justifyContent: 'flex-start' }}>
           {/* Exibe botão salvar se não existe clienteId */}
           {!form.clienteId && (
-            <button type="button" onClick={handleSalvarCliente} className="btn btn-success">
+            <button type="button" onClick={handleSalvarCliente} className="btn-gradient btn-gradient-green">
               Salvar
             </button>
           )}
@@ -417,13 +418,13 @@ export default function ServicoCliente({ form, onChange, onClienteChange, onAvan
                 <button
                   type="button"
                   onClick={handleAtualizarCliente}
-                  className="btn btn-primary"
+                  className="btn-gradient btn-gradient-blue btn-compact"
                   style={{ marginRight: 8 }}
                 >
                   Atualizar Cliente
                 </button>
               )}
-              <button type="button" onClick={handleExcluirCliente} className="btn btn-danger">
+              <button type="button" onClick={handleExcluirCliente} className="btn-gradient btn-gradient-red btn-compact">
                 Excluir Cadastro do Cliente
               </button>
             </>

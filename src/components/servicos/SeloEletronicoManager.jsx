@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import config from '../../config';
+import '../../buttonGradients.css';
 
 // protocolo: string identificador do pedido
 export default function SeloEletronicoManager({ protocolo, onSelosChange }) {

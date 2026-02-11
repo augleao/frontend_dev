@@ -9,6 +9,7 @@ import ServicoEntrega from './ServicoEntrega';
 import ServicoLista from './ServicoLista';
 import config from '../../config';
 import { fetchComAuth } from '../../utils';
+import '../../buttonGradients.css';
 
 const palette = {
   pageGradient: 'linear-gradient(135deg, #030712 0%, #0a1833 45%, #0b2652 100%)',
@@ -636,12 +637,12 @@ export default function ServicoManutencao() {
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingBottom: 8, borderBottom: `1px solid ${palette.softBorder}` }}>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <button type="button" onClick={goPrev} disabled={currentIdx === 0} style={{ border: `1px solid ${palette.softBorder}`, background: '#fff', borderRadius: 8, padding: '8px 12px', cursor: currentIdx === 0 ? 'not-allowed' : 'pointer', color: palette.neutralText }}>Voltar</button>
-                  <button type="button" onClick={() => setAba('historico')} style={{ border: `1px solid ${palette.softBorder}`, background: palette.primarySoft, color: palette.neutralText, borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}>Ver historico</button>
+                  <button type="button" onClick={goPrev} disabled={currentIdx === 0} className="btn-muted btn-compact" style={{ padding: '8px 12px' }}>Voltar</button>
+                  <button type="button" onClick={() => setAba('historico')} className="btn-gradient btn-gradient-blue btn-compact" style={{ padding: '8px 12px' }}>Ver historico</button>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button type="button" onClick={() => navigate('/lista-servicos')} style={{ border: `1px solid ${palette.softBorder}`, background: '#fff', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', color: palette.neutralText }}>Voltar para lista</button>
-                  <button type="button" onClick={excluirPedido} style={{ border: '1px solid #fee2e2', background: '#fef2f2', color: '#b91c1c', borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}>Excluir pedido</button>
+                  <button type="button" onClick={() => navigate('/lista-servicos')} className="btn-muted btn-compact" style={{ padding: '8px 12px' }}>Voltar para lista</button>
+                  <button type="button" onClick={excluirPedido} className="btn-gradient btn-gradient-red btn-compact" style={{ padding: '8px 12px' }}>Excluir pedido</button>
                 </div>
               </div>
 

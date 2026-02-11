@@ -1,4 +1,5 @@
 import React from 'react';
+import '../../buttonGradients.css';
 
 export default function ServicoAlertas({ alertas }) {
   if (!alertas.length) return null;

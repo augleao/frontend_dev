@@ -1,4 +1,5 @@
 import React from 'react';
+import '../../buttonGradients.css';
 
 export default function ServicoDetalhes({ servico, statusExecucao, statusPagamento, onClose }) {
   if (!servico) return null;
@@ -47,17 +48,7 @@ export default function ServicoDetalhes({ servico, statusExecucao, statusPagamen
           <strong>Assinatura Digital:</strong> {servico.entrega.assinaturaDigital ? 'Sim' : 'Não'}<br />
         </div>
       </div>
-      <button onClick={onClose} style={{
-        marginTop: 24,
-        padding: '10px 24px',
-        background: '#e74c3c',
-        color: 'white',
-        border: 'none',
-        borderRadius: '8px',
-        fontSize: '14px',
-        fontWeight: '600',
-        cursor: 'pointer'
-      }}>
+      <button onClick={onClose} className="btn-gradient btn-gradient-red btn-compact" style={{ marginTop: 24, padding: '10px 24px' }}>
         Fechar
       </button>
     </div>

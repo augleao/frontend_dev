@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 import './servicos.css';
+import '../../buttonGradients.css';
 
 const palette = {
   primary: '#1d4ed8',

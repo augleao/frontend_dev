@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import config from '../../config';
 import './servicos.css';
+import '../../buttonGradients.css';
 
 const palette = {
   primary: '#1d4ed8',
@@ -1046,7 +1047,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                   </select>
                 </td>
                 <td style={{ padding: '8px', border: `1px solid ${palette.softBorder}`, textAlign: 'center' }}>
-                  <button type="button" onClick={() => handleRemoverPagamentoFinal(idx)} style={{ background: palette.primaryDark, color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontWeight: 'bold', cursor: 'pointer' }}>Remover</button>
+                  <button type="button" onClick={() => handleRemoverPagamentoFinal(idx)} className="btn-gradient btn-gradient-red btn-compact" style={{ padding: '4px 10px', fontWeight: 'bold' }}>Remover</button>
                 </td>
               </tr>
             ))}
@@ -1054,7 +1055,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
         </table>
         </div>
         <div className="servico-actions">
-          <button type="button" onClick={handleAdicionarPagamentoFinal} className="btn" style={{ background: palette.primary, color: '#fff', border: 'none' }}>Adicionar Forma</button>
+          <button type="button" onClick={handleAdicionarPagamentoFinal} className="btn-gradient btn-gradient-blue btn-compact">Adicionar Forma</button>
         </div>
       </div>
 
@@ -1129,8 +1130,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                         handleSalvarPagamentoFinal();
                       }}
                       disabled={processando}
-                      className="btn"
-                      style={{ background: palette.primary, color: '#fff', border: 'none' }}
+                      className="btn-gradient btn-gradient-green"
                     >
                       {processando ? '⏳ Salvando...' : '💾 Salvar Pagamento'}
                     </button>
@@ -1138,16 +1138,14 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
 
                   {/* Botão Excluir/Cancelar Pagamento - aparece se foi salvo */}
                   {pagamentoSalvo && (
-                    <button type="button" onClick={handleCancelarPagamento} disabled={processando} className="btn" style={{ background: palette.primaryDark, color: '#fff', border: 'none' }}>
+                    <button type="button" onClick={handleCancelarPagamento} disabled={processando} className="btn-gradient btn-gradient-red">
                       {processando ? '⏳ Processando...' : '❌ Excluir Pagamento'}
                     </button>
                   )}
 
                   {/* Botão Adicionar Complemento - aparece se valor é insuficiente e não foi salvo */}
                   {!pagamentoSalvo && totalAdiantado < subtotalPedido && (
-                    <button type="button" onClick={abrirComplementoModal} className="btn" style={{ background: palette.softBorder, color: palette.primaryDark, border: 'none' }}>
-                      ➕ Adicionar Complemento
-                    </button>
+                    <button type="button" onClick={abrirComplementoModal} className="btn-gradient btn-gradient-orange">➕ Adicionar Complemento</button>
                   )}
 
                   {/* Botão Gerar Recibo do Troco - SEMPRE VISÍVEL quando há excesso */}
@@ -1158,8 +1156,7 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
                         console.log('[FRONTEND][LOG] Gerando recibo do troco para excesso de:', excesso);
                         gerarReciboExcesso(excesso);
                       }}
-                      className="btn"
-                      style={{ background: palette.primary, color: '#fff', border: 'none' }}
+                      className="btn-gradient btn-gradient-blue"
                     >
                       📄 Gerar Recibo do Troco
                     </button>
@@ -1209,8 +1206,8 @@ export default function ServicoPagamento({ form, onChange, valorTotal = 0, valor
               />
             </div>
             <div className="servico-actions">
-              <button type="button" onClick={handleAdicionarComplementoModal} className="btn" style={{ background: palette.primary, color: '#fff', border: 'none' }}>Adicionar</button>
-              <button type="button" onClick={fecharComplementoModal} className="btn" style={{ background: palette.primaryDark, color: '#fff', border: 'none' }}>Cancelar</button>
+              <button type="button" onClick={handleAdicionarComplementoModal} className="btn-gradient btn-gradient-blue">Adicionar</button>
+              <button type="button" onClick={fecharComplementoModal} className="btn-muted">Cancelar</button>
             </div>
           </div>
         </div>

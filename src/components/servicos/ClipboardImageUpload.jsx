@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import config from '../../config';
+import '../../buttonGradients.css';
 
 export default function ClipboardImageUpload({ protocolo, onUpload, codigoTributario, disabled = false }) {
   const [uploading, setUploading] = useState(false);
@@ -87,18 +88,8 @@ export default function ClipboardImageUpload({ protocolo, onUpload, codigoTribut
         type="button"
         onClick={handleImportFromClipboard}
         disabled={uploading || disabled}
-        style={{
-          width: 220,
-          padding: '4px 10px',
-          background: '#36c2f6',
-          color: '#fff',
-          border: '1.5px solid #36c2f6',
-          borderRadius: 6,
-          fontSize: 13,
-          fontWeight: 600,
-          cursor: (uploading || disabled) ? 'not-allowed' : 'pointer',
-          marginLeft: 0
-        }}
+        className="btn-gradient btn-gradient-blue btn-compact"
+        style={{ width: 220, marginLeft: 0 }}
         title="Importar imagem da área de transferência"
       >
         {uploading ? 'Importando selo...' : '� Importar selo da área de transferência'}

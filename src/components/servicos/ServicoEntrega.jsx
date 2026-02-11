@@ -3,6 +3,7 @@ import React from 'react';
 import { useState } from 'react';
 import config from '../../config';
 import './servicos.css';
+import '../../buttonGradients.css';
 
 const palette = {
   primary: '#1d4ed8',

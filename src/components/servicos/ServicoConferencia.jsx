@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import config from '../../config';
 import './servicos.css';
+import '../../buttonGradients.css';
 
 const palette = {
   primary: '#1d4ed8',
@@ -209,7 +210,7 @@ export default function ServicoConferencia({ protocolo, atosPedido = [], onAvanc
           />
         </div>
         <div className="servico-actions" style={{ justifyContent: 'flex-start', marginTop: 0 }}>
-          <button type="button" onClick={handleSalvar} disabled={salvando || !status} className="btn btn-primary">
+          <button type="button" onClick={handleSalvar} disabled={salvando || !status} className="btn-gradient btn-gradient-green">
             {salvando ? 'Salvando...' : 'Salvar Conferência'}
           </button>
         </div>
@@ -246,7 +247,7 @@ export default function ServicoConferencia({ protocolo, atosPedido = [], onAvanc
                   </td>
                   <td style={{ padding: 6, color: palette.text }}>{c.observacao}</td>
                   <td style={{ padding: 6 }}>
-                    <button type="button" onClick={() => handleApagarConferencia(c)} className="btn btn-danger">Apagar</button>
+                    <button type="button" onClick={() => handleApagarConferencia(c)} className="btn-gradient btn-gradient-red btn-compact">Apagar</button>
                   </td>
                 </tr>
               ))
