@@ -411,7 +411,6 @@ function Home() {
         </nav>
 
         <div className="nav-actions">
-          <button className="btn btn-outline" onClick={() => navigate('/login')}>Login</button>
           <button className="btn btn-solid" onClick={() => navigate('/signup')}>Cadastrar</button>
         </div>
       </header>
