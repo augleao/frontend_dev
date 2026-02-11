@@ -637,11 +637,11 @@ export default function ServicoManutencao() {
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingBottom: 8, borderBottom: `1px solid ${palette.softBorder}` }}>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <button type="button" onClick={goPrev} disabled={currentIdx === 0} className="btn-muted btn-compact" style={{ padding: '8px 12px' }}>Voltar</button>
+                  <button type="button" onClick={goPrev} disabled={currentIdx === 0} className="btn-gradient btn-gradient-blue btn-compact" style={{ padding: '8px 12px' }}>Voltar</button>
                   <button type="button" onClick={() => setAba('historico')} className="btn-gradient btn-gradient-blue btn-compact" style={{ padding: '8px 12px' }}>Ver historico</button>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button type="button" onClick={() => navigate('/lista-servicos')} className="btn-muted btn-compact" style={{ padding: '8px 12px' }}>Voltar para lista</button>
+                  <button type="button" onClick={() => navigate('/lista-servicos')} className="btn-gradient btn-gradient-blue btn-compact" style={{ padding: '8px 12px' }}>Voltar para lista</button>
                   <button type="button" onClick={excluirPedido} className="btn-gradient btn-gradient-red btn-compact" style={{ padding: '8px 12px' }}>Excluir pedido</button>
                 </div>
               </div>
