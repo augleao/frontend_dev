@@ -61,6 +61,7 @@ export default function LeituraLivros() {
   const jobStartTimeRef = useRef(null);
   const lastMsgIndexRef = useRef(0);
   const rowRef = useRef(null);
+  const fileInputRef = useRef(null);
   const [rightColOffset, setRightColOffset] = useState(0);
   // Gap entre os dois cards superiores (Parâmetros e Modo)
   const headerRowGap = 14; // ajuste único: widths calculadas usam este valor para somar 100%
@@ -1832,13 +1833,18 @@ export default function LeituraLivros() {
         }}>
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Selecione arquivos</div>
           <div style={{ fontSize: 12, marginBottom: 12 }}>Imagens (jpg, png, tif), PDFs e .p7s assinados</div>
-          <input
-            type="file"
-            multiple
-            accept="image/*,.p7s,application/pdf"
-            title="Aceita imagens (jpg, png, tif...), PDFs e arquivos .p7s"
-            onChange={e => setFiles(Array.from(e.target.files || []))}
-          />
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
+            <button type="button" onClick={() => fileInputRef.current && fileInputRef.current.click()} className="btn-gradient btn-gradient-blue btn-compact">Escolher arquivos</button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,.p7s,application/pdf"
+              title="Aceita imagens (jpg, png, tif...), PDFs e arquivos .p7s"
+              onChange={e => setFiles(Array.from(e.target.files || []))}
+              style={{ display: 'none' }}
+            />
+          </div>
         </div>
       </div>
     )}
