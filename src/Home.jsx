@@ -452,12 +452,12 @@ function Home() {
           </div>
           <form onSubmit={handleInlineLogin}>
             <div className="form-group">
-              <label htmlFor="email">Email institucional</label>
+              <label htmlFor="username">Nome de usuário (campo `users.nome`)</label>
               <input
-                id="email"
+                id="username"
                 className="input"
                 type="text"
-                placeholder="usuario@serventia.gov.br"
+                placeholder="Digite seu nome de usuário"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 autoComplete="username"
