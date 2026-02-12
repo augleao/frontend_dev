@@ -11,8 +11,12 @@ export function AuthProvider({ children }) {
     else localStorage.removeItem('token');
   }, [token]);
 
-  const login  = (u, t) => { setUser(u); setToken(t); };
-  const logout = ()      => { setUser(null); setToken(null); };
+  const login  = (u, t) => { console.log('[AuthContext] login', { user: u }); setUser(u); setToken(t); };
+  const logout = () => {
+    console.log('[AuthContext] logout - clearing user and token');
+    setUser(null);
+    setToken(null);
+  };
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout }}>

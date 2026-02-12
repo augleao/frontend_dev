@@ -24,8 +24,17 @@ function NavBar() {
 
   // Função para logout e retorno para a landing page nova
   const handleLogout = () => {
-    navigate('/'); // redireciona primeiro para a nova Home
-    logout(); // depois limpa o estado de auth
+    try {
+      console.log('[NavBar] logout clicked, user:', user);
+    } catch (e) {
+      console.log('[NavBar] logout clicked');
+    }
+    // Navigate first to ensure we leave any private view
+    navigate('/', { replace: true });
+    console.log('[NavBar] navigated to /');
+    // then clear auth state
+    logout();
+    console.log('[NavBar] logout() called');
   };
 
   const navRef = useRef(null);
