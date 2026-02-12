@@ -67,57 +67,31 @@ function AtosHub() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      fontFamily: 'Arial, sans-serif'
+      display: 'flex',
+      flexDirection: 'column',
+      fontFamily: "'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+      color: '#0b1324',
+      background: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 30%), radial-gradient(circle at 80% 0%, rgba(92,169,255,0.1), transparent 35%), linear-gradient(135deg, #0a1630 0%, #0e2145 50%, #0b1d3a 100%)",
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      <header style={{
-        background: 'rgba(44, 62, 80, 0.95)',
-        backdropFilter: 'blur(10px)',
-        padding: '16px 32px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-      }}>
-        <h1 style={{
-          color: 'white',
-          margin: 0,
-          fontSize: '24px',
-          fontWeight: '600',
-          letterSpacing: '0.5px'
-        }}>
-          Atos Praticados - Sistema Auxiliar do RCPN
-        </h1>
-      </header>
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        backgroundImage: 'linear-gradient(135deg, rgba(201,166,70,0.05) 0 20%, transparent 20% 100%), radial-gradient(circle at 30% 40%, rgba(255,255,255,0.06), transparent 50%), repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 12px)',
+        opacity: 0.6,
+        zIndex: 0
+      }} />
+      {/* Header removed to match Home visual */}
       <main style={{
         maxWidth: '900px',
         margin: '0 auto',
-        padding: '60px 32px'
+        padding: '60px 32px',
+        position: 'relative',
+        zIndex: 1
       }}>
-        <div style={{
-          textAlign: 'center',
-          marginBottom: '60px'
-        }}>
-          <h2 style={{
-            fontSize: '40px',
-            fontWeight: '700',
-            color: 'white',
-            margin: '0 0 16px 0',
-            textShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
-            letterSpacing: '-0.5px'
-          }}>
-            Gerencie Atos Praticados
-          </h2>
-          <p style={{
-            fontSize: '18px',
-            color: 'rgba(255, 255, 255, 0.9)',
-            margin: 0,
-            fontWeight: '300',
-            textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
-          }}>
-            Acesse as funcionalidades de atos praticados, pesquisa, conciliação e atos gratuitos
-          </p>
-        </div>
+        {/* Intro removed to match Home visual */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
