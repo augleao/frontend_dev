@@ -60,7 +60,7 @@ function NavBar() {
         zIndex: 1000,
         padding: '6px 20px',
         display: 'flex',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
         alignItems: 'center',
         background: 'linear-gradient(90deg, rgba(10,22,48,0.72), rgba(14,33,69,0.68))',
         backdropFilter: 'blur(8px)',
@@ -70,6 +70,11 @@ function NavBar() {
         boxShadow: '0 6px 20px rgba(2,6,23,0.35)',
       }}
     >
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Link to="/help" className="btn-gradient btn-gradient-orange" style={{ fontSize: '0.9rem', padding: '6px 12px', marginRight: '12px' }}>
+          Ajuda
+        </Link>
+      </div>
       {user ? (
         <>
           <span style={{ 
