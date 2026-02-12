@@ -71,45 +71,47 @@ function NavBar() {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Link to="/help" className="btn-gradient btn-gradient-orange" style={{ fontSize: '0.9rem', padding: '6px 12px', marginRight: '12px' }}>
+        <a href="/help" target="_blank" rel="noopener noreferrer" className="btn-gradient btn-gradient-orange" style={{ fontSize: '0.9rem', padding: '6px 12px', marginRight: '12px', color: 'inherit', textDecoration: 'none' }}>
           Ajuda
-        </Link>
+        </a>
       </div>
-      {user ? (
-        <>
-          <span style={{ 
-            fontWeight: '700', 
-            color: 'white', 
-            marginRight: '12px', 
-            fontSize: '0.9rem' 
-          }}>
-            👤 {user.nome || user.email}
-          </span>
-          {user.cargo === 'Registrador' && (
-            <Link to="/admin" className="btn-gradient btn-gradient-blue" style={buttonStyle}>
-              Administração
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {user ? (
+          <>
+            <span style={{ 
+              fontWeight: '700', 
+              color: 'white', 
+              marginRight: '12px', 
+              fontSize: '0.9rem' 
+            }}>
+              👤 {user.nome || user.email}
+            </span>
+            {user.cargo === 'Registrador' && (
+              <Link to="/admin" className="btn-gradient btn-gradient-blue" style={buttonStyle}>
+                Administração
+              </Link>
+            )}
+            <button type="button" className="btn-gradient btn-gradient-green" style={buttonStyle} onClick={handleHome}>
+              Home
+            </button>
+            <button type="button" className="btn-gradient btn-gradient-green" style={buttonStyle} onClick={handleVoltar}>
+              Voltar
+            </button>
+            <button type="button" className="btn-gradient btn-gradient-green" style={buttonStyle} onClick={handleLogout}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className="btn-gradient btn-gradient-green" style={buttonStyle}>
+              Login
             </Link>
-          )}
-          <button type="button" className="btn-gradient btn-gradient-green" style={buttonStyle} onClick={handleHome}>
-            Home
-          </button>
-          <button type="button" className="btn-gradient btn-gradient-green" style={buttonStyle} onClick={handleVoltar}>
-            Voltar
-          </button>
-          <button type="button" className="btn-gradient btn-gradient-green" style={buttonStyle} onClick={handleLogout}>
-            Logout
-          </button>
-        </>
-      ) : (
-        <>
-          <Link to="/login" className="btn-gradient btn-gradient-green" style={buttonStyle}>
-            Login
-          </Link>
-          <Link to="/signup" className="btn-gradient btn-gradient-green" style={buttonStyle}>
-            Cadastro
-          </Link>
-        </>
-      )}
+            <Link to="/signup" className="btn-gradient btn-gradient-green" style={buttonStyle}>
+              Cadastro
+            </Link>
+          </>
+        )}
+      </div>
     </nav>
   );
 }
