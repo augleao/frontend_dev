@@ -358,7 +358,15 @@ function AnaliseDAP() {
   }, [allDaps, currentYear]);
 
   return (
-    <div style={pageWrapperStyle}>
+    <div style={{...pageWrapperStyle, position: 'relative', overflow: 'hidden'}}>
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        backgroundImage: 'linear-gradient(135deg, rgba(201,166,70,0.05) 0 20%, transparent 20% 100%), radial-gradient(circle at 30% 40%, rgba(255,255,255,0.06), transparent 50%), repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 12px)',
+        opacity: 0.6,
+        zIndex: 0
+      }} />
       <header style={headerStyle}>
         <button type="button" onClick={() => navigate(-1)} style={backButtonStyle}>
           ← Voltar
@@ -586,9 +594,13 @@ function FilterItem({ label, children }) {
 
 const pageWrapperStyle = {
   minHeight: '100vh',
-  background: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)',
+  display: 'flex',
+  flexDirection: 'column',
+  fontFamily: "'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+  color: '#0b1324',
+  background: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 30%), radial-gradient(circle at 80% 0%, rgba(92,169,255,0.1), transparent 35%), linear-gradient(135deg, #0a1630 0%, #0e2145 50%, #0b1d3a 100%)",
   padding: '32px 24px',
-  fontFamily: 'Arial, sans-serif',
+  position: 'relative'
 };
 
 const headerStyle = {
@@ -597,6 +609,8 @@ const headerStyle = {
   justifyContent: 'space-between',
   marginBottom: '16px',
   gap: '16px',
+  position: 'relative',
+  zIndex: 1
 };
 
 const backButtonStyle = {
@@ -643,6 +657,8 @@ const filtersSectionStyle = {
   alignItems: 'flex-end',
   flexWrap: 'wrap',
   marginBottom: '16px',
+  position: 'relative',
+  zIndex: 1
 };
 
 const filterLabelStyle = {

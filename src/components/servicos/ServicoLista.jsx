@@ -215,7 +215,25 @@ export default function ListaServicos() {
   }, [dataInicial, dataFinal, buscaProtocolo, statusSelecionados, pedidos, statusPedidos]);
 
   return (
-    <div style={{ /* ...estilos... */ }}>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      fontFamily: "'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+      color: '#0b1324',
+      background: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 30%), radial-gradient(circle at 80% 0%, rgba(92,169,255,0.1), transparent 35%), linear-gradient(135deg, #0a1630 0%, #0e2145 50%, #0b1d3a 100%)",
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        backgroundImage: 'linear-gradient(135deg, rgba(201,166,70,0.05) 0 20%, transparent 20% 100%), radial-gradient(circle at 30% 40%, rgba(255,255,255,0.06), transparent 50%), repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 12px)',
+        opacity: 0.6,
+        zIndex: 0
+      }} />
+
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -224,7 +242,9 @@ export default function ListaServicos() {
         padding: '8px 12px',
         background: '#ffffff',
         borderRadius: 12,
-        boxShadow: '0 2px 8px rgba(44,62,80,0.12)'
+        boxShadow: '0 2px 8px rgba(44,62,80,0.12)',
+        position: 'relative',
+        zIndex: 1
       }}>
         <button
           onClick={() => navigate('/manutencao-servicos')}
