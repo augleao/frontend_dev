@@ -3,7 +3,7 @@ import React from 'react';
 import { formasPagamento, formatarDataBR, formatarValor, formatarMoeda } from './utils';
 import { apiURL } from './config';
 
-export default function CaixaTableEscrevente({ atos, onRemover }) {
+export default function CaixaTableEscrevente({ atos, onRemove }) {
   console.log("Atos recebidos na tabela caixa-table:", atos);
 
   // Função para determinar a cor de fundo baseada no código do ato
@@ -206,7 +206,7 @@ export default function CaixaTableEscrevente({ atos, onRemover }) {
                     fontWeight: '600',
                     marginRight: 6
                   }}
-                  onClick={() => onRemover(idx)}
+                  onClick={() => onRemove && onRemove(idx)}
                 >
                   Excluir
                 </button>

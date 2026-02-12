@@ -224,7 +224,25 @@ function RGCaixa() {
       if (resAtos.ok) {
         const dataAtos = await resAtos.json();
         console.debug('[RGCaixa] carregarDadosDaData - payload:', dataAtos);
-        const lista = dataAtos.CaixaDiario || [];
+        let lista = [];
+        if (Array.isArray(dataAtos)) {
+          lista = dataAtos;
+          console.debug('[RGCaixa] carregarDadosDaData - payload is array, using it as lista');
+        } else if (dataAtos && Array.isArray(dataAtos.CaixaDiario)) {
+          lista = dataAtos.CaixaDiario;
+          console.debug('[RGCaixa] carregarDadosDaData - payload.CaixaDiario used');
+        } else if (dataAtos && Array.isArray(dataAtos.rows)) {
+          lista = dataAtos.rows;
+          console.debug('[RGCaixa] carregarDadosDaData - payload.rows used');
+        } else if (dataAtos && Array.isArray(dataAtos.result)) {
+          lista = dataAtos.result;
+          console.debug('[RGCaixa] carregarDadosDaData - payload.result used');
+        } else if (dataAtos && Array.isArray(dataAtos.data)) {
+          lista = dataAtos.data;
+          console.debug('[RGCaixa] carregarDadosDaData - payload.data used');
+        } else {
+          console.debug('[RGCaixa] carregarDadosDaData - payload shape not recognized, lista empty');
+        }
         console.debug('[RGCaixa] carregarDadosDaData - lista.length:', lista.length);
         setAtos(lista);
       } else {
