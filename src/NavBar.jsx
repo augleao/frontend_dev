@@ -22,10 +22,10 @@ function NavBar() {
     navigate('/home2');
   };
 
-  // Função para logout com redirecionamento para home.html
+  // Função para logout e retorno para a landing page nova
   const handleLogout = () => {
     logout(); // chama a função logout do contexto
-    navigate('/home.html'); // redireciona para home.html
+    navigate('/'); // redireciona para a nova Home
   };
 
   const navRef = useRef(null);
