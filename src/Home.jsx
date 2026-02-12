@@ -452,7 +452,7 @@ function Home() {
           </div>
           <form onSubmit={handleInlineLogin}>
             <div className="form-group">
-              <label htmlFor="username">Nome de usuário (campo `users.nome`)</label>
+              <label htmlFor="username">Nome de usuário</label>
               <input
                 id="username"
                 className="input"
