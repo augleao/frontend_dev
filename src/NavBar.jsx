@@ -24,8 +24,8 @@ function NavBar() {
 
   // Função para logout e retorno para a landing page nova
   const handleLogout = () => {
-    logout(); // chama a função logout do contexto
-    navigate('/'); // redireciona para a nova Home
+    navigate('/', { replace: true }); // troca a rota antes de limpar o token para evitar redirects do PrivateRoute
+    logout();
   };
 
   const navRef = useRef(null);
