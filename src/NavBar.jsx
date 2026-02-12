@@ -29,12 +29,11 @@ function NavBar() {
     } catch (e) {
       console.log('[NavBar] logout clicked');
     }
-    // Navigate first to ensure we leave any private view
-    navigate('/', { replace: true });
-    console.log('[NavBar] navigated to /');
-    // then clear auth state
+    // Clear auth state first
     logout();
-    console.log('[NavBar] logout() called');
+    console.log('[NavBar] logout() called, performing full-page redirect to /');
+    // Use full page redirect to avoid SPA PrivateRoute re-evaluating mid-transition
+    window.location.replace('/');
   };
 
   const navRef = useRef(null);
