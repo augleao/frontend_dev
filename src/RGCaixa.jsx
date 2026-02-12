@@ -25,6 +25,7 @@ function RGCaixa() {
   const [valorInicialCaixa, setValorInicialCaixa] = useState(0);
   const [valorFinalCaixa, ValorFinalCaixa] = useState(0);
   const [percentualISS, setPercentualISS] = useState(0);
+  const [valorRG, setValorRG] = useState(0);
   const [atos, setAtos] = useState([]);
   const [atosFiltrados, setAtosFiltrados] = useState([]);
   const [fechamentos, setFechamentos] = useState([]);
@@ -248,6 +249,42 @@ function RGCaixa() {
   useEffect(() => { carregarDadosDaData(); }, []);
   useEffect(() => { carregarDadosDaData(); }, [dataSelecionada]);
 
+  // Carrega o valor atual de validação do RG (atos.codigo = 8888)
+  useEffect(() => {
+    async function carregarValorRG() {
+      try {
+        const token = localStorage.getItem('token');
+        const serventiaParam = usuario?.serventia ? `&serventia=${encodeURIComponent(usuario.serventia)}` : '';
+        const res = await fetch(`${apiURL}/atos?codigo=8888${serventiaParam}`, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) {
+          console.warn('Não foi possível carregar valor do RG, status:', res.status);
+          return;
+        }
+        const data = await res.json();
+        // data can be an array or an object. We must read `atos.valor_final` for codigo 8888.
+        let total = 0;
+        if (Array.isArray(data)) {
+          total = data.reduce((acc, a) => {
+            const v = parseFloat(a.valor_final) || 0;
+            return acc + v;
+          }, 0);
+        } else if (data && typeof data === 'object') {
+          if (typeof data.total === 'number') total = data.total;
+          else if (typeof data.total_today === 'number') total = data.total_today;
+          else if (data.rows && Array.isArray(data.rows)) {
+            total = data.rows.reduce((acc, a) => acc + (parseFloat(a.valor_final) || 0), 0);
+          } else if (data.valor_final) {
+            total = parseFloat(data.valor_final) || 0;
+          }
+        }
+        setValorRG(isNaN(total) ? 0 : total);
+      } catch (e) {
+        console.error('Erro ao carregar valor do RG:', e);
+      }
+    }
+    carregarValorRG();
+  }, [usuario?.serventia]);
+
   const fechamentoDiario = async () => {
     const dataAtual = dataSelecionada;
     const existeFechamento = atos.some((ato) => ato.codigo === '0001' && ato.data === dataAtual && ato.usuario === nomeUsuario);
@@ -339,6 +376,7 @@ function RGCaixa() {
           <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
             <h2 style={{ margin: 0, color: '#2c3e50', fontSize: '18px', fontWeight: '600' }}>📊 Resumo:</h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ color: '#2c3e50', fontSize: '18px', fontWeight: '600' }}>ISS: {percentualISS}%</span></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ color: '#2c3e50', fontSize: '18px', fontWeight: '600' }}>💳 Valor do RG: {formatarMoeda(valorRG)}</span></div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ color: '#2c3e50', fontSize: '18px', fontWeight: '600' }}>💰 Valor Inicial do Caixa:</span>
               <input type="number" min="0" step="0.01" value={valorInicialCaixa} onChange={e => setValorInicialCaixa(parseFloat(e.target.value) || 0)} onBlur={salvarValorInicialCaixa} style={{ width: '100px', padding: '4px 6px', borderRadius: '4px', border: '1px solid #27ae60', fontSize: '16px', fontWeight: '600' }} />
             </div>
@@ -364,7 +402,7 @@ function RGCaixa() {
                 </div>
                 <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <label style={{ fontWeight: '600', color: '#2c3e50', minWidth: '100px' }}>Observação:</label>
-                  <input type="text" value={entradaObs} onChange={(e) => setEntradaObs(e.target.value)} placeholder="Ex. Troco, abertura de caixa, outras entradas" style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                  <input type="text" value={entradaObs} onChange={(e) => setEntradaObs(e.target.value)} placeholder="Ex. Troco, abertura de caixa, EValidação RG" style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
                 </div>
                 <button type="button" className="btn-gradient btn-gradient-green btn-block" style={{ fontSize: '13px' }} onClick={adicionarEntrada}>➕ Adicionar Entrada</button>
               </div>
