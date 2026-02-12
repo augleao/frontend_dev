@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Manual de Ajuda — RCPN</title>
+    <link rel="stylesheet" href="help.css">
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="header">
+        <div>
+          <h1 class="title">Manual do Usuário — Sistema Auxiliar do RCPN</h1>
+          <div class="meta">Guia rápido e referências — baseado em USER_MANUAL.md</div>
+        </div>
+        <div>
+          <input id="search" class="search" placeholder="Pesquisar no manual..." />
+        </div>
+      </div>
+
+      <div id="toc" class="toc"></div>
+      <article id="content" class="content">Carregando manual...</article>
+    </div>
+
+    <script src="marked.min.js"></script>
+    <script>
+      // Load markdown, render with marked (local) and build a TOC
+      function buildTOC(container){
+        const headings = container.querySelectorAll('h1,h2,h3');
+        if(!headings.length) return;
+        const toc = document.getElementById('toc'); toc.innerHTML = '<strong>Índice</strong>';
+        const ul = document.createElement('ul'); ul.style.listStyle='none'; ul.style.padding='6px 0';
+        headings.forEach(function(h){
+          const id = (h.textContent||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-'); h.id = id;
+          const li = document.createElement('li'); li.style.margin='6px 0';
+          const a = document.createElement('a'); a.href = '#'+id; a.textContent = h.textContent; a.style.color='#2563eb'; a.style.textDecoration='none';
+          li.appendChild(a); ul.appendChild(li);
+        });
+        toc.appendChild(ul);
+      }
+
+      function applySearch(){
+        const q = (document.getElementById('search').value||'').toLowerCase();
+        const content = document.getElementById('content');
+        if(!q){ Array.from(content.querySelectorAll('p,li,h1,h2,h3')).forEach(n=>n.style.display='block'); return; }
+        Array.from(content.querySelectorAll('p,li,h1,h2,h3')).forEach(function(n){
+          n.style.display = (n.textContent||'').toLowerCase().indexOf(q) !== -1 ? 'block' : 'none';
+        });
+      }
+
+      (function(){
+        fetch('/help/USER_MANUAL.md').then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+        .then(md=>{
+          try{
+            document.getElementById('content').innerHTML = window.marked.parse(md);
+          }catch(e){ document.getElementById('content').textContent = md; }
+          buildTOC(document.getElementById('content'));
+          document.getElementById('search').addEventListener('input', applySearch);
+        }).catch(e=>{ document.getElementById('content').textContent = 'Erro: '+e; });
+      })();
+    </script>
+  </body>
+</html>

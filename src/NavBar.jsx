@@ -71,9 +71,9 @@ function NavBar() {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <a href="/help" target="_blank" rel="noopener noreferrer" className="btn-gradient btn-gradient-orange" style={{ fontSize: '0.9rem', padding: '6px 12px', marginRight: '12px', color: 'inherit', textDecoration: 'none' }}>
+        <Link to="/help" className="btn-gradient btn-gradient-orange" style={{ fontSize: '0.9rem', padding: '6px 12px', marginRight: '12px', color: 'inherit', textDecoration: 'none' }}>
           Ajuda
-        </a>
+        </Link>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {user ? (

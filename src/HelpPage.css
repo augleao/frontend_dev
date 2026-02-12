@@ -1,0 +1,19 @@
+.help-root{padding:28px;background:linear-gradient(180deg,#f6f8fa, #f3f6fb)}
+.help-container{max-width:1200px;margin:0 auto;display:flex;gap:20px}
+.help-sidebar{width:300px;background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 8px 24px rgba(11,19,36,0.06);position:relative}
+.help-sidebar.closed{width:40px;padding:8px}
+.help-sidebar h3{margin:8px 0;font-size:16px}
+.help-sidebar ul{padding-left:8px}
+.help-sidebar li{margin:6px 0}
+.help-sidebar a{color:#2563eb;text-decoration:none}
+.help-toggle{position:absolute;right:-14px;top:12px;background:#2563eb;color:#fff;border:none;border-radius:6px;padding:6px 8px;cursor:pointer}
+.help-main{flex:1;background:transparent}
+.help-header{display:flex;justify-content:space-between;align-items:center}
+.help-header h1{margin:0;font-size:24px}
+.help-controls input{padding:8px 12px;border-radius:8px;border:1px solid #e6eef8}
+.help-content{margin-top:18px;background:#fff;padding:18px;border-radius:10px;box-shadow:0 6px 18px rgba(11,19,36,0.04)}
+.help-content h1{font-size:22px}
+.help-content h2{font-size:18px;margin-top:12px}
+.help-content p{margin:8px 0}
+.help-content img{max-width:100%;border-radius:6px}
+@media(max-width:900px){.help-container{flex-direction:column}.help-sidebar{width:100%}.help-sidebar.closed{width:100%}.help-toggle{right:12px}}

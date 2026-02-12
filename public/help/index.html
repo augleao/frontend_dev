@@ -19,17 +19,57 @@
       <div id="content">Carregando...</div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="marked.min.js"></script>
     <script>
+      // Simple markdown renderer (supports headings, paragraphs, lists, links, images, code blocks)
+      function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      function renderMarkdown(md){
+        const lines = md.replace(/\r\n/g,'\n').split('\n');
+        let out = '';
+        let inList = false;
+        let inCode = false;
+        for(let i=0;i<lines.length;i++){
+          let line = lines[i];
+          if(line.startsWith('```')){ inCode = !inCode; out += inCode ? '<pre><code>' : '</code></pre>'; continue; }
+          if(inCode){ out += escapeHtml(line)+'\n'; continue; }
+          if(/^#{1,6}\s/.test(line)){
+            const m = line.match(/^(#{1,6})\s+(.*)$/);
+            out += `<h${m[1].length}>${m[2]}</h${m[1].length}>`;
+            continue;
+          }
+          if(/^!\[.*\]\(.*\)/.test(line)){
+            const m = line.match(/^!\[(.*)\]\((.*)\)/);
+            out += `<p><img src="${m[2]}" alt="${m[1]}" style="max-width:100%"/></p>`; continue;
+          }
+          if(/^\[.*\]\(.*\)/.test(line)){
+            const m = line.match(/^\[(.*)\]\((.*)\)/);
+            out += `<p><a href="${m[2]}">${m[1]}</a></p>`; continue;
+          }
+          if(/^\s*[-*+]\s+/.test(line)){
+            if(!inList){ inList = true; out += '<ul>'; }
+            out += `<li>${line.replace(/^\s*[-*+]\s+/,'')}</li>`;
+            const next = lines[i+1]||'';
+            if(!/^\s*[-*+]\s+/.test(next)){ inList = false; out += '</ul>'; }
+            continue;
+          }
+          if(line.trim()===''){ out += '<p></p>'; continue; }
+          out += `<p>${line}</p>`;
+        }
+        return out;
+      }
+
       (function(){
-        fetch('USER_MANUAL.md')
-          .then(function(r){ return r.text(); })
+        fetch('/help/USER_MANUAL.md')
+          .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
           .then(function(md){
+            var content = document.getElementById('content');
             try{
-              document.getElementById('content').innerHTML = marked.parse(md);
-            }catch(e){
-              document.getElementById('content').textContent = md;
-            }
+              if(window.marked && typeof window.marked.parse === 'function'){
+                content.innerHTML = window.marked.parse(md);
+              } else {
+                content.innerHTML = renderMarkdown(md);
+              }
+            } catch(e){ content.textContent = md; }
           })
           .catch(function(e){ document.getElementById('content').textContent = 'Erro ao carregar manual: '+e; });
       })();

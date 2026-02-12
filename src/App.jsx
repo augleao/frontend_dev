@@ -58,6 +58,7 @@ import RG from './RG';
 import RGCaixa from './RGCaixa';
 import RGAgenda from './RGAgenda';
 import RGRelatorioFinanceiro from './RGRelatorioFinanceiro';
+import HelpPage from './HelpPage';
 
 
 
@@ -482,6 +483,7 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route path="/help" element={<HelpPage />} />
       </Routes>
     </AuthProvider>
   );
