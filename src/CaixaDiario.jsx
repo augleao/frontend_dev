@@ -10,6 +10,7 @@ import DataSelector from './DataSelector';
 import AtosTable from './CaixaTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
 import { apiURL } from './config';
+import BackgroundWrapper from './components/common/BackgroundWrapper';
 
 function CaixaDiario() {
   // Usuário logado
@@ -551,34 +552,7 @@ useEffect(() => {
   console.log('[CaixaDiario] usuario.cargo:', usuario?.cargo, 'isRegistradorOuSubstituto:', isRegistradorOuSubstituto, 'usuario:', usuario, 'totaisEntradas:', totalEntradasDoDia, 'totaisSaidas:', totalSaidasDoDia);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      color: '#0b1324',
-      background: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 30%), radial-gradient(circle at 80% 0%, rgba(92,169,255,0.1), transparent 35%), linear-gradient(135deg, #0a1630 0%, #0e2145 50%, #0b1d3a 100%)",
-      position: 'relative',
-      overflow: 'hidden',
-      padding: '12px'
-    }}>
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        pointerEvents: 'none',
-        backgroundImage: 'linear-gradient(135deg, rgba(201,166,70,0.05) 0 20%, transparent 20% 100%), radial-gradient(circle at 30% 40%, rgba(255,255,255,0.06), transparent 50%), repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 12px)',
-        opacity: 0.6,
-        zIndex: 0
-      }} />
-
-      {/* Container Principal */}
-      <div style={{
-        maxWidth: '1400px',
-        margin: '0 auto',
-        width: '100%',
-        position: 'relative',
-        zIndex: 1
-      }}>
+    <BackgroundWrapper padding={12} containerProps={{ style: { maxWidth: '1400px', margin: '0 auto', width: '100%', position: 'relative' } }}>
         
         {/* Header */}
         <div style={{
@@ -955,7 +929,7 @@ useEffect(() => {
       </div>
       
       </div> {/* Fim do Container Principal */}
-    </div> 
+    </BackgroundWrapper>
   );
 }
 
