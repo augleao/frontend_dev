@@ -255,28 +255,40 @@ function RGCaixa() {
       try {
         const token = localStorage.getItem('token');
         const serventiaParam = usuario?.serventia ? `&serventia=${encodeURIComponent(usuario.serventia)}` : '';
-        const res = await fetch(`${apiURL}/atos?codigo=8888${serventiaParam}`, { headers: { Authorization: `Bearer ${token}` } });
+        const url = `${apiURL}/atos?codigo=8888${serventiaParam}`;
+        console.debug('[RGCaixa] carregarValorRG - url:', url, 'usuario.serventia:', usuario?.serventia, 'tokenPresent:', !!token);
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+        console.debug('[RGCaixa] carregarValorRG - response status:', res.status, 'ok:', res.ok);
         if (!res.ok) {
-          console.warn('Não foi possível carregar valor do RG, status:', res.status);
+          const text = await res.text().catch(() => 'no-body');
+          console.warn('[RGCaixa] Não foi possível carregar valor do RG, status:', res.status, 'body:', text);
           return;
         }
         const data = await res.json();
+        console.debug('[RGCaixa] carregarValorRG - payload:', data);
         // data can be an array or an object. We must read `atos.valor_final` for codigo 8888.
         let total = 0;
         if (Array.isArray(data)) {
-          total = data.reduce((acc, a) => {
-            const v = parseFloat(a.valor_final) || 0;
-            return acc + v;
-          }, 0);
+          data.forEach((a, idx) => console.debug('[RGCaixa] ato[' + idx + ']: id=' + (a.id||'') + ' codigo=' + (a.codigo||'') + ' valor_final=' + (a.valor_final||'') ));
+          total = data.reduce((acc, a) => acc + (parseFloat(a.valor_final) || 0), 0);
         } else if (data && typeof data === 'object') {
-          if (typeof data.total === 'number') total = data.total;
-          else if (typeof data.total_today === 'number') total = data.total_today;
-          else if (data.rows && Array.isArray(data.rows)) {
+          if (typeof data.total === 'number') {
+            total = data.total;
+            console.debug('[RGCaixa] payload.total used:', total);
+          } else if (typeof data.total_today === 'number') {
+            total = data.total_today;
+            console.debug('[RGCaixa] payload.total_today used:', total);
+          } else if (data.rows && Array.isArray(data.rows)) {
+            data.rows.forEach((a, idx) => console.debug('[RGCaixa] row[' + idx + ']: id=' + (a.id||'') + ' codigo=' + (a.codigo||'') + ' valor_final=' + (a.valor_final||'')));
             total = data.rows.reduce((acc, a) => acc + (parseFloat(a.valor_final) || 0), 0);
           } else if (data.valor_final) {
             total = parseFloat(data.valor_final) || 0;
+            console.debug('[RGCaixa] payload.valor_final used:', total);
+          } else {
+            console.debug('[RGCaixa] payload shape not recognized, payload:', data);
           }
         }
+        console.debug('[RGCaixa] computed total valorRG:', total);
         setValorRG(isNaN(total) ? 0 : total);
       } catch (e) {
         console.error('Erro ao carregar valor do RG:', e);
