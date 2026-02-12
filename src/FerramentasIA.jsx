@@ -95,59 +95,31 @@ function FerramentasIA() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #fff3bf 0%, #ffe066 100%)', // amarelo pastel
-      fontFamily: 'Arial, sans-serif'
+      display: 'flex',
+      flexDirection: 'column',
+      fontFamily: "'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+      color: '#0b1324',
+      background: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 30%), radial-gradient(circle at 80% 0%, rgba(92,169,255,0.1), transparent 35%), linear-gradient(135deg, #0a1630 0%, #0e2145 50%, #0b1d3a 100%)",
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      {/* Header */}
-      <header style={{
-        background: 'rgba(44, 62, 80, 0.95)',
-        backdropFilter: 'blur(10px)',
-        padding: '16px 32px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button
-            onClick={() => navigate('/home2')}
-            style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '2px solid rgba(255, 255, 255, 0.3)',
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.1)';
-            }}
-          >
-            ← Voltar
-          </button>
-          <h1 style={{
-            color: 'white',
-            margin: 0,
-            fontSize: '24px',
-            fontWeight: '600',
-            letterSpacing: '0.5px'
-          }}>
-            Sistema Auxiliar do RCPN - Ferramentas de IA
-          </h1>
-        </div>
-      </header>
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        backgroundImage: 'linear-gradient(135deg, rgba(201,166,70,0.05) 0 20%, transparent 20% 100%), radial-gradient(circle at 30% 40%, rgba(255,255,255,0.06), transparent 50%), repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 12px)',
+        opacity: 0.6,
+        zIndex: 0
+      }} />
+      {/* Header removed to match Home visual */}
 
       {/* Main Content */}
       <main style={{
         maxWidth: '1200px',
         margin: '0 auto',
-        padding: '60px 32px'
+        padding: '60px 32px',
+        position: 'relative',
+        zIndex: 1
       }}>
         {/* Welcome Section */}
         <div style={{
