@@ -154,26 +154,7 @@ function Home() {
         opacity: 0.6,
         zIndex: 0
       }} />
-      {/* Header */}
-      <header style={{
-        background: 'rgba(44, 62, 80, 0.95)',
-        backdropFilter: 'blur(10px)',
-        padding: '16px 32px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
-      }}>
-        <h1 style={{
-          color: 'white',
-          margin: 0,
-          fontSize: '24px',
-          fontWeight: '600',
-          letterSpacing: '0.5px'
-        }}>
-          Sistema Auxiliar do RCPN v2.0
-        </h1>
-      </header>
+      {/* header removed to use the new Home visual */}
 
       {/* Main Content */}
       <main style={{
@@ -196,7 +177,7 @@ function Home() {
             textShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
             letterSpacing: '-0.5px'
           }}>
-            Bem-vindo ao Sistema Auxiliar do RCPN
+            Bem-vindo ao Sistema Auxiliar do RCPN v2.0
           </h2>
           <p style={{
             fontSize: '20px',
@@ -205,7 +186,7 @@ function Home() {
             fontWeight: '300',
             textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
           }}>
-            Gerencie eficientemente atos e conciliações no Registro Civil de Pessoas Naturais
+            Gerencie eficientemente o financeiro, atos e conciliações no Registro Civil de Pessoas Naturais
           </p>
         </div>
 

@@ -62,16 +62,19 @@ function NavBar() {
         display: 'flex',
         justifyContent: 'flex-end',
         alignItems: 'center',
-        backgroundColor: '#f0f0f0',
-        borderBottom: '1px solid #ddd',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        background: 'linear-gradient(90deg, rgba(10,22,48,0.72), rgba(14,33,69,0.68))',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        color: 'white',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        boxShadow: '0 6px 20px rgba(2,6,23,0.35)',
       }}
     >
       {user ? (
         <>
           <span style={{ 
-            fontWeight: 'bold', 
-            color: '#333', 
+            fontWeight: '700', 
+            color: 'white', 
             marginRight: '12px', 
             fontSize: '0.9rem' 
           }}>
