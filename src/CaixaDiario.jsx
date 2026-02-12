@@ -928,7 +928,6 @@ useEffect(() => {
         )}
       </div>
       
-      </div> {/* Fim do Container Principal */}
     </BackgroundWrapper>
   );
 }
