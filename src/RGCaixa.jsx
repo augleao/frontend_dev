@@ -217,10 +217,19 @@ function RGCaixa() {
     try {
       const token = localStorage.getItem('token');
       const serventiaParam = usuario?.serventia ? `&serventia=${encodeURIComponent(usuario.serventia)}` : '';
-      const resAtos = await fetch(`${apiURL}/rg/atos-pagos?data=${dataSelecionada}${serventiaParam}`, { headers: { Authorization: `Bearer ${token}` } });
+      const url = `${apiURL}/rg/atos-pagos?data=${dataSelecionada}${serventiaParam}`;
+      console.debug('[RGCaixa] carregarDadosDaData - GET', url, 'tokenPresent:', !!token);
+      const resAtos = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      console.debug('[RGCaixa] carregarDadosDaData - status:', resAtos.status);
       if (resAtos.ok) {
         const dataAtos = await resAtos.json();
-        setAtos(dataAtos.CaixaDiario || []);
+        console.debug('[RGCaixa] carregarDadosDaData - payload:', dataAtos);
+        const lista = dataAtos.CaixaDiario || [];
+        console.debug('[RGCaixa] carregarDadosDaData - lista.length:', lista.length);
+        setAtos(lista);
+      } else {
+        const txt = await resAtos.text().catch(()=>'<no-body>');
+        console.warn('[RGCaixa] carregarDadosDaData - failed to load atos, status:', resAtos.status, 'body:', txt);
       }
     } catch (e) {
       console.error('Erro ao carregar dados da data:', e);
