@@ -82,14 +82,28 @@ function MeusFechamentos() {
 
   return (
     <div style={{
-      background: 'white',
-      borderRadius: 12,
-      padding: 24,
-      margin: '32px auto',
-      maxWidth: 900,
-      boxShadow: '0 4px 16px rgba(0,0,0,0.08)'
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      color: '#0b1324',
+      background: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 30%), radial-gradient(circle at 80% 0%, rgba(92,169,255,0.1), transparent 35%), linear-gradient(135deg, #0a1630 0%, #0e2145 50%, #0b1d3a 100%)",
+      position: 'relative',
+      overflow: 'hidden',
+      padding: 24
     }}>
-      <h2 style={{ marginBottom: 18, color: '#2c3e50' }}>🗂️ Fechamentos de Caixa</h2>
+
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        backgroundImage: 'linear-gradient(135deg, rgba(201,166,70,0.05) 0 20%, transparent 20% 100%), radial-gradient(circle at 30% 40%, rgba(255,255,255,0.06), transparent 50%), repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 12px)',
+        opacity: 0.6,
+        zIndex: 0
+      }} />
+
+      <div style={{ background: 'white', borderRadius: 12, padding: 24, margin: '32px auto', maxWidth: 900, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', position: 'relative', zIndex: 1 }}>
+        <h2 style={{ marginBottom: 18, color: '#2c3e50' }}>🗂️ Fechamentos de Caixa</h2>
       {loading && <div>Carregando...</div>}
       {erro && <div style={{ color: 'red' }}>{erro}</div>}
       {!loading && fechamentos.length === 0 && <div>Nenhum fechamento encontrado.</div>}
