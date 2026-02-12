@@ -255,7 +255,7 @@ function RGCaixa() {
       try {
         const token = localStorage.getItem('token');
         const serventiaParam = usuario?.serventia ? `&serventia=${encodeURIComponent(usuario.serventia)}` : '';
-        const url = `${apiURL}/atos?codigo=8888${serventiaParam}`;
+        const url = `${apiURL}/atos?codigo=8888${serventiaParam}&limit=1000`;
         console.log('[RGCaixa] Buscando valor RG 8888 em', url);
         const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
         if (!res.ok) {
@@ -265,21 +265,16 @@ function RGCaixa() {
         const data = await res.json();
         console.log('[RGCaixa] Resposta valor RG 8888:', data);
         // data can be an array or an object. We must read `atos.valor_final` for codigo 8888.
-        let total = 0;
-        if (Array.isArray(data)) {
-          total = data.reduce((acc, a) => {
-            const v = parseFloat(a.valor_final) || 0;
-            return acc + v;
-          }, 0);
-        } else if (data && typeof data === 'object') {
-          if (typeof data.total === 'number') total = data.total;
-          else if (typeof data.total_today === 'number') total = data.total_today;
-          else if (data.rows && Array.isArray(data.rows)) {
-            total = data.rows.reduce((acc, a) => acc + (parseFloat(a.valor_final) || 0), 0);
-          } else if (data.valor_final) {
-            total = parseFloat(data.valor_final) || 0;
-          }
-        }
+        let registros = [];
+        if (Array.isArray(data)) registros = data;
+        else if (data && Array.isArray(data.atos)) registros = data.atos;
+        else if (data && Array.isArray(data.rows)) registros = data.rows;
+        else if (data) registros = [data];
+
+        const alvo = registros.find(a => String(a.codigo) === '8888');
+        const total = alvo ? (parseFloat(alvo.valor_final) || 0) : 0;
+
+        console.log('[RGCaixa] Total calculado (valor_final do 8888):', total, 'registros:', registros.length);
         setValorRG(isNaN(total) ? 0 : total);
       } catch (e) {
         console.error('[RGCaixa] Erro ao carregar valor do RG:', e);
