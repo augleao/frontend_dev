@@ -252,33 +252,50 @@ function RGCaixa() {
   // Carrega o valor atual de validação do RG (atos.codigo = 8888)
   useEffect(() => {
     async function carregarValorRG() {
-      try {
-        const token = localStorage.getItem('token');
-        const serventiaParam = usuario?.serventia ? `&serventia=${encodeURIComponent(usuario.serventia)}` : '';
-        const url = `${apiURL}/atos?codigo=8888${serventiaParam}&limit=1000`;
-        console.log('[RGCaixa] Buscando valor RG 8888 em', url);
-        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-        if (!res.ok) {
-          console.warn('[RGCaixa] Falha ao carregar valor RG (status):', res.status);
-          return;
+      const token = localStorage.getItem('token');
+      const serventiaParam = usuario?.serventia ? `&serventia=${encodeURIComponent(usuario.serventia)}` : '';
+
+      // Tentativas com diferentes parâmetros de paginação para garantir que o 8888 seja retornado.
+      const tries = [
+        `codigo=8888${serventiaParam}&limit=1000`,
+        `codigo=8888${serventiaParam}&page=1&pageSize=200`,
+        `codigo=8888${serventiaParam}&page=0&pageSize=200`,
+        `codigo=8888${serventiaParam}&offset=0&limit=200`,
+      ];
+
+      for (const query of tries) {
+        try {
+          const url = `${apiURL}/atos?${query}`;
+          console.log('[RGCaixa] Buscando valor RG 8888 em', url);
+          const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+          if (!res.ok) {
+            console.warn('[RGCaixa] Falha ao carregar valor RG (status):', res.status, 'query:', query);
+            continue;
+          }
+          const data = await res.json();
+          console.log('[RGCaixa] Resposta valor RG 8888 (query:', query, '):', data);
+          let registros = [];
+          if (Array.isArray(data)) registros = data;
+          else if (data && Array.isArray(data.atos)) registros = data.atos;
+          else if (data && Array.isArray(data.rows)) registros = data.rows;
+          else if (data) registros = [data];
+
+          const alvo = registros.find(a => String(a.codigo) === '8888');
+          if (alvo) {
+            const total = parseFloat(alvo.valor_final) || 0;
+            console.log('[RGCaixa] Encontrado 8888 na query', query, 'valor_final:', total, 'registros:', registros.length);
+            setValorRG(isNaN(total) ? 0 : total);
+            return;
+          }
+
+          // Se não achou, segue para próxima tentativa
+        } catch (e) {
+          console.error('[RGCaixa] Erro ao carregar valor do RG (query', query, '):', e);
         }
-        const data = await res.json();
-        console.log('[RGCaixa] Resposta valor RG 8888:', data);
-        // data can be an array or an object. We must read `atos.valor_final` for codigo 8888.
-        let registros = [];
-        if (Array.isArray(data)) registros = data;
-        else if (data && Array.isArray(data.atos)) registros = data.atos;
-        else if (data && Array.isArray(data.rows)) registros = data.rows;
-        else if (data) registros = [data];
-
-        const alvo = registros.find(a => String(a.codigo) === '8888');
-        const total = alvo ? (parseFloat(alvo.valor_final) || 0) : 0;
-
-        console.log('[RGCaixa] Total calculado (valor_final do 8888):', total, 'registros:', registros.length);
-        setValorRG(isNaN(total) ? 0 : total);
-      } catch (e) {
-        console.error('[RGCaixa] Erro ao carregar valor do RG:', e);
       }
+
+      console.warn('[RGCaixa] Não foi encontrado o código 8888 nas tentativas de busca.');
+      setValorRG(0);
     }
     carregarValorRG();
   }, [usuario?.serventia]);
