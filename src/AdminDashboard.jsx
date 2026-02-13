@@ -39,6 +39,8 @@ export default function AdminDashboard() {
   const [configModalFocus, setConfigModalFocus] = useState(null);
   const [configOpenAgents, setConfigOpenAgents] = useState(false);
   const [earning, setEarning] = useState(null);
+  const [paidActsToday, setPaidActsToday] = useState(null);
+  const [paidCertificatesToday, setPaidCertificatesToday] = useState(null);
   const [usuarioLogado, setUsuarioLogado] = useState({ nome: '', email: '', cargo: '', serventia: '' });
 
   const getInitials = (nome) => {
@@ -88,15 +90,15 @@ export default function AdminDashboard() {
       icon: FaMoneyBillWave
     },
     {
-      label: 'Share',
-      value: '2.434',
-      caption: 'Último disparo social',
+      label: 'Atos pagos hoje',
+      value: paidActsToday == null ? '—' : paidActsToday,
+      caption: 'Somatório das quantidades de atos',
       icon: FaShareAlt
     },
     {
-      label: 'Likes',
-      value: '1.259',
-      caption: 'Campanha ativa',
+      label: 'Certidões pagas',
+      value: paidCertificatesToday == null ? '—' : paidCertificatesToday,
+      caption: 'Código 7802 na data de hoje',
       icon: FaThumbsUp
     },
     {
@@ -265,7 +267,11 @@ export default function AdminDashboard() {
         </section>
 
           {/* Fetch earning on mount */}
-          <EarningFetcher setEarning={setEarning} />
+          <EarningFetcher
+            setEarning={setEarning}
+            setPaidActs={setPaidActsToday}
+            setPaidCertificates={setPaidCertificatesToday}
+          />
 
         <section className="chart-grid">
           <div className="chart-card">
@@ -448,7 +454,7 @@ export default function AdminDashboard() {
   );
 }
 
-function EarningFetcher({ setEarning }) {
+function EarningFetcher({ setEarning, setPaidActs, setPaidCertificates }) {
   useEffect(() => {
     let mounted = true;
     async function fetchEarning() {
@@ -487,6 +493,11 @@ function EarningFetcher({ setEarning }) {
           return Number.isFinite(n) ? n : 0;
         };
 
+        const quantidadeDoAto = (ato) => {
+          const q = Number(ato?.quantidade ?? 1);
+          return Number.isFinite(q) && q > 0 ? q : 1;
+        };
+
         const resAtos = await fetch(`${config.apiURL}/atos-praticados?data=${encodeURIComponent(dataHoje)}&_ts=${Date.now()}`, {
           headers,
           cache: 'no-store'
@@ -521,26 +532,35 @@ function EarningFetcher({ setEarning }) {
         };
 
         const valores = nomesUsuarios.map((nome) => {
-          const total = listaAtos
-            .filter((ato) => correspondeUsuario(ato?.usuario, nome))
-            .reduce((acc, ato) => acc + valorDoAto(ato), 0);
-          return { nome, total };
+          const atosDoUsuario = listaAtos.filter((ato) => correspondeUsuario(ato?.usuario, nome));
+          const totalValor = atosDoUsuario.reduce((acc, ato) => acc + valorDoAto(ato), 0);
+          const totalQtd = atosDoUsuario.reduce((acc, ato) => acc + quantidadeDoAto(ato), 0);
+          const totalCertidoes = atosDoUsuario
+            .filter((ato) => String(ato?.codigo || '').trim() === '7802')
+            .reduce((acc, ato) => acc + quantidadeDoAto(ato), 0);
+          return { nome, totalValor, totalQtd, totalCertidoes };
         });
 
-        const total = valores.reduce((acc, item) => acc + (Number.isFinite(item?.total) ? item.total : 0), 0);
+        const total = valores.reduce((acc, item) => acc + (Number.isFinite(item?.totalValor) ? item.totalValor : 0), 0);
+        const totalAtos = valores.reduce((acc, item) => acc + (Number.isFinite(item?.totalQtd) ? item.totalQtd : 0), 0);
+        const totalCertidoes = valores.reduce((acc, item) => acc + (Number.isFinite(item?.totalCertidoes) ? item.totalCertidoes : 0), 0);
 
         try {
           console.log('[AdminDashboard] Arrecadação hoje detalhada:', {
             data: dataHoje,
             serventia,
             porUsuario: valores,
-            total
+            total,
+            totalAtos,
+            totalCertidoes
           });
         } catch (e) {
           // ignore
         }
 
         if (mounted) setEarning(total);
+        if (mounted && setPaidActs) setPaidActs(totalAtos);
+        if (mounted && setPaidCertificates) setPaidCertificates(totalCertidoes);
       } catch (e) {
         // ignore falhas silenciosamente
       }
