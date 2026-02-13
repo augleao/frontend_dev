@@ -87,9 +87,9 @@ function Home2() {
 
   const atalhos = [
     { label: 'Abrir Pedidos', icon: '➡️', route: '/lista-servicos' },
-    { label: 'Novo Caixa', icon: '➕', route: '/caixa' },
-    { label: 'Conciliação Atos', icon: '🔗', route: '/atos' },
-    { label: 'Relatórios DAP', icon: '📊', route: '/relatorios/dap' },
+    { label: 'Abrir Caixa', icon: '💰', route: '/caixa-diario' },
+    { label: 'Atos Praticados', icon: '📜', route: '/atos-praticados' },
+    { label: 'Conciliação dos Pagos', icon: '🤝', route: '/conciliacao' },
     { label: 'Ferramentas IA', icon: '⚡', route: '/ferramentas-ia' }
   ];
 
@@ -450,9 +450,9 @@ function Home2() {
       <main className="home2-main">
         <div className="hero-panel">
           <div className="hero-copy">
-            <div className="hero-title">Navegue pelos hubs em um só lugar.</div>
+            <div className="hero-title">Navegue pelas ferramentes de gestão.</div>
             <div className="hero-sub">
-              Unificamos caixas, pedidos, atos, relatórios e IA em um painel único, alinhado ao novo visual da landing.
+              Controle de caixa, pedidos, atos praticados, relatórios e IA, tudo a um clique.
             </div>
             <div className="hero-chips">
               <span className="hero-chip">Fluxo diário</span>
