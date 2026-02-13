@@ -363,11 +363,6 @@ export default function AdminDashboard() {
 
       <main className="dashboard-main">
         <div className="dashboard-topbar">
-          <div>
-            <div className="topbar-subtitle">Dashboard</div>
-            <h1>Painel Administrativo</h1>
-          </div>
-          
       {/* Quick action buttons moved here (from dashboard-actions) */}
       <div className="top-quick-actions">
         {quickActions

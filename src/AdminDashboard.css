@@ -196,8 +196,13 @@
 
 .chart-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 3fr 1fr;
   gap: 24px;
+}
+
+/* Make the main chart card span the full grid width so it occupies almost all horizontal space */
+.chart-grid .chart-card {
+  grid-column: 1 / -1;
 }
 
 .chart-card {
