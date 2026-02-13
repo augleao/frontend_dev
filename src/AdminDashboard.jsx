@@ -487,19 +487,46 @@ function EarningFetcher({ setEarning }) {
           return Number.isFinite(n) ? n : 0;
         };
 
-        const promises = nomesUsuarios.map(async (nome) => {
-          const res = await fetch(`${config.apiURL}/atos-praticados?data=${encodeURIComponent(dataHoje)}&usuario=${encodeURIComponent(nome)}&_ts=${Date.now()}`, {
-            headers,
-            cache: 'no-store'
-          });
-          if (!res.ok) return { nome, total: 0 };
-          const body = await res.json().catch(() => []);
-          const lista = normalizarLista(body);
-          const total = lista.reduce((acc, ato) => acc + valorDoAto(ato), 0);
+        const resAtos = await fetch(`${config.apiURL}/atos-praticados?data=${encodeURIComponent(dataHoje)}&_ts=${Date.now()}`, {
+          headers,
+          cache: 'no-store'
+        });
+        if (!resAtos.ok) return;
+        const bodyAtos = await resAtos.json().catch(() => []);
+        const listaAtos = normalizarLista(bodyAtos);
+
+        const normalizarUsuario = (nome) => {
+          if (!nome) return '';
+          return String(nome)
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^\w\s]/g, '')
+            .trim();
+        };
+
+        const correspondeUsuario = (usuarioAto, usuarioRef) => {
+          if (!usuarioAto || !usuarioRef) return false;
+          if (usuarioAto === usuarioRef) return true;
+          const a = normalizarUsuario(usuarioAto);
+          const b = normalizarUsuario(usuarioRef);
+          if (a === b) return true;
+          const pa = a.split(/\s+/).filter(Boolean);
+          const pb = b.split(/\s+/).filter(Boolean);
+          if (pb.length === 1) return pa.includes(pb[0]);
+          if (pa.length >= 2 && pb.length >= 2) {
+            return pa[0] === pb[0] && pa[pa.length - 1] === pb[pb.length - 1];
+          }
+          return false;
+        };
+
+        const valores = nomesUsuarios.map((nome) => {
+          const total = listaAtos
+            .filter((ato) => correspondeUsuario(ato?.usuario, nome))
+            .reduce((acc, ato) => acc + valorDoAto(ato), 0);
           return { nome, total };
         });
 
-        const valores = await Promise.all(promises);
         const total = valores.reduce((acc, item) => acc + (Number.isFinite(item?.total) ? item.total : 0), 0);
 
         try {
