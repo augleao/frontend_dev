@@ -454,16 +454,58 @@ function EarningFetcher({ setEarning }) {
     async function fetchEarning() {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${config.apiURL}/dashboard/earning`, {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+        const serventia = usuario?.serventia;
+        if (!token || !serventia) return;
+
+        const headers = { Authorization: `Bearer ${token}` };
+
+        // 1) Buscar todos os usuários e filtrar pela mesma serventia
+        const resUsers = await fetch(`${config.apiURL}/users`, { headers });
+        if (!resUsers.ok) return;
+        const usersBody = await resUsers.json().catch(() => ({}));
+        const usuarios = (usersBody.usuarios || usersBody || []).filter((u) => u?.serventia === serventia);
+
+        const nomesUsuarios = (usuarios.length ? usuarios : [usuario]).map((u) => u.nome).filter(Boolean);
+        if (!nomesUsuarios.length) return;
+
+        const hoje = new Date();
+        const dataHoje = hoje.toISOString().slice(0, 10);
+
+        const normalizarLista = (dataAtos) => {
+          if (Array.isArray(dataAtos)) return dataAtos;
+          if (dataAtos?.atos && Array.isArray(dataAtos.atos)) return dataAtos.atos;
+          if (dataAtos?.CaixaDiario && Array.isArray(dataAtos.CaixaDiario)) return dataAtos.CaixaDiario;
+          return [];
+        };
+
+        const valorDoAto = (ato) => {
+          const vDetalhe = ato?.detalhes_pagamentos?.valor_total;
+          const vUnit = ato?.valor_unitario ?? ato?.valor_final;
+          const bruto = vDetalhe ?? vUnit ?? 0;
+          const n = Number(bruto);
+          return Number.isFinite(n) ? n : 0;
+        };
+
+        const promises = nomesUsuarios.map(async (nome) => {
+          const res = await fetch(`${config.apiURL}/atos-praticados?data=${encodeURIComponent(dataHoje)}&usuario=${encodeURIComponent(nome)}&_ts=${Date.now()}`, {
+            headers,
+            cache: 'no-store'
+          });
+          if (!res.ok) return 0;
+          const body = await res.json().catch(() => []);
+          const lista = normalizarLista(body);
+          return lista.reduce((acc, ato) => acc + valorDoAto(ato), 0);
         });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (mounted) setEarning(Number(data.totalToday || 0));
+
+        const valores = await Promise.all(promises);
+        const total = valores.reduce((acc, v) => acc + (Number.isFinite(v) ? v : 0), 0);
+        if (mounted) setEarning(total);
       } catch (e) {
-        // ignore
+        // ignore falhas silenciosamente
       }
     }
+
     fetchEarning();
     return () => { mounted = false; };
   }, [setEarning]);
