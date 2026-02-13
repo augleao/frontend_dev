@@ -371,6 +371,43 @@ export default function AdminDashboard() {
               Engine de IA
             </button>
           </div>
+      {/* Quick action buttons moved here (from dashboard-actions) */}
+      <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        {quickActions
+          .filter((a) => ['Configurar Serventia', 'Importar Atos', 'Versões TJMG', 'Backup Manual', 'Prompts IA'].includes(a.label))
+          .map((action) => {
+            const Icon = action.icon;
+            const baseVariant = gradientVariants[action.variant] || gradientVariants.blue;
+            const classes = `btn-gradient ${baseVariant} action-btn`;
+            if (action.to) {
+              return (
+                <Link key={action.label} to={action.to} className={classes}>
+                  <Icon size={16} />
+                  <span style={{ display: 'inline-block', marginLeft: 8 }}>
+                    <strong>{action.label}</strong>
+                    <br />
+                    <small style={{ display: 'block', fontWeight: 400 }}>{action.description}</small>
+                  </span>
+                </Link>
+              );
+            }
+            return (
+              <button
+                type="button"
+                key={action.label}
+                className={classes}
+                onClick={action.onClick}
+              >
+                <Icon size={16} />
+                <span style={{ display: 'inline-block', marginLeft: 8 }}>
+                  <strong>{action.label}</strong>
+                  <br />
+                  <small style={{ display: 'block', fontWeight: 400 }}>{action.description}</small>
+                </span>
+              </button>
+            );
+          })}
+      </div>
         </div>
 
         <section className="dashboard-cards">
@@ -449,7 +486,9 @@ export default function AdminDashboard() {
         
 
         <section className="dashboard-actions">
-          {quickActions.map((action) => {
+          {quickActions
+            .filter((a) => !['Configurar Serventia', 'Importar Atos', 'Versões TJMG', 'Backup Manual', 'Prompts IA'].includes(a.label))
+            .map((action) => {
             const Icon = action.icon;
             const baseVariant = gradientVariants[action.variant] || gradientVariants.blue;
             const classes = `btn-gradient ${baseVariant} action-btn`;
