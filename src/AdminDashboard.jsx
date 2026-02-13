@@ -492,14 +492,27 @@ function EarningFetcher({ setEarning }) {
             headers,
             cache: 'no-store'
           });
-          if (!res.ok) return 0;
+          if (!res.ok) return { nome, total: 0 };
           const body = await res.json().catch(() => []);
           const lista = normalizarLista(body);
-          return lista.reduce((acc, ato) => acc + valorDoAto(ato), 0);
+          const total = lista.reduce((acc, ato) => acc + valorDoAto(ato), 0);
+          return { nome, total };
         });
 
         const valores = await Promise.all(promises);
-        const total = valores.reduce((acc, v) => acc + (Number.isFinite(v) ? v : 0), 0);
+        const total = valores.reduce((acc, item) => acc + (Number.isFinite(item?.total) ? item.total : 0), 0);
+
+        try {
+          console.log('[AdminDashboard] Arrecadação hoje detalhada:', {
+            data: dataHoje,
+            serventia,
+            porUsuario: valores,
+            total
+          });
+        } catch (e) {
+          // ignore
+        }
+
         if (mounted) setEarning(total);
       } catch (e) {
         // ignore falhas silenciosamente
