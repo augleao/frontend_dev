@@ -296,6 +296,28 @@ export default function AdminDashboard() {
         to: '/admin/prompts-ia',
         variant: 'green'
     }
+    ,
+    {
+      label: 'Tipo de Caixa',
+      description: 'Escolha o tipo de caixa para o sistema.',
+      icon: FaMoneyBillWave,
+      variant: 'green',
+      onClick: () => { setShowConfigurar(true); setConfigModalFocus('caixa'); setConfigOpenAgents(false); }
+    },
+    {
+      label: 'Agentes de IA',
+      description: 'Gerencie agentes e permissões de IA.',
+      icon: FaCog,
+      variant: 'blue',
+      onClick: () => { setShowConfigurar(true); setConfigModalFocus(null); setConfigOpenAgents(true); }
+    },
+    {
+      label: 'Engine de IA',
+      description: 'Configure o engine de IA padrão.',
+      icon: FaRobot,
+      variant: 'orange',
+      onClick: () => setShowConfigIA(true)
+    }
   ];
 
   const handleLogout = () => {
@@ -345,36 +367,11 @@ export default function AdminDashboard() {
             <div className="topbar-subtitle">Dashboard</div>
             <h1>Painel Administrativo</h1>
           </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button
-              type="button"
-              className="btn-gradient btn-gradient-green topbar-action-btn"
-              onClick={() => { setShowConfigurar(true); setConfigModalFocus('caixa'); setConfigOpenAgents(false); }}
-            >
-              <FaMoneyBillWave size={16} />
-              Tipo de Caixa
-            </button>
-            <button
-              type="button"
-              className="btn-gradient btn-gradient-blue topbar-action-btn"
-              onClick={() => { setShowConfigurar(true); setConfigModalFocus(null); setConfigOpenAgents(true); }}
-            >
-              <FaCog size={16} />
-              Agentes de IA
-            </button>
-            <button
-              type="button"
-              className="btn-gradient btn-gradient-orange topbar-action-btn"
-              onClick={() => setShowConfigIA(true)}
-            >
-              <FaRobot size={16} />
-              Engine de IA
-            </button>
-          </div>
+          
       {/* Quick action buttons moved here (from dashboard-actions) */}
       <div className="top-quick-actions">
         {quickActions
-          .filter((a) => ['Configurar Serventia', 'Importar Atos', 'Versões TJMG', 'Backup Manual', 'Prompts IA'].includes(a.label))
+          .filter((a) => ['Configurar Serventia', 'Importar Atos', 'Versões TJMG', 'Backup Manual', 'Prompts IA', 'Tipo de Caixa', 'Agentes de IA', 'Engine de IA'].includes(a.label))
           .map((action) => {
             const Icon = action.icon;
             const baseVariant = gradientVariants[action.variant] || gradientVariants.blue;
@@ -487,7 +484,7 @@ export default function AdminDashboard() {
 
         <section className="dashboard-actions">
           {quickActions
-            .filter((a) => !['Configurar Serventia', 'Importar Atos', 'Versões TJMG', 'Backup Manual', 'Prompts IA'].includes(a.label))
+            .filter((a) => !['Configurar Serventia', 'Importar Atos', 'Versões TJMG', 'Backup Manual', 'Prompts IA', 'Tipo de Caixa', 'Agentes de IA', 'Engine de IA'].includes(a.label))
             .map((action) => {
             const Icon = action.icon;
             const baseVariant = gradientVariants[action.variant] || gradientVariants.blue;
