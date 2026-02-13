@@ -14,7 +14,6 @@ import {
   FaRobot,
   FaShareAlt,
   FaSignOutAlt,
-  FaStar,
   FaTachometerAlt,
   FaThumbsUp,
   FaUsers
@@ -24,12 +23,49 @@ import ConfigurarIA from './ConfigurarIA';
 import { useMemo, useState, useEffect } from 'react';
 import config from './config';
 import { Link, useNavigate } from 'react-router-dom';
+import { listDaps, getDapById } from './services/dapService';
+import { SimpleLineChart as NasObLineChart, categories as nasObCategories } from './components/ia/HistoricoNasObModal';
 
 const gradientVariants = {
   blue: 'btn-gradient-blue',
   green: 'btn-gradient-green',
   orange: 'btn-gradient-orange',
   red: 'btn-gradient-red'
+};
+
+const padMonthValue = (value) => String(value).padStart(2, '0');
+const buildMonthKey = (year, month) => (!year || !month ? '' : `${year}-${padMonthValue(month)}`);
+const getLastMonths = (months = 12) => {
+  const today = new Date();
+  const monthsArr = [];
+  for (let offset = months - 1; offset >= 0; offset -= 1) {
+    const cursor = new Date(today.getFullYear(), today.getMonth() - offset, 1);
+    const year = cursor.getFullYear();
+    const month = cursor.getMonth() + 1;
+    monthsArr.push({
+      year,
+      month,
+      key: buildMonthKey(year, month),
+      label: `${padMonthValue(month)}/${year}`,
+      totals: nasObCategories.reduce((acc, c) => ({ ...acc, [c.id]: 0 }), {})
+    });
+  }
+  return monthsArr;
+};
+
+const parseYearMonth = (dap) => {
+  const anoCandidates = [dap?.ano_referencia, dap?.ano, dap?.ano_ref, dap?.anoReferencia, dap?.ano_referente];
+  const mesCandidates = [dap?.mes_referencia, dap?.mes, dap?.mes_ref, dap?.mesReferencia, dap?.mes_referente];
+  const anoVal = Number(anoCandidates.find((v) => v !== undefined && v !== null && v !== '') ?? 0) || 0;
+  const mesVal = Number(mesCandidates.find((v) => v !== undefined && v !== null && v !== '') ?? 0) || 0;
+  return { ano: anoVal, mes: mesVal };
+};
+
+const getFinalToken = (s) => {
+  if (!s || typeof s !== 'string') return '';
+  const parts = s.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '';
+  return parts[parts.length - 1].replace(/[^\p{L}\p{N}_-]+/gu, '');
 };
 
 export default function AdminDashboard() {
@@ -41,6 +77,9 @@ export default function AdminDashboard() {
   const [earning, setEarning] = useState(null);
   const [paidActsToday, setPaidActsToday] = useState(null);
   const [paidCertificatesToday, setPaidCertificatesToday] = useState(null);
+  const [nasObHistory, setNasObHistory] = useState(() => getLastMonths(12));
+  const [nasObLoading, setNasObLoading] = useState(false);
+  const [nasObError, setNasObError] = useState('');
   const [usuarioLogado, setUsuarioLogado] = useState({ nome: '', email: '', cargo: '', serventia: '' });
 
   const getInitials = (nome) => {
@@ -65,6 +104,107 @@ export default function AdminDashboard() {
     } catch (e) {
       setUsuarioLogado({ nome: 'Usuário', email: 'email@dominio.com', cargo: 'Cargo não informado', serventia: 'Serventia não informada' });
     }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const monthsRange = 12;
+
+    async function loadNasObHistory() {
+      setNasObLoading(true);
+      setNasObError('');
+      setNasObHistory(getLastMonths(monthsRange));
+
+      try {
+        const listResp = await listDaps({});
+        const items = Array.isArray(listResp?.items) ? listResp.items : [];
+
+        let usuario = {};
+        try { usuario = JSON.parse(localStorage.getItem('usuario') || '{}'); } catch (_) { usuario = {}; }
+        const userServentiaAbreviada = usuario?.serventia || usuario?.nome_abreviado || usuario?.nomeAbreviado || usuario?.serventiaNome || '';
+        const userToken = String(getFinalToken(userServentiaAbreviada || usuario?.serventia || '')).toLowerCase();
+
+        let filteredItems = items;
+        if (userToken) {
+          filteredItems = items.filter((dap) => {
+            const servDisplay = dap?.serventia_nome ?? dap?.serventiaNome ?? dap?.serventia ?? dap?.nome_serventia ?? dap?.nomeServentia ?? '';
+            const finalToken = String(getFinalToken(servDisplay || '')).toLowerCase();
+            return finalToken && userToken.includes(finalToken);
+          });
+        }
+
+        const monthsSet = new Set(getLastMonths(monthsRange).map((m) => m.key));
+        const toFetch = filteredItems.filter((dap) => {
+          const pm = parseYearMonth(dap);
+          const key = buildMonthKey(pm.ano, pm.mes);
+          return monthsSet.has(key);
+        });
+
+        const promises = toFetch.map((dap) =>
+          getDapById(dap.id)
+            .then((full) => ({ dap, full }))
+            .catch((error) => ({ dap, error }))
+        );
+
+        promises.forEach((p) => {
+          p.then((res) => {
+            if (cancelled) return;
+            if (res && res.full) {
+              try {
+                const full = res.full;
+                const meta = res.dap || full;
+                const pm = parseYearMonth(meta);
+                const key = buildMonthKey(pm.ano, pm.mes);
+                const periodos = full.periodos ?? full.dap_periodos ?? [];
+                const counts = { nascimentosProprios: 0, nascimentosUI: 0, obitosProprios: 0, obitosUI: 0 };
+
+                periodos.forEach((pItem) => {
+                  const atos = pItem.atos ?? pItem.dap_atos ?? [];
+                  atos.forEach((ato) => {
+                    const code = String(ato.codigo ?? ato.codigo_ato ?? ato.ato_codigo ?? '').trim();
+                    const tribRaw = ato.tributacao ?? ato.tributacao_codigo ?? ato.trib ?? ato.tributacao;
+                    const tribNum = Number(tribRaw);
+                    const qty = Number(ato.quantidade ?? ato.qtde ?? ato.qtd ?? 0) || 0;
+                    if (code === '9101') {
+                      if (tribNum === 26) counts.nascimentosProprios += qty;
+                      if (tribNum === 29) counts.nascimentosUI += qty;
+                    }
+                    if (code === '9201') {
+                      if (tribNum === 26) counts.obitosProprios += qty;
+                      if (tribNum === 29) counts.obitosUI += qty;
+                    }
+                  });
+                });
+
+                setNasObHistory((prev) => {
+                  const next = prev.map((m) => ({ ...m, totals: { ...m.totals } }));
+                  const idx = next.findIndex((m) => m.key === key);
+                  if (idx === -1) return next;
+                  next[idx].totals.nascimentosProprios = (next[idx].totals.nascimentosProprios || 0) + counts.nascimentosProprios;
+                  next[idx].totals.nascimentosUI = (next[idx].totals.nascimentosUI || 0) + counts.nascimentosUI;
+                  next[idx].totals.obitosProprios = (next[idx].totals.obitosProprios || 0) + counts.obitosProprios;
+                  next[idx].totals.obitosUI = (next[idx].totals.obitosUI || 0) + counts.obitosUI;
+                  return next;
+                });
+              } catch (err) {
+                console.error('[AdminDashboard] Erro processando DAP', { err, dap: res.dap });
+              }
+            } else if (res && res.error) {
+              console.error('[AdminDashboard] Erro ao obter detalhes da DAP', { dap: res.dap, error: res.error });
+            }
+          }).catch((err) => console.error('[AdminDashboard] Promise erro DAP', err));
+        });
+
+        await Promise.allSettled(promises);
+      } catch (error) {
+        if (!cancelled) setNasObError('Não foi possível carregar histórico Nas/OB.');
+      } finally {
+        if (!cancelled) setNasObLoading(false);
+      }
+    }
+
+    loadNasObHistory();
+    return () => { cancelled = true; };
   }, []);
 
   const sidebarLinks = [
@@ -100,30 +240,15 @@ export default function AdminDashboard() {
       value: paidCertificatesToday == null ? '—' : paidCertificatesToday,
       caption: 'Código 7802 na data de hoje',
       icon: FaThumbsUp
-    },
-    {
-      label: 'Rating',
-      value: '8,5',
-      caption: 'Pesquisa CNJ',
-      icon: FaStar
     }
   ];
 
-  const resultData = [
-    { month: 'JAN', current: 24, previous: 18 },
-    { month: 'FEB', current: 38, previous: 32 },
-    { month: 'MAR', current: 28, previous: 22 },
-    { month: 'APR', current: 26, previous: 20 },
-    { month: 'MAY', current: 35, previous: 25 },
-    { month: 'JUN', current: 48, previous: 30 },
-    { month: 'JUL', current: 30, previous: 24 },
-    { month: 'AUG', current: 19, previous: 21 },
-    { month: 'SEP', current: 27, previous: 18 }
-  ];
-
-  const maxResultValue = useMemo(
-    () => Math.max(...resultData.map((item) => Math.max(item.current, item.previous))),
-    [resultData]
+  const nasObSummary = useMemo(
+    () => nasObCategories.map((category) => ({
+      ...category,
+      total: nasObHistory.reduce((acc, entry) => acc + (entry.totals?.[category.id] ?? 0), 0)
+    })),
+    [nasObHistory]
   );
 
   const calendarMatrix = [
@@ -277,36 +402,45 @@ export default function AdminDashboard() {
           <div className="chart-card">
             <div className="chart-header">
               <div>
-                <strong>Result</strong>
-                <span>Comparativo {new Date().getFullYear()}</span>
+                <strong>Histórico Nas/OB</strong>
+                <span>Últimos 12 meses</span>
               </div>
-              <button type="button" className="btn-gradient btn-gradient-green btn-pill btn-compact chart-pill">
-                28,79%
+              <button type="button" className="btn-gradient btn-gradient-green btn-pill btn-compact chart-pill" disabled>
+                {nasObLoading ? 'Carregando' : 'Atualizado'}
               </button>
             </div>
-            <div className="bar-chart">
-              {resultData.map((item) => (
-                <div key={item.month} className="bar-column">
-                  <div
-                    className="bar bar-current"
-                    style={{ height: `${(item.current / maxResultValue) * 100}%` }}
-                  />
-                  <div
-                    className="bar bar-previous"
-                    style={{ height: `${(item.previous / maxResultValue) * 100}%` }}
-                  />
-                  <span className="bar-label">{item.month}</span>
+            {nasObLoading ? (
+              <p style={{ color: '#64748b', margin: '8px 0' }}>Carregando histórico...</p>
+            ) : nasObError ? (
+              <p style={{ color: '#b91c1c', margin: '8px 0' }}>{nasObError}</p>
+            ) : (
+              <>
+                <div className="chart-area" style={{ background: '#0f172a', borderRadius: 12, padding: 12 }}>
+                  <NasObLineChart data={nasObHistory} />
                 </div>
-              ))}
-            </div>
-            <div className="legend">
-              <span>
-                <span className="dot dot-primary" /> 2019
-              </span>
-              <span>
-                <span className="dot dot-secondary" /> 2020
-              </span>
-            </div>
+                <div className="legend" style={{ flexWrap: 'wrap', gap: 12 }}>
+                  {nasObCategories.map((category) => (
+                    <span key={category.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ width: 10, height: 10, borderRadius: '999px', background: category.color, display: 'inline-block' }} />
+                      <span>{category.label}</span>
+                    </span>
+                  ))}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: '999px', background: '#ef4444', display: 'inline-block' }} />
+                    <span>Nasc.+Óbitos Próprios</span>
+                  </span>
+                </div>
+                <div className="legend" style={{ flexWrap: 'wrap', gap: 12 }}>
+                  {nasObSummary.map((entry) => (
+                    <span key={`summary-${entry.id}`} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '999px', background: entry.color, display: 'inline-block' }} />
+                      <span style={{ color: entry.color, fontWeight: 700 }}>{entry.total}</span>
+                      <span style={{ color: '#475569' }}>{entry.label}</span>
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="chart-card donut-card">

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { listDaps, getDapById } from '../../services/dapService';
 
-const categories = [
+export const categories = [
   {
     id: 'nascimentosProprios',
     label: 'Registros de Nascimento Próprios (9101, trib 26)',
@@ -446,6 +446,8 @@ export default function HistoricoNasObModal({ open, onClose }) {
     </div>
   );
 }
+
+export { SimpleLineChart };
 
 const overlayStyle = {
   position: 'fixed',
