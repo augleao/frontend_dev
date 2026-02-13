@@ -445,20 +445,7 @@ function Home2() {
 
       <div className="home2-watermark" />
 
-      <header className="home2-nav">
-        <div className="brand" onClick={() => navigate('/home')} style={{ cursor: 'pointer' }}>
-          <div className="brand-mark">RC</div>
-          <div>
-            <div style={{ fontSize: 15, opacity: 0.86 }}>Controle Digital</div>
-            <div style={{ fontWeight: 900, fontSize: 17 }}>Hub Principal</div>
-          </div>
-        </div>
 
-        <div className="home2-actions">
-          <div className="pill">Olá, {nomeUsuario}</div>
-          <button className="btn btn-outline" onClick={handleLogout}>Sair</button>
-        </div>
-      </header>
 
       <main className="home2-main">
         <div className="hero-panel">
