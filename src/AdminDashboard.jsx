@@ -372,7 +372,7 @@ export default function AdminDashboard() {
             </button>
           </div>
       {/* Quick action buttons moved here (from dashboard-actions) */}
-      <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+      <div className="top-quick-actions">
         {quickActions
           .filter((a) => ['Configurar Serventia', 'Importar Atos', 'Versões TJMG', 'Backup Manual', 'Prompts IA'].includes(a.label))
           .map((action) => {
