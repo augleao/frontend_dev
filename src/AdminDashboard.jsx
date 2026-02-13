@@ -39,6 +39,31 @@ export default function AdminDashboard() {
   const [configModalFocus, setConfigModalFocus] = useState(null);
   const [configOpenAgents, setConfigOpenAgents] = useState(false);
   const [earning, setEarning] = useState(null);
+  const [usuarioLogado, setUsuarioLogado] = useState({ nome: '', email: '', cargo: '', serventia: '' });
+
+  const getInitials = (nome) => {
+    if (!nome) return 'US';
+    return nome
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase() || '')
+      .join('') || 'US';
+  };
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('usuario') || '{}');
+      setUsuarioLogado({
+        nome: stored?.nome || stored?.login || 'Usuário',
+        email: stored?.email || stored?.login || 'email@dominio.com',
+        cargo: stored?.cargo || 'Cargo não informado',
+        serventia: stored?.serventia || stored?.serventia_nome || 'Serventia não informada'
+      });
+    } catch (e) {
+      setUsuarioLogado({ nome: 'Usuário', email: 'email@dominio.com', cargo: 'Cargo não informado', serventia: 'Serventia não informada' });
+    }
+  }, []);
 
   const sidebarLinks = [
     { label: 'Visão Geral', icon: FaTachometerAlt, to: '/admin' },
@@ -57,7 +82,7 @@ export default function AdminDashboard() {
 
   const kpiCards = [
     {
-      label: 'Earning',
+      label: 'Arrecadação hoje',
       value: earning == null ? '—' : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(earning),
       caption: 'Atualizado há poucos instantes',
       icon: FaMoneyBillWave
@@ -156,10 +181,13 @@ export default function AdminDashboard() {
       <aside className="dashboard-sidebar">
         <div className="sidebar-profile">
           <div className="sidebar-avatar">
-            <span>JD</span>
+            <span>{getInitials(usuarioLogado.nome)}</span>
           </div>
-          <h2>John Don</h2>
-          <p>johndon@company.com</p>
+          <h2>{usuarioLogado.nome}</h2>
+          <p>{usuarioLogado.email}</p>
+          <p style={{ fontWeight: 600, color: '#cbd5e1' }}>
+            {usuarioLogado.cargo} • {usuarioLogado.serventia}
+          </p>
         </div>
         <nav className="sidebar-nav">
           {sidebarLinks.map((item) => {
