@@ -443,95 +443,10 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          <div className="chart-card donut-card">
-            <div className="chart-header">
-              <div>
-                <strong>Engajamento</strong>
-                <span>Meta mensal</span>
-              </div>
-              <FaChartBar size={20} />
-            </div>
-            <div className="donut-wrapper">
-              <div className="donut" />
-              <div className="donut-value">45%</div>
-            </div>
-            <ul className="donut-list">
-              <li>Lorem ipsum</li>
-              <li>Lorem ipsum</li>
-              <li>Lorem ipsum</li>
-              <li>Lorem ipsum</li>
-            </ul>
-            <button type="button" className="btn-gradient btn-gradient-blue btn-pill btn-compact chart-pill">
-              Agentes de IA
-            </button>
-          </div>
+          
         </section>
 
-        <section className="insight-grid">
-          <div className="chart-card wave-card">
-            <div className="chart-header">
-              <div>
-                <strong>Fluxo Diário</strong>
-                <span>Atos registrados</span>
-              </div>
-              <FaChartArea size={18} />
-            </div>
-            <svg viewBox="0 0 360 160" preserveAspectRatio="none" className="wave-svg">
-              <defs>
-                <linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#ffb347" stopOpacity="0.9" />
-                  <stop offset="100%" stopColor="#fdf5e6" stopOpacity="0.1" />
-                </linearGradient>
-                <linearGradient id="waveGradientSecondary" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#3555ff" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#d6e4ff" stopOpacity="0.1" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M0 120 C40 80 80 90 120 110 C150 125 180 100 210 95 C250 88 290 110 330 90 L360 110 L360 160 L0 160 Z"
-                fill="url(#waveGradient)"
-                stroke="none"
-              />
-              <path
-                d="M0 140 C50 120 90 130 130 100 C170 70 210 115 250 95 C290 75 320 120 360 105 L360 160 L0 160 Z"
-                fill="url(#waveGradientSecondary)"
-                stroke="none"
-              />
-            </svg>
-            <div className="wave-legend">
-              <span>
-                <span className="dot dot-primary" /> Loren Ipsum
-              </span>
-              <span>
-                <span className="dot dot-secondary" /> Dolor Amet
-              </span>
-            </div>
-          </div>
-
-          <div className="chart-card calendar-card">
-            <div className="chart-header">
-              <div>
-                <strong>Calendário</strong>
-                <span>Agosto</span>
-              </div>
-              <FaCalendarAlt size={18} />
-            </div>
-            <div className="calendar-grid">
-              {calendarMatrix.map((row, rowIndex) => (
-                <div key={`row-${rowIndex}`} className="calendar-row">
-                  {row.map((cell, cellIndex) => (
-                    <span
-                      key={`cell-${cellIndex}`}
-                      className={`calendar-cell ${cell === 13 || cell === 25 ? 'active' : ''}`}
-                    >
-                      {cell ?? ''}
-                    </span>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        
 
         <section className="dashboard-actions">
           {quickActions.map((action) => {
