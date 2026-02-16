@@ -1919,8 +1919,8 @@ export default function LeituraLivros() {
                     {results.map((r, i) => (
                       <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
-                          <input value={getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']) || ''}
-                            onChange={e => updateRecordField(i, 'livro', e.target.value)}
+                          <input value={String(getExactField(r, ['numeroLivro', 'numero_livro', 'livro', 'LIVRO', 'NROLIVRO', 'NUM_LIVRO', 'NUMEROLIVRO']) || '').replace(/\D/g, '')}
+                            onChange={e => updateRecordField(i, 'livro', String(e.target.value || '').replace(/\D/g, ''))}
                             style={{ width: 120, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
@@ -1928,18 +1928,19 @@ export default function LeituraLivros() {
                             style={{ width: 200, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace', color: '#0f172a', background: '#fafafa' }} />
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
-                          <input value={getExactField(r, ['numeroFolha', 'folha', 'page', 'FOLHA', 'NRO_FOLHA', 'NUM_FOLHA']) || ''}
-                            onChange={e => updateRecordField(i, 'folha', e.target.value)}
+                          <input value={String(getExactField(r, ['numeroFolha', 'folha', 'page', 'FOLHA', 'NRO_FOLHA', 'NUM_FOLHA']) || '').replace(/\D/g, '')}
+                            onChange={e => updateRecordField(i, 'folha', String(e.target.value || '').replace(/\D/g, ''))}
                             style={{ width: 100, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
-                          <input value={getExactField(r, ['numeroTermo', 'termo', 'term', 'TERMO', 'NRO_TERMO', 'NUM_TERMO', 'ATO']) || ''}
-                            onChange={e => updateRecordField(i, 'termo', e.target.value)}
+                          <input value={String(getExactField(r, ['numeroTermo', 'termo', 'term', 'TERMO', 'NRO_TERMO', 'NUM_TERMO', 'ATO']) || '').replace(/\D/g, '')}
+                            onChange={e => updateRecordField(i, 'termo', String(e.target.value || '').replace(/\D/g, ''))}
                             style={{ width: 100, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
-                          <input value={formatDateDisplay(getField(r, ['dataRegistro', 'data', 'registroData', 'date'])) || ''}
-                            onChange={e => updateRecordField(i, 'dataRegistro', e.target.value)}
+                          <input value={String(formatDateDisplay(getField(r, ['dataRegistro', 'data', 'registroData', 'date'])) || '').replace(/[^\d-]/g, '')}
+                            onChange={e => updateRecordField(i, 'dataRegistro', String(e.target.value || '').replace(/[^\d-]/g, ''))}
+                            placeholder="DD-MM-AAAA"
                             style={{ width: 140, padding: '6px 8px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
                         </td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'top' }}>
