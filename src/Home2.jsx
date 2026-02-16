@@ -86,9 +86,9 @@ function Home2() {
   ];
 
   const atalhos = [
-    { label: 'Abrir Pedidos', icon: '➡️', route: '/lista-servicos' },
-    { label: 'Abrir Caixa', icon: '💰', route: '/caixa-diario' },
-    { label: 'Atos Praticados', icon: '📜', route: '/atos-praticados' },
+    { label: 'Pedidos', icon: '➡️', route: '/lista-servicos' },
+    { label: 'Caixa', icon: '💰', route: '/caixa-diario' },
+    { label: 'Atos Pagos Praticados', icon: '📜', route: '/atos-praticados' },
     { label: 'Conciliação dos Pagos', icon: '🤝', route: '/conciliacao' },
     { label: 'Ferramentas IA', icon: '⚡', route: '/ferramentas-ia' }
   ];
@@ -450,7 +450,7 @@ function Home2() {
       <main className="home2-main">
         <div className="hero-panel">
           <div className="hero-copy">
-            <div className="hero-title">Navegue pelas ferramentes de gestão.</div>
+            <div className="hero-title">Navegue pelas ferramentas de gestão.</div>
             <div className="hero-sub">
               Controle de caixa, pedidos, atos praticados, relatórios e IA, tudo a um clique.
             </div>
