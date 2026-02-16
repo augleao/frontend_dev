@@ -1283,7 +1283,7 @@ useEffect(() => {
           fontSize: '24px', // reduzido de 28px
           fontWeight: '600'
         }}>
-          🔗 Atos Praticados Neste Dia
+          🔗 Atos Pagos Praticados Neste Dia
         </h1>
         <div style={{ 
           display: 'flex', 
