@@ -1,13 +1,39 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { fetchUserComponents } from './services/PermissionsService';
 
 function Home2() {
   const navigate = useNavigate();
   const [nomeUsuario, setNomeUsuario] = useState('Usuário');
+  const [allowedSet, setAllowedSet] = useState(null); // null = não aplicado ainda
+  const [permissionsLoading, setPermissionsLoading] = useState(false);
 
   useEffect(() => {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     setNomeUsuario(usuario?.nome || 'Usuário');
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadPermissions() {
+      setPermissionsLoading(true);
+      try {
+        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+        if (!usuario?.id) {
+          if (!cancelled) setAllowedSet(null);
+          return;
+        }
+        const data = await fetchUserComponents(usuario.id);
+        const keys = new Set((data.components || []).filter((c) => c.allowed).map((c) => c.key));
+        if (!cancelled) setAllowedSet(keys);
+      } catch (e) {
+        if (!cancelled) setAllowedSet(null);
+      } finally {
+        if (!cancelled) setPermissionsLoading(false);
+      }
+    }
+    loadPermissions();
+    return () => { cancelled = true; };
   }, []);
 
   const handleLogout = () => {
@@ -24,7 +50,8 @@ function Home2() {
       icon: '💰',
       color: '#5ca9ff',
       route: '/caixa',
-      tag: 'Financeiro'
+      tag: 'Financeiro',
+      componentKey: 'dashboard.hub.caixa'
     },
     {
       id: 'manutencao-servicos',
@@ -33,7 +60,8 @@ function Home2() {
       icon: '📝',
       color: '#c9a646',
       route: '/lista-servicos',
-      tag: 'Atendimento'
+      tag: 'Atendimento',
+      componentKey: 'dashboard.hub.pedidos'
     },
     {
       id: 'atos-hub',
@@ -42,7 +70,8 @@ function Home2() {
       icon: '📜',
       color: '#3dd598',
       route: '/atos',
-      tag: 'Relatórios'
+      tag: 'Relatórios',
+      componentKey: 'dashboard.hub.atos'
     },
     {
       id: 'relatorios-hub',
@@ -51,7 +80,8 @@ function Home2() {
       icon: '📈',
       color: '#7c8cff',
       route: '/relatorios',
-      tag: 'Insights'
+      tag: 'Insights',
+      componentKey: 'dashboard.hub.relatorios'
     },
     {
       id: 'relatorios-dap',
@@ -60,7 +90,8 @@ function Home2() {
       icon: '🧾',
       color: '#ffa96a',
       route: '/relatorios/dap',
-      tag: 'Fiscal'
+      tag: 'Fiscal',
+      componentKey: 'dashboard.hub.dap'
     }
   ];
 
@@ -72,7 +103,8 @@ function Home2() {
       icon: '🤖',
       color: '#ffd166',
       route: '/ferramentas-ia',
-      tag: 'IA'
+      tag: 'IA',
+      componentKey: 'dashboard.hub.ia'
     },
     {
       id: 'rg-module',
@@ -81,16 +113,17 @@ function Home2() {
       icon: '🪪',
       color: '#6bc9ff',
       route: '/rg',
-      tag: 'Identificação'
+      tag: 'Identificação',
+      componentKey: 'dashboard.hub.rg'
     }
   ];
 
   const atalhos = [
-    { label: 'Pedidos', icon: '➡️', route: '/lista-servicos' },
-    { label: 'Caixa', icon: '💰', route: '/caixa-diario' },
-    { label: 'Atos Pagos Praticados', icon: '📜', route: '/atos-praticados' },
-    { label: 'Conciliação dos Pagos', icon: '🤝', route: '/conciliacao' },
-    { label: 'Ferramentas IA', icon: '⚡', route: '/ferramentas-ia' }
+    { label: 'Pedidos', icon: '➡️', route: '/lista-servicos', componentKey: 'dashboard.hub.pedidos' },
+    { label: 'Caixa', icon: '💰', route: '/caixa-diario', componentKey: 'dashboard.hub.caixa' },
+    { label: 'Atos Pagos Praticados', icon: '📜', route: '/atos-praticados', componentKey: 'dashboard.hub.atos' },
+    { label: 'Conciliação dos Pagos', icon: '🤝', route: '/conciliacao', componentKey: 'dashboard.hub.atos' },
+    { label: 'Ferramentas IA', icon: '⚡', route: '/ferramentas-ia', componentKey: 'dashboard.hub.ia' }
   ];
 
   const roadmap = [
@@ -98,6 +131,15 @@ function Home2() {
     { title: 'Auditoria Expandida', icon: '🔍', description: 'Trilhas mais detalhadas por usuário e ato.' },
     { title: 'Integrações API', icon: '🔗', description: 'Conectores adicionais para plataformas externas.' }
   ];
+
+  const filterByPermission = (items) => {
+    if (!allowedSet || allowedSet.size === 0) return items;
+    return items.filter((item) => !item.componentKey || allowedSet.has(item.componentKey));
+  };
+
+  const hubsPrincipaisFiltered = filterByPermission(hubsPrincipais);
+  const hubsInteligentesFiltered = filterByPermission(hubsInteligentes);
+  const atalhosFiltrados = filterByPermission(atalhos);
 
   return (
     <div className="home2-shell">
@@ -472,7 +514,7 @@ function Home2() {
               <span style={{ color: '#6b7280', fontWeight: 700 }}>Tudo em 1 clique</span>
             </div>
             <div className="quick-links">
-              {atalhos.map((item) => (
+              {atalhosFiltrados.map((item) => (
                 <div key={item.route} className="quick-link" onClick={() => navigate(item.route)}>
                   <span style={{ fontSize: 18 }}>{item.icon}</span>
                   <span>{item.label}</span>
@@ -488,7 +530,7 @@ function Home2() {
             <div className="section-sub">Operações do dia, finanças e relatórios</div>
           </div>
           <div className="cards-grid">
-            {hubsPrincipais.map((hub) => (
+            {hubsPrincipaisFiltered.map((hub) => (
               <div
                 key={hub.id}
                 className="hub-card"
@@ -513,7 +555,7 @@ function Home2() {
             <div className="section-sub">Ferramentas inteligentes e módulos dedicados</div>
           </div>
           <div className="cards-grid">
-            {hubsInteligentes.map((hub) => (
+            {hubsInteligentesFiltered.map((hub) => (
               <div
                 key={hub.id}
                 className="hub-card"

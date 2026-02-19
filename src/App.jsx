@@ -33,6 +33,7 @@ import OnedriveConfig from './components/admin/OnedriveConfig';
 import BackblazeConfig from './components/admin/BackblazeConfig';
 import OnedriveOAuthCallback from './components/admin/OnedriveOAuthCallback';
 import TrackerAuditoria from './components/admin/TrackerAuditoria';
+import PermissoesUsuarios from './components/admin/PermissoesUsuarios';
 import ProtocoloAcesso from './ProtocoloAcesso';
 import AtosGratuitos from './AtosGratuitos';
 import GerenciadorArquivosPDF from './components/arquivos/GerenciadorArquivosPDF';
@@ -279,6 +280,14 @@ function App() {
           element={
             <AdminRoute>
               <TrackerAuditoria />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/permissoes-usuarios"
+          element={
+            <AdminRoute>
+              <PermissoesUsuarios />
             </AdminRoute>
           }
         />
