@@ -132,8 +132,9 @@ function Home2() {
     { title: 'Integrações API', icon: '🔗', description: 'Conectores adicionais para plataformas externas.' }
   ];
 
+  // If allowedSet is null: permissions not loaded -> show all. If loaded (even empty), enforce.
   const filterByPermission = (items) => {
-    if (!allowedSet || allowedSet.size === 0) return items;
+    if (allowedSet === null) return items;
     return items.filter((item) => !item.componentKey || allowedSet.has(item.componentKey));
   };
 
