@@ -673,9 +673,16 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
             <p style={{ margin: 0, fontWeight: 'bold', fontSize: 14 }}>
               {selectedAto.codigo} - {selectedAto.descricao}
             </p>
-            <p style={{ margin: '2px 0 0 0', color: '#666', fontSize: 13 }}>
-              Valor Unitário: R$ {(parseFloat(selectedAto.valor_final) || 0).toFixed(2)}
-            </p>
+            {(() => {
+              const valorBase = parseFloat(selectedAto.valor_final) || 0;
+              const issValor = obterISSDoAto(selectedAto);
+              const valorComISS = Number((valorBase + issValor).toFixed(2));
+              return (
+                <p style={{ margin: '2px 0 0 0', color: '#666', fontSize: 13 }}>
+                  Valor Unitário: R$ {valorComISS.toFixed(2)}{issValor ? ` (inclui ISS ${issValor.toFixed(2)})` : ''}
+                </p>
+              );
+            })()}
           </div>
         )}
 
