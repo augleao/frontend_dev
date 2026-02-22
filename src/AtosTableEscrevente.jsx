@@ -5,6 +5,47 @@ import './buttonGradients.css';
 export default function AtosTableEscrevente({ atos, onRemover }) {
   console.log("Atos recebidos na tabela atos-table:", atos);
 
+  // Extrai ISS de um ato, tentando várias fontes:
+  // 1) campos explícitos (issqn, iss, valor_iss, etc.)
+  // 2) diferença entre valor_unitario e detalhes_pagamentos.valor_total (quando disponível)
+  const extrairISS = (ato) => {
+    if (!ato) return 0;
+    const candidates = [
+      ato.issqn,
+      ato.iss,
+      ato.iss_qn,
+      ato.issqn_valor,
+      ato.valor_issqn,
+      ato.valor_iss,
+      ato.valorIss,
+      ato.valorIssqn
+    ];
+    const val = candidates.find((v) => v !== undefined && v !== null);
+    if (val !== undefined && val !== null) return Number(val) || 0;
+
+    // tentar inferir pela diferença entre valor_unitario e detalhes_pagamentos.valor_total
+    try {
+      const detalhes = ato.detalhes_pagamentos || ato.detalhes_pagamento || null;
+      const valorUnit = Number(ato.valor_unitario) || 0;
+      let valorTotalDetalhes = null;
+      if (detalhes) {
+        if (typeof detalhes === 'string') {
+          try { const parsed = JSON.parse(detalhes); valorTotalDetalhes = parsed.valor_total ?? parsed.valor ?? null; } catch {}
+        } else if (typeof detalhes === 'object') {
+          valorTotalDetalhes = detalhes.valor_total ?? detalhes.valor ?? null;
+        }
+      }
+      if (valorTotalDetalhes !== null && !isNaN(Number(valorTotalDetalhes))) {
+        const diff = valorUnit - Number(valorTotalDetalhes);
+        if (diff > 0.009) return Number(diff.toFixed(2));
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    return 0;
+  };
+
   // Função para formatar data no padrão brasileiro (DD/MM/AAAA)
   const formatarDataBR = (dataStr) => {
     if (!dataStr) return '-';
@@ -168,7 +209,13 @@ export default function AtosTableEscrevente({ atos, onRemover }) {
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.codigo}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.descricao}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{ato.quantidade}</td>
-                <td style={{ border: '1px solid #ddd', padding: 8 }}>{formatarMoeda(ato.valor_unitario)}</td>
+                <td style={{ border: '1px solid #ddd', padding: 8 }}>
+                  {(() => {
+                    const valorUnit = Number(ato.valor_unitario) || 0;
+                    const iss = extrairISS(ato);
+                    return `${formatarMoeda(valorUnit)}${iss ? ` (inclui ISS ${formatarMoeda(iss)})` : ''}`;
+                  })()}
+                </td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>{renderPagamentos(ato)}</td>
                 <td style={{ border: '1px solid #ddd', padding: 8 }}>
                   <button
