@@ -370,7 +370,7 @@ export default function AtosTabelaManager() {
                 checked={overwriteSnapshot}
                 onChange={(e) => setOverwriteSnapshot(e.target.checked)}
               />
-              <span>Substituir se já existir</span>
+              <span>Limpar versão antes de capturar (overwrite)</span>
             </label>
             <button
               type="submit"
@@ -417,7 +417,7 @@ export default function AtosTabelaManager() {
 
         <article className="atm-card">
           <div className="atm-card-head">
-            <h2>Importar PDF (Consulta 7)</h2>
+            <h2>Importar PDF (Tabelas do Recivil)</h2>
             <p>Envia o PDF oficial do Recivil para extrair e preencher uma nova origem.</p>
           </div>
           <form className="atm-form" onSubmit={handleImportPdf}>
@@ -431,7 +431,7 @@ export default function AtosTabelaManager() {
               />
             </label>
             <label>
-              PDF da Consulta 7
+              PDF da Tabela
               <div className="atm-file-picker">
                 <input
                   id="pdf-file-input"
@@ -452,7 +452,7 @@ export default function AtosTabelaManager() {
                 checked={pdfOverwrite}
                 onChange={(e) => setPdfOverwrite(e.target.checked)}
               />
-              <span>Substituir se a origem já existir</span>
+              <span>Limpar versão antes de importar (se desmarcado, irá mesclar)</span>
             </label>
             <button
               type="submit"
