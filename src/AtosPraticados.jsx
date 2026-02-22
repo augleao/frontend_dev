@@ -116,17 +116,9 @@ function AtosPraticados() {
     [atos, nomeUsuario]
   );
 
-  // useEffect para monitorar mudanças no estado dos atos
+  // useEffect para monitorar mudanças no estado dos atos (log removido a pedido)
   useEffect(() => {
-    console.log('📊 [AtosPraticados] Estado dos atos atualizado:', {
-      total: atos.length,
-      atos: atos.map(a => ({
-        id: a.id,
-        codigo: a.codigo,
-        usuario: a.usuario,
-        origem_importacao: a.origem_importacao
-      }))
-    });
+    // noop
   }, [atos]);
 
   const [entradaValor, setEntradaValor] = useState('');
@@ -428,15 +420,11 @@ function AtosPraticados() {
         }
       );
       
-      console.log('📡 [AtosPraticados] Response status:', resAtos.status);
-      console.log('📡 [AtosPraticados] Response ok:', resAtos.ok);
+
       
       if (resAtos.ok) {
         const dataAtos = await resAtos.json();
-        console.log('📊 [AtosPraticados] Dados recebidos do backend:', dataAtos);
-        console.log('📊 [AtosPraticados] Tipo dos dados:', typeof dataAtos);
-        console.log('📊 [AtosPraticados] É array?', Array.isArray(dataAtos));
-        console.log('📊 [AtosPraticados] Chaves do objeto:', Object.keys(dataAtos));
+
         
         // Suporte para diferentes formatos de retorno
         let listaAtos = [];
@@ -444,11 +432,9 @@ function AtosPraticados() {
         if (Array.isArray(dataAtos)) {
           // Se é um array direto
           listaAtos = dataAtos;
-          console.log('📋 [AtosPraticados] Usando dados como array direto');
-        } else if (dataAtos && Array.isArray(dataAtos.atos)) {
+                  } else if (dataAtos && Array.isArray(dataAtos.atos)) {
           // Se tem propriedade 'atos' que é um array
           listaAtos = dataAtos.atos;
-          console.log('📋 [AtosPraticados] Usando dados.atos');
         } else if (dataAtos && Array.isArray(dataAtos.CaixaDiario)) {
           // Se tem propriedade 'CaixaDiario' que é um array (compatibilidade)
           listaAtos = dataAtos.CaixaDiario;

@@ -176,9 +176,6 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
     }, 0);
   };
 
-  // Flag local: habilita ISS se a serventia tem ISS ativo OU se o ato selecionado traz ISS explícito
-  const issAplicavel = issqnAtivo || obterISSDoAto(selectedAto) !== 0;
-
   // Extrai ISS/ISSQN de um ato retornado pela busca
   const obterISSDoAto = (ato) => {
     if (!ato) return 0;
@@ -195,6 +192,9 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
     const val = candidates.find((v) => v !== undefined && v !== null);
     return Number(val || 0) || 0;
   };
+
+  // Flag local: habilita ISS se a serventia tem ISS ativo OU se o ato selecionado traz ISS explícito
+  const issAplicavel = issqnAtivo || obterISSDoAto(selectedAto) !== 0;
 
   // Função para adicionar ato à tabela atos_tabela
   const adicionarAto = async () => {
