@@ -464,6 +464,13 @@ function AtosPraticados() {
           serventiaUsuario && listaAtos.some((ato) => Number(ato?.issqn || 0) !== 0)
         );
 
+        // Log de diagnóstico para rastrear quando o ISSQN deve ser somado
+        const amostrasISS = listaAtos
+          .filter((ato) => Number(ato?.issqn || 0) !== 0)
+          .slice(0, 5)
+          .map((ato) => ({ codigo: ato.codigo, issqn: ato.issqn, valor_final: ato.valor_final }));
+        console.log('🧾 [AtosPraticados] ISSQN ativo?', deveSomarISSQN, 'amostras:', amostrasISS);
+
         const aplicarISSQN = (valorBase, ato) => {
           if (!deveSomarISSQN) return Number(valorBase || 0);
           const issqn = Number(ato?.issqn || 0);
@@ -645,6 +652,7 @@ function AtosPraticados() {
               const codigo = ato.codigo;
               const valorFinalBase = cacheValorFinal[codigo] ?? ato.valor_unitario ?? ato.valor_final ?? 0;
               const valorFinal = aplicarISSQN(valorFinalBase, ato);
+              console.log('💵 [AtosPraticados] Ajuste valor ISS (lookup bloco) codigo:', codigo, 'base:', valorFinalBase, 'issqn:', ato?.issqn, 'final:', valorFinal);
               ato.valor_unitario = valorFinal;
               ato.valor_final = valorFinal;
             });
@@ -760,6 +768,7 @@ function AtosPraticados() {
               const valorFinal = aplicarISSQN(valorFinalBase, ato);
               const quantidadeAto = Number(ato.quantidade) || 1;
               // Atualizar valor_unitario no ato
+              console.log('💵 [AtosPraticados] Ajuste valor ISS (grupo selo) codigo:', codigo, 'base:', valorFinalBase, 'issqn:', ato?.issqn, 'final:', valorFinal);
               ato.valor_unitario = valorFinal;
               ato.valor_final = valorFinal;
 
@@ -1145,6 +1154,14 @@ useEffect(() => {
             const valor_unitario = issqnImport
               ? Number((Number(valorBase || 0) + issqnImport).toFixed(2))
               : Number(valorBase || 0);
+
+            console.log('💵 [Preprocess] ISS merge import', {
+              codigo,
+              valorBase,
+              issqnImport,
+              valor_unitario,
+              rawValorFinal: atoRaw.valor_final
+            });
 
             // Montar pagamentos: tenta usar detalhes de pagamento quando presentes
             let novoPagamentos = formasPagamento.reduce((acc, fp) => {
