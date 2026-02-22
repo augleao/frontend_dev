@@ -459,21 +459,47 @@ function AtosPraticados() {
         console.log('📋 [AtosPraticados] Lista de atos extraída:', listaAtos);
         console.log('📋 [AtosPraticados] Total de atos na lista:', listaAtos.length);
 
-        // Determina se a serventia do usuário aplica ISSQN (há valores issqn retornados para a data)
+        // Helper para extrair ISS de diversos formatos de retorno
+        const obterISSDoAto = (ato) => {
+          if (!ato) return 0;
+          const candidates = [
+            ato.issqn,
+            ato.iss,
+            ato.iss_qn,
+            ato.issqn_valor,
+            ato.valor_issqn,
+            ato.valor_iss,
+            ato.valorIss,
+            ato.valorIssqn
+          ];
+          const val = candidates.find((v) => v !== undefined && v !== null);
+          return Number(val || 0) || 0;
+        };
+
+        // Dump rápido das chaves dos primeiros atos recebidos para diagnosticar campos de ISS
+        const debugAmostras = listaAtos.slice(0, 3).map((ato) => ({
+          codigo: ato.codigo,
+          keys: Object.keys(ato || {}),
+          issDetectado: obterISSDoAto(ato),
+          issRaw: ato?.issqn ?? ato?.iss
+        }));
+        console.log('🧾 [AtosPraticados] Amostras de atos (chaves/ISS):', debugAmostras);
+
+        // Determina se a serventia do usuário aplica ISSQN (há valores de ISS detectados nos atos)
         const deveSomarISSQN = Boolean(
-          serventiaUsuario && listaAtos.some((ato) => Number(ato?.issqn || 0) !== 0)
+          serventiaUsuario && listaAtos.some((ato) => obterISSDoAto(ato) !== 0)
         );
 
         // Log de diagnóstico para rastrear quando o ISSQN deve ser somado
         const amostrasISS = listaAtos
-          .filter((ato) => Number(ato?.issqn || 0) !== 0)
+          .filter((ato) => obterISSDoAto(ato) !== 0)
           .slice(0, 5)
-          .map((ato) => ({ codigo: ato.codigo, issqn: ato.issqn, valor_final: ato.valor_final }));
+          .map((ato) => ({ codigo: ato.codigo, issqn: obterISSDoAto(ato), valor_final: ato.valor_final }));
         console.log('🧾 [AtosPraticados] ISSQN ativo?', deveSomarISSQN, 'amostras:', amostrasISS);
 
         const aplicarISSQN = (valorBase, ato) => {
           if (!deveSomarISSQN) return Number(valorBase || 0);
-          const issqn = Number(ato?.issqn || 0);
+          const issqn = obterISSDoAto(ato);
           if (!issqn) return Number(valorBase || 0);
           return Number(((Number(valorBase || 0)) + issqn).toFixed(2));
         };
@@ -652,7 +678,7 @@ function AtosPraticados() {
               const codigo = ato.codigo;
               const valorFinalBase = cacheValorFinal[codigo] ?? ato.valor_unitario ?? ato.valor_final ?? 0;
               const valorFinal = aplicarISSQN(valorFinalBase, ato);
-              console.log('💵 [AtosPraticados] Ajuste valor ISS (lookup bloco) codigo:', codigo, 'base:', valorFinalBase, 'issqn:', ato?.issqn, 'final:', valorFinal);
+              console.log('💵 [AtosPraticados] Ajuste valor ISS (lookup bloco) codigo:', codigo, 'base:', valorFinalBase, 'issDet:', obterISSDoAto(ato), 'final:', valorFinal);
               ato.valor_unitario = valorFinal;
               ato.valor_final = valorFinal;
             });
@@ -768,7 +794,7 @@ function AtosPraticados() {
               const valorFinal = aplicarISSQN(valorFinalBase, ato);
               const quantidadeAto = Number(ato.quantidade) || 1;
               // Atualizar valor_unitario no ato
-              console.log('💵 [AtosPraticados] Ajuste valor ISS (grupo selo) codigo:', codigo, 'base:', valorFinalBase, 'issqn:', ato?.issqn, 'final:', valorFinal);
+              console.log('💵 [AtosPraticados] Ajuste valor ISS (grupo selo) codigo:', codigo, 'base:', valorFinalBase, 'issDet:', obterISSDoAto(ato), 'final:', valorFinal);
               ato.valor_unitario = valorFinal;
               ato.valor_final = valorFinal;
 
@@ -1150,7 +1176,17 @@ useEffect(() => {
 
             // Determinar valor_unitario: prefer lookup, depois campos existentes e somar issqn quando presente
             const valorBase = valorFinalLookup ?? atoRaw.valor_unitario ?? atoRaw.valor_final ?? 0;
-            const issqnImport = Number(atoRaw.issqn || 0);
+            const issqnImport = Number(
+              atoRaw.issqn ||
+              atoRaw.iss ||
+              atoRaw.iss_qn ||
+              atoRaw.issqn_valor ||
+              atoRaw.valor_issqn ||
+              atoRaw.valor_iss ||
+              atoRaw.valorIss ||
+              atoRaw.valorIssqn ||
+              0
+            );
             const valor_unitario = issqnImport
               ? Number((Number(valorBase || 0) + issqnImport).toFixed(2))
               : Number(valorBase || 0);
