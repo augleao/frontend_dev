@@ -483,6 +483,13 @@ function AtosPraticados() {
           issDetectado: obterISSDoAto(ato),
           issRaw: ato?.issqn ?? ato?.iss
         }));
+        if (listaAtos.length > 0) {
+          try {
+            console.log('🧾 [AtosPraticados] Primeiro ato bruto:', JSON.stringify(listaAtos[0], null, 2));
+          } catch (e) {
+            console.log('🧾 [AtosPraticados] Primeiro ato bruto (stringify falhou):', listaAtos[0]);
+          }
+        }
         console.log('🧾 [AtosPraticados] Amostras de atos (chaves/ISS):', debugAmostras);
 
         // Determina se a serventia do usuário aplica ISSQN (há valores de ISS detectados nos atos)
