@@ -176,6 +176,9 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
     }, 0);
   };
 
+  // Flag local: habilita ISS se a serventia tem ISS ativo OU se o ato selecionado traz ISS explícito
+  const issAplicavel = issqnAtivo || obterISSDoAto(selectedAto) !== 0;
+
   // Extrai ISS/ISSQN de um ato retornado pela busca
   const obterISSDoAto = (ato) => {
     if (!ato) return 0;
@@ -240,8 +243,8 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
       }
 
       const valorBase = parseFloat(selectedAto.valor_final) || 0;
-      const issValor = issqnAtivo ? obterISSDoAto(selectedAto) : 0;
-      const valorComISS = issqnAtivo && issValor ? Number((valorBase + issValor).toFixed(2)) : valorBase;
+      const issValor = issAplicavel ? obterISSDoAto(selectedAto) : 0;
+      const valorComISS = issAplicavel && issValor ? Number((valorBase + issValor).toFixed(2)) : valorBase;
 
       const atoParaAdicionar = {
         data: dataSelecionada,
@@ -252,7 +255,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
         quantidade: quantidade,
         valor_unitario: selectedCodigoTributario.codigo === '01' ? valorComISS : 0,
         valor_final: selectedCodigoTributario.codigo === '01' ? valorComISS : 0,
-        issqn: issqnAtivo ? issValor : 0,
+        issqn: issAplicavel ? issValor : 0,
         pagamentos: selectedCodigoTributario.codigo === '01' ? pagamentos : {}, // JSON vazio para isentos
         detalhes_pagamentos: selectedCodigoTributario.codigo === '01' ? {
           valor_total: valorTotalPagamentos || valorComISS,
@@ -262,7 +265,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
         usuario: nomeUsuario
       };
 
-      console.log('💵 [AtoSearchAtosPraticados] ISS extraído:', issValor, 'valorBase:', valorBase, 'valorComISS:', valorComISS, 'issqnAtivo:', issqnAtivo);
+      console.log('💵 [AtoSearchAtosPraticados] ISS extraído:', issValor, 'valorBase:', valorBase, 'valorComISS:', valorComISS, 'issAplicavel:', issAplicavel, 'issqnAtivo:', issqnAtivo);
 
       console.log('📦 Dados a serem enviados para o backend:', atoParaAdicionar);
 
@@ -507,7 +510,7 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
               suggestions={suggestions}
               loadingSuggestions={loadingSuggestions}
               onSelectAto={handleSelectAto}
-              aplicarISS={issqnAtivo}
+              aplicarISS={issAplicavel}
             />
           </div>
           
@@ -676,11 +679,11 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
             </p>
             {(() => {
               const valorBase = parseFloat(selectedAto.valor_final) || 0;
-              const issValor = issqnAtivo ? obterISSDoAto(selectedAto) : 0;
-              const valorComISS = issqnAtivo && issValor ? Number((valorBase + issValor).toFixed(2)) : valorBase;
+              const issValor = issAplicavel ? obterISSDoAto(selectedAto) : 0;
+              const valorComISS = issAplicavel && issValor ? Number((valorBase + issValor).toFixed(2)) : valorBase;
               return (
                 <p style={{ margin: '2px 0 0 0', color: '#666', fontSize: 13 }}>
-                  Valor Unitário: R$ {valorComISS.toFixed(2)}{issqnAtivo && issValor ? ` (inclui ISS ${issValor.toFixed(2)})` : ''}
+                  Valor Unitário: R$ {valorComISS.toFixed(2)}{issAplicavel && issValor ? ` (inclui ISS ${issValor.toFixed(2)})` : ''}
                 </p>
               );
             })()}
