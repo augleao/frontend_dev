@@ -56,13 +56,20 @@ const AtosTabelaService = {
     return handleResponse(resp, 'Falha ao importar registros para a nova versão.');
   },
 
-  async importVersionPdf({ origem, arquivo, aliquota, taxa_fiscal, overwrite }) {
+  async importVersionPdf({ origem, arquivo, aliquota, taxa_fiscal, overwrite, images }) {
     const form = new FormData();
     form.append('origem', origem);
     if (aliquota != null) form.append('aliquota', aliquota);
     if (taxa_fiscal != null) form.append('taxa_fiscal', taxa_fiscal);
     if (overwrite != null) form.append('overwrite', overwrite ? 'true' : 'false');
-    form.append('file', arquivo);
+    
+    if (arquivo) form.append('file', arquivo);
+    
+    if (images && Array.isArray(images)) {
+      images.forEach((blob, idx) => {
+        form.append('images', blob, `page-${idx + 1}.png`);
+      });
+    }
 
     const headers = buildAuthHeaders(false); // apenas Authorization; FormData define o boundary
     const resp = await fetch(`${config.apiURL}/atos/versoes/import/pdf`, {

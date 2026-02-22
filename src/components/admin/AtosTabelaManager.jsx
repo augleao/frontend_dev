@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
+import * as pdfjsLib from 'pdfjs-dist';
 import { FiDatabase, FiEye, FiPlay, FiRefreshCcw, FiSave, FiTrash2, FiUpload } from 'react-icons/fi';
 import { LuLayers, LuSparkles } from 'react-icons/lu';
 import AtosTabelaService from '../../services/AtosTabelaService';
 import './AtosTabelaManager.css';
+
+// Configuração do worker do PDF.js para processamento no frontend
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
 const defaultSnapshotLabel = () => {
   const now = new Date();
@@ -121,20 +125,61 @@ export default function AtosTabelaManager() {
       showBanner('error', 'Selecione o PDF da Consulta 7.');
       return;
     }
+
     setPdfBusy(true);
     try {
+      // 1. Converter PDF para imagens no frontend (melhor para OCR no cloud/backend)
+      // pois o ambiente de node muitas vezes não possui as bibliotecas de renderização nativas.
+      showBanner('info', 'Processando PDF localmente para otimizar OCR...');
+      const imageBlobs = await renderPdfToImages(pdfFile);
+      
+      showBanner('info', `Enviando ${imageBlobs.length} páginas para análise...`);
       await AtosTabelaService.importVersionPdf({
         origem: pdfOrigem.trim(),
-        arquivo: pdfFile,
+        arquivo: pdfFile, // mantém o original por precaução
+        images: imageBlobs, // envia imagens renderizadas
         overwrite: pdfOverwrite
       });
-      showBanner('success', `PDF importado em ${pdfOrigem.trim()}. Revise e ative quando pronto.`);
+      
+      showBanner('success', `Importação de ${pdfOrigem.trim()} concluída com sucesso.`);
       setPdfFile(null);
       await loadVersions();
     } catch (err) {
+      console.error('Erro na importação PDF:', err);
       showBanner('error', err.message || 'Falha ao importar o PDF.');
     } finally {
       setPdfBusy(false);
+    }
+  };
+
+  /**
+   * Renderiza cada página do PDF em um Canvas e retorna um array de Blobs (PNG)
+   * Isso contorna a falta de bibliotecas de renderização nativa (poppler/libvips) no servidor.
+   */
+  const renderPdfToImages = async (file) => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const blobs = [];
+      
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 2.5 }); // escala alta para OCR preciso
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        
+        await page.render({ canvasContext: context, viewport }).promise;
+        
+        const blob = await new Promise((resolve) => {
+          canvas.toBlob((b) => resolve(b), 'image/png', 0.9);
+        });
+        blobs.push(blob);
+      }
+      return blobs;
+    } catch (err) {
+      throw new Error('Falha ao processar as páginas do PDF: ' + err.message);
     }
   };
 
