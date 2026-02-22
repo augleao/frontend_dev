@@ -389,7 +389,7 @@ export default function AtosTabelaManager() {
           </div>
           <form className="atm-form" onSubmit={handleImport}>
             <label>
-              Origem de destino
+              Nome de destino
               <input
                 type="text"
                 value={importOrigem}
@@ -422,7 +422,7 @@ export default function AtosTabelaManager() {
           </div>
           <form className="atm-form" onSubmit={handleImportPdf}>
             <label>
-              Origem de destino
+              Nome de destino
               <input
                 type="text"
                 value={pdfOrigem}
