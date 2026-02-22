@@ -176,6 +176,23 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
     }, 0);
   };
 
+  // Extrai ISS/ISSQN de um ato retornado pela busca
+  const obterISSDoAto = (ato) => {
+    if (!ato) return 0;
+    const candidates = [
+      ato.issqn,
+      ato.iss,
+      ato.iss_qn,
+      ato.issqn_valor,
+      ato.valor_issqn,
+      ato.valor_iss,
+      ato.valorIss,
+      ato.valorIssqn
+    ];
+    const val = candidates.find((v) => v !== undefined && v !== null);
+    return Number(val || 0) || 0;
+  };
+
   // Função para adicionar ato à tabela atos_tabela
   const adicionarAto = async () => {
     console.log('🚀 INICIANDO FUNÇÃO ADICIONAR ATO');
@@ -222,6 +239,10 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
         console.log('🆓 Ato ISENTO detectado - valor:', valorPagamentos);
       }
 
+      const issValor = obterISSDoAto(selectedAto);
+      const valorBase = parseFloat(selectedAto.valor_final) || 0;
+      const valorComISS = issValor ? Number((valorBase + issValor).toFixed(2)) : valorBase;
+
       const atoParaAdicionar = {
         data: dataSelecionada,
         hora: agora.toTimeString().split(' ')[0], // HH:MM:SS
@@ -229,15 +250,19 @@ export default function AtoSearchAtosPraticados({ dataSelecionada, nomeUsuario, 
         tributacao_codigo: selectedCodigoTributario.codigo, // Enviar apenas o código
         descricao: selectedAto.descricao,
         quantidade: quantidade,
-        valor_unitario: selectedCodigoTributario.codigo === '01' ? (parseFloat(selectedAto.valor_final) || 0) : 0,
+        valor_unitario: selectedCodigoTributario.codigo === '01' ? valorComISS : 0,
+        valor_final: selectedCodigoTributario.codigo === '01' ? valorComISS : 0,
+        issqn: issValor,
         pagamentos: selectedCodigoTributario.codigo === '01' ? pagamentos : {}, // JSON vazio para isentos
         detalhes_pagamentos: selectedCodigoTributario.codigo === '01' ? {
-          valor_total: valorTotalPagamentos,
+          valor_total: valorTotalPagamentos || valorComISS,
           formas_utilizadas: Object.keys(pagamentos).filter(key => pagamentos[key].valor > 0),
           data_pagamento: dataSelecionada
         } : {}, // JSON vazio para isentos
         usuario: nomeUsuario
       };
+
+      console.log('💵 [AtoSearchAtosPraticados] ISS extraído:', issValor, 'valorBase:', valorBase, 'valorComISS:', valorComISS);
 
       console.log('📦 Dados a serem enviados para o backend:', atoParaAdicionar);
 
