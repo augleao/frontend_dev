@@ -458,6 +458,18 @@ function AtosPraticados() {
             
         console.log('📋 [AtosPraticados] Lista de atos extraída:', listaAtos);
         console.log('📋 [AtosPraticados] Total de atos na lista:', listaAtos.length);
+
+        // Determina se a serventia do usuário aplica ISSQN (há valores issqn retornados para a data)
+        const deveSomarISSQN = Boolean(
+          serventiaUsuario && listaAtos.some((ato) => Number(ato?.issqn || 0) !== 0)
+        );
+
+        const aplicarISSQN = (valorBase, ato) => {
+          if (!deveSomarISSQN) return Number(valorBase || 0);
+          const issqn = Number(ato?.issqn || 0);
+          if (!issqn) return Number(valorBase || 0);
+          return Number(((Number(valorBase || 0)) + issqn).toFixed(2));
+        };
         
         // Determinar quais usuários incluir baseado na configuração de caixa unificado
         let atosFiltrados = [];
@@ -631,8 +643,10 @@ function AtosPraticados() {
             await Promise.all(codigosTodos.map(c => buscarValorFinal(c)));
             atosComPagamentosConvertidos.forEach(ato => {
               const codigo = ato.codigo;
-              const valorFinal = cacheValorFinal[codigo] ?? ato.valor_unitario ?? ato.valor_final ?? 0;
+              const valorFinalBase = cacheValorFinal[codigo] ?? ato.valor_unitario ?? ato.valor_final ?? 0;
+              const valorFinal = aplicarISSQN(valorFinalBase, ato);
               ato.valor_unitario = valorFinal;
+              ato.valor_final = valorFinal;
             });
             console.log('🔎 [AtosPraticados] Valor unitario preenchido via lookup para códigos:', codigosTodos);
           } catch (e) {
@@ -742,10 +756,12 @@ function AtosPraticados() {
             // Ajustar cada ato: set valor_unitario e pagamentos por forma = quantidade * valor_unitario
             for (const ato of grupo) {
               const codigo = ato.codigo;
-              const valorFinal = cacheValorFinal[codigo] ?? ato.valor_unitario ?? ato.valor_final ?? 0;
+              const valorFinalBase = cacheValorFinal[codigo] ?? ato.valor_unitario ?? ato.valor_final ?? 0;
+              const valorFinal = aplicarISSQN(valorFinalBase, ato);
               const quantidadeAto = Number(ato.quantidade) || 1;
               // Atualizar valor_unitario no ato
               ato.valor_unitario = valorFinal;
+              ato.valor_final = valorFinal;
 
               // Tentar obter forma de pagamento a partir do pedido/recibo vinculado ao ato
               let novoPagamentos = formasPagamento.reduce((acc, fp) => {
@@ -1123,8 +1139,12 @@ useEffect(() => {
             // Buscar valor_final por codigo (cacheado)
             const valorFinalLookup = await buscarValorFinalLocal(codigo);
 
-            // Determinar valor_unitario: prefer lookup, depois campos existentes
-            const valor_unitario = valorFinalLookup ?? atoRaw.valor_unitario ?? atoRaw.valor_final ?? 0;
+            // Determinar valor_unitario: prefer lookup, depois campos existentes e somar issqn quando presente
+            const valorBase = valorFinalLookup ?? atoRaw.valor_unitario ?? atoRaw.valor_final ?? 0;
+            const issqnImport = Number(atoRaw.issqn || 0);
+            const valor_unitario = issqnImport
+              ? Number((Number(valorBase || 0) + issqnImport).toFixed(2))
+              : Number(valorBase || 0);
 
             // Montar pagamentos: tenta usar detalhes de pagamento quando presentes
             let novoPagamentos = formasPagamento.reduce((acc, fp) => {
