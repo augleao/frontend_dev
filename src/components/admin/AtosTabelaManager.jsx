@@ -28,6 +28,12 @@ export default function AtosTabelaManager() {
   const [importOrigem, setImportOrigem] = useState('');
   const [importPayload, setImportPayload] = useState('');
   const [importBusy, setImportBusy] = useState(false);
+  const [pdfOrigem, setPdfOrigem] = useState('');
+  const [pdfAliquota, setPdfAliquota] = useState('0.03');
+  const [pdfTaxaFiscal, setPdfTaxaFiscal] = useState('0.00');
+  const [pdfOverwrite, setPdfOverwrite] = useState(true);
+  const [pdfFile, setPdfFile] = useState(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const [tableBusy, setTableBusy] = useState(false);
   const [preview, setPreview] = useState({ origem: null, registros: [] });
   const [previewBusy, setPreviewBusy] = useState(false);
@@ -104,6 +110,35 @@ export default function AtosTabelaManager() {
       showBanner('error', err.message || 'Não foi possível importar os registros.');
     } finally {
       setImportBusy(false);
+    }
+  };
+
+  const handleImportPdf = async (event) => {
+    event.preventDefault();
+    if (!pdfOrigem.trim()) {
+      showBanner('error', 'Defina a origem antes de importar o PDF.');
+      return;
+    }
+    if (!pdfFile) {
+      showBanner('error', 'Selecione o PDF da Consulta 7.');
+      return;
+    }
+    setPdfBusy(true);
+    try {
+      await AtosTabelaService.importVersionPdf({
+        origem: pdfOrigem.trim(),
+        arquivo: pdfFile,
+        aliquota: pdfAliquota || '0.03',
+        taxa_fiscal: pdfTaxaFiscal || '0.00',
+        overwrite: pdfOverwrite
+      });
+      showBanner('success', `PDF importado em ${pdfOrigem.trim()}. Revise e ative quando pronto.`);
+      setPdfFile(null);
+      await loadVersions();
+    } catch (err) {
+      showBanner('error', err.message || 'Falha ao importar o PDF.');
+    } finally {
+      setPdfBusy(false);
     }
   };
 
@@ -335,6 +370,67 @@ export default function AtosTabelaManager() {
               disabled={importBusy}
             >
               <FiUpload size={18} /> {importBusy ? 'Importando...' : 'Importar registros'}
+            </button>
+          </form>
+        </article>
+
+        <article className="atm-card">
+          <div className="atm-card-head">
+            <h2>Importar PDF (Consulta 7)</h2>
+            <p>Envia o PDF oficial do Recivil para extrair e preencher uma nova origem.</p>
+          </div>
+          <form className="atm-form" onSubmit={handleImportPdf}>
+            <label>
+              Origem de destino
+              <input
+                type="text"
+                value={pdfOrigem}
+                onChange={(e) => setPdfOrigem(e.target.value.toUpperCase())}
+                placeholder="EX.: 01-2026"
+              />
+            </label>
+            <label>
+              Alíquota de ISSQN (%)
+              <input
+                type="number"
+                step="0.01"
+                value={pdfAliquota}
+                onChange={(e) => setPdfAliquota(e.target.value)}
+                placeholder="0.03"
+              />
+            </label>
+            <label>
+              Taxa fiscal (TFJ)
+              <input
+                type="number"
+                step="0.01"
+                value={pdfTaxaFiscal}
+                onChange={(e) => setPdfTaxaFiscal(e.target.value)}
+                placeholder="0.00"
+              />
+            </label>
+            <label>
+              PDF da Consulta 7
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => setPdfFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
+              />
+            </label>
+            <label className="atm-switch">
+              <input
+                type="checkbox"
+                checked={pdfOverwrite}
+                onChange={(e) => setPdfOverwrite(e.target.checked)}
+              />
+              <span>Substituir se a origem já existir</span>
+            </label>
+            <button
+              type="submit"
+              className="btn-gradient btn-gradient-blue"
+              disabled={pdfBusy}
+            >
+              <FiUpload size={18} /> {pdfBusy ? 'Processando...' : 'Importar PDF'}
             </button>
           </form>
         </article>

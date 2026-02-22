@@ -56,6 +56,23 @@ const AtosTabelaService = {
     return handleResponse(resp, 'Falha ao importar registros para a nova versão.');
   },
 
+  async importVersionPdf({ origem, arquivo, aliquota, taxa_fiscal, overwrite }) {
+    const form = new FormData();
+    form.append('origem', origem);
+    if (aliquota != null) form.append('aliquota', aliquota);
+    if (taxa_fiscal != null) form.append('taxa_fiscal', taxa_fiscal);
+    if (overwrite != null) form.append('overwrite', overwrite ? 'true' : 'false');
+    form.append('file', arquivo);
+
+    const headers = buildAuthHeaders(false); // apenas Authorization; FormData define o boundary
+    const resp = await fetch(`${config.apiURL}/atos/versoes/import/pdf`, {
+      method: 'POST',
+      headers,
+      body: form
+    });
+    return handleResponse(resp, 'Falha ao importar PDF para nova versão.');
+  },
+
   async updateRecord(origem, codigo, payload) {
     const resp = await fetch(`${config.apiURL}/atos/versoes/${encodeURIComponent(origem)}/${encodeURIComponent(codigo)}`, {
       method: 'PUT',
