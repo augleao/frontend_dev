@@ -177,6 +177,26 @@
   gap: 10px;
 }
 
+.atm-file-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.atm-file-input {
+  display: none;
+}
+
+.atm-file-button {
+  cursor: pointer;
+}
+
+.atm-file-name {
+  font-weight: 500;
+  color: var(--atm-muted);
+  font-size: 0.95rem;
+}
+
 .atm-form button:disabled {
   opacity: 0.6;
   cursor: not-allowed;

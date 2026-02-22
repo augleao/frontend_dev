@@ -29,8 +29,6 @@ export default function AtosTabelaManager() {
   const [importPayload, setImportPayload] = useState('');
   const [importBusy, setImportBusy] = useState(false);
   const [pdfOrigem, setPdfOrigem] = useState('');
-  const [pdfAliquota, setPdfAliquota] = useState('0.03');
-  const [pdfTaxaFiscal, setPdfTaxaFiscal] = useState('0.00');
   const [pdfOverwrite, setPdfOverwrite] = useState(true);
   const [pdfFile, setPdfFile] = useState(null);
   const [pdfBusy, setPdfBusy] = useState(false);
@@ -128,8 +126,6 @@ export default function AtosTabelaManager() {
       await AtosTabelaService.importVersionPdf({
         origem: pdfOrigem.trim(),
         arquivo: pdfFile,
-        aliquota: pdfAliquota || '0.03',
-        taxa_fiscal: pdfTaxaFiscal || '0.00',
         overwrite: pdfOverwrite
       });
       showBanner('success', `PDF importado em ${pdfOrigem.trim()}. Revise e ative quando pronto.`);
@@ -390,32 +386,20 @@ export default function AtosTabelaManager() {
               />
             </label>
             <label>
-              Alíquota de ISSQN (%)
-              <input
-                type="number"
-                step="0.01"
-                value={pdfAliquota}
-                onChange={(e) => setPdfAliquota(e.target.value)}
-                placeholder="0.03"
-              />
-            </label>
-            <label>
-              Taxa fiscal (TFJ)
-              <input
-                type="number"
-                step="0.01"
-                value={pdfTaxaFiscal}
-                onChange={(e) => setPdfTaxaFiscal(e.target.value)}
-                placeholder="0.00"
-              />
-            </label>
-            <label>
               PDF da Consulta 7
-              <input
-                type="file"
-                accept="application/pdf"
-                onChange={(e) => setPdfFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
-              />
+              <div className="atm-file-picker">
+                <input
+                  id="pdf-file-input"
+                  className="atm-file-input"
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setPdfFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
+                />
+                <label htmlFor="pdf-file-input" className="btn-gradient btn-gradient-blue btn-compact atm-file-button">
+                  Escolher arquivo
+                </label>
+                <span className="atm-file-name">{pdfFile ? pdfFile.name : 'Nenhum arquivo escolhido'}</span>
+              </div>
             </label>
             <label className="atm-switch">
               <input
