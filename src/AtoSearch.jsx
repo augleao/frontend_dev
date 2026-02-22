@@ -7,6 +7,7 @@ export default function AtoSearch({
   suggestions,
   loadingSuggestions,
   onSelectAto,
+  aplicarISS = true,
 }) {
   const handleSelect = (ato) => {
     onSelectAto(ato);
@@ -33,7 +34,7 @@ export default function AtoSearch({
   // Calcula valor unitário já somando ISS quando existir
   const calcularValorComISS = (ato) => {
     const base = Number(ato?.valor_final ?? ato?.valor_unitario ?? ato?.valor ?? 0) || 0;
-    const issValor = extrairISS(ato);
+    const issValor = aplicarISS ? extrairISS(ato) : 0;
     const total = Number((base + issValor).toFixed(2));
     return { base, issValor, total };
   };
@@ -123,11 +124,13 @@ export default function AtoSearch({
                   onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                 >
                   {(() => {
-                    const { total, issValor } = calcularValorComISS(ato);
+                    const { total, issValor, base } = calcularValorComISS(ato);
+                    const valorExibido = aplicarISS ? total : base;
                     return (
                       <>
                         <div style={{ fontWeight: '600', color: '#2c3e50', marginBottom: '2px' /* reduzido de 4px */ }}>
-                          {ato.codigo} - R$ {formatarValor(total)}{issValor ? ` (inclui ISS ${formatarValor(issValor)})` : ''}
+                          {ato.codigo} - R$ {formatarValor(valorExibido)}
+                          {aplicarISS && issValor ? ` (inclui ISS ${formatarValor(issValor)})` : ''}
                         </div>
                       </>
                     );

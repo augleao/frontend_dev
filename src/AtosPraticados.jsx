@@ -65,6 +65,9 @@ function AtosPraticados() {
     }, {})
   );
 
+  // Flag para indicar se a serventia aplica ISS (derivado dos atos carregados)
+  const [issqnAtivo, setIssqnAtivo] = useState(false);
+
   const [quantidade, setQuantidade] = useState(1);
   const [atos, setAtos] = useState([]);
   const [recarregando, setRecarregando] = useState(false);
@@ -496,6 +499,9 @@ function AtosPraticados() {
         const deveSomarISSQN = Boolean(
           serventiaUsuario && listaAtos.some((ato) => obterISSDoAto(ato) !== 0)
         );
+
+        // Persistir flag global para outros componentes (ex.: dropdown/card)
+        setIssqnAtivo(deveSomarISSQN);
 
         // Log de diagnóstico para rastrear quando o ISSQN deve ser somado
         const amostrasISS = listaAtos
@@ -1450,6 +1456,7 @@ useEffect(() => {
           <AtoSearchAtosPraticados
             dataSelecionada={dataSelecionada}
             nomeUsuario={nomeUsuario}
+            issqnAtivo={issqnAtivo}
             onAtoAdicionado={() => setRefreshTrigger((prev) => prev + 1)}
             resumoRefreshTrigger={refreshTrigger}
           />
