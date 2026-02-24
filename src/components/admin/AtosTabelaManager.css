@@ -359,6 +359,11 @@
   font-weight: 600;
 }
 
+.atm-preview-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .atm-preview-table {
   overflow-x: auto;
 }
@@ -413,6 +418,14 @@
 .atm-inline-actions button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.atm-row-valid {
+  background: #e9f7ef;
+}
+
+.atm-row-invalid {
+  background: #ffecec;
 }
 
 @media (max-width: 900px) {

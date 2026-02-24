@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
-import { FiDatabase, FiEye, FiPlay, FiRefreshCcw, FiSave, FiTrash2, FiUpload } from 'react-icons/fi';
+import { FiAlertTriangle, FiDatabase, FiEye, FiPlay, FiRefreshCcw, FiSave, FiTrash2, FiUpload } from 'react-icons/fi';
 import { LuLayers, LuSparkles } from 'react-icons/lu';
 import AtosTabelaService from '../../services/AtosTabelaService';
 import './AtosTabelaManager.css';
@@ -40,10 +40,62 @@ export default function AtosTabelaManager() {
   const [preview, setPreview] = useState({ origem: null, registros: [] });
   const [previewBusy, setPreviewBusy] = useState(false);
   const [updateBusy, setUpdateBusy] = useState(null);
+  const [validationResults, setValidationResults] = useState({});
 
   const showBanner = (type, message) => {
     setBanner({ type, message });
     setTimeout(() => setBanner(null), 6500);
+  };
+
+  const round2 = (value) => {
+    if (!Number.isFinite(value)) return NaN;
+    return Number(value.toFixed(2));
+  };
+
+  const almostEqual = (a, b) => Number.isFinite(a) && Number.isFinite(b) && Math.abs(round2(a) - round2(b)) < 0.01;
+
+  const validateRow = (row) => {
+    const codigo = String(row.codigo ?? '').trim();
+    const emolBruto = parseFloat(row.emol_bruto);
+    const recompe = parseFloat(row.recompe);
+    const emolLiquido = parseFloat(row.emol_liquido);
+    const issqn = parseFloat(row.issqn);
+    const taxaFiscal = parseFloat(row.taxa_fiscal) || 0;
+    const valorFinal = parseFloat(row.valor_final);
+
+    if (!Number.isFinite(emolBruto)) return { ok: false, motivo: 'Emol. bruto ausente' };
+
+    const isJuizDePaz = ['11', '12', '13'].includes(codigo);
+    const recompeCalc = isJuizDePaz ? 0 : round2(emolBruto * 0.07);
+    const emolLiquidoCalc = isJuizDePaz ? round2(emolBruto) : round2(emolBruto - recompeCalc);
+    const issqnCalc = isJuizDePaz ? 0 : round2(emolLiquidoCalc * 0.03);
+    const valorFinalCalc = isJuizDePaz
+      ? round2(emolBruto)
+      : round2(recompeCalc + emolLiquidoCalc + issqnCalc + (Number.isFinite(taxaFiscal) ? taxaFiscal : 0));
+
+    const ok =
+      almostEqual(recompe, recompeCalc) &&
+      almostEqual(emolLiquido, emolLiquidoCalc) &&
+      almostEqual(issqn, issqnCalc) &&
+      almostEqual(valorFinal, valorFinalCalc);
+
+    return { ok, esperado: { recompeCalc, emolLiquidoCalc, issqnCalc, valorFinalCalc } };
+  };
+
+  const handleValidatePreview = () => {
+    if (!preview?.registros?.length) return;
+    const result = {};
+    preview.registros.forEach((row) => {
+      result[row.codigo] = validateRow(row);
+    });
+
+    const total = preview.registros.length;
+    const invalid = Object.values(result).filter((item) => !item.ok).length;
+    setValidationResults(result);
+    showBanner(
+      invalid ? 'error' : 'success',
+      `Validação concluída: ${total - invalid} linha(s) consistente(s) e ${invalid} com divergência.`
+    );
   };
 
   const loadVersions = async () => {
@@ -215,6 +267,7 @@ export default function AtosTabelaManager() {
     try {
       const data = await AtosTabelaService.previewVersion(origem);
       setPreview({ origem: data?.origem, registros: data?.registros || [] });
+      setValidationResults({});
     } catch (err) {
       showBanner('error', err.message || 'Falha ao carregar a prévia desta origem.');
     } finally {
@@ -467,7 +520,7 @@ export default function AtosTabelaManager() {
 
       <section className="atm-versions">
         <div className="atm-versions-head">
-          <h2>Histórico de origens
+          <h2>Histórico de Tabelas
             <small>{loading ? 'Carregando...' : `${versions.length} origens cadastradas`}</small>
           </h2>
           <button
@@ -492,13 +545,26 @@ export default function AtosTabelaManager() {
               <h3>Origem {preview.origem}</h3>
               <small>{preview.registros.length} registros exibidos (máx. 200)</small>
             </div>
-            <button
-              type="button"
-              className="btn-gradient btn-gradient-red btn-compact"
-              onClick={() => setPreview({ origem: null, registros: [] })}
-            >
-              Fechar
-            </button>
+            <div className="atm-preview-actions">
+              <button
+                type="button"
+                className="btn-gradient btn-gradient-orange btn-compact"
+                onClick={handleValidatePreview}
+                disabled={previewBusy}
+              >
+                <FiAlertTriangle size={16} /> Verificar inconsistências
+              </button>
+              <button
+                type="button"
+                className="btn-gradient btn-gradient-red btn-compact"
+                onClick={() => {
+                  setPreview({ origem: null, registros: [] });
+                  setValidationResults({});
+                }}
+              >
+                Fechar
+              </button>
+            </div>
           </header>
           <div className="atm-preview-table">
             <table>
@@ -517,7 +583,16 @@ export default function AtosTabelaManager() {
               </thead>
               <tbody>
                 {preview.registros.map((row) => (
-                  <tr key={`${preview.origem}-${row.codigo}`}>
+                  <tr
+                    key={`${preview.origem}-${row.codigo}`}
+                    className={
+                      validationResults[row.codigo]?.ok === true
+                        ? 'atm-row-valid'
+                        : validationResults[row.codigo]?.ok === false
+                        ? 'atm-row-invalid'
+                        : ''
+                    }
+                  >
                     <td>{row.codigo}</td>
                     <td>
                       <input
