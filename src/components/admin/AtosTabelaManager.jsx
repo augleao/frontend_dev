@@ -73,13 +73,16 @@ export default function AtosTabelaManager() {
       ? round2(emolBruto)
       : round2(recompeCalc + emolLiquidoCalc + issqnCalc + (Number.isFinite(taxaFiscal) ? taxaFiscal : 0));
 
-    const ok =
-      almostEqual(recompe, recompeCalc) &&
-      almostEqual(emolLiquido, emolLiquidoCalc) &&
-      almostEqual(issqn, issqnCalc) &&
-      almostEqual(valorFinal, valorFinalCalc);
+    const fieldMismatch = {
+      recompe: !almostEqual(recompe, recompeCalc),
+      emolLiquido: !almostEqual(emolLiquido, emolLiquidoCalc),
+      issqn: !almostEqual(issqn, issqnCalc),
+      valorFinal: !almostEqual(valorFinal, valorFinalCalc)
+    };
 
-    return { ok, esperado: { recompeCalc, emolLiquidoCalc, issqnCalc, valorFinalCalc } };
+    const ok = !fieldMismatch.recompe && !fieldMismatch.emolLiquido && !fieldMismatch.issqn && !fieldMismatch.valorFinal;
+
+    return { ok, esperado: { recompeCalc, emolLiquidoCalc, issqnCalc, valorFinalCalc }, fields: fieldMismatch };
   };
 
   const handleValidatePreview = () => {
@@ -582,13 +585,16 @@ export default function AtosTabelaManager() {
                 </tr>
               </thead>
               <tbody>
-                {preview.registros.map((row) => (
+                {preview.registros.map((row) => {
+                  const validation = validationResults[row.codigo];
+                  const invalidFields = validation?.fields || {};
+                  return (
                   <tr
                     key={`${preview.origem}-${row.codigo}`}
                     className={
-                      validationResults[row.codigo]?.ok === true
+                      validation?.ok === true
                         ? 'atm-row-valid'
-                        : validationResults[row.codigo]?.ok === false
+                        : validation?.ok === false
                         ? 'atm-row-invalid'
                         : ''
                     }
@@ -601,7 +607,7 @@ export default function AtosTabelaManager() {
                         onChange={(e) => handlePreviewFieldChange(row.codigo, 'descricao', e.target.value)}
                       />
                     </td>
-                    <td>
+                    <td className={invalidFields.valorFinal ? 'atm-cell-invalid' : ''}>
                       <input
                         type="number"
                         step="0.01"
@@ -617,7 +623,7 @@ export default function AtosTabelaManager() {
                         onChange={(e) => handlePreviewFieldChange(row.codigo, 'emol_bruto', e.target.value)}
                       />
                     </td>
-                    <td>
+                    <td className={invalidFields.recompe ? 'atm-cell-invalid' : ''}>
                       <input
                         type="number"
                         step="0.01"
@@ -625,7 +631,7 @@ export default function AtosTabelaManager() {
                         onChange={(e) => handlePreviewFieldChange(row.codigo, 'recompe', e.target.value)}
                       />
                     </td>
-                    <td>
+                    <td className={invalidFields.emolLiquido ? 'atm-cell-invalid' : ''}>
                       <input
                         type="number"
                         step="0.01"
@@ -633,7 +639,7 @@ export default function AtosTabelaManager() {
                         onChange={(e) => handlePreviewFieldChange(row.codigo, 'emol_liquido', e.target.value)}
                       />
                     </td>
-                    <td>
+                    <td className={invalidFields.issqn ? 'atm-cell-invalid' : ''}>
                       <input
                         type="number"
                         step="0.01"
@@ -660,7 +666,8 @@ export default function AtosTabelaManager() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

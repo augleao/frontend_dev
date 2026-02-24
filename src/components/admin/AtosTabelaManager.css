@@ -428,6 +428,10 @@
   background: #ffecec;
 }
 
+.atm-cell-invalid input {
+  font-weight: 700;
+}
+
 @media (max-width: 900px) {
   .atm-hero {
     grid-template-columns: 1fr;
