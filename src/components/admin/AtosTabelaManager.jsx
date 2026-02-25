@@ -42,6 +42,9 @@ export default function AtosTabelaManager() {
   const [updateBusy, setUpdateBusy] = useState(null);
   const [validationResults, setValidationResults] = useState({});
 
+  // códigos que não sofrem incidência de TFJ/ISSQN — sempre considerados válidos
+  const ALWAYS_VALID_CODES = new Set(['7110', '7120', '7130']);
+
   const showBanner = (type, message) => {
     setBanner({ type, message });
     setTimeout(() => setBanner(null), 6500);
@@ -88,11 +91,9 @@ export default function AtosTabelaManager() {
   const handleValidatePreview = () => {
     if (!preview?.registros?.length) return;
     const result = {};
-    // Códigos que não sofrem incidência de TFJ/ISSQN — sempre considerar válidos
-    const alwaysValidCodes = new Set(['7110', '7120', '7130']);
     preview.registros.forEach((row) => {
       const codigoStr = String(row.codigo ?? '').trim();
-      if (alwaysValidCodes.has(codigoStr)) {
+      if (ALWAYS_VALID_CODES.has(codigoStr)) {
         result[row.codigo] = { ok: true, fields: {} };
       } else {
         result[row.codigo] = validateRow(row);
@@ -276,8 +277,20 @@ export default function AtosTabelaManager() {
     setPreviewBusy(true);
     try {
       const data = await AtosTabelaService.previewVersion(origem);
-      setPreview({ origem: data?.origem, registros: data?.registros || [] });
-      setValidationResults({});
+      const registros = data?.registros || [];
+      setPreview({ origem: data?.origem, registros });
+
+      // Executa validação automaticamente ao abrir a prévia
+      const result = {};
+      registros.forEach((row) => {
+        const codigoStr = String(row.codigo ?? '').trim();
+        if (ALWAYS_VALID_CODES.has(codigoStr)) {
+          result[row.codigo] = { ok: true, fields: {} };
+        } else {
+          result[row.codigo] = validateRow(row);
+        }
+      });
+      setValidationResults(result);
     } catch (err) {
       showBanner('error', err.message || 'Falha ao carregar a prévia desta origem.');
     } finally {
@@ -307,11 +320,25 @@ export default function AtosTabelaManager() {
         valor_final: row.valor_final
       };
       const result = await AtosTabelaService.updateRecord(preview.origem, row.codigo, payload);
-      setPreview((prev) => {
-        if (!prev?.origem) return prev;
-        const registrosAtualizados = prev.registros.map((entry) => (entry.codigo === row.codigo ? { ...entry, ...(result?.registro || {}) } : entry));
-        return { ...prev, registros: registrosAtualizados };
+
+      // Atualiza a lista localmente com o registro retornado pelo serviço
+      const updatedRegistros = (preview?.registros || []).map((entry) =>
+        entry.codigo === row.codigo ? { ...entry, ...(result?.registro || {}) } : entry
+      );
+      setPreview((prev) => ({ ...prev, registros: updatedRegistros }));
+
+      // Reexecuta a validação localmente e atualiza os resultados
+      const newValidation = {};
+      updatedRegistros.forEach((r) => {
+        const codeStr = String(r.codigo ?? '').trim();
+        if (ALWAYS_VALID_CODES.has(codeStr)) {
+          newValidation[r.codigo] = { ok: true, fields: {} };
+        } else {
+          newValidation[r.codigo] = validateRow(r);
+        }
       });
+      setValidationResults(newValidation);
+
       showBanner('success', `Registro ${row.codigo} atualizado em ${preview.origem}.`);
       await loadVersions();
     } catch (err) {
