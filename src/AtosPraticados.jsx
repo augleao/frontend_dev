@@ -9,12 +9,12 @@ import DataSelector from './DataSelector';
 import AtoSearchAtosPraticados from './AtoSearchAtosPraticados';
 import FormasPagamento from './FormasPagamento';
 import AtosTable from './AtosTableEscrevente';
-import FechamentoDiarioButton from './FechamentoDiarioButton';
 import dayjs from 'dayjs';
 import { apiURL } from './config';
 import TributacaoSearch from './TributacaoSearch'; // Adicione esta linha no topo
 import Toast from './components/Toast';
 import { DEFAULT_TOAST_DURATION } from './components/toastConfig';
+import './home2.css';
 //import { gerarRelatorioPDFAtosPraticados } from './components/RelatorioPDF';
 
 function AtosPraticados() {
