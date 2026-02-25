@@ -402,11 +402,14 @@
 .atm-modal {
   max-width: 920px;
   width: 100%;
-  background: var(--atm-card);
+  background: #ffffff; /* use solid white to avoid transparency */
+  color: var(--atm-deep);
   border-radius: 14px;
-  border: 1px solid var(--atm-border);
+  border: 1px solid rgba(4,17,27,0.06);
   padding: 20px;
   box-shadow: 0 30px 60px rgba(2,6,23,0.45);
+  max-height: calc(100vh - 160px);
+  overflow: auto;
 }
 
 .atm-preview-table input,
