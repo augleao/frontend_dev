@@ -197,7 +197,8 @@ function ImportarAtos() {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 32 }}>
+    <div className="page-bg-wrapper">
+      <div style={{ maxWidth: 900, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 32 }}>
       <h2>Tabelas 07 e 08 em uso (TJMG)</h2>
 
       {msg && (
@@ -366,6 +367,7 @@ function ImportarAtos() {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

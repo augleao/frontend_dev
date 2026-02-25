@@ -399,6 +399,36 @@
   box-sizing: border-box;
 }
 
+/* Page background to make the main container stand out */
+.page-bg-wrapper {
+  background: linear-gradient(180deg,#071028 0%, #020412 100%);
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+/* Responsive grid form for the new-ato card */
+.atm-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.atm-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+.atm-form input,
+.atm-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.atm-form textarea { min-height: 72px; }
+
 .atm-preview-table textarea {
   resize: vertical;
   min-height: 56px;
