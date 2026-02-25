@@ -421,11 +421,13 @@
 }
 
 .atm-row-valid {
-  background: #e9f7ef;
+  /* tom verde levemente mais escuro para melhor contraste */
+  background: #cfeee0; /* antes: #e9f7ef */
 }
 
 .atm-row-invalid {
-  background: #ffecec;
+  /* tom vermelho levemente mais escuro para melhor contraste */
+  background: #ffd6d6; /* antes: #ffecec */
 }
 
 .atm-cell-invalid input {

@@ -88,8 +88,15 @@ export default function AtosTabelaManager() {
   const handleValidatePreview = () => {
     if (!preview?.registros?.length) return;
     const result = {};
+    // Códigos que não sofrem incidência de TFJ/ISSQN — sempre considerar válidos
+    const alwaysValidCodes = new Set(['7110', '7120', '7130']);
     preview.registros.forEach((row) => {
-      result[row.codigo] = validateRow(row);
+      const codigoStr = String(row.codigo ?? '').trim();
+      if (alwaysValidCodes.has(codigoStr)) {
+        result[row.codigo] = { ok: true, fields: {} };
+      } else {
+        result[row.codigo] = validateRow(row);
+      }
     });
 
     const total = preview.registros.length;
