@@ -408,14 +408,10 @@ export default function AtosTabelaManager() {
       <header className="atm-hero">
         <div>
           <p className="atm-eyebrow">TJMG • Tabelas 07/08</p>
-          <h1>Controle de Versões dos Atos</h1>
+          <h1>Controle de Versões de Tabelas</h1>
           <p className="atm-subtitle">
             Salve cada tabela oficial com um identificador (por exemplo, 01-2025), mantenha um histórico completo e alterne qual versão abastece o sistema com um clique.
           </p>
-          <div className="atm-hero-tags">
-            <span><LuSparkles size={16} /> Transparência histórica</span>
-            <span><FiDatabase size={16} /> Migração em lote</span>
-          </div>
         </div>
         <div className="atm-hero-card">
           <span>Versão em uso</span>
