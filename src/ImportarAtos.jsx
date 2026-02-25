@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiURL } from './config';
+import './components/admin/AtosTabelaManager.css';
 
 function ImportarAtos() {
   const [atos, setAtos] = useState([]);
@@ -10,6 +11,44 @@ function ImportarAtos() {
   const [novoAto, setNovoAto] = useState({ codigo: '', descricao: '' });
 
   const actionGroupStyle = { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' };
+
+  // validação semelhante à usada em AtosTabelaManager
+  const round2 = (value) => {
+    if (!Number.isFinite(value)) return NaN;
+    return Number(value.toFixed(2));
+  };
+  const almostEqual = (a, b) => Number.isFinite(a) && Number.isFinite(b) && Math.abs(round2(a) - round2(b)) < 0.01;
+  const ALWAYS_VALID_CODES = new Set(['7110', '7120', '7130']);
+  const validateRowLocal = (row) => {
+    const codigo = String(row.codigo ?? '').trim();
+    const emolBruto = parseFloat(row.emol_bruto);
+    const recompe = parseFloat(row.recompe);
+    const emolLiquido = parseFloat(row.emol_liquido);
+    const issqn = parseFloat(row.issqn);
+    const taxaFiscal = parseFloat(row.taxa_fiscal) || 0;
+    const valorFinal = parseFloat(row.valor_final);
+
+    if (!Number.isFinite(emolBruto)) return { ok: false, motivo: 'Emol. bruto ausente' };
+
+    const isJuizDePaz = ['11', '12', '13'].includes(codigo);
+    const recompeCalc = isJuizDePaz ? 0 : round2(emolBruto * 0.07);
+    const emolLiquidoCalc = isJuizDePaz ? round2(emolBruto) : round2(emolBruto - recompeCalc);
+    const issqnCalc = isJuizDePaz ? 0 : round2(emolLiquidoCalc * 0.03);
+    const valorFinalCalc = isJuizDePaz
+      ? round2(emolBruto)
+      : round2(recompeCalc + emolLiquidoCalc + issqnCalc + (Number.isFinite(taxaFiscal) ? taxaFiscal : 0));
+
+    const fieldMismatch = {
+      recompe: !almostEqual(recompe, recompeCalc),
+      emolLiquido: !almostEqual(emolLiquido, emolLiquidoCalc),
+      issqn: !almostEqual(issqn, issqnCalc),
+      valorFinal: !almostEqual(valorFinal, valorFinalCalc)
+    };
+
+    const ok = !fieldMismatch.recompe && !fieldMismatch.emolLiquido && !fieldMismatch.issqn && !fieldMismatch.valorFinal;
+    return { ok, esperado: { recompeCalc, emolLiquidoCalc, issqnCalc, valorFinalCalc }, fields: fieldMismatch };
+  };
+  const [validationResults, setValidationResults] = useState({});
 
   // Busca os atos do backend ao montar o componente
   // Função para buscar atos do backend
@@ -24,6 +63,17 @@ function ImportarAtos() {
       const data = await res.json();
       if (res.ok) {
         setAtos(data.atos);
+        // computa validações ao carregar
+        const results = {};
+        (data.atos || []).forEach((r) => {
+          const codeStr = String(r.codigo ?? '').trim();
+          if (ALWAYS_VALID_CODES.has(codeStr)) {
+            results[r.codigo] = { ok: true, fields: {} };
+          } else {
+            results[r.codigo] = validateRowLocal(r);
+          }
+        });
+        setValidationResults(results);
       } else {
         setMsg(data.message || 'Erro ao carregar atos.');
       }
@@ -69,7 +119,7 @@ function ImportarAtos() {
         return;
       }
       setMsg('Ato salvo com sucesso!');
-      await fetchAtos(); // Recarrega a lista após salvar
+      await fetchAtos(); // Recarrega a lista após salvar (recalcula validação)
     } catch (err) {
       setMsg('Erro ao salvar ato.');
     }
@@ -101,6 +151,8 @@ function ImportarAtos() {
         }
       }
       setMsg('Atos salvos com sucesso!');
+      // recarrega e recalcula validações
+      await fetchAtos();
     } catch (err) {
       setMsg(err.message || 'Erro ao salvar atos.');
     }
@@ -201,137 +253,77 @@ function ImportarAtos() {
       {atos.length > 0 && (
         <>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa' }}>
+            <table className="atm-preview-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ background: '#f5f5f5' }}>
-                  <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Código</th>
-                  <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Descrição</th>
-                  <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Emol. Bruto</th>
-                  <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>ISSQN</th>
-                  <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>TFJ</th>
-                  <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'left' }}>Valor Final</th>
-                  <th style={{ border: '1px solid #ddd', padding: 12, textAlign: 'center' }}>Ações</th>
+                <tr>
+                  <th>Emol. bruto</th>
+                  <th>Recompe</th>
+                  <th>Emol. líquido</th>
+                  <th>ISSQN</th>
+                  <th>TFJ</th>
+                  <th>Valor final</th>
+                  <th>Código</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {atos.map((ato, idx) => {
                   if (!ato) return null;
+                  const validation = validationResults[String(ato.codigo)];
+                  const rowClass = validation?.ok === true ? 'atm-row-valid' : validation?.ok === false ? 'atm-row-invalid' : '';
                   return (
-                    <tr key={ato.id} style={{ background: idx % 2 === 0 ? '#fff' : '#f9f9f9' }}>
-                      <td style={{ border: '1px solid #ddd', padding: 12 }}>
+                    <tr key={ato.id} className={rowClass}>
+                      <td style={{ border: '1px solid rgba(4,17,27,0.08)', padding: 12 }}>
                         {editIndex === idx ? (
-                          <input
-                            name="codigo"
-                            value={editAto.codigo}
-                            onChange={handleEditChange}
-                            style={{ width: '100%', padding: 4, border: '1px solid #ccc', borderRadius: 4 }}
-                          />
+                          <input name="emol_bruto" value={editAto.emol_bruto || ''} onChange={handleEditChange} type="number" step="0.01" />
                         ) : (
-                          ato.codigo
+                          ato.emol_bruto !== null && ato.emol_bruto !== undefined ? `R$ ${Number(ato.emol_bruto).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''
                         )}
                       </td>
-                      <td style={{ border: '1px solid #ddd', padding: 12 }}>
+                      <td style={{ border: '1px solid rgba(4,17,27,0.08)', padding: 12 }}>
                         {editIndex === idx ? (
-                          <textarea
-                            name="descricao"
-                            value={editAto.descricao}
-                            onChange={handleEditChange}
-                            style={{ width: '100%', minWidth: 300, padding: 4, border: '1px solid #ccc', borderRadius: 4, minHeight: 60 }}
-                          />
+                          <input name="recompe" value={editAto.recompe || ''} onChange={handleEditChange} type="number" step="0.01" />
                         ) : (
-                          ato.descricao
+                          ato.recompe !== null && ato.recompe !== undefined ? `R$ ${Number(ato.recompe).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''
                         )}
                       </td>
-                      <td style={{ border: '1px solid #ddd', padding: 12 }}>
+                      <td style={{ border: '1px solid rgba(4,17,27,0.08)', padding: 12 }}>
                         {editIndex === idx ? (
-                          <input
-                            name="emol_bruto"
-                            value={editAto.emol_bruto || ''}
-                            onChange={handleEditChange}
-                            type="number"
-                            step="0.01"
-                            style={{ width: '100%', padding: 4, border: '1px solid #ccc', borderRadius: 4 }}
-                          />
+                          <input name="emol_liquido" value={editAto.emol_liquido || ''} onChange={handleEditChange} type="number" step="0.01" />
                         ) : (
-                          ato.emol_bruto !== null && ato.emol_bruto !== undefined
-                            ? `R$ ${Number(ato.emol_bruto).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                            : ''
+                          ato.emol_liquido !== null && ato.emol_liquido !== undefined ? `R$ ${Number(ato.emol_liquido).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''
                         )}
                       </td>
-                      <td style={{ border: '1px solid #ddd', padding: 12 }}>
+                      <td style={{ border: '1px solid rgba(4,17,27,0.08)', padding: 12 }}>
                         {editIndex === idx ? (
-                          <input
-                            name="issqn"
-                            value={editAto.issqn || ''}
-                            onChange={handleEditChange}
-                            type="number"
-                            step="0.01"
-                            style={{ width: '100%', padding: 4, border: '1px solid #ccc', borderRadius: 4 }}
-                          />
+                          <input name="issqn" value={editAto.issqn || ''} onChange={handleEditChange} type="number" step="0.01" />
                         ) : (
-                          ato.issqn !== null && ato.issqn !== undefined
-                            ? `R$ ${Number(ato.issqn).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                            : ''
+                          ato.issqn !== null && ato.issqn !== undefined ? `R$ ${Number(ato.issqn).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''
                         )}
                       </td>
-                      <td style={{ border: '1px solid #ddd', padding: 12 }}>
+                      <td style={{ border: '1px solid rgba(4,17,27,0.08)', padding: 12 }}>
                         {editIndex === idx ? (
-                          <input
-                            name="taxa_fiscal"
-                            value={editAto.taxa_fiscal || ''}
-                            onChange={handleEditChange}
-                            type="number"
-                            step="0.01"
-                            style={{ width: '100%', padding: 4, border: '1px solid #ccc', borderRadius: 4 }}
-                          />
+                          <input name="taxa_fiscal" value={editAto.taxa_fiscal || ''} onChange={handleEditChange} type="number" step="0.01" />
                         ) : (
-                          ato.taxa_fiscal !== null && ato.taxa_fiscal !== undefined
-                            ? `R$ ${Number(ato.taxa_fiscal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                            : ''
+                          ato.taxa_fiscal !== null && ato.taxa_fiscal !== undefined ? `R$ ${Number(ato.taxa_fiscal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''
                         )}
                       </td>
-                      <td style={{ border: '1px solid #ddd', padding: 12 }}>
+                      <td style={{ border: '1px solid rgba(4,17,27,0.08)', padding: 12 }}>
                         {editIndex === idx ? (
-                          <input
-                            name="valor_final"
-                            value={editAto.valor_final || ''}
-                            onChange={handleEditChange}
-                            type="number"
-                            step="0.01"
-                            style={{ width: '100%', padding: 4, border: '1px solid #ccc', borderRadius: 4 }}
-                          />
+                          <input name="valor_final" value={editAto.valor_final || ''} onChange={handleEditChange} type="number" step="0.01" />
                         ) : (
-                          ato.valor_final !== null && ato.valor_final !== undefined
-                            ? `R$ ${Number(ato.valor_final).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                            : ''
+                          ato.valor_final !== null && ato.valor_final !== undefined ? `R$ ${Number(ato.valor_final).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''
                         )}
                       </td>
-                      <td style={{ border: '1px solid #ddd', padding: 12, textAlign: 'center' }}>
+                      <td style={{ border: '1px solid rgba(4,17,27,0.08)', padding: 12 }}>{ato.codigo}</td>
+                      <td style={{ border: '1px solid rgba(4,17,27,0.08)', padding: 12, textAlign: 'center' }}>
                         {editIndex === idx ? (
                           <div style={actionGroupStyle}>
-                            <button
-                              type="button"
-                              onClick={handleEditSave}
-                              className="btn-gradient btn-gradient-green btn-compact"
-                            >
-                              Salvar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setEditIndex(null)}
-                              className="btn-gradient btn-gradient-red btn-compact"
-                            >
-                              Cancelar
-                            </button>
+                            <button type="button" onClick={handleEditSave} className="btn-gradient btn-gradient-green btn-compact">Salvar</button>
+                            <button type="button" onClick={() => setEditIndex(null)} className="btn-gradient btn-gradient-red btn-compact">Cancelar</button>
                           </div>
                         ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleEdit(idx)}
-                            className="btn-gradient btn-gradient-blue btn-compact"
-                          >
-                            Editar
-                          </button>
+                          <button type="button" onClick={() => handleEdit(idx)} className="btn-gradient btn-gradient-blue btn-compact">Editar</button>
                         )}
                       </td>
                     </tr>
