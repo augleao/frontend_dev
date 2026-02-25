@@ -25,14 +25,14 @@ export default function UsuariosAdmin() {
     const token = localStorage.getItem('token');
     const usuarioLocal = JSON.parse(localStorage.getItem('usuario') || '{}');
     const serventiaFiltro = usuarioLocal?.serventia;
-    const res = await fetch(`${config.apiURL}/admin/usuarios`, {
+    const query = serventiaFiltro ? `?serventia=${encodeURIComponent(serventiaFiltro)}` : '';
+    const res = await fetch(`${config.apiURL}/admin/usuarios${query}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
     const lista = data.usuarios || [];
-    const filtrados = serventiaFiltro
-      ? lista.filter((u) => u.serventia === serventiaFiltro)
-      : lista;
+    // ainda mantemos filtro cliente como safety
+    const filtrados = serventiaFiltro ? lista.filter((u) => u.serventia === serventiaFiltro) : lista;
     setUsuarios(filtrados);
   };
 
