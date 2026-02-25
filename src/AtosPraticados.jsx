@@ -9,12 +9,12 @@ import DataSelector from './DataSelector';
 import AtoSearchAtosPraticados from './AtoSearchAtosPraticados';
 import FormasPagamento from './FormasPagamento';
 import AtosTable from './AtosTableEscrevente';
+import FechamentoDiarioButton from './FechamentoDiarioButton';
 import dayjs from 'dayjs';
 import { apiURL } from './config';
 import TributacaoSearch from './TributacaoSearch'; // Adicione esta linha no topo
 import Toast from './components/Toast';
 import { DEFAULT_TOAST_DURATION } from './components/toastConfig';
-import './home2.css';
 //import { gerarRelatorioPDFAtosPraticados } from './components/RelatorioPDF';
 
 function AtosPraticados() {
@@ -1324,110 +1324,166 @@ useEffect(() => {
   };
 
   return (
-    <div className="home2-shell">
-      <div className="home2-watermark" />
-
-      <main className="home2-main">
-        <div className="hero-panel">
-          <div className="hero-copy">
-            <div className="hero-title">Atos Pagos Praticados</div>
-            <div className="hero-sub">
-              Controle diário dos atos pagos, importações rápidas e fechamento na mesma tela.
-            </div>
-            <div className="hero-chips">
-              <span className="hero-chip">Usuário: {nomeUsuario}</span>
-              <span className="hero-chip">Data: {formatarDataBR(dataSelecionada)}</span>
-              <span className="hero-chip">{issqnAtivo ? 'ISSQN ativo' : 'Sem ISSQN'}</span>
-            </div>
-            <div className="hero-actions">
-              <button className="btn btn-outline" onClick={importarAtosPraticados}>📥 Importar Atos</button>
-              <button className="btn btn-outline" onClick={fechamentoDiario}>🧾 Fechamento Diário</button>
-            </div>
-          </div>
-
-          <div className="mini-panel">
-            <div className="mini-title">
-              <span>Sessão do dia</span>
-              <span style={{ color: '#6b7280', fontWeight: 700 }}>Filtro</span>
-            </div>
-            <div style={{ display: 'grid', gap: 10 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <span style={{ fontWeight: 700, color: '#10294e', fontSize: 13 }}>Usuário</span>
-                <input
-                  type="text"
-                  value={nomeUsuario}
-                  readOnly
-                  tabIndex={-1}
-                  style={{
-                    padding: '10px 12px',
-                    borderRadius: '10px',
-                    border: '1.5px solid rgba(16,41,78,0.12)',
-                    backgroundColor: '#f7f9fb',
-                    fontWeight: 700,
-                    color: '#0b1324',
-                    fontSize: '14px',
-                    pointerEvents: 'none'
-                  }}
-                />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <span style={{ fontWeight: 700, color: '#10294e', fontSize: 13 }}>Data</span>
-                <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="section-head">
-          <div className="section-title">Lançamentos do dia</div>
-          <div className="section-sub">Adicione atos e revise o que já foi praticado.</div>
-        </div>
-
-        <div className="cards-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))' }}>
-          <div className="hub-card" style={{ gap: 14 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <div className="hub-title">➕ Adicionar ato</div>
-                <div className="hub-desc">Busque, tributar e registre o pagamento do ato.</div>
-              </div>
-              <button
-                type="button"
-                onClick={importarAtosPraticados}
-                className="btn-gradient btn-gradient-blue btn-compact"
-                style={{ minWidth: 160 }}
-              >
-                📥 Importar
-              </button>
-            </div>
-            <AtoSearchAtosPraticados
-              dataSelecionada={dataSelecionada}
-              nomeUsuario={nomeUsuario}
-              issqnAtivo={issqnAtivo}
-              onAtoAdicionado={() => setRefreshTrigger((prev) => prev + 1)}
-              resumoRefreshTrigger={refreshTrigger}
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: '12px', // reduzido de 20px
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
+    }}>
+      {/* Container Principal */}
+      <div style={{
+        maxWidth: '1400px',
+        margin: '0 auto',
+        width: '100%'
+      }}>
+        {/* Header */}
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '16px',
+          padding: '16px', // reduzido de 25px
+          marginBottom: '12px', // reduzido de 20px
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '10px' // reduzido de 15px
+        }}>      <h1 style={{ 
+          margin: 0, 
+          color: '#2c3e50',
+          fontSize: '24px', // reduzido de 28px
+          fontWeight: '600'
+        }}>
+          🔗 Atos Pagos Praticados Neste Dia
+        </h1>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '10px', // reduzido de 15px
+          flexWrap: 'wrap'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px' // reduzido de 8px
+          }}>
+            <span style={{ color: '#666', fontSize: '13px' }}>👤 Usuário:</span>
+            <input
+              type="text"
+              value={nomeUsuario}
+              readOnly
+              tabIndex={-1}
+              style={{
+                padding: '6px 10px', // reduzido de 8px 12px
+                borderRadius: '8px',
+                border: '2px solid rgb(0, 0, 0)',
+                backgroundColor: '#e3f2fd',
+                fontWeight: '600',
+                color: '#000',
+                fontSize: '13px', // reduzido de 14px
+                pointerEvents: 'none',
+              }}
             />
           </div>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px' // reduzido de 8px
+          }}>
+            <span style={{ color: '#666', fontSize: '13px' }}>📅</span>
+            <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
+          </div>
+        </div>
+      </div>
 
-          <div className="hub-card" style={{ gap: 14 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <div className="hub-title">📋 Atos praticados</div>
-                <div className="hub-desc">Registros de {nomeUsuario} em {formatarDataBR(dataSelecionada)}.</div>
-              </div>
+      {/* Layout Principal - Grid Responsivo */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+        gap: '12px', // reduzido de 20px
+        marginBottom: '12px', // reduzido de 20px
+        maxWidth: '100%',
+        overflow: 'hidden'
+      }}>
+        {/* Seção de Adição de Atos */}
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '16px', // reduzido de 25px
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '12px'
+          }}>
+            <h3 style={{
+              margin: '0',
+              color: '#2c3e50',
+              fontSize: '16px',
+              fontWeight: '600',
+              borderBottom: '2px solid #27ae60',
+              paddingBottom: '6px'
+            }}>
+              ➕ Adicionar Ato
+            </h3>
+            <button
+              type="button"
+              onClick={importarAtosPraticados}
+              className="btn-gradient btn-gradient-blue btn-compact"
+              style={{ minWidth: 180 }}
+            >
+              📥 Importar Atos
+            </button>
+          </div>
+          {/* Integração do AtoSearchAtosPraticados */}
+          <AtoSearchAtosPraticados
+            dataSelecionada={dataSelecionada}
+            nomeUsuario={nomeUsuario}
+            issqnAtivo={issqnAtivo}
+            onAtoAdicionado={() => setRefreshTrigger((prev) => prev + 1)}
+            resumoRefreshTrigger={refreshTrigger}
+          />
+
+          {/* Tabela de Atos Praticados (lista detalhada) - logo abaixo do resumo agrupado */}
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '12px',
+            marginTop: '12px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '8px'
+            }}>
+              <h3 style={{
+                margin: 0,
+                color: '#2c3e50',
+                fontSize: '16px',
+                fontWeight: 600
+              }}>
+                📋 Atos praticados por {nomeUsuario} em {formatarDataBR(dataSelecionada)}
+              </h3>
             </div>
             <AtosTable atos={atosDoUsuario} onRemover={removerAto} />
           </div>
         </div>
-
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          position="bottom-right"
-          onClose={() => setToastMessage('')}
-        />
-      </main>
+      </div>
+      {/* Toast de feedback de exclusão */}
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        position="bottom-right"
+        onClose={() => setToastMessage('')}
+      />
     </div>
-  );
+  </div>
+);
 }
 
 export default AtosPraticados;
