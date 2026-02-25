@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './styles/home2.css';
+import './home2.css';
 
 export default function RG() {
   const navigate = useNavigate();
@@ -14,7 +14,6 @@ export default function RG() {
 
   return (
     <div className="home2-shell">
-
       <div className="home2-watermark" />
 
       <main className="home2-main">
@@ -28,9 +27,9 @@ export default function RG() {
               <span className="hero-chip">Financeiro</span>
             </div>
             <div className="hero-actions">
-              <button className="btn" onClick={() => navigate('/rg/agenda')}>Ver Agenda</button>
-              <button className="btn" onClick={() => navigate('/rg/caixa')}>Abrir Caixa</button>
-              <button className="btn" onClick={() => navigate('/rg/relatorios')}>Relatórios</button>
+              <button className="btn btn-outline" onClick={() => navigate('/rg/agenda')}>Ver Agenda</button>
+              <button className="btn btn-outline" onClick={() => navigate('/rg/caixa')}>Abrir Caixa</button>
+              <button className="btn btn-outline" onClick={() => navigate('/rg/relatorios')}>Relatórios</button>
             </div>
           </div>
 

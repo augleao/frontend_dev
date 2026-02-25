@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchUserComponents } from './services/PermissionsService';
-import './styles/home2.css';
+import './home2.css';
 
 function Home2() {
   const navigate = useNavigate();
@@ -9,157 +9,153 @@ function Home2() {
   const [allowedSet, setAllowedSet] = useState(null); // null = não aplicado ainda
   const [permissionsLoading, setPermissionsLoading] = useState(false);
 
+  useEffect(() => {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    setNomeUsuario(usuario?.nome || 'Usuário');
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadPermissions() {
+      setPermissionsLoading(true);
+      try {
+        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+        if (!usuario?.id) {
+          if (!cancelled) setAllowedSet(null);
+          return;
+        }
+        const data = await fetchUserComponents(usuario.id);
+        const keys = new Set((data.components || []).filter((c) => c.allowed).map((c) => c.key));
+        if (!cancelled) setAllowedSet(keys);
+      } catch (e) {
+        if (!cancelled) setAllowedSet(null);
+      } finally {
+        if (!cancelled) setPermissionsLoading(false);
+      }
+    }
+    loadPermissions();
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    navigate('/login');
+  };
+
+  const hubsPrincipais = [
+    {
+      id: 'caixa-hub',
+      title: 'Caixa',
+      description: 'Registrar movimentos, fechar caixas e acompanhar saldo do dia.',
+      icon: '💰',
+      color: '#5ca9ff',
+      route: '/caixa',
+      tag: 'Financeiro',
+      componentKey: 'dashboard.hub.caixa'
+    },
+    {
+      id: 'manutencao-servicos',
+      title: 'Pedidos',
+      description: 'Ciclo completo do pedido: entrada, cliente, pagamento, execução e entrega.',
+      icon: '📝',
+      color: '#c9a646',
+      route: '/lista-servicos',
+      tag: 'Atendimento',
+      componentKey: 'dashboard.hub.pedidos'
+    },
+    {
+      id: 'atos-hub',
+      title: 'Atos Praticados',
+      description: 'Consulta, conciliação e gestão de atos praticados.',
+      icon: '📜',
+      color: '#3dd598',
+      route: '/atos',
+      tag: 'Relatórios',
+      componentKey: 'dashboard.hub.atos'
+    },
+    {
+      id: 'relatorios-hub',
+      title: 'Relatórios',
+      description: 'Painéis auxiliares e análises (DAP, atos, CNJ).',
+      icon: '📈',
+      color: '#7c8cff',
+      route: '/relatorios',
+      tag: 'Insights',
+      componentKey: 'dashboard.hub.relatorios'
+    },
+    {
+      id: 'relatorios-dap',
+      title: 'DAP',
+      description: 'Envio e retificação de DAP com rastreabilidade.',
+      icon: '🧾',
+      color: '#ffa96a',
+      route: '/relatorios/dap',
+      tag: 'Fiscal',
+      componentKey: 'dashboard.hub.dap'
+    }
+    ,
+    {
+      id: 'rg-module',
+      title: 'RG (Carteira de Identidade)',
+      description: 'Agenda, cobrança e emissão de RG.',
+      icon: '🪪',
+      color: '#6bc9ff',
+      route: '/rg',
+      tag: 'Identificação',
+      componentKey: 'dashboard.hub.rg'
+    }
+  ];
+
+  const hubsInteligentes = [
+    {
+      id: 'ferramentas-ia',
+      title: 'Ferramentas de IA',
+      description: 'Aberturas automatizadas, leitura de livros e assistentes de texto.',
+      icon: '🤖',
+      color: '#ffd166',
+      route: '/ferramentas-ia',
+      tag: 'IA',
+      componentKey: 'dashboard.hub.ia'
+    },
+    {
+      id: 'rg-module',
+      title: 'RG (Carteira de Identidade)',
+      description: 'Agenda, cobrança e emissão de RG.',
+      icon: '🪪',
+      color: '#6bc9ff',
+      route: '/rg',
+      tag: 'Identificação',
+      componentKey: 'dashboard.hub.rg'
+    }
+  ];
+
+  const atalhos = [
+    { label: 'Pedidos', icon: '➡️', route: '/lista-servicos', componentKey: 'dashboard.hub.pedidos' },
+    { label: 'Caixa', icon: '💰', route: '/caixa-diario', componentKey: 'dashboard.hub.caixa' },
+    { label: 'Atos Pagos Praticados', icon: '📜', route: '/atos-praticados', componentKey: 'dashboard.hub.atos' },
+    { label: 'Conciliação dos Pagos', icon: '🤝', route: '/conciliacao', componentKey: 'dashboard.hub.atos' },
+    { label: 'Ferramentas IA', icon: '⚡', route: '/ferramentas-ia', componentKey: 'dashboard.hub.ia' }
+  ];
+
+  const roadmap = [
+    { title: 'Backup Automático', icon: '💾', description: 'Instantâneo diário com retenção segura.' },
+    { title: 'Auditoria Expandida', icon: '🔍', description: 'Trilhas mais detalhadas por usuário e ato.' },
+    { title: 'Integrações API', icon: '🔗', description: 'Conectores adicionais para plataformas externas.' }
+  ];
+
+  // If allowedSet is null: permissions not loaded -> show all. If loaded (even empty), enforce.
+  const filterByPermission = (items) => {
+    if (allowedSet === null) return items;
+    return items.filter((item) => !item.componentKey || allowedSet.has(item.componentKey));
+  };
+
+  const hubsPrincipaisFiltered = filterByPermission(hubsPrincipais);
+  const hubsInteligentesFiltered = filterByPermission(hubsInteligentes);
+  const atalhosFiltrados = filterByPermission(atalhos);
+
   return (
     <div className="home2-shell">
-          font-weight: 800;
-          color: var(--navy);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .quick-links {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-          gap: 8px;
-        }
-
-        .quick-link {
-          background: linear-gradient(145deg, #ffffff, #f7f9fb);
-          border: 1px solid rgba(16,41,78,0.06);
-          border-radius: 12px;
-          padding: 12px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-weight: 700;
-          color: var(--navy);
-          cursor: pointer;
-          transition: transform 0.12s ease, box-shadow 0.12s ease;
-        }
-
-        .quick-link:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 24px rgba(0,0,0,0.12);
-        }
-
-        .section-head {
-          display: flex;
-          justify-content: space-between;
-          align-items: baseline;
-          color: var(--white);
-          padding: 4px 4px 0;
-        }
-
-        .section-title {
-          font-size: 20px;
-          font-weight: 800;
-        }
-
-        .section-sub {
-          font-size: 14px;
-          opacity: 0.85;
-        }
-
-        .cards-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-          gap: 16px;
-        }
-
-        .hub-card {
-          position: relative;
-          background: var(--white);
-          border-radius: 18px;
-          padding: 18px;
-          box-shadow: 0 14px 32px rgba(0,0,0,0.12);
-          border: 1px solid rgba(16,41,78,0.08);
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          cursor: pointer;
-          transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.2s ease;
-        }
-
-        .hub-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 18px 46px rgba(0,0,0,0.15);
-        }
-
-        .hub-icon {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
-          display: grid;
-          place-items: center;
-          font-size: 22px;
-          font-weight: 800;
-          color: var(--navy);
-          background: rgba(16,41,78,0.08);
-        }
-
-        .hub-title {
-          font-size: 16px;
-          font-weight: 800;
-          color: var(--navy);
-        }
-
-        .hub-desc {
-          color: var(--text-soft);
-          font-size: 14px;
-          line-height: 1.4;
-        }
-
-        .hub-tag {
-          align-self: flex-start;
-          padding: 6px 10px;
-          border-radius: 10px;
-          font-weight: 800;
-          font-size: 12px;
-          background: rgba(16,41,78,0.08);
-          color: var(--navy);
-        }
-
-        .roadmap-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 12px;
-          margin-top: 10px;
-        }
-
-        .roadmap-card {
-          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-          border-radius: 16px;
-          padding: 14px;
-          border: 1px dashed #d1d5db;
-          color: #4b5563;
-          display: flex;
-          gap: 10px;
-          align-items: center;
-        }
-
-        .roadmap-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 12px;
-          background: rgba(16,41,78,0.08);
-          display: grid;
-          place-items: center;
-          font-size: 20px;
-        }
-
-        @media (max-width: 1024px) {
-          .home2-nav { padding: 16px 20px; flex-wrap: wrap; gap: 10px; }
-          .hero-panel { grid-template-columns: 1fr; padding: 20px; }
-          .home2-main { padding: 24px 20px 46px; }
-        }
-
-        @media (max-width: 640px) {
-          .home2-actions { width: 100%; justify-content: flex-start; }
-          .hero-title { font-size: 24px; }
-          .hero-panel { gap: 16px; }
-        }
-      `}</style>
 
       <div className="home2-watermark" />
 
