@@ -573,14 +573,13 @@ export default function AtosTabelaManager() {
             <table>
               <thead>
                 <tr>
-                  <th>Código</th>
-                  <th>Descrição</th>
-                  <th>Valor final</th>
-                  <th>Emol. bruto</th>
+                  <th>Emolumentos brutos</th>
                   <th>Recompe</th>
-                  <th>Emol. líquido</th>
+                  <th>Emolumentos líquidos</th>
                   <th>ISSQN</th>
-                  <th>TFJ</th>
+                  <th>Taxa de Fiscalização Judiciária (TFJ)</th>
+                  <th>Valor final ao usuário</th>
+                  <th>Código da Corregedoria</th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -599,22 +598,6 @@ export default function AtosTabelaManager() {
                         : ''
                     }
                   >
-                    <td>{row.codigo}</td>
-                    <td>
-                      <input
-                        type="text"
-                        value={row.descricao ?? ''}
-                        onChange={(e) => handlePreviewFieldChange(row.codigo, 'descricao', e.target.value)}
-                      />
-                    </td>
-                    <td className={invalidFields.valorFinal ? 'atm-cell-invalid' : ''}>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={row.valor_final ?? ''}
-                        onChange={(e) => handlePreviewFieldChange(row.codigo, 'valor_final', e.target.value)}
-                      />
-                    </td>
                     <td>
                       <input
                         type="number"
@@ -655,6 +638,15 @@ export default function AtosTabelaManager() {
                         onChange={(e) => handlePreviewFieldChange(row.codigo, 'taxa_fiscal', e.target.value)}
                       />
                     </td>
+                    <td className={invalidFields.valorFinal ? 'atm-cell-invalid' : ''}>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={row.valor_final ?? ''}
+                        onChange={(e) => handlePreviewFieldChange(row.codigo, 'valor_final', e.target.value)}
+                      />
+                    </td>
+                    <td>{row.codigo}</td>
                     <td className="atm-inline-actions">
                       <button
                         type="button"
