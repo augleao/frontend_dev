@@ -321,6 +321,29 @@
   box-shadow: 0 8px 20px rgba(92,169,255,0.14);
 }
 
+/* Expanded inner layout for Caixa hub */
+.hub-caixa-inner {
+  display: flex;
+  gap: 18px;
+  align-items: stretch;
+}
+.hub-caixa-main {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  flex: 1 1 60%;
+}
+.hub-caixa-mini {
+  width: 240px;
+  flex: 0 0 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hub-caixa-chips { display:flex; gap:8px; margin-top:6px }
+.hub-caixa-actions { display:flex; gap:8px; margin-top:10px }
+.hub-caixa-mini .quick-link { background: linear-gradient(145deg, #ffffff, #f7f9fb); }
+
 .roadmap-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

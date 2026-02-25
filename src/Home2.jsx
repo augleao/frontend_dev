@@ -202,22 +202,67 @@ function Home2() {
             <div className="section-sub">Operações do dia, finanças e relatórios</div>
           </div>
           <div className="cards-grid">
-            {hubsPrincipaisFiltered.map((hub) => (
-              <div
-                key={hub.id}
-                className={`hub-card ${hub.id === 'caixa-hub' ? 'hub-card--caixa' : ''}`}
-                onClick={() => navigate(hub.route)}
-                style={{ borderColor: `${hub.color}22` }}
-              >
-                <div className={`hub-icon ${hub.id === 'caixa-hub' ? 'hub-icon--caixa' : ''}`} style={{ background: `${hub.color}22`, color: '#0b1d3a' }}>
-                  {hub.icon}
+            {hubsPrincipaisFiltered.map((hub) => {
+              if (hub.id === 'caixa-hub') {
+                return (
+                  <div
+                    key={hub.id}
+                    className={`hub-card hub-card--caixa`}
+                    onClick={() => navigate(hub.route)}
+                    style={{ borderColor: `${hub.color}22` }}
+                  >
+                    <div className="hub-caixa-inner">
+                      <div className="hub-caixa-main">
+                        <div className={`hub-icon hub-icon--caixa`} style={{ background: `${hub.color}22`, color: '#fff' }}>{hub.icon}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <div className="hub-title">{hub.title}</div>
+                          <div className="hub-desc">{hub.description}</div>
+                          <div className="hub-caixa-chips">
+                            <span className="hero-chip">Abertura</span>
+                            <span className="hero-chip">Fechamento</span>
+                            <span className="hero-chip">Movimentações</span>
+                          </div>
+                          <div className="hub-caixa-actions">
+                            <button className="btn btn-outline" onClick={(e) => { e.stopPropagation(); navigate('/caixa'); }}>Abrir Caixa</button>
+                            <button className="btn btn-outline" onClick={(e) => { e.stopPropagation(); navigate('/caixa-diario'); }}>Movimentos</button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="hub-caixa-mini">
+                        <div className="mini-title"><span>Atalhos Caixa</span><span style={{ color: '#6b7280', fontWeight: 700 }}>Rápido</span></div>
+                        <div className="quick-links">
+                          <div className="quick-link" onClick={(e) => { e.stopPropagation(); navigate('/caixa/relatorios'); }}>
+                            <span style={{ fontSize: 18 }}>📊</span>
+                            <span>Relatórios</span>
+                          </div>
+                          <div className="quick-link" onClick={(e) => { e.stopPropagation(); navigate('/caixa/conciliacao'); }}>
+                            <span style={{ fontSize: 18 }}>🔁</span>
+                            <span>Conciliação</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: `${hub.color}66`, borderRadius: '0 0 16px 16px' }} />
+                  </div>
+                );
+              }
+              return (
+                <div
+                  key={hub.id}
+                  className={`hub-card ${hub.id === 'caixa-hub' ? 'hub-card--caixa' : ''}`}
+                  onClick={() => navigate(hub.route)}
+                  style={{ borderColor: `${hub.color}22` }}
+                >
+                  <div className={`hub-icon ${hub.id === 'caixa-hub' ? 'hub-icon--caixa' : ''}`} style={{ background: `${hub.color}22`, color: '#0b1d3a' }}>
+                    {hub.icon}
+                  </div>
+                  <div className="hub-title">{hub.title}</div>
+                  <div className="hub-desc">{hub.description}</div>
+                  <div className="hub-tag" style={{ background: `${hub.color}22`, color: '#0b1d3a' }}>{hub.tag}</div>
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: `${hub.color}66`, borderRadius: '0 0 16px 16px' }} />
                 </div>
-                <div className="hub-title">{hub.title}</div>
-                <div className="hub-desc">{hub.description}</div>
-                <div className="hub-tag" style={{ background: `${hub.color}22`, color: '#0b1d3a' }}>{hub.tag}</div>
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: `${hub.color}66`, borderRadius: '0 0 16px 16px' }} />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
