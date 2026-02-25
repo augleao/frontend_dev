@@ -5,144 +5,80 @@ export default function RG() {
   const navigate = useNavigate();
 
   const modules = [
-    {
-      id: 'rg-caixa',
-      title: 'Financeiro (Caixa)',
-      description: 'Abertura/fechamento e movimentação do caixa para emissão de RG',
-      icon: '💰',
-      color: '#27ae60',
-      route: '/rg/caixa'
-    },
-    {
-      id: 'rg-agenda',
-      title: 'Agenda de Atendimentos',
-      description: 'Gerencie os agendamentos para emissão de RG',
-      icon: '📅',
-      color: '#2563eb',
-      route: '/rg/agenda'
-    },
-    {
-      id: 'rg-relatorios',
-      title: 'Relatórios Financeiros',
-      description: 'Receitas, despesas e tributos projetados para a emissão de RG',
-      icon: '📊',
-      color: '#f59e0b',
-      route: '/rg/relatorios'
-    },
-    {
-      id: 'rg-fechamentos',
-      title: 'Fechamentos de Caixa',
-      description: 'Visualize os fechamentos diários do caixa RG',
-      icon: '🗂️',
-      color: '#1f8ef1',
-      route: '/rg/meus-fechamentos'
-    }
+    { id: 'rg-agenda', title: 'Agenda', description: 'Gerenciar atendimentos agendados', icon: '📅', route: '/rg/agenda', color: '#2563eb' },
+    { id: 'rg-caixa', title: 'Financeiro (Caixa)', description: 'Abertura/fechamento e movimentação do caixa', icon: '💰', route: '/rg/caixa', color: '#059669' },
+    { id: 'rg-emissao', title: 'Emissão', description: 'Processo de emissão da carteira de identidade', icon: '🪪', route: '/rg/emissao', color: '#d97706' },
+    { id: 'rg-relatorios', title: 'Relatórios', description: 'Relatórios e extrações', icon: '📊', route: '/rg/relatorios', color: '#7c3aed' },
   ];
 
   return (
     <div className="home2-shell">
       <style>{`
-        :root {
-          --navy-deep: #0b1d3a;
-          --navy: #10294e;
-          --navy-soft: #152f56;
-          --gray-bg: #f3f4f6;
-          --gray-soft: #e5e7eb;
-          --white: #ffffff;
-          --gold: #c9a646;
-          --blue-cta: #5ca9ff;
-          --text-main: #0b1324;
-          --text-soft: #4b5563;
-        }
-
-        .home2-shell {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-          color: var(--text-main);
-          background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 30%),
-                      radial-gradient(circle at 80% 0%, rgba(92,169,255,0.1), transparent 35%),
-                      linear-gradient(135deg, #0a1630 0%, #0e2145 50%, #0b1d3a 100%);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .home2-watermark {
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          background-image:
-            linear-gradient(135deg, rgba(201,166,70,0.05) 0 20%, transparent 20% 100%),
-            radial-gradient(circle at 30% 40%, rgba(255,255,255,0.06), transparent 50%),
-            repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 12px);
-          opacity: 0.6;
-        }
-
-        .home2-main {
-          position: relative;
-          z-index: 2;
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 30px 36px 64px;
-          display: flex;
-          flex-direction: column;
-          gap: 28px;
-        }
-
-        .section-head { color: var(--white); }
-
-        .cards-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-          gap: 16px;
-        }
-
-        .hub-card {
-          position: relative;
-          background: var(--white);
-          border-radius: 18px;
-          padding: 18px;
-          box-shadow: 0 14px 32px rgba(0,0,0,0.12);
-          border: 1px solid rgba(16,41,78,0.08);
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          cursor: pointer;
-          transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.2s ease;
-        }
-
-        .hub-card:hover { transform: translateY(-4px); box-shadow: 0 18px 46px rgba(0,0,0,0.15); }
-
-        .hub-icon { width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-size:22px; font-weight:800; color:var(--navy); background: rgba(16,41,78,0.08); }
-        .hub-title { font-size:16px; font-weight:800; color:var(--navy); }
-        .hub-desc { color:var(--text-soft); font-size:14px; line-height:1.4; }
-
-        @media (max-width: 1024px) { .home2-main { padding: 24px 20px 46px; } }
+      :root{ --accent-1: linear-gradient(90deg,#0ea5e9,#7c3aed); }
+      .home2-shell{ min-height:100vh; background: linear-gradient(180deg,#0f172a 0%, #071029 100%); padding:32px 24px; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+      .home2-watermark{ position:absolute; right:-120px; top:40px; width:520px; height:520px; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.03), transparent 30%), conic-gradient(from 120deg at 50% 50%, rgba(255,255,255,0.02), transparent 40%); filter: blur(24px) saturate(120%); transform: rotate(12deg); z-index:0 }
+      .home2-main{ position:relative; z-index:5; max-width:1200px; margin:0 auto; }
+      .hero-panel{ display:flex; gap:20px; align-items:stretch; margin-bottom:22px }
+      .hero-copy{ flex:1; padding:24px; border-radius:12px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow:0 8px 26px rgba(2,6,23,0.6); color:#fff }
+      .hero-title{ font-size:28px; font-weight:800; margin-bottom:8px; text-shadow:0 6px 14px rgba(0,0,0,0.4) }
+      .hero-sub{ color: rgba(255,255,255,0.85); margin-bottom:12px }
+      .hero-chips{ display:flex; gap:8px; margin-bottom:12px }
+      .hero-chip{ background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:999px; color:#e6eef8; font-weight:700 }
+      .hero-actions{ display:flex; gap:10px }
+      .btn{ padding:8px 12px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.12); color:#fff; cursor:pointer }
+      .mini-panel{ width:320px; padding:18px; border-radius:12px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
+      .mini-title{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; font-weight:700 }
+      .quick-links{ display:flex; flex-direction:column; gap:8px }
+      .quick-link{ display:flex; gap:12px; align-items:center; padding:10px; border-radius:8px; background:rgba(255,255,255,0.015); cursor:pointer }
+      .cards-grid{ display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:18px }
+      .hub-card{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius:12px; padding:18px; color:#fff; box-shadow:0 6px 18px rgba(2,6,23,0.6); border:1px solid rgba(255,255,255,0.04); position:relative; cursor:pointer; transition: transform .15s ease }
+      .hub-icon{ width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-size:22px; font-weight:800; color:#0b1d3a; background: rgba(255,255,255,0.06) }
+      .hub-title{ font-size:16px; font-weight:800; color:#fff; margin-top:8px }
+      .hub-desc{ color:rgba(255,255,255,0.8); font-size:14px; margin-top:6px }
       `}</style>
 
       <div className="home2-watermark" />
 
       <main className="home2-main">
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <h2 style={{ fontSize: 36, fontWeight: 700, color: 'white', margin: 0, textShadow: '0 4px 8px rgba(0,0,0,0.3)' }}>Módulo RG — Gestão Financeira e Agenda</h2>
-          <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.9)', marginTop: 8, fontWeight: 300 }}>Acesse e gerencie o caixa e os atendimentos para emissão da carteira de identidade.</p>
+        <div className="hero-panel">
+          <div className="hero-copy">
+            <div className="hero-title">Módulo RG — Gestão Financeira e Agenda</div>
+            <div className="hero-sub">Acesse e gerencie o caixa e os atendimentos para emissão da carteira de identidade.</div>
+            <div className="hero-chips">
+              <span className="hero-chip">Agendamento</span>
+              <span className="hero-chip">Emissão</span>
+              <span className="hero-chip">Financeiro</span>
+            </div>
+            <div className="hero-actions">
+              <button className="btn" onClick={() => navigate('/rg/agenda')}>Ver Agenda</button>
+              <button className="btn" onClick={() => navigate('/rg/caixa')}>Abrir Caixa</button>
+              <button className="btn" onClick={() => navigate('/rg/relatorios')}>Relatórios</button>
+            </div>
+          </div>
+
+          <div className="mini-panel">
+            <div className="mini-title">
+              <span>Atalhos RG</span>
+              <span style={{ color: '#9ca3af', fontWeight: 700 }}>Tudo em 1 clique</span>
+            </div>
+            <div className="quick-links">
+              {modules.slice(0,3).map((m) => (
+                <div key={m.id} className="quick-link" onClick={() => navigate(m.route)}>
+                  <span style={{ fontSize: 18 }}>{m.icon}</span>
+                  <span style={{ fontWeight:700 }}>{m.title}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="cards-grid">
           {modules.map((m) => (
-            <div
-              key={m.id}
-              className="hub-card"
-              onClick={() => navigate(m.route)}
-              style={{ borderColor: `${m.color}22` }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = m.color; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${m.color}22`; }}
-            >
+            <div key={m.id} className="hub-card" onClick={() => navigate(m.route)} style={{ borderColor: `${m.color}22` }}>
               <div className="hub-icon" style={{ background: `${m.color}22`, color: '#0b1d3a' }}>{m.icon}</div>
               <div className="hub-title">{m.title}</div>
               <div className="hub-desc">{m.description}</div>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: `${m.color}66`, borderRadius: '0 0 16px 16px' }} />
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: `${m.color}66`, borderRadius: '0 0 12px 12px' }} />
             </div>
           ))}
         </div>
