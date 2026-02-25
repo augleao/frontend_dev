@@ -270,8 +270,8 @@ export default function AdminDashboard() {
         onClick: () => { setShowConfigurar(true); setConfigModalFocus(null); setConfigOpenAgents(false); }
     },
     {
-      label: 'Importar Atos',
-      description: 'Suba novas tabelas 07/08 em minutos.',
+      label: 'Tabela em Uso',
+      description: 'Verifique e altere a tabela de atos TJMG em uso.',
       icon: FaFileUpload,
         to: '/admin/importar-atos',
         variant: 'orange'
