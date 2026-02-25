@@ -89,8 +89,6 @@ export default function UsuariosAdmin() {
         <thead>
           <tr style={{ background: '#f0f0f0' }}>
             <th>Nome</th>
-            <th>Email</th>
-            <th>Serventia</th>
             <th>Cargo</th>
             <th>Status</th>
             <th>Ações</th>
@@ -113,30 +111,6 @@ export default function UsuariosAdmin() {
               </td>
               <td>
                 {editId === usuario.id ? (
-                  <input
-                    name="email"
-                    value={editData.email}
-                    onChange={handleEditChange}
-                    style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
-                  />
-                ) : (
-                  usuario.email
-                )}
-              </td>
-              <td>
-                {editId === usuario.id ? (
-                  <input
-                    name="serventia"
-                    value={editData.serventia}
-                    onChange={handleEditChange}
-                    style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
-                  />
-                ) : (
-                  usuario.serventia
-                )}
-              </td>
-              <td>
-                {editId === usuario.id ? (
                   <select
                     name="cargo"
                     value={editData.cargo}
@@ -153,19 +127,6 @@ export default function UsuariosAdmin() {
                   usuario.cargo
                 )}
               </td>
-              {/* Campo de senha para edição */}
-              {editId === usuario.id && (
-                <td colSpan={2} style={{ paddingTop: 8, paddingBottom: 8 }}>
-                  <input
-                    type="password"
-                    name="password"
-                    value={editData.password}
-                    onChange={handleEditChange}
-                    placeholder="Nova senha (opcional)"
-                    style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
-                  />
-                </td>
-              )}
               <td>
                 {editId === usuario.id ? (
                   <select
@@ -188,21 +149,31 @@ export default function UsuariosAdmin() {
               </td>
               <td>
                 {editId === usuario.id ? (
-                  <div style={actionGroupStyle}>
-                    <button
-                      type="button"
-                      onClick={handleSave}
-                      className="btn-gradient btn-gradient-green btn-compact"
-                    >
-                      Salvar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditId(null)}
-                      className="btn-gradient btn-gradient-red btn-compact"
-                    >
-                      Cancelar
-                    </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <input
+                      type="password"
+                      name="password"
+                      value={editData.password}
+                      onChange={handleEditChange}
+                      placeholder="Nova senha (opcional)"
+                      style={{ width: '100%', padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+                    />
+                    <div style={actionGroupStyle}>
+                      <button
+                        type="button"
+                        onClick={handleSave}
+                        className="btn-gradient btn-gradient-green btn-compact"
+                      >
+                        Salvar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditId(null)}
+                        className="btn-gradient btn-gradient-red btn-compact"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div style={actionGroupStyle}>
