@@ -450,6 +450,7 @@
 .atm-form textarea {
   width: 100%;
   box-sizing: border-box;
+  border: 1px solid rgba(0,0,0,0.12); /* thin black-ish border to improve contrast */
 }
 
 .atm-form textarea { min-height: 72px; }

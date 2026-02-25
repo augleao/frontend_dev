@@ -9,7 +9,6 @@ function ImportarAtos() {
   const [editIndex, setEditIndex] = useState(null);
   const [editAto, setEditAto] = useState({});
   const [novoAto, setNovoAto] = useState({ codigo: '', descricao: '', emol_bruto: '', recompe: '', emol_liquido: '', issqn: '', taxa_fiscal: '', valor_final: '' });
-  const [showNovoModal, setShowNovoModal] = useState(false);
 
   const actionGroupStyle = { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' };
 
@@ -202,9 +201,6 @@ function ImportarAtos() {
       <div style={{ maxWidth: 900, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 32 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <h2 style={{ margin: 0 }}>Tabelas 07 e 08 em uso (TJMG)</h2>
-        <div>
-          <button type="button" className="btn-gradient btn-gradient-green" onClick={() => setShowNovoModal(true)}>Adicionar Ato</button>
-        </div>
       </div>
 
       {msg && (
@@ -224,55 +220,50 @@ function ImportarAtos() {
 
       {!loading && atos.length === 0 && <p>Nenhum ato encontrado.</p>}
 
-      {/* novo-ato agora é exibido em modal acionado pelo botão acima */}
-      {showNovoModal && (
-        <div className="atm-modal-overlay">
-          <div className="atm-modal">
-            <div className="atm-card-head">
-              <h3>Inserir Novo Ato</h3>
-              <p style={{ margin: 0, color: 'var(--atm-muted)' }}>Preencha os campos e clique em salvar.</p>
-            </div>
-            <form className="atm-form" onSubmit={handleNovoAtoSubmit}>
-              <label>
-                Emol. bruto
-                <input type="number" step="0.01" name="emol_bruto" value={novoAto.emol_bruto} onChange={handleNovoAtoChange} />
-              </label>
-              <label>
-                Recompe
-                <input type="number" step="0.01" name="recompe" value={novoAto.recompe} onChange={handleNovoAtoChange} />
-              </label>
-              <label>
-                Emol. líquido
-                <input type="number" step="0.01" name="emol_liquido" value={novoAto.emol_liquido} onChange={handleNovoAtoChange} />
-              </label>
-              <label>
-                ISSQN
-                <input type="number" step="0.01" name="issqn" value={novoAto.issqn} onChange={handleNovoAtoChange} />
-              </label>
-              <label>
-                TFJ
-                <input type="number" step="0.01" name="taxa_fiscal" value={novoAto.taxa_fiscal} onChange={handleNovoAtoChange} />
-              </label>
-              <label>
-                Valor final
-                <input type="number" step="0.01" name="valor_final" value={novoAto.valor_final} onChange={handleNovoAtoChange} />
-              </label>
-              <label>
-                Código
-                <input type="text" name="codigo" value={novoAto.codigo} onChange={handleNovoAtoChange} required />
-              </label>
-              <label style={{ gridColumn: '1 / -1' }}>
-                Descrição
-                <textarea name="descricao" value={novoAto.descricao} onChange={handleNovoAtoChange} required />
-              </label>
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', gridColumn: '1 / -1' }}>
-                <button type="button" className="btn-gradient btn-gradient-red" onClick={() => { setShowNovoModal(false); setNovoAto({ codigo: '', descricao: '', emol_bruto: '', recompe: '', emol_liquido: '', issqn: '', taxa_fiscal: '', valor_final: '' }); }}>Cancelar</button>
-                <button type="submit" className="btn-gradient btn-gradient-green" disabled={loading}>{loading ? 'Salvando...' : 'Salvar'}</button>
-              </div>
-            </form>
-          </div>
+      {/* Formulário inline para inserir um novo ato (sem modal) */}
+      <div className="atm-card" style={{ marginBottom: 20 }}>
+        <div className="atm-card-head">
+          <h3>Inserir Novo Ato</h3>
+          <p style={{ margin: 0, color: 'var(--atm-muted)' }}>Preencha os campos e clique em cadastrar.</p>
         </div>
-      )}
+        <form className="atm-form" onSubmit={handleNovoAtoSubmit}>
+          <label>
+            Emol. bruto
+            <input type="number" step="0.01" name="emol_bruto" value={novoAto.emol_bruto} onChange={handleNovoAtoChange} />
+          </label>
+          <label>
+            Recompe
+            <input type="number" step="0.01" name="recompe" value={novoAto.recompe} onChange={handleNovoAtoChange} />
+          </label>
+          <label>
+            Emol. líquido
+            <input type="number" step="0.01" name="emol_liquido" value={novoAto.emol_liquido} onChange={handleNovoAtoChange} />
+          </label>
+          <label>
+            ISSQN
+            <input type="number" step="0.01" name="issqn" value={novoAto.issqn} onChange={handleNovoAtoChange} />
+          </label>
+          <label>
+            TFJ
+            <input type="number" step="0.01" name="taxa_fiscal" value={novoAto.taxa_fiscal} onChange={handleNovoAtoChange} />
+          </label>
+          <label>
+            Valor final
+            <input type="number" step="0.01" name="valor_final" value={novoAto.valor_final} onChange={handleNovoAtoChange} />
+          </label>
+          <label>
+            Código
+            <input type="text" name="codigo" value={novoAto.codigo} onChange={handleNovoAtoChange} required />
+          </label>
+          <label>
+            Descrição
+            <textarea name="descricao" value={novoAto.descricao} onChange={handleNovoAtoChange} required />
+          </label>
+          <button type="submit" className="btn-gradient btn-gradient-green" disabled={loading}>
+            {loading ? 'Cadastrando...' : 'Cadastrar Ato'}
+          </button>
+        </form>
+      </div>
 
       {atos.length > 0 && (
         <>
