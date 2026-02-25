@@ -205,11 +205,11 @@ function Home2() {
             {hubsPrincipaisFiltered.map((hub) => (
               <div
                 key={hub.id}
-                className="hub-card"
+                className={`hub-card ${hub.id === 'caixa-hub' ? 'hub-card--caixa' : ''}`}
                 onClick={() => navigate(hub.route)}
                 style={{ borderColor: `${hub.color}22` }}
               >
-                <div className="hub-icon" style={{ background: `${hub.color}22`, color: '#0b1d3a' }}>
+                <div className={`hub-icon ${hub.id === 'caixa-hub' ? 'hub-icon--caixa' : ''}`} style={{ background: `${hub.color}22`, color: '#0b1d3a' }}>
                   {hub.icon}
                 </div>
                 <div className="hub-title">{hub.title}</div>

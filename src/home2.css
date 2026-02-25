@@ -298,6 +298,29 @@
   color: var(--navy);
 }
 
+/* Special styling for Caixa hub to match Home2 principal hub visual identity */
+.hub-card--caixa {
+  background: linear-gradient(135deg, rgba(92,169,255,0.10), #ffffff 60%);
+  color: var(--navy);
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(6,30,63,0.12);
+  border: 1px solid rgba(92,169,255,0.12);
+}
+
+.hub-card--caixa .hub-title {
+  color: var(--navy-deep);
+}
+
+.hub-card--caixa .hub-desc {
+  color: #334155;
+}
+
+.hub-icon--caixa {
+  background: linear-gradient(135deg, #5ca9ff, #4aa3f7);
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(92,169,255,0.14);
+}
+
 .roadmap-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
