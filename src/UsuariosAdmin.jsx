@@ -6,18 +6,27 @@ export default function UsuariosAdmin() {
   const [editId, setEditId] = useState(null);
   const [editData, setEditData] = useState({});
   const [msg, setMsg] = useState('');
+  const [serventiaAtual, setServentiaAtual] = useState('');
 
   useEffect(() => {
+    const usuarioLocal = JSON.parse(localStorage.getItem('usuario') || '{}');
+    setServentiaAtual(usuarioLocal?.serventia || '');
     fetchUsuarios();
   }, []);
 
   const fetchUsuarios = async () => {
     const token = localStorage.getItem('token');
+    const usuarioLocal = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const serventiaFiltro = usuarioLocal?.serventia;
     const res = await fetch(`${config.apiURL}/admin/usuarios`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
-    setUsuarios(data.usuarios || []);
+    const lista = data.usuarios || [];
+    const filtrados = serventiaFiltro
+      ? lista.filter((u) => u.serventia === serventiaFiltro)
+      : lista;
+    setUsuarios(filtrados);
   };
 
   const handleEdit = (usuario) => {
