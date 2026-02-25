@@ -367,7 +367,7 @@ export default function AdminDashboard() {
       {/* Quick action buttons moved here (from dashboard-actions) */}
       <div className="top-quick-actions">
         {quickActions
-          .filter((a) => ['Configurar Serventia', 'Importar Atos', 'Versões TJMG', 'Backup Manual', 'Prompts IA', 'Tipo de Caixa', 'Agentes de IA', 'Engine de IA'].includes(a.label))
+          .filter((a) => ['Configurar Serventia', 'Importar Atos', 'Tabela em Uso', 'Versões TJMG', 'Backup Manual', 'Prompts IA', 'Tipo de Caixa', 'Agentes de IA', 'Engine de IA'].includes(a.label))
           .map((action) => {
             const Icon = action.icon;
             const baseVariant = gradientVariants[action.variant] || gradientVariants.blue;
