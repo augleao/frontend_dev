@@ -204,8 +204,62 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
     const cns = serv.cns || '';
     const telLinha = [telefone, whatsapp].filter(Boolean).join(' / ');
 
-    const hoje = new Date();
-    const dataHoje = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+    const agora = new Date();
+    const dataImpressao = agora.toLocaleString('pt-BR', { hour12: false });
+    const dataLancamento = formatarDataBR(ato.data);
+    const protocolo = ato.protocolo || ato.ticket || `REC${String(Date.now()).slice(-8)}`;
+    const termo = ato.termo || '';
+    const livro = ato.livro || '';
+    const folha = ato.folha || '';
+    const nomeRegistrado = ato.registrado || ato.nome_registrado || '';
+    const nomeConjuge = ato.conjuge || ato.nome_conjuge || '';
+    const referenteServico = ato.descricao || 'Serviço não informado';
+
+    const totalEmol = valorEntradaNum;
+    const totalIss = issNum || 0;
+    const totalRecompe = Number(ato.recompe || 0);
+    const totalTaxa = Number(ato.taxa_fiscal || ato.tx_fisc || 0);
+    const totalGenerico = Number(ato.generico || 0);
+    const totalFinal = totalEmol + totalIss + totalRecompe + totalTaxa + totalGenerico;
+
+    const linhaEndereco = [endereco, [cidade, uf].filter(Boolean).join(' - ')].filter(Boolean).join(' ');
+    const contatos = [telLinha && `Tel: ${telLinha}`, email && `E-mail: ${email}`].filter(Boolean).join(' | ');
+    const linhaDoc = [cnpj && `CNPJ: ${cnpj}`, cns && `CNS: ${cns}`, responsavel && `Resp.: ${responsavel}`].filter(Boolean).join(' | ');
+
+    const reciboTexto = () => `
+      <div class="recibo">
+        <div class="header">
+          <div class="cartorio">${nomeServentia.toUpperCase()}</div>
+          ${linhaEndereco ? `<div>${linhaEndereco}</div>` : ''}
+          ${contatos ? `<div>${contatos}</div>` : ''}
+          ${linhaDoc ? `<div>${linhaDoc}</div>` : ''}
+        </div>
+        <div class="titulo">- RECIBO -</div>
+        <div class="linha">Data de Impressão do Recibo...: <span class="valor">${dataImpressao}</span></div>
+        <div class="linha">Data do Lançamento do Recibo..: <span class="valor">${dataLancamento}</span></div>
+        <div class="linha">PROTOCOLO: <span class="valor">${protocolo}</span></div>
+        <div class="linha">RECEBIDO POR: <span class="valor">${clienteLabel}</span></div>
+        <div class="linha">Referente ao(s) Serviço(s): <span class="valor">${referenteServico}</span></div>
+        <div class="linha">Termo: ${termo || '____'} Livro: ${livro || '____'} Folha: ${folha || '____'}</div>
+        <div class="linha">Nome do Registrado(a):</div>
+        <div class="linha valor">${nomeRegistrado || '____________________________'}</div>
+        <div class="linha">Nome do Cônjuge:</div>
+        <div class="linha valor">${nomeConjuge || '____________________________'}</div>
+        <div class="linha">Conforme lei estadual Nº 15.424/04</div>
+        <div class="tabela">
+          <div class="trow"><span>QTDE COD/DESCRIÇÃO</span><span>VALOR(R$)</span></div>
+          <div class="trow"><span>0001 - Entrada de valores</span><span>${valorEntrada}</span></div>
+          <div class="trow detalhe">EMOL.:R$ ${totalEmol.toFixed(2)} - ISS.:R$ ${totalIss.toFixed(2)} - RECOMPE.:R$ ${totalRecompe.toFixed(2)} - TX.FISC.:R$ ${totalTaxa.toFixed(2)} - VALOR UNIT.:R$ ${valorEntrada}</div>
+        </div>
+        <div class="totais">TOTAL EMOL.R$: ${totalEmol.toFixed(2)}</div>
+        <div class="totais">TOTAL ISSQN.:R$: ${totalIss.toFixed(2)}</div>
+        <div class="totais">TOTAL RECOMPE.:R$: ${totalRecompe.toFixed(2)}</div>
+        <div class="totais">TOTAL TX.FISC.:R$: ${totalTaxa.toFixed(2)}</div>
+        <div class="totais">TOTAL LANÇ.GENÉRICO.:R$: ${totalGenerico.toFixed(2)}</div>
+        <div class="totais forte">TOTAL FINAL:R$: ${totalFinal.toFixed(2)}</div>
+        <div class="aviso">A segunda via dos recibos emitidos deverá ser arquivada, em meio físico ou eletrônico, pelo prazo de 6 (seis) anos contados da data da emissão.</div>
+        <div class="aviso">ATENÇÃO: É INDISPENSÁVEL A APRESENTAÇÃO DESTE PARA RETIRADA DO DOCUMENTO</div>
+      </div>`;
 
     const html = `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -214,48 +268,30 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recibo de Entrada</title>
   <style>
-    @page { size: A4; margin: 12mm; }
-    body { font-family: Arial, sans-serif; color: #222; }
-    .recibo { width: 100%; border: 1px solid #ddd; padding: 12mm; box-sizing: border-box; }
-    .header { display: flex; align-items: center; gap: 12px; }
-    .header img { height: 22mm; }
-    .header .info { display: flex; flex-direction: column; font-size: 12px; }
-    .title { text-align: center; font-weight: 800; margin: 10mm 0 6mm; font-size: 18px; }
-    .content { font-size: 13px; line-height: 1.6; }
-    .linha { margin: 3mm 0; }
-    .assinatura { margin-top: 14mm; text-align: center; }
-    .assinatura .linha-assinatura { width: 70%; border-top: 1px solid #000; margin: 14px auto 6px; }
-    .small { font-size: 11px; color: #555; }
+    @page { size: A4; margin: 8mm; }
+    body { margin: 0; padding: 0; font-family: 'Courier New', monospace; color: #000; }
+    .page { width: 100%; box-sizing: border-box; padding: 4mm; }
+    .recibo { border: 1px solid #000; padding: 5mm 6mm; margin-bottom: 6mm; }
+    .header { text-align: center; line-height: 1.35; font-size: 12px; font-weight: 700; }
+    .cartorio { font-size: 13px; font-weight: 800; text-transform: uppercase; }
+    .titulo { text-align: center; margin: 4mm 0 3mm; font-weight: 800; }
+    .linha { font-size: 12px; margin: 1mm 0; display: flex; justify-content: space-between; gap: 6px; }
+    .linha .valor { flex: 1; text-align: right; }
+    .tabela { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 2mm 0; margin: 2mm 0 1mm; }
+    .trow { display: flex; justify-content: space-between; font-size: 12px; }
+    .detalhe { font-size: 11px; margin-top: 1mm; }
+    .totais { font-size: 12px; }
+    .forte { font-weight: 800; }
+    .aviso { margin-top: 2mm; font-size: 11px; text-align: center; }
   </style>
-  </head>
-  <body>
-    <div class="recibo">
-      <div class="header">
-        <img src="/brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png" alt="Brasão da República" />
-        <div class="info">
-          <div><strong>${nomeServentia}</strong></div>
-          ${endereco ? `<div class="small">${endereco}</div>` : ''}
-          ${(cidade || uf) ? `<div class="small">${[cidade, uf].filter(Boolean).join(' - ')}</div>` : ''}
-          ${telLinha ? `<div class="small">Tel/WhatsApp: ${telLinha}</div>` : ''}
-          ${email ? `<div class="small">E-mail: ${email}</div>` : ''}
-          ${(cnpj || cns) ? `<div class="small">${[cnpj ? `CNPJ: ${cnpj}` : '', cns ? `CNS: ${cns}` : ''].filter(Boolean).join(' | ')}</div>` : ''}
-          ${responsavel ? `<div class="small">Responsável: ${responsavel}</div>` : ''}
-        </div>
-      </div>
-      <div class="title">RECIBO DE ENTRADA</div>
-      <div class="content">
-        <div class="linha">Recebemos de <strong>${clienteLabel}</strong> a quantia de <strong>${valorEntrada}</strong>.</div>
-        <div class="linha">ISS (quando aplicável): <strong>${iss}</strong></div>
-        <div class="linha">Data: ${dataHoje}</div>
-        <div class="linha">Descrição: ${ato.descricao || ''}</div>
-      </div>
-      <div class="assinatura">
-        <div class="linha-assinatura"></div>
-        <div>${nomeServentia}</div>
-      </div>
-    </div>
-    <script>window.onload = function() { window.focus(); };</script>
-  </body>
+</head>
+<body>
+  <div class="page">
+    ${reciboTexto()}
+    ${reciboTexto()}
+  </div>
+  <script>window.onload = function() { window.focus(); };</script>
+</body>
 </html>`;
 
     const win = window.open('', '_blank');
