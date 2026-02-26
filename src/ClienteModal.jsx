@@ -124,7 +124,7 @@ export default function ClienteModal({ isOpen, onClose, onSelect }) {
             placeholder="Buscar por nome ou CPF"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ flex: 1, padding: 8 }}
+            style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }}
           />
           <button onClick={() => fetchClients(search)} className="btn-gradient btn-gradient-blue">Buscar</button>
 
@@ -157,43 +157,43 @@ export default function ClienteModal({ isOpen, onClose, onSelect }) {
           <div style={{ display: 'grid', gap: 10, marginBottom: 10 }}>
             <div style={{ border: '1px solid #ececec', borderRadius: 8, padding: 10 }}>
               <div style={{ fontWeight: 700, marginBottom: 8, color: '#1f2937' }}>Documentos</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 8 }}>
-                <input placeholder="Nome*" value={newClient.nome} onChange={(e) => updateClientField('nome', e.target.value)} />
-                <input placeholder="Filiação" value={newClient.filiacao} onChange={(e) => updateClientField('filiacao', e.target.value)} />
-                <input placeholder="RG" value={newClient.rg} onChange={(e) => updateClientField('rg', e.target.value)} />
-                <input placeholder="CPF" value={newClient.cpf} onChange={(e) => updateClientField('cpf', e.target.value)} />
-                <input placeholder="Estado civil" value={newClient.estado_civil} onChange={(e) => updateClientField('estado_civil', e.target.value)} />
-                <input placeholder="Profissão" value={newClient.profissao} onChange={(e) => updateClientField('profissao', e.target.value)} />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 8 }}>
+                <input placeholder="Nome*" value={newClient.nome} onChange={(e) => updateClientField('nome', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                <input placeholder="Filiação" value={newClient.filiacao} onChange={(e) => updateClientField('filiacao', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                <input placeholder="RG" value={newClient.rg} onChange={(e) => updateClientField('rg', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                <input placeholder="CPF" value={newClient.cpf} onChange={(e) => updateClientField('cpf', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                <input placeholder="Estado civil" value={newClient.estado_civil} onChange={(e) => updateClientField('estado_civil', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                <input placeholder="Profissão" value={newClient.profissao} onChange={(e) => updateClientField('profissao', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
               </div>
             </div>
 
             <div style={{ border: '1px solid #ececec', borderRadius: 8, padding: 10 }}>
               <div style={{ fontWeight: 700, marginBottom: 8, color: '#1f2937' }}>Contato</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 8 }}>
-                <input placeholder="Telefone" value={newClient.telefone} onChange={(e) => updateClientField('telefone', e.target.value)} />
-                <input placeholder="WhatsApp" value={newClient.whatsapp} onChange={(e) => updateClientField('whatsapp', e.target.value)} />
-                <input placeholder="E-mail" value={newClient.email} onChange={(e) => updateClientField('email', e.target.value)} />
+                <input placeholder="Telefone" value={newClient.telefone} onChange={(e) => updateClientField('telefone', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                <input placeholder="WhatsApp" value={newClient.whatsapp} onChange={(e) => updateClientField('whatsapp', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                <input placeholder="E-mail" value={newClient.email} onChange={(e) => updateClientField('email', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
               </div>
             </div>
 
             <div style={{ border: '1px solid #ececec', borderRadius: 8, padding: 10 }}>
               <div style={{ fontWeight: 700, marginBottom: 8, color: '#1f2937' }}>Endereço</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 8 }}>
-                <input placeholder="Endereço" value={newClient.endereco} onChange={(e) => updateClientField('endereco', e.target.value)} />
-                <input placeholder="CEP" value={newClient.cep} onChange={(e) => updateClientField('cep', e.target.value)} />
-                <input placeholder="Cidade" value={newClient.cidade} onChange={(e) => updateClientField('cidade', e.target.value)} />
-                <input placeholder="Estado (UF)" value={newClient.estado} onChange={(e) => updateClientField('estado', e.target.value)} />
+                <input placeholder="Endereço" value={newClient.endereco} onChange={(e) => updateClientField('endereco', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                <input placeholder="CEP" value={newClient.cep} onChange={(e) => updateClientField('cep', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                <input placeholder="Cidade" value={newClient.cidade} onChange={(e) => updateClientField('cidade', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                <input placeholder="Estado (UF)" value={newClient.estado} onChange={(e) => updateClientField('estado', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
               </div>
             </div>
 
             <div style={{ border: '1px solid #ececec', borderRadius: 8, padding: 10 }}>
               <div style={{ fontWeight: 700, marginBottom: 8, color: '#1f2937' }}>Situação</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 8 }}>
-                <input placeholder="Criado por" value={newClient.criado_por} onChange={(e) => updateClientField('criado_por', e.target.value)} />
-                <input placeholder="Senha hash" value={newClient.senha_hash} onChange={(e) => updateClientField('senha_hash', e.target.value)} />
+                <input placeholder="Criado por" value={newClient.criado_por} onChange={(e) => updateClientField('criado_por', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                <input placeholder="Senha hash" value={newClient.senha_hash} onChange={(e) => updateClientField('senha_hash', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
                   <label style={{ fontSize: 12, color: '#444' }}>Criado em</label>
-                  <input type="datetime-local" value={newClient.criado_em} onChange={(e) => updateClientField('criado_em', e.target.value)} />
+                  <input type="datetime-local" value={newClient.criado_em} onChange={(e) => updateClientField('criado_em', e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
                 </div>
               </div>
             </div>
