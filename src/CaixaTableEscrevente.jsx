@@ -210,6 +210,7 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
 
     const totalEmol = valorEntradaNum;
     const totalIss = issNum || 0;
+    const totalIssFmt = formatarMoeda(totalIss);
     const totalRecompe = Number(ato.recompe || 0);
     const totalTaxa = Number(ato.taxa_fiscal || ato.tx_fisc || 0);
     const totalGenerico = Number(ato.generico || 0);
@@ -231,6 +232,7 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
         <div class="linha">Data de Impressão do Recibo...: <span class="valor">${dataImpressao}</span></div>
         <div class="linha">RECEBIDO DE: <span class="valor">${clienteLabel}</span></div>
         <div class="linha">Referente ao(s) Serviço(s): <span class="valor">${referenteServico}</span></div>
+        <div class="linha">ISSQN: <span class="valor">${totalIssFmt}</span></div>
         <div class="linha">Conforme lei estadual Nº 15.424/04</div>
         <div class="tabela">
           <div class="trow"><span>QTDE COD/DESCRIÇÃO</span><span>VALOR(R$)</span></div>

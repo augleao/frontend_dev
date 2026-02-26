@@ -288,8 +288,10 @@ function RGCaixa() {
           const alvo = registros.find(a => String(a.codigo) === '8888');
           if (alvo) {
             const total = parseFloat(alvo.valor_final) || 0;
-            console.log('[RGCaixa] Encontrado 8888 na query', query, 'valor_final:', total, 'registros:', registros.length);
-            setValorRG(isNaN(total) ? 0 : total);
+            const issRg = parseFloat(alvo.issqn ?? alvo.iss ?? 0) || 0;
+            const totalComIss = total + issRg;
+            console.log('[RGCaixa] Encontrado 8888 na query', query, 'valor_final:', total, 'iss:', issRg, 'total_com_iss:', totalComIss, 'registros:', registros.length);
+            setValorRG(isNaN(totalComIss) ? 0 : totalComIss);
             return;
           }
 
