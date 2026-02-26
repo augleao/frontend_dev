@@ -294,7 +294,7 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
             <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Quantidade</th>
             <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Valor Unitário</th>
             <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Usuário</th>
-            <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Pagamentos</th>
+            <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Cliente</th>
             <th style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px', fontWeight: '600' }}>Ações</th>
           </tr>
         </thead>
@@ -316,18 +316,11 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
               <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px' }}>R$ {formatarValor(ato.valor_unitario)}</td>
               <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '12px' }}>{ato.usuario || ''}</td>
               <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '11px' }}>
-                {formasPagamento
-                  .filter((fp) => {
-                    const val = ato.pagamentos[fp.key]?.valor;
-                    return val !== undefined && val !== null && !isNaN(parseFloat(val)) && parseFloat(val) > 0;
-                  })
-                  .map((fp) => {
-                    const val = ato.pagamentos[fp.key]?.valor;
-                    const valorNum = parseFloat(val);
-                    const valorFormatado = !isNaN(valorNum) ? valorNum.toFixed(2) : '0.00';
-                    return `${fp.label}: Qtd ${ato.pagamentos[fp.key]?.quantidade ?? 0}, Valor R$ ${valorFormatado}`;
-                  })
-                  .join(' | ')}
+                {(() => {
+                  const nomeCliente = ato.cliente_nome || ato.nome_cliente || ato.cliente || '';
+                  const cpfCliente = ato.cpf_cliente || '';
+                  return nomeCliente || (cpfCliente ? `CPF: ${cpfCliente}` : '');
+                })()}
               </td>
               <td style={{ border: '1px solid #ddd', padding: '4px 6px' }}>
                 {/* Botão Excluir */}
