@@ -208,12 +208,7 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
     const dataImpressao = agora.toLocaleString('pt-BR', { hour12: false });
     const dataLancamento = formatarDataBR(ato.data);
     const protocolo = ato.protocolo || ato.ticket || `REC${String(Date.now()).slice(-8)}`;
-    const termo = ato.termo || '';
-    const livro = ato.livro || '';
-    const folha = ato.folha || '';
-    const nomeRegistrado = ato.registrado || ato.nome_registrado || '';
-    const nomeConjuge = ato.conjuge || ato.nome_conjuge || '';
-    const referenteServico = ato.descricao || 'Serviço não informado';
+    const referenteServico = 'Emissão de RG';
 
     const totalEmol = valorEntradaNum;
     const totalIss = issNum || 0;
@@ -240,11 +235,6 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
         <div class="linha">PROTOCOLO: <span class="valor">${protocolo}</span></div>
         <div class="linha">RECEBIDO POR: <span class="valor">${clienteLabel}</span></div>
         <div class="linha">Referente ao(s) Serviço(s): <span class="valor">${referenteServico}</span></div>
-        <div class="linha">Termo: ${termo || '____'} Livro: ${livro || '____'} Folha: ${folha || '____'}</div>
-        <div class="linha">Nome do Registrado(a):</div>
-        <div class="linha valor">${nomeRegistrado || '____________________________'}</div>
-        <div class="linha">Nome do Cônjuge:</div>
-        <div class="linha valor">${nomeConjuge || '____________________________'}</div>
         <div class="linha">Conforme lei estadual Nº 15.424/04</div>
         <div class="tabela">
           <div class="trow"><span>QTDE COD/DESCRIÇÃO</span><span>VALOR(R$)</span></div>
@@ -253,9 +243,6 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
         </div>
         <div class="totais">TOTAL EMOL.R$: ${totalEmol.toFixed(2)}</div>
         <div class="totais">TOTAL ISSQN.:R$: ${totalIss.toFixed(2)}</div>
-        <div class="totais">TOTAL RECOMPE.:R$: ${totalRecompe.toFixed(2)}</div>
-        <div class="totais">TOTAL TX.FISC.:R$: ${totalTaxa.toFixed(2)}</div>
-        <div class="totais">TOTAL LANÇ.GENÉRICO.:R$: ${totalGenerico.toFixed(2)}</div>
         <div class="totais forte">TOTAL FINAL:R$: ${totalFinal.toFixed(2)}</div>
         <div class="aviso">A segunda via dos recibos emitidos deverá ser arquivada, em meio físico ou eletrônico, pelo prazo de 6 (seis) anos contados da data da emissão.</div>
         <div class="aviso">ATENÇÃO: É INDISPENSÁVEL A APRESENTAÇÃO DESTE PARA RETIRADA DO DOCUMENTO</div>
