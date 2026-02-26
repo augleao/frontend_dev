@@ -317,8 +317,7 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
               <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '11px' }}>
                 {(() => {
                   const nomeCliente = ato.cliente_nome || ato.nome_cliente || ato.cliente || '';
-                  const cpfCliente = ato.cpf_cliente || '';
-                  return nomeCliente || (cpfCliente ? `CPF: ${cpfCliente}` : '');
+                  return nomeCliente || '';
                 })()}
               </td>
               <td style={{ border: '1px solid #ddd', padding: '4px 6px' }}>
