@@ -145,6 +145,126 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
     win.document.close();
   };
 
+  const gerarReciboEntrada = async (ato) => {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const token = localStorage.getItem('token');
+    const serventiaId = usuario?.serventiaId || usuario?.serventia_id || usuario?.serventia || '';
+    const serventiaNome = usuario?.serventia || '';
+    const responsavel = usuario?.nome || '';
+
+    // Cliente: tentar nome, senão CPF, senão fallback
+    const clienteNome = ato.cliente_nome || ato.nome_cliente || ato.cliente || '';
+    const clienteCpf = ato.cpf_cliente || '';
+    const clienteLabel = clienteNome || (clienteCpf ? `CPF: ${clienteCpf}` : 'Cliente não informado');
+
+    // Valor e ISS
+    const valorEntradaNum = Number(ato?.valor_unitario || 0) || 0;
+    const valorEntrada = formatarMoeda(valorEntradaNum);
+    const issNum = (() => {
+      const cand = [ato.issqn, ato.iss, ato.valor_iss, ato.valorIssqn];
+      const found = cand.find((v) => v !== undefined && v !== null);
+      return Number(found) || 0;
+    })();
+    const iss = issNum ? formatarMoeda(issNum) : 'N/I';
+
+    // Buscar informações da serventia (mesma lógica usada na devolução)
+    let serv = {};
+    try {
+      if (serventiaId) {
+        const resId = await fetch(`${apiURL}/serventias/${encodeURIComponent(serventiaId)}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (resId.ok) {
+          const text = await resId.text();
+          const parsed = text ? JSON.parse(text) : {};
+          serv = parsed?.serventia || parsed || {};
+        }
+      }
+      if ((!serv || Object.keys(serv).length === 0) && serventiaNome) {
+        const resNome = await fetch(`${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(serventiaNome)}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (resNome.ok) {
+          const text = await resNome.text();
+          serv = text ? JSON.parse(text) : {};
+        }
+      }
+    } catch (e) {
+      // segue com fallback local
+    }
+
+    const nomeServentia = serv.nome_completo || serv.nome || serv.serventia || serventiaNome || 'Serventia não informada';
+    const endereco = serv.endereco || '';
+    const cidade = serv.cidade || extrairCidadeDaServentia(nomeServentia) || '';
+    const uf = serv.uf || '';
+    const telefone = serv.telefone || '';
+    const whatsapp = serv.whatsapp || '';
+    const email = serv.email || '';
+    const cnpj = serv.cnpj || '';
+    const cns = serv.cns || '';
+    const telLinha = [telefone, whatsapp].filter(Boolean).join(' / ');
+
+    const hoje = new Date();
+    const dataHoje = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recibo de Entrada</title>
+  <style>
+    @page { size: A4; margin: 12mm; }
+    body { font-family: Arial, sans-serif; color: #222; }
+    .recibo { width: 100%; border: 1px solid #ddd; padding: 12mm; box-sizing: border-box; }
+    .header { display: flex; align-items: center; gap: 12px; }
+    .header img { height: 22mm; }
+    .header .info { display: flex; flex-direction: column; font-size: 12px; }
+    .title { text-align: center; font-weight: 800; margin: 10mm 0 6mm; font-size: 18px; }
+    .content { font-size: 13px; line-height: 1.6; }
+    .linha { margin: 3mm 0; }
+    .assinatura { margin-top: 14mm; text-align: center; }
+    .assinatura .linha-assinatura { width: 70%; border-top: 1px solid #000; margin: 14px auto 6px; }
+    .small { font-size: 11px; color: #555; }
+  </style>
+  </head>
+  <body>
+    <div class="recibo">
+      <div class="header">
+        <img src="/brasao-da-republica-do-brasil-logo-png_seeklogo-263322.png" alt="Brasão da República" />
+        <div class="info">
+          <div><strong>${nomeServentia}</strong></div>
+          ${endereco ? `<div class="small">${endereco}</div>` : ''}
+          ${(cidade || uf) ? `<div class="small">${[cidade, uf].filter(Boolean).join(' - ')}</div>` : ''}
+          ${telLinha ? `<div class="small">Tel/WhatsApp: ${telLinha}</div>` : ''}
+          ${email ? `<div class="small">E-mail: ${email}</div>` : ''}
+          ${(cnpj || cns) ? `<div class="small">${[cnpj ? `CNPJ: ${cnpj}` : '', cns ? `CNS: ${cns}` : ''].filter(Boolean).join(' | ')}</div>` : ''}
+          ${responsavel ? `<div class="small">Responsável: ${responsavel}</div>` : ''}
+        </div>
+      </div>
+      <div class="title">RECIBO DE ENTRADA</div>
+      <div class="content">
+        <div class="linha">Recebemos de <strong>${clienteLabel}</strong> a quantia de <strong>${valorEntrada}</strong>.</div>
+        <div class="linha">ISS (quando aplicável): <strong>${iss}</strong></div>
+        <div class="linha">Data: ${dataHoje}</div>
+        <div class="linha">Descrição: ${ato.descricao || ''}</div>
+      </div>
+      <div class="assinatura">
+        <div class="linha-assinatura"></div>
+        <div>${nomeServentia}</div>
+      </div>
+    </div>
+    <script>window.onload = function() { window.focus(); };</script>
+  </body>
+</html>`;
+
+    const win = window.open('', '_blank');
+    if (!win) return alert('Não foi possível abrir a janela do recibo. Verifique o bloqueador de pop-ups.');
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  };
+
   return (
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa', fontSize: '13px' }}>
@@ -233,6 +353,24 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
                     </button>
                   );
                 })()}
+                {/* Botão Recibo para entradas (0003) */}
+                {ato.codigo === '0003' && (
+                  <button
+                    style={{
+                      background: '#1976d2',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 4,
+                      padding: '4px 8px',
+                      cursor: 'pointer',
+                      fontSize: '11px',
+                      fontWeight: '600'
+                    }}
+                    onClick={() => gerarReciboEntrada(ato)}
+                  >
+                    Recibo
+                  </button>
+                )}
               </td>
             </tr>
           ))}
