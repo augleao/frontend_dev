@@ -145,6 +145,123 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
     win.document.close();
   };
 
+  const gerarReciboEntrada = async (ato) => {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const token = localStorage.getItem('token');
+
+    // buscar informações da serventia (reuso do padrão anterior)
+    const serventiaId = usuario?.serventiaId || usuario?.serventia_id || usuario?.serventia || '';
+    const serventiaNome = usuario?.serventia || '';
+    let serv = {};
+    try {
+      if (serventiaId) {
+        const resId = await fetch(`${apiURL}/serventias/${encodeURIComponent(serventiaId)}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (resId.ok) {
+          const text = await resId.text();
+          const parsed = text ? JSON.parse(text) : {};
+          serv = parsed?.serventia || parsed || {};
+        }
+      }
+      if ((!serv || Object.keys(serv).length === 0) && serventiaNome) {
+        const resNome = await fetch(`${apiURL}/configuracoes-serventia?serventia=${encodeURIComponent(serventiaNome)}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (resNome.ok) {
+          const text = await resNome.text();
+          serv = text ? JSON.parse(text) : {};
+        }
+      }
+    } catch (e) {
+      // fallback vazio
+    }
+
+    const nomeServentia = serv.nome_completo || serv.nome || serv.serventia || serventiaNome || 'Serventia não informada';
+    const endereco = serv.endereco || '';
+    const cidade = serv.cidade || '';
+    const uf = serv.uf || '';
+    const telefone = serv.telefone || '';
+    const whatsapp = serv.whatsapp || '';
+    const email = serv.email || '';
+    const cnpj = serv.cnpj || '';
+    const responsavel = usuario?.nome || '';
+
+    // tentar obter nome do cliente pelo cpf, se presente
+    let clienteNome = '';
+    try {
+      if (ato.cpf_cliente) {
+        const q = encodeURIComponent(String(ato.cpf_cliente));
+        const res = await fetch(`${apiURL}/rg/clientes?search=${q}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        if (res.ok) {
+          const rows = await res.json();
+          const found = Array.isArray(rows) ? rows.find(r => (r.cpf || '').replace(/\D/g,'') === String(ato.cpf_cliente).replace(/\D/g,'')) : null;
+          clienteNome = (found && found.nome) ? found.nome : '';
+        }
+      }
+    } catch (e) {}
+
+    const valor = parseFloat(ato.valor_unitario || 0) || 0;
+    const valorFormat = formatarMoeda(valor);
+    // tentar achar percentual ISS em config
+    const ISSpercent = serv.percentual_iss || serv.iss || serv.iss_percentual || 0;
+    const ISSvalor = ISSpercent ? ((parseFloat(ISSpercent) / 100) * valor) : 0;
+    const ISSformat = ISSvalor ? formatarMoeda(ISSvalor) : formatarMoeda(0);
+
+    // abrir nova janela e injetar script que usa pdf-lib para preencher o template
+    const win = window.open('', '_blank');
+    if (!win) return alert('Não foi possível abrir a janela do recibo. Verifique o bloqueador de pop-ups.');
+
+    const safe = (s) => String(s || '').replace(/`/g,'\\`').replace(/<\//g,'<\\/');
+
+    const script = `<!doctype html><html><head><meta charset="utf-8"><title>Gerando Recibo</title></head><body><div style="padding:20px;font-family:Arial">Gerando recibo... aguarde.</div>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script>
+    (async function(){
+      try{
+        const resp = await fetch('/Recibo A4.pdf');
+        const arr = await resp.arrayBuffer();
+        const pdfDoc = await PDFLib.PDFDocument.load(arr);
+        const pages = pdfDoc.getPages();
+        const page = pages[0];
+        const { width, height } = page.getSize();
+        const helv = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+        const name = `${safe(clienteNome) || '---'}`;
+        const serventia = `${safe(nomeServentia)}`;
+        const endereco = `${safe(endereco)}`;
+        const local = `${safe(cidade)} ${safe(uf)}`;
+        const respName = `${safe(responsavel)}`;
+        const valor = `${safe(valorFormat)}`;
+        const iss = `${safe(ISSformat)}`;
+        const hoje = new Date().toLocaleDateString('pt-BR');
+
+        // Ajuste de posições: pode ser necessário adaptar conforme template
+        page.drawText('RECIBO', { x: 50, y: height - 80, size: 18, font: helv, color: PDFLib.rgb(0,0,0) });
+        page.drawText('Serventia: ' + serventia, { x: 50, y: height - 110, size: 10, font: helv });
+        if (endereco) page.drawText(endereco, { x: 50, y: height - 124, size: 9, font: helv });
+        page.drawText('Cliente: ' + name, { x: 50, y: height - 150, size: 12, font: helv });
+        page.drawText('Valor: ' + valor, { x: 50, y: height - 170, size: 12, font: helv });
+        page.drawText('ISS: ' + iss, { x: 50, y: height - 190, size: 12, font: helv });
+        page.drawText('Local/Data: ' + local + ' - ' + hoje, { x: 50, y: height - 210, size: 10, font: helv });
+        page.drawText('Responsável: ' + respName, { x: 50, y: height - 230, size: 10, font: helv });
+
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        // carregar o PDF gerado na janela
+        window.location.href = url;
+      }catch(err){
+        document.body.innerHTML = '<div style="padding:20px;color:#900">Erro ao gerar recibo: '+(err.message||err)+'</div>';
+        console.error(err);
+      }
+    })();
+    <\/script></body></html>`;
+
+    win.document.open();
+    win.document.write(script);
+    win.document.close();
+  };
+
   return (
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fafafa', fontSize: '13px' }}>
