@@ -6,43 +6,6 @@ import { apiURL } from './config';
 export default function CaixaTableEscrevente({ atos, onRemove }) {
   console.log("Atos recebidos na tabela caixa-table:", atos);
 
-  const [clienteCache, setClienteCache] = React.useState({});
-
-  React.useEffect(() => {
-    const token = localStorage.getItem('token');
-    const faltantes = [];
-    const seen = new Set();
-    atos.forEach((ato) => {
-      const nome = ato.cliente_nome || ato.nome_cliente || ato.cliente || '';
-      const cpf = String(ato.cpf_cliente || '').replace(/\D/g, '');
-      if (!nome && cpf && !clienteCache[cpf] && !seen.has(cpf)) {
-        seen.add(cpf);
-        faltantes.push(cpf);
-      }
-    });
-    if (!faltantes.length) return;
-
-    (async () => {
-      const novos = {};
-      for (const cpf of faltantes) {
-        try {
-          const res = await fetch(`${apiURL}/rg/clientes?search=${encodeURIComponent(cpf)}`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          });
-          if (!res.ok) continue;
-          const arr = await res.json();
-          if (Array.isArray(arr)) {
-            const found = arr.find((c) => String(c.cpf || '').replace(/\D/g, '') === cpf);
-            if (found?.nome) novos[cpf] = found.nome;
-          }
-        } catch (e) {
-          console.error('[CaixaTableEscrevente] erro ao buscar cliente por CPF', cpf, e);
-        }
-      }
-      if (Object.keys(novos).length) setClienteCache((prev) => ({ ...prev, ...novos }));
-    })();
-  }, [atos]);
-
   // Função para determinar a cor de fundo baseada no código do ato
   const getCorFundo = (codigo) => {
     switch (codigo) {
@@ -354,8 +317,8 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
               <td style={{ border: '1px solid #ddd', padding: '4px 6px', fontSize: '11px' }}>
                 {(() => {
                   const nomeCliente = ato.cliente_nome || ato.nome_cliente || ato.cliente || '';
-                  const cpf = String(ato.cpf_cliente || '').replace(/\D/g, '');
-                  return nomeCliente || clienteCache[cpf] || '';
+                  const cpfCliente = ato.cpf_cliente || '';
+                  return nomeCliente || (cpfCliente ? `CPF: ${cpfCliente}` : '');
                 })()}
               </td>
               <td style={{ border: '1px solid #ddd', padding: '4px 6px' }}>
