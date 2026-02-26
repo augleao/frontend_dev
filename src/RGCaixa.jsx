@@ -66,6 +66,7 @@ function RGCaixa() {
       quantidade: 1,
       valor_unitario: valor,
       pagamentos: {},
+      cpf_cliente: clienteSelecionado?.cpf || null,
       usuario: nomeUsuario,
     };
 
@@ -122,6 +123,7 @@ function RGCaixa() {
       quantidade: 1,
       valor_unitario: valor,
       pagamentos: {},
+      cpf_cliente: clienteSelecionado?.cpf || null,
       usuario: nomeUsuario,
     };
 
