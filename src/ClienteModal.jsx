@@ -27,37 +27,19 @@ export default function ClienteModal({ isOpen, onClose, onSelect }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [creating, setCreating] = useState(false);
-  const [activeMode, setActiveMode] = useState('search');
-  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [newClient, setNewClient] = useState(buildInitialClient);
 
   useEffect(() => {
     if (!isOpen) return;
-    setSearch('');
     setClients([]);
     setError('');
-    setActiveMode('search');
-    setShowSearchDropdown(false);
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen || activeMode !== 'search') return;
-    const query = String(search || '').trim();
-    if (query.length < 2) {
-      setClients([]);
-      setShowSearchDropdown(false);
-      setLoading(false);
-      return;
-    }
-
     const t = setTimeout(() => {
-      fetchClients(query, { showResults: true });
+      fetchClients(search);
     }, 250);
     return () => clearTimeout(t);
-  }, [search, isOpen, activeMode]);
+  }, [search, isOpen]);
 
-  async function fetchClients(q, options = {}) {
-    const { showResults = false } = options;
+  async function fetchClients(q) {
     setLoading(true);
     setError('');
     try {
@@ -68,11 +50,9 @@ export default function ClienteModal({ isOpen, onClose, onSelect }) {
       const data = await res.json();
       const list = Array.isArray(data) ? data : (data.items || data.clientes || []);
       setClients(list);
-      setShowSearchDropdown(showResults);
     } catch (e) {
       console.error('Erro fetchClients', e);
       setError('Não foi possível carregar clientes');
-      setShowSearchDropdown(false);
     } finally { setLoading(false); }
   }
 
@@ -139,69 +119,42 @@ export default function ClienteModal({ isOpen, onClose, onSelect }) {
           <button onClick={onClose} className="btn-gradient btn-gradient-red btn-compact" style={{ fontSize: 16, minWidth: 36 }}>✕</button>
         </div>
 
-        <div style={{ borderTop: '1px solid #eee', paddingTop: 8 }}>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-            <button
-              type="button"
-              onClick={() => setActiveMode('search')}
-              className={`btn-gradient btn-gradient-blue ${activeMode !== 'search' ? 'btn-muted' : ''}`}
-            >
-              Buscar cliente existente
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveMode('create')}
-              className={`btn-gradient btn-gradient-green ${activeMode !== 'create' ? 'btn-muted' : ''}`}
-            >
-              Cadastrar novo cliente
-            </button>
-          </div>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8, position: 'relative' }}>
+          <input
+            placeholder="Buscar por nome ou CPF"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ flex: 1, padding: 8 }}
+          />
+          <button onClick={() => fetchClients(search)} className="btn-gradient btn-gradient-blue">Buscar</button>
 
-          {activeMode === 'search' && (
-            <div style={{ marginBottom: 10 }}>
-              <div style={{ fontWeight: 700, marginBottom: 6 }}>Buscar por nome ou CPF</div>
-              {error && <div style={{ color: 'red', marginBottom: 6 }}>{error}</div>}
-              <div style={{ position: 'relative' }}>
-                <input
-                  placeholder="Digite nome ou CPF"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  onFocus={() => {
-                    if (String(search || '').trim().length >= 2) setShowSearchDropdown(true);
-                  }}
-                  onBlur={() => {
-                    setTimeout(() => setShowSearchDropdown(false), 150);
-                  }}
-                  style={{ width: '100%', padding: 8 }}
-                />
-
-                {showSearchDropdown && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, marginTop: 4, maxHeight: 240, overflow: 'auto', boxShadow: '0 8px 18px rgba(0,0,0,0.12)' }}>
-                    {loading && <div style={{ padding: 10, color: '#666' }}>Carregando...</div>}
-                    {!loading && clients.length === 0 && <div style={{ padding: 10, color: '#666' }}>Nenhum cliente encontrado.</div>}
-                    {!loading && clients.map((c) => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        onMouseDown={() => { onSelect(c); onClose(); }}
-                        style={{ width: '100%', textAlign: 'left', border: 'none', background: 'transparent', borderBottom: '1px solid #f3f4f6', padding: '10px 12px', cursor: 'pointer' }}
-                      >
-                        <div style={{ fontWeight: 700, color: '#1f2937' }}>{c.nome}</div>
-                        <div style={{ fontSize: 12, color: '#6b7280' }}>{c.cpf || 'Sem CPF'}</div>
-                      </button>
-                    ))}
+          { (search && search.trim() !== '') && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #eee', boxShadow: '0 8px 20px rgba(0,0,0,0.06)', zIndex: 10000, maxHeight: 240, overflow: 'auto', marginTop: 6 }}>
+              {loading ? (
+                <div style={{ padding: 10, color: '#666' }}>Carregando...</div>
+              ) : (
+                clients && clients.length ? clients.map((c) => (
+                  <div key={c.id} onClick={() => { onSelect(c); onClose(); }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', borderBottom: '1px solid #f6f6f6', cursor: 'pointer' }}>
+                    <div>
+                      <div style={{ fontWeight: 700 }}>{c.nome}</div>
+                      <div style={{ fontSize: 12, color: '#666' }}>{c.cpf || ''}</div>
+                    </div>
+                    <div>
+                      <button type="button" className="btn-gradient btn-gradient-green btn-compact" onClick={(ev) => { ev.stopPropagation(); onSelect(c); onClose(); }}>Selecionar</button>
+                    </div>
                   </div>
-                )}
-              </div>
-              <div style={{ fontSize: 12, color: '#666', marginTop: 6 }}>Digite pelo menos 2 caracteres para buscar.</div>
+                )) : (
+                  <div style={{ padding: 10, color: '#666' }}>Nenhum cliente encontrado.</div>
+                )
+              )}
             </div>
           )}
+        </div>
 
-          {activeMode === 'create' && (
-            <>
-              <div style={{ fontWeight: 700, marginBottom: 6 }}>Criar novo cliente</div>
-              {error && <div style={{ color: 'red', marginBottom: 6 }}>{error}</div>}
-              <div style={{ display: 'grid', gap: 10, marginBottom: 10 }}>
+        <div style={{ borderTop: '1px solid #eee', paddingTop: 8 }}>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>Criar novo cliente</div>
+          {error && <div style={{ color: 'red', marginBottom: 6 }}>{error}</div>}
+          <div style={{ display: 'grid', gap: 10, marginBottom: 10 }}>
             <div style={{ border: '1px solid #ececec', borderRadius: 8, padding: 10 }}>
               <div style={{ fontWeight: 700, marginBottom: 8, color: '#1f2937' }}>Documentos</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 8 }}>
@@ -244,12 +197,11 @@ export default function ClienteModal({ isOpen, onClose, onSelect }) {
                 </div>
               </div>
             </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                <button onClick={onClose} className="btn-gradient btn-gradient-red">Cancelar</button>
-                <button onClick={handleCreate} disabled={creating} className="btn-gradient btn-gradient-green">{creating ? 'Salvando...' : 'Salvar e Selecionar'}</button>
-              </div>
-            </>
-          )}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <button onClick={onClose} className="btn-gradient btn-gradient-red">Cancelar</button>
+            <button onClick={handleCreate} disabled={creating} className="btn-gradient btn-gradient-green">{creating ? 'Salvando...' : 'Salvar e Selecionar'}</button>
+          </div>
         </div>
       </div>
     </div>
