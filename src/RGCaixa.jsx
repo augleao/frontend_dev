@@ -9,6 +9,7 @@ import DataSelector from './DataSelector';
 import AtosTable from './CaixaTableEscrevente';
 import FechamentoDiarioButton from './FechamentoDiarioButton';
 import { apiURL } from './config';
+import ClienteModal from './ClienteModal';
 
 function RGCaixa() {
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
@@ -35,6 +36,8 @@ function RGCaixa() {
   });
   const [entradaValor, setEntradaValor] = useState('');
   const [entradaObs, setEntradaObs] = useState('');
+  const [showClienteModal, setShowClienteModal] = useState(false);
+  const [clienteSelecionado, setClienteSelecionado] = useState(null);
   const [saidaValor, setSaidaValor] = useState('');
   const [saidaObs, setSaidaObs] = useState('');
   const [saidaClienteNome, setSaidaClienteNome] = useState('');
@@ -300,6 +303,24 @@ function RGCaixa() {
     carregarValorRG();
   }, [usuario?.serventia]);
 
+  // Pré-preenche o campo de entrada com o valor do RG quando este for carregado,
+  // mas não sobrescreve se o usuário já estiver editando o campo.
+  useEffect(() => {
+    try {
+      if ((!entradaValor || String(entradaValor).trim() === '') && Number(valorRG) > 0) {
+        setEntradaValor(formatarMoeda(valorRG));
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [valorRG]);
+
+  // Fecha o modal e aplica o cliente selecionado
+  const handleSelectCliente = (cliente) => {
+    setClienteSelecionado(cliente);
+    setShowClienteModal(false);
+  };
+
   const fechamentoDiario = async () => {
     const dataAtual = dataSelecionada;
     const existeFechamento = atos.some((ato) => ato.codigo === '0001' && ato.data === dataAtual && ato.usuario === nomeUsuario);
@@ -385,6 +406,7 @@ function RGCaixa() {
               <DataSelector dataSelecionada={dataSelecionada} onChange={handleDataChange} />
             </div>
           </div>
+          <ClienteModal isOpen={showClienteModal} onClose={() => setShowClienteModal(false)} onSelect={handleSelectCliente} />
         </div>
 
         <div style={{ background: 'white', borderRadius: '12px', padding: '16px', marginBottom: '12px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)' }}>
@@ -413,8 +435,14 @@ function RGCaixa() {
                 <h4 style={{ margin: '0 0 10px 0', color: '#27ae60' }}>📈 Entrada de Valor</h4>
                 <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <label style={{ fontWeight: '600', color: '#2c3e50', minWidth: '60px' }}>Valor:</label>
-                  <input type="text" value={entradaValor} onChange={(e) => setEntradaValor(e.target.value)} placeholder="R$ 0,00" style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                  <div style={{ display: 'flex', flex: 1, gap: 8 }}>
+                    <input type="text" value={entradaValor} onChange={(e) => setEntradaValor(e.target.value)} placeholder="R$ 0,00" style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
+                    <button type="button" className="btn-gradient btn-gradient-blue" style={{ padding: '8px 10px' }} onClick={() => setShowClienteModal(true)}>Adicionar Cliente</button>
+                  </div>
                 </div>
+                {clienteSelecionado && (
+                  <div style={{ marginBottom: 10, color: '#374151', fontWeight: 600 }}>Cliente: {clienteSelecionado.nome}</div>
+                )}
                 <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <label style={{ fontWeight: '600', color: '#2c3e50', minWidth: '100px' }}>Observação:</label>
                   <input type="text" value={entradaObs} onChange={(e) => setEntradaObs(e.target.value)} placeholder="Ex. Troco, abertura de caixa, EValidação RG" style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '2px solid #e3f2fd', fontSize: '14px' }} />
