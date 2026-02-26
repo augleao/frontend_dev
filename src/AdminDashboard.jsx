@@ -299,11 +299,11 @@ export default function AdminDashboard() {
     }
     ,
     {
-      label: 'Tipo de Caixa',
-      description: 'Escolha o tipo de caixa para o sistema.',
-      icon: FaMoneyBillWave,
+      label: 'Usuários',
+      description: 'Gerencie Escreventes e permissões de acesso.',
+      icon: FaUsers,
       variant: 'green',
-      onClick: () => { setShowConfigurar(true); setConfigModalFocus('caixa'); setConfigOpenAgents(false); }
+      to: '/admin/usuarios'
     },
     {
       label: 'Agentes de IA',
@@ -367,7 +367,7 @@ export default function AdminDashboard() {
       {/* Quick action buttons moved here (from dashboard-actions) */}
       <div className="top-quick-actions">
         {quickActions
-          .filter((a) => ['Configurar Serventia', 'Importar Atos', 'Tabela em Uso', 'Versões TJMG', 'Backup Manual', 'Prompts IA', 'Tipo de Caixa', 'Agentes de IA', 'Engine de IA'].includes(a.label))
+          .filter((a) => ['Configurar Serventia', 'Importar Atos', 'Tabela em Uso', 'Versões TJMG', 'Backup Manual', 'Prompts IA', 'Usuários', 'Agentes de IA', 'Engine de IA'].includes(a.label))
           .map((action) => {
             const Icon = action.icon;
             const baseVariant = gradientVariants[action.variant] || gradientVariants.blue;
@@ -480,7 +480,7 @@ export default function AdminDashboard() {
 
         <section className="dashboard-actions">
           {quickActions
-            .filter((a) => !['Configurar Serventia', 'Importar Atos', 'Versões TJMG', 'Backup Manual', 'Prompts IA', 'Tipo de Caixa', 'Agentes de IA', 'Engine de IA'].includes(a.label))
+            .filter((a) => !['Configurar Serventia', 'Importar Atos', 'Versões TJMG', 'Backup Manual', 'Prompts IA', 'Usuários', 'Agentes de IA', 'Engine de IA'].includes(a.label))
             .map((action) => {
             const Icon = action.icon;
             const baseVariant = gradientVariants[action.variant] || gradientVariants.blue;
