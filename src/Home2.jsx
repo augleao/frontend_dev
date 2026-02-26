@@ -138,12 +138,6 @@ function Home2() {
     { label: 'Ferramentas IA', icon: '⚡', route: '/ferramentas-ia', componentKey: 'dashboard.hub.ia' }
   ];
 
-  const roadmap = [
-    { title: 'Backup Automático', icon: '💾', description: 'Instantâneo diário com retenção segura.' },
-    { title: 'Auditoria Expandida', icon: '🔍', description: 'Trilhas mais detalhadas por usuário e ato.' },
-    { title: 'Integrações API', icon: '🔗', description: 'Conectores adicionais para plataformas externas.' }
-  ];
-
   // If allowedSet is null: permissions not loaded -> show all. If loaded (even empty), enforce.
   const filterByPermission = (items) => {
     if (allowedSet === null) return items;
@@ -246,23 +240,6 @@ function Home2() {
           </div>
         </section>
 
-        <section>
-          <div className="section-head">
-            <div className="section-title">Roadmap e novidades</div>
-            <div className="section-sub">Próximos hubs e integrações em desenvolvimento</div>
-          </div>
-          <div className="roadmap-grid">
-            {roadmap.map((item) => (
-              <div key={item.title} className="roadmap-card">
-                <div className="roadmap-icon">{item.icon}</div>
-                <div>
-                  <div style={{ fontWeight: 800, color: '#111827', marginBottom: 4 }}>{item.title}</div>
-                  <div style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.4 }}>{item.description}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
       </main>
     </div>
   );
