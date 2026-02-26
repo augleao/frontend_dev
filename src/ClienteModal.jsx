@@ -1,14 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { apiURL } from './config';
+import './buttonGradients.css';
 
 export default function ClienteModal({ isOpen, onClose, onSelect }) {
+  const buildInitialClient = () => ({
+    nome: '',
+    filiacao: '',
+    rg: '',
+    cpf: '',
+    endereco: '',
+    estado_civil: '',
+    profissao: '',
+    telefone: '',
+    email: '',
+    senha_hash: '',
+    criado_por: '',
+    criado_em: '',
+    cep: '',
+    cidade: '',
+    estado: '',
+    whatsapp: '',
+    suspenso: false,
+    suspenso_inicio: '',
+  });
+
   const [search, setSearch] = useState('');
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [creating, setCreating] = useState(false);
-  const [newNome, setNewNome] = useState('');
-  const [newCpf, setNewCpf] = useState('');
+  const [newClient, setNewClient] = useState(buildInitialClient);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -38,12 +59,37 @@ export default function ClienteModal({ isOpen, onClose, onSelect }) {
   }
 
   async function handleCreate() {
-    if (!newNome || !newNome.trim()) return setError('Nome é obrigatório');
+    if (!newClient.nome || !newClient.nome.trim()) return setError('Nome é obrigatório');
     setCreating(true);
     setError('');
     try {
       const token = localStorage.getItem('token');
-      const payload = { nome: newNome.trim(), cpf: newCpf.trim() };
+      const normalizeOptional = (value) => {
+        const trimmed = String(value || '').trim();
+        return trimmed ? trimmed : null;
+      };
+
+      const payload = {
+        nome: newClient.nome.trim(),
+        filiacao: normalizeOptional(newClient.filiacao),
+        rg: normalizeOptional(newClient.rg),
+        cpf: normalizeOptional(newClient.cpf),
+        endereco: normalizeOptional(newClient.endereco),
+        estado_civil: normalizeOptional(newClient.estado_civil),
+        profissao: normalizeOptional(newClient.profissao),
+        telefone: normalizeOptional(newClient.telefone),
+        email: normalizeOptional(newClient.email),
+        senha_hash: normalizeOptional(newClient.senha_hash),
+        criado_por: normalizeOptional(newClient.criado_por),
+        criado_em: normalizeOptional(newClient.criado_em),
+        cep: normalizeOptional(newClient.cep),
+        cidade: normalizeOptional(newClient.cidade),
+        estado: normalizeOptional(newClient.estado),
+        whatsapp: normalizeOptional(newClient.whatsapp),
+        suspenso: !!newClient.suspenso,
+        suspenso_inicio: normalizeOptional(newClient.suspenso_inicio),
+      };
+
       const res = await fetch(`${apiURL}/rg/clientes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
@@ -54,6 +100,7 @@ export default function ClienteModal({ isOpen, onClose, onSelect }) {
         throw new Error(txt || 'Erro ao criar cliente');
       }
       const created = await res.json();
+      setNewClient(buildInitialClient());
       onSelect(created);
       onClose();
     } catch (e) {
@@ -62,19 +109,23 @@ export default function ClienteModal({ isOpen, onClose, onSelect }) {
     } finally { setCreating(false); }
   }
 
+  function updateClientField(field, value) {
+    setNewClient((prev) => ({ ...prev, [field]: value }));
+  }
+
   if (!isOpen) return null;
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-      <div style={{ width: 720, maxWidth: '96%', background: 'white', borderRadius: 8, padding: 16 }}>
+      <div style={{ width: 980, maxWidth: '96%', background: 'white', borderRadius: 8, padding: 16, maxHeight: '92vh', overflow: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <h3 style={{ margin: 0 }}>Selecionar ou criar Cliente</h3>
-          <button onClick={onClose} style={{ border: 'none', background: 'transparent', fontSize: 18 }}>✕</button>
+          <button onClick={onClose} className="btn-gradient btn-gradient-red btn-compact" style={{ fontSize: 16, minWidth: 36 }}>✕</button>
         </div>
 
         <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
           <input placeholder="Buscar por nome ou CPF" value={search} onChange={(e) => setSearch(e.target.value)} style={{ flex: 1, padding: 8 }} />
-          <button onClick={() => fetchClients(search)} style={{ padding: '8px 12px' }}>Buscar</button>
+          <button onClick={() => fetchClients(search)} className="btn-gradient btn-gradient-blue">Buscar</button>
         </div>
 
         <div style={{ maxHeight: 220, overflow: 'auto', border: '1px solid #eee', padding: 8, marginBottom: 8 }}>
@@ -86,7 +137,7 @@ export default function ClienteModal({ isOpen, onClose, onSelect }) {
                   <div style={{ fontSize: 12, color: '#666' }}>{c.cpf || ''}</div>
                 </div>
                 <div>
-                  <button onClick={() => { onSelect(c); onClose(); }} style={{ padding: '6px 10px' }}>Selecionar</button>
+                  <button onClick={() => { onSelect(c); onClose(); }} className="btn-gradient btn-gradient-green btn-compact">Selecionar</button>
                 </div>
               </div>
             )) : <div style={{ color: '#666' }}>Nenhum cliente encontrado.</div>
@@ -96,13 +147,61 @@ export default function ClienteModal({ isOpen, onClose, onSelect }) {
         <div style={{ borderTop: '1px solid #eee', paddingTop: 8 }}>
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Criar novo cliente</div>
           {error && <div style={{ color: 'red', marginBottom: 6 }}>{error}</div>}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 200px', gap: 8, marginBottom: 8 }}>
-            <input placeholder="Nome" value={newNome} onChange={(e) => setNewNome(e.target.value)} />
-            <input placeholder="CPF" value={newCpf} onChange={(e) => setNewCpf(e.target.value)} />
+          <div style={{ display: 'grid', gap: 10, marginBottom: 10 }}>
+            <div style={{ border: '1px solid #ececec', borderRadius: 8, padding: 10 }}>
+              <div style={{ fontWeight: 700, marginBottom: 8, color: '#1f2937' }}>Documentos</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 8 }}>
+                <input placeholder="Nome*" value={newClient.nome} onChange={(e) => updateClientField('nome', e.target.value)} />
+                <input placeholder="Filiação" value={newClient.filiacao} onChange={(e) => updateClientField('filiacao', e.target.value)} />
+                <input placeholder="RG" value={newClient.rg} onChange={(e) => updateClientField('rg', e.target.value)} />
+                <input placeholder="CPF" value={newClient.cpf} onChange={(e) => updateClientField('cpf', e.target.value)} />
+                <input placeholder="Estado civil" value={newClient.estado_civil} onChange={(e) => updateClientField('estado_civil', e.target.value)} />
+                <input placeholder="Profissão" value={newClient.profissao} onChange={(e) => updateClientField('profissao', e.target.value)} />
+              </div>
+            </div>
+
+            <div style={{ border: '1px solid #ececec', borderRadius: 8, padding: 10 }}>
+              <div style={{ fontWeight: 700, marginBottom: 8, color: '#1f2937' }}>Contato</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 8 }}>
+                <input placeholder="Telefone" value={newClient.telefone} onChange={(e) => updateClientField('telefone', e.target.value)} />
+                <input placeholder="WhatsApp" value={newClient.whatsapp} onChange={(e) => updateClientField('whatsapp', e.target.value)} />
+                <input placeholder="E-mail" value={newClient.email} onChange={(e) => updateClientField('email', e.target.value)} />
+              </div>
+            </div>
+
+            <div style={{ border: '1px solid #ececec', borderRadius: 8, padding: 10 }}>
+              <div style={{ fontWeight: 700, marginBottom: 8, color: '#1f2937' }}>Endereço</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 8 }}>
+                <input placeholder="Endereço" value={newClient.endereco} onChange={(e) => updateClientField('endereco', e.target.value)} />
+                <input placeholder="CEP" value={newClient.cep} onChange={(e) => updateClientField('cep', e.target.value)} />
+                <input placeholder="Cidade" value={newClient.cidade} onChange={(e) => updateClientField('cidade', e.target.value)} />
+                <input placeholder="Estado (UF)" value={newClient.estado} onChange={(e) => updateClientField('estado', e.target.value)} />
+              </div>
+            </div>
+
+            <div style={{ border: '1px solid #ececec', borderRadius: 8, padding: 10 }}>
+              <div style={{ fontWeight: 700, marginBottom: 8, color: '#1f2937' }}>Situação</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 8 }}>
+                <input placeholder="Criado por" value={newClient.criado_por} onChange={(e) => updateClientField('criado_por', e.target.value)} />
+                <input placeholder="Senha hash" value={newClient.senha_hash} onChange={(e) => updateClientField('senha_hash', e.target.value)} />
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+                  <label style={{ fontSize: 12, color: '#444' }}>Criado em</label>
+                  <input type="datetime-local" value={newClient.criado_em} onChange={(e) => updateClientField('criado_em', e.target.value)} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+                  <label style={{ fontSize: 12, color: '#444' }}>Suspenso início</label>
+                  <input type="date" value={newClient.suspenso_inicio} onChange={(e) => updateClientField('suspenso_inicio', e.target.value)} />
+                </div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#444' }}>
+                  <input type="checkbox" checked={!!newClient.suspenso} onChange={(e) => updateClientField('suspenso', e.target.checked)} />
+                  Suspenso
+                </label>
+              </div>
+            </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-            <button onClick={onClose} style={{ padding: '8px 12px' }}>Cancelar</button>
-            <button onClick={handleCreate} disabled={creating} className="btn-gradient btn-gradient-green" style={{ padding: '8px 12px' }}>{creating ? 'Salvando...' : 'Salvar e Selecionar'}</button>
+            <button onClick={onClose} className="btn-gradient btn-gradient-red">Cancelar</button>
+            <button onClick={handleCreate} disabled={creating} className="btn-gradient btn-gradient-green">{creating ? 'Salvando...' : 'Salvar e Selecionar'}</button>
           </div>
         </div>
       </div>
