@@ -206,8 +206,6 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
 
     const agora = new Date();
     const dataImpressao = agora.toLocaleString('pt-BR', { hour12: false });
-    const dataLancamento = formatarDataBR(ato.data);
-    const protocolo = ato.protocolo || ato.ticket || `REC${String(Date.now()).slice(-8)}`;
     const referenteServico = 'Emissão de RG';
 
     const totalEmol = valorEntradaNum;
@@ -231,21 +229,18 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
         </div>
         <div class="titulo">- RECIBO -</div>
         <div class="linha">Data de Impressão do Recibo...: <span class="valor">${dataImpressao}</span></div>
-        <div class="linha">Data do Lançamento do Recibo..: <span class="valor">${dataLancamento}</span></div>
-        <div class="linha">PROTOCOLO: <span class="valor">${protocolo}</span></div>
-        <div class="linha">RECEBIDO POR: <span class="valor">${clienteLabel}</span></div>
+        <div class="linha">RECEBIDO DE: <span class="valor">${clienteLabel}</span></div>
         <div class="linha">Referente ao(s) Serviço(s): <span class="valor">${referenteServico}</span></div>
         <div class="linha">Conforme lei estadual Nº 15.424/04</div>
         <div class="tabela">
           <div class="trow"><span>QTDE COD/DESCRIÇÃO</span><span>VALOR(R$)</span></div>
-          <div class="trow"><span>0001 - Entrada de valores</span><span>${valorEntrada}</span></div>
-          <div class="trow detalhe">EMOL.:R$ ${totalEmol.toFixed(2)} - ISS.:R$ ${totalIss.toFixed(2)} - RECOMPE.:R$ ${totalRecompe.toFixed(2)} - TX.FISC.:R$ ${totalTaxa.toFixed(2)} - VALOR UNIT.:R$ ${valorEntrada}</div>
+          <div class="trow"><span>0001 - Emissão/Validação de RG</span><span>${valorEntrada}</span></div>
+          <div class="trow detalhe">EMOL.:R$ ${totalEmol.toFixed(2)} - ISS.:R$ ${totalIss.toFixed(2)} - VALOR FINAL:R$ ${valorEntrada}</div>
         </div>
         <div class="totais">TOTAL EMOL.R$: ${totalEmol.toFixed(2)}</div>
         <div class="totais">TOTAL ISSQN.:R$: ${totalIss.toFixed(2)}</div>
         <div class="totais forte">TOTAL FINAL:R$: ${totalFinal.toFixed(2)}</div>
-        <div class="aviso">A segunda via dos recibos emitidos deverá ser arquivada, em meio físico ou eletrônico, pelo prazo de 6 (seis) anos contados da data da emissão.</div>
-        <div class="aviso">ATENÇÃO: É INDISPENSÁVEL A APRESENTAÇÃO DESTE PARA RETIRADA DO DOCUMENTO</div>
+        <div class="aviso">* Guarde este recibo para comprovação de pagamento.</div>
       </div>`;
 
     const html = `<!DOCTYPE html>
@@ -262,8 +257,8 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
     .header { text-align: center; line-height: 1.35; font-size: 12px; font-weight: 700; }
     .cartorio { font-size: 13px; font-weight: 800; text-transform: uppercase; }
     .titulo { text-align: center; margin: 4mm 0 3mm; font-weight: 800; }
-    .linha { font-size: 12px; margin: 1mm 0; display: flex; justify-content: space-between; gap: 6px; }
-    .linha .valor { flex: 1; text-align: right; }
+    .linha { font-size: 12px; margin: 1mm 0; display: block; }
+    .linha .valor { display: inline; margin-left: 4px; }
     .tabela { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 2mm 0; margin: 2mm 0 1mm; }
     .trow { display: flex; justify-content: space-between; font-size: 12px; }
     .detalhe { font-size: 11px; margin-top: 1mm; }
