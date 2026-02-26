@@ -161,9 +161,21 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
     const valorEntradaNum = Number(ato?.valor_unitario || 0) || 0;
     const valorEntrada = formatarMoeda(valorEntradaNum);
     const issNum = (() => {
-      const cand = [ato.issqn, ato.iss, ato.valor_iss, ato.valorIssqn];
+      const cand = [
+        ato.issqn,
+        ato.iss,
+        ato.valor_iss,
+        ato.valorIssqn,
+        ato.issqn_total,
+        ato.total_issqn,
+        ato.total_iss,
+        ato.issqnValor
+      ];
       const found = cand.find((v) => v !== undefined && v !== null);
-      return Number(found) || 0;
+      if (found !== undefined && found !== null) return Number(found) || 0;
+      const pagoIss = ato.pagamentos?.issqn?.valor;
+      if (pagoIss !== undefined && pagoIss !== null) return Number(pagoIss) || 0;
+      return 0;
     })();
     const iss = issNum ? formatarMoeda(issNum) : 'N/I';
 
