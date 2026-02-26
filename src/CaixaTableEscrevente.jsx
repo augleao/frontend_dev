@@ -269,7 +269,6 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
 <body>
   <div class="page">
     ${reciboTexto()}
-    ${reciboTexto()}
   </div>
   <script>window.onload = function() { window.focus(); };</script>
 </body>
