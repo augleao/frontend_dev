@@ -161,21 +161,9 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
     const valorEntradaNum = Number(ato?.valor_unitario || 0) || 0;
     const valorEntrada = formatarMoeda(valorEntradaNum);
     const issNum = (() => {
-      const cand = [
-        ato.issqn,
-        ato.iss,
-        ato.valor_iss,
-        ato.valorIssqn,
-        ato.issqn_total,
-        ato.total_issqn,
-        ato.total_iss,
-        ato.issqnValor
-      ];
+      const cand = [ato.issqn, ato.iss, ato.valor_iss, ato.valorIssqn];
       const found = cand.find((v) => v !== undefined && v !== null);
-      if (found !== undefined && found !== null) return Number(found) || 0;
-      const pagoIss = ato.pagamentos?.issqn?.valor;
-      if (pagoIss !== undefined && pagoIss !== null) return Number(pagoIss) || 0;
-      return 0;
+      return Number(found) || 0;
     })();
     const iss = issNum ? formatarMoeda(issNum) : 'N/I';
 
@@ -222,7 +210,6 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
 
     const totalEmol = valorEntradaNum;
     const totalIss = issNum || 0;
-    const totalIssFmt = formatarMoeda(totalIss);
     const totalRecompe = Number(ato.recompe || 0);
     const totalTaxa = Number(ato.taxa_fiscal || ato.tx_fisc || 0);
     const totalGenerico = Number(ato.generico || 0);
@@ -244,15 +231,13 @@ export default function CaixaTableEscrevente({ atos, onRemove }) {
         <div class="linha">Data de Impressão do Recibo...: <span class="valor">${dataImpressao}</span></div>
         <div class="linha">RECEBIDO DE: <span class="valor">${clienteLabel}</span></div>
         <div class="linha">Referente ao(s) Serviço(s): <span class="valor">${referenteServico}</span></div>
-        <div class="linha">ISSQN: <span class="valor">${totalIssFmt}</span></div>
         <div class="linha">Conforme lei estadual Nº 15.424/04</div>
         <div class="tabela">
           <div class="trow"><span>QTDE COD/DESCRIÇÃO</span><span>VALOR(R$)</span></div>
           <div class="trow"><span>0001 - Emissão/Validação de RG</span><span>${valorEntrada}</span></div>
-          <div class="trow detalhe">EMOL.:R$ ${totalEmol.toFixed(2)} - ISS.:R$ ${totalIss.toFixed(2)} - VALOR FINAL:R$ ${valorEntrada}</div>
+          <div class="trow detalhe">Valor:R$ ${totalEmol.toFixed(2)} - VALOR FINAL:R$ ${valorEntrada}</div>
         </div>
-        <div class="totais">TOTAL EMOL.R$: ${totalEmol.toFixed(2)}</div>
-        <div class="totais">TOTAL ISSQN.:R$: ${totalIss.toFixed(2)}</div>
+        <div class="totais">TOTAL Validação.:R$: ${totalEmol.toFixed(2)}</div>
         <div class="totais forte">TOTAL FINAL:R$: ${totalFinal.toFixed(2)}</div>
         <div class="aviso">* Guarde este recibo para comprovação de pagamento.</div>
       </div>`;
