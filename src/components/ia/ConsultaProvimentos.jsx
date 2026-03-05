@@ -79,6 +79,7 @@ export default function ConsultaProvimentos() {
     setModel('');
     setLoading(true);
     pushLog('Iniciando consulta...');
+    pushLog('Enviando consulta ao backend...');
     try {
       const resp = await IAAgentService.consultarProvimentos({ pergunta: pergunta.trim() });
       if (Array.isArray(resp.logs) && resp.logs.length) {
@@ -87,6 +88,7 @@ export default function ConsultaProvimentos() {
       setResposta(resp.resposta || resp.answer || '');
       setArtigos(Array.isArray(resp.artigos) ? resp.artigos : []);
       setModel(resp.model || '');
+      pushLog('Resposta recebida do backend.');
       pushLog('Consulta finalizada.');
     } catch (err) {
       const msg = err?.message || 'Erro ao consultar os provimentos.';
@@ -94,6 +96,7 @@ export default function ConsultaProvimentos() {
       if (Array.isArray(err?.logs) && err.logs.length) {
         setLogs((prev) => [...prev, ...err.logs]);
       }
+      pushLog('Falha ao concluir consulta.');
       pushLog(`Erro: ${msg}`);
     } finally {
       setLoading(false);
@@ -115,11 +118,7 @@ export default function ConsultaProvimentos() {
               {promptInfo?.updated_at ? ` • atualizado em ${new Date(promptInfo.updated_at).toLocaleString()}` : ''}
             </div>
           </div>
-          <div className="mini-panel ia-mini-panel">
-            <div className="mini-title">Modo IA</div>
-            <div className="ia-meta-badge">Agentes configurados</div>
-            <div className="ia-badge">IA • Normas</div>
-          </div>
+          <div className="ia-badge">IA • Normas</div>
         </div>
 
         <div className="ia-grid">
