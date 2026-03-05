@@ -5,6 +5,14 @@ import '../../buttonGradients.css';
 import '../../home2.css';
 import './ConsultaProvimentos.css';
 
+const classifyLog = (line = '') => {
+  const t = String(line || '').toLowerCase();
+  if (t.includes('erro') || t.includes('falha')) return 'ia-log-line--error';
+  if (t.includes('enviando') || t.includes('iniciando')) return 'ia-log-line--info';
+  if (t.includes('recebida') || t.includes('finalizada') || t.includes('conclu')) return 'ia-log-line--success';
+  return '';
+};
+
 function renderLogs(logs = []) {
   return (
     <div className="ia-card ia-card--logs">
@@ -12,7 +20,7 @@ function renderLogs(logs = []) {
       <div className="ia-logs">
         {Array.isArray(logs) && logs.length > 0 ? (
           logs.map((line, idx) => (
-            <div key={`log-${idx}`} className="ia-log-line">
+            <div key={`log-${idx}`} className={`ia-log-line ${classifyLog(line)}`}>
               {String(line)}
             </div>
           ))
@@ -122,13 +130,18 @@ export default function ConsultaProvimentos() {
     const artigoId = extractArtigoId(artigo);
 
     if (p.includes('149') || p.includes('cnj')) {
-      const anchor = artigoId ? `#artigo-${artigoId}` : '';
-      return `${URL_CNJ}${anchor}`;
+      // Tenta text-fragment para cair diretamente no artigo no HTML do CNJ
+      const fragment = artigoId ? `#:~:text=Art.%20${artigoId}` : '';
+      return `${URL_CNJ}${fragment}`;
     }
 
     if (p.includes('93') || p.includes('tjmg') || p.includes('cgj')) {
-      const searchTerm = artigo ? `#search=${encodeURIComponent(artigo)}` : '';
-      return `${URL_TJMG}${searchTerm}`;
+      // Usa parâmetros PDF (search + page) para tentar destacar o artigo no viewer
+      if (artigoId) {
+        const baseSearch = encodeURIComponent(`Art. ${artigoId}`);
+        return `${URL_TJMG}#page=1&search=${baseSearch}`;
+      }
+      return URL_TJMG;
     }
 
     return '';
