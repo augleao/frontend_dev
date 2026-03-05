@@ -98,7 +98,14 @@
 .ia-agent { color: var(--ia-muted); font-size: 13px; }
 .ia-error { color: #dc2626; font-weight: 700; }
 
-.ia-logs { display: flex; flex-direction: column; gap: 6px; min-height: 120px; }
+.ia-logs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 140px;
+  max-height: 240px;
+  overflow-y: auto;
+}
 .ia-log-line {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 13px;
