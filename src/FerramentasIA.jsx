@@ -33,6 +33,15 @@ function FerramentasIA() {
       route: '/ferramentas-ia/analise-dap',
       tag: 'DAP',
     },
+    {
+      id: 'consulta-provimentos',
+      title: 'Consulta Provimentos',
+      description: 'Perguntas fundamentadas nos provimentos 149/2023 (CNJ) e 93/2020 (TJMG).',
+      icon: '⚖️',
+      color: '#10b981',
+      route: '/ferramentas-ia/consulta-provimentos',
+      tag: 'Normas',
+    },
   ];
 
   const futureFeatures = [
@@ -45,6 +54,7 @@ function FerramentasIA() {
     { label: 'Assistente Mandados', icon: '🧠', route: '/ferramentas-ia/assistente-mandados' },
     { label: 'Leitura de Livros', icon: '📄', route: '/ferramentas-ia/leitura-livros' },
     { label: 'Análise DAP', icon: '📊', route: '/ferramentas-ia/analise-dap' },
+    { label: 'Consulta Provimentos', icon: '⚖️', route: '/ferramentas-ia/consulta-provimentos' },
   ];
 
   return (

@@ -44,6 +44,7 @@ import ProcedimentoManutencao from './components/procedimentos/ProcedimentoManut
 import FerramentasIA from './FerramentasIA';
 import AssistenteMandadosAverbacao from './components/ia/AssistenteMandadosAverbacao';
 import LeituraLivros from './components/ia/LeituraLivros';
+import ConsultaProvimentos from './components/ia/ConsultaProvimentos';
 import ScrollToTop from './ScrollToTop';
 import CertidoesGratuitasLista from './components/certidoes/CertidoesGratuitasLista';
 import CertidaoGratuitaForm from './components/certidoes/CertidaoGratuitaForm';
@@ -429,14 +430,24 @@ function App() {
               <AnaliseDAP />
             </PrivateRoute>
           }
-        />        <Route
+        />
+        <Route
+          path="/ferramentas-ia/consulta-provimentos"
+          element={
+            <PrivateRoute>
+              <ConsultaProvimentos />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/cartosoft-integration"
           element={
             <PrivateRoute>
               <CartosoftIntegration />
             </PrivateRoute>
           }
-        />        <Route
+        />
+        <Route
           path="/certidoes-gratuitas"
           element={
             <PrivateRoute>
