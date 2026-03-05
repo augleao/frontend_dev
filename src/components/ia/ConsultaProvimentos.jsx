@@ -24,21 +24,30 @@ function renderLogs(logs = []) {
   );
 }
 
-function renderArtigos(artigos = []) {
+const URL_CNJ = 'https://atos.cnj.jus.br/atos/detalhar/5243';
+const URL_TJMG = 'http://www8.tjmg.jus.br/institucional/at/pdf/vc00932020.pdf';
+
+function renderArtigos(artigos = [], resolveFonteUrl) {
   if (!Array.isArray(artigos) || artigos.length === 0) {
     return <div className="ia-empty">Nenhum artigo identificado na resposta.</div>;
   }
   return (
     <div className="ia-artigos">
-      {artigos.map((a, idx) => (
-        <div key={`art-${idx}`} className="ia-artigo-card">
-          <div className="ia-artigo-head">
-            <span className="ia-pill">{a.provimento || 'Provimento'}</span>
-            <span className="ia-artigo-label">{a.artigo || 'Artigo não informado'}</span>
-          </div>
-          {a.trecho ? <div className="ia-artigo-texto">{a.trecho}</div> : null}
-        </div>
-      ))}
+      {artigos.map((a, idx) => {
+        const href = resolveFonteUrl ? resolveFonteUrl(a.provimento) : '';
+        const Container = href ? 'a' : 'div';
+        const extraProps = href ? { href, target: '_blank', rel: 'noreferrer' } : {};
+        return (
+          <Container key={`art-${idx}`} className={`ia-artigo-card${href ? ' ia-artigo-card--link' : ''}`} {...extraProps}>
+            <div className="ia-artigo-head">
+              <span className="ia-pill">{a.provimento || 'Provimento'}</span>
+              <span className="ia-artigo-label">{a.artigo || 'Artigo não informado'}</span>
+            </div>
+            {a.trecho ? <div className="ia-artigo-texto">{a.trecho}</div> : null}
+            {href ? <div className="ia-artigo-open">Abrir fonte</div> : null}
+          </Container>
+        );
+      })}
     </div>
   );
 }
@@ -79,7 +88,7 @@ export default function ConsultaProvimentos() {
     setModel('');
     setLoading(true);
     pushLog('Iniciando consulta...');
-    pushLog('Enviando consulta ao backend...');
+    pushLog('Enviando consulta ao Servidor...');
     try {
       const resp = await IAAgentService.consultarProvimentos({ pergunta: pergunta.trim() });
       if (Array.isArray(resp.logs) && resp.logs.length) {
@@ -88,7 +97,7 @@ export default function ConsultaProvimentos() {
       setResposta(resp.resposta || resp.answer || '');
       setArtigos(Array.isArray(resp.artigos) ? resp.artigos : []);
       setModel(resp.model || '');
-      pushLog('Resposta recebida do backend.');
+      pushLog('Resposta recebida do Servidor.');
       pushLog('Consulta finalizada.');
     } catch (err) {
       const msg = err?.message || 'Erro ao consultar os provimentos.';
@@ -101,6 +110,13 @@ export default function ConsultaProvimentos() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const resolveFonteUrl = (provimento = '') => {
+    const p = String(provimento || '').toLowerCase();
+    if (p.includes('149') || p.includes('cnj')) return URL_CNJ;
+    if (p.includes('93') || p.includes('tjmg') || p.includes('cgj')) return URL_TJMG;
+    return '';
   };
 
   return (
@@ -162,7 +178,7 @@ export default function ConsultaProvimentos() {
 
           <div className="hub-card ia-card">
             <div className="ia-card-title">Artigos utilizados</div>
-            {renderArtigos(artigos)}
+            {renderArtigos(artigos, resolveFonteUrl)}
           </div>
         </div>
       </main>
