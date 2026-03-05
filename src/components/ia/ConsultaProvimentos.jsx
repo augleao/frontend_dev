@@ -27,6 +27,11 @@ function renderLogs(logs = []) {
 const URL_CNJ = 'https://atos.cnj.jus.br/atos/detalhar/5243';
 const URL_TJMG = 'http://www8.tjmg.jus.br/institucional/at/pdf/vc00932020.pdf';
 
+const extractArtigoId = (artigo = '') => {
+  const m = String(artigo || '').match(/(\d+[A-Za-z]?)/);
+  return m ? m[1] : '';
+};
+
 function renderArtigos(artigos = [], resolveFonteUrl) {
   if (!Array.isArray(artigos) || artigos.length === 0) {
     return <div className="ia-empty">Nenhum artigo identificado na resposta.</div>;
@@ -34,7 +39,7 @@ function renderArtigos(artigos = [], resolveFonteUrl) {
   return (
     <div className="ia-artigos">
       {artigos.map((a, idx) => {
-        const href = resolveFonteUrl ? resolveFonteUrl(a.provimento) : '';
+        const href = resolveFonteUrl ? resolveFonteUrl(a.provimento, a.artigo) : '';
         const Container = href ? 'a' : 'div';
         const extraProps = href ? { href, target: '_blank', rel: 'noreferrer' } : {};
         return (
@@ -112,10 +117,20 @@ export default function ConsultaProvimentos() {
     }
   };
 
-  const resolveFonteUrl = (provimento = '') => {
+  const resolveFonteUrl = (provimento = '', artigo = '') => {
     const p = String(provimento || '').toLowerCase();
-    if (p.includes('149') || p.includes('cnj')) return URL_CNJ;
-    if (p.includes('93') || p.includes('tjmg') || p.includes('cgj')) return URL_TJMG;
+    const artigoId = extractArtigoId(artigo);
+
+    if (p.includes('149') || p.includes('cnj')) {
+      const anchor = artigoId ? `#artigo-${artigoId}` : '';
+      return `${URL_CNJ}${anchor}`;
+    }
+
+    if (p.includes('93') || p.includes('tjmg') || p.includes('cgj')) {
+      const searchTerm = artigo ? `#search=${encodeURIComponent(artigo)}` : '';
+      return `${URL_TJMG}${searchTerm}`;
+    }
+
     return '';
   };
 
