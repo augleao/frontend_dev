@@ -53,77 +53,77 @@ export default function ConsultaProvimentos() {
     (async () => {
       try {
         const p = await PromptsService.getByIndexador('balisador_consulta_provimentos');
-        return (
-          <div className="ia-shell">
-            <div className="ia-hero">
-              <div>
-                <div className="ia-title">Consulta de Provimentos</div>
-                <div className="ia-subtitle">
-                  Pergunte ao agente de IA usando o Provimento CNJ 149/2023 e o Provimento TJMG 93/2020 (busca online em tempo real).
-                </div>
-                <div className="ia-meta">
-                  Indexador do prompt: <strong>balisador_consulta_provimentos</strong>
-                  {promptInfo?.updated_at ? ` • atualizado em ${new Date(promptInfo.updated_at).toLocaleString()}` : ''}
-                </div>
-              </div>
-              <div className="ia-badge">IA • Normas</div>
-            </div>
+        setPromptInfo(p || null);
+      } catch (_) {
+        setPromptInfo(null);
+      }
+    })();
+  }, []);
 
-            <div className="ia-grid">
-              <div className="ia-card ia-card--form">
-                <form onSubmit={handleSubmit} className="ia-form">
-                  <label className="ia-label">Pergunta</label>
-                  <textarea
-                    value={pergunta}
-                    onChange={(e) => setPergunta(e.target.value)}
-                    placeholder="Ex.: Quais prazos estão previstos para registro e averbação segundo os provimentos?"
-                    rows={5}
-                    className="ia-textarea"
-                  />
-                  <div className="ia-actions">
-                    <button
-                      type="submit"
-                      className="btn-gradient btn-gradient-blue"
-                      disabled={loading}
-                      style={{ minWidth: 180, opacity: loading ? 0.75 : 1 }}
-                    >
-                      {loading ? 'Consultando...' : 'Consultar provimentos'}
-                    </button>
-                    {model ? <span className="ia-agent">Agente: {model}</span> : null}
-                  </div>
-                  {error ? <div className="ia-error">{error}</div> : null}
-                </form>
-              </div>
+  const pushLog = (line) => setLogs((prev) => [...prev, line]);
 
-              {renderLogs(logs)}
-            </div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!pergunta.trim()) {
+      setError('Digite uma pergunta para consultar os provimentos.');
+      return;
+    }
+    setError('');
+    setResposta('');
+    setArtigos([]);
+    setLogs([]);
+    setModel('');
+    setLoading(true);
+    pushLog('Iniciando consulta...');
+    try {
+      const resp = await IAAgentService.consultarProvimentos({ pergunta: pergunta.trim() });
+      if (Array.isArray(resp.logs) && resp.logs.length) {
+        setLogs((prev) => [...prev, ...resp.logs]);
+      }
+      setResposta(resp.resposta || resp.answer || '');
+      setArtigos(Array.isArray(resp.artigos) ? resp.artigos : []);
+      setModel(resp.model || '');
+      pushLog('Consulta finalizada.');
+    } catch (err) {
+      const msg = err?.message || 'Erro ao consultar os provimentos.';
+      setError(msg);
+      if (Array.isArray(err?.logs) && err.logs.length) {
+        setLogs((prev) => [...prev, ...err.logs]);
+      }
+      pushLog(`Erro: ${msg}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            <div className="ia-grid">
-              <div className="ia-card ia-card--response">
-                <div className="ia-card-title">Resposta</div>
-                {resposta ? (
-                  <div className="ia-resposta">{resposta}</div>
-                ) : (
-                  <div className="ia-empty">Nenhuma resposta ainda.</div>
-                )}
-              </div>
-
-              <div className="ia-card">
-                <div className="ia-card-title">Artigos utilizados</div>
-                {renderArtigos(artigos)}
-              </div>
-            </div>
+  return (
+    <div className="ia-shell">
+      <div className="ia-hero">
+        <div>
+          <div className="ia-title">Consulta de Provimentos</div>
+          <div className="ia-subtitle">
+            Pergunte ao agente de IA usando o Provimento CNJ 149/2023 e o Provimento TJMG 93/2020 (busca online em tempo real).
           </div>
-        );
-            <label style={{ fontWeight: 700, color: '#111827' }}>Pergunta</label>
+          <div className="ia-meta">
+            Indexador do prompt: <strong>balisador_consulta_provimentos</strong>
+            {promptInfo?.updated_at ? ` • atualizado em ${new Date(promptInfo.updated_at).toLocaleString()}` : ''}
+          </div>
+        </div>
+        <div className="ia-badge">IA • Normas</div>
+      </div>
+
+      <div className="ia-grid">
+        <div className="ia-card ia-card--form">
+          <form onSubmit={handleSubmit} className="ia-form">
+            <label className="ia-label">Pergunta</label>
             <textarea
               value={pergunta}
               onChange={(e) => setPergunta(e.target.value)}
               placeholder="Ex.: Quais prazos estão previstos para registro e averbação segundo os provimentos?"
               rows={5}
-              style={{ width: '100%', borderRadius: 10, border: '1px solid #d1d5db', padding: 12, resize: 'vertical', fontSize: 14, lineHeight: 1.5 }}
+              className="ia-textarea"
             />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div className="ia-actions">
               <button
                 type="submit"
                 className="btn-gradient btn-gradient-blue"
@@ -132,27 +132,27 @@ export default function ConsultaProvimentos() {
               >
                 {loading ? 'Consultando...' : 'Consultar provimentos'}
               </button>
-              {model ? <span style={{ color: '#6b7280', fontSize: 13 }}>Agente: {model}</span> : null}
+              {model ? <span className="ia-agent">Agente: {model}</span> : null}
             </div>
-            {error ? <div style={{ color: '#dc2626', fontWeight: 600 }}>{error}</div> : null}
+            {error ? <div className="ia-error">{error}</div> : null}
           </form>
         </div>
 
         {renderLogs(logs)}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: 18, alignItems: 'start' }}>
-        <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: 16, boxShadow: '0 10px 30px rgba(0,0,0,0.05)', minHeight: 200 }}>
-          <div style={{ fontWeight: 800, color: '#0f172a', marginBottom: 8 }}>Resposta</div>
+      <div className="ia-grid">
+        <div className="ia-card ia-card--response">
+          <div className="ia-card-title">Resposta</div>
           {resposta ? (
-            <div style={{ color: '#1f2937', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{resposta}</div>
+            <div className="ia-resposta">{resposta}</div>
           ) : (
-            <div style={{ color: '#6b7280' }}>Nenhuma resposta ainda.</div>
+            <div className="ia-empty">Nenhuma resposta ainda.</div>
           )}
         </div>
 
-        <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: 16, boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
-          <div style={{ fontWeight: 800, color: '#0f172a', marginBottom: 8 }}>Artigos utilizados</div>
+        <div className="ia-card">
+          <div className="ia-card-title">Artigos utilizados</div>
           {renderArtigos(artigos)}
         </div>
       </div>
