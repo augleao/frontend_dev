@@ -6,16 +6,19 @@ import '../../home2.css';
 import './ConsultaProvimentos.css';
 
 function renderLogs(logs = []) {
-  if (!Array.isArray(logs) || logs.length === 0) return null;
   return (
     <div className="ia-card ia-card--logs">
       <div className="ia-card-title">Andamento</div>
       <div className="ia-logs">
-        {logs.map((line, idx) => (
-          <div key={`log-${idx}`} className="ia-log-line">
-            {String(line)}
-          </div>
-        ))}
+        {Array.isArray(logs) && logs.length > 0 ? (
+          logs.map((line, idx) => (
+            <div key={`log-${idx}`} className="ia-log-line">
+              {String(line)}
+            </div>
+          ))
+        ) : (
+          <div className="ia-log-line ia-log-line--empty">Aguardando execução do agente.</div>
+        )}
       </div>
     </div>
   );
